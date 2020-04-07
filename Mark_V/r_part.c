@@ -150,14 +150,16 @@ void R_SetParticleTexture_f (cvar_t *var)
 
 /*
 ===============
-Classic_InitParticles
+R_InitParticles
 ===============
 */
-void Classic_InitParticles (void)
+void R_InitParticles (void)
 {
 	int		i;
 
-	if ((i = COM_CheckParm ("-particles"))  && i + 1 < com_argc)
+	i = COM_CheckParm ("-particles");
+
+	if (i  && i+1 < com_argc)
 	{
 		r_numparticles = (int)(atoi(com_argv[i+1]));
 		if (r_numparticles < ABSOLUTE_MIN_PARTICLES)
@@ -242,10 +244,10 @@ void R_EntityParticles (entity_t *ent)
 
 /*
 ===============
-Classic_ClearParticles
+R_ClearParticles
 ===============
 */
-void Classic_ClearParticles (void)
+void R_ClearParticles (void)
 {
 	int		i;
 
@@ -328,21 +330,21 @@ void R_ParseParticleEffect (void)
 	msgcount = MSG_ReadByte ();
 	color = MSG_ReadByte ();
 
-	if (msgcount == NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255)
-		count = 1024;
-	else
-		count = msgcount;
+if (msgcount == 255)
+	count = 1024;
+else
+	count = msgcount;
 
 	R_RunParticleEffect (org, dir, color, count);
 }
 
 /*
 ===============
-Classic_ParticleExplosion
+R_ParticleExplosion
 
 ===============
 */
-void Classic_ParticleExplosion (vec3_t org)
+void R_ParticleExplosion (vec3_t org)
 {
 	int			i, j;
 	particle_t	*p;
@@ -372,11 +374,11 @@ void Classic_ParticleExplosion (vec3_t org)
 
 /*
 ===============
-Classic_ParticleExplosion
+R_ParticleExplosion2
 
 ===============
 */
-void Classic_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
+void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength)
 {
 	int			i, j;
 	particle_t	*p;
@@ -410,7 +412,7 @@ R_BlobExplosion
 
 ===============
 */
-void Classic_BlobExplosion (vec3_t org)
+void R_BlobExplosion (vec3_t org)
 {
 	int			i, j;
 	particle_t	*p;
@@ -419,7 +421,6 @@ void Classic_BlobExplosion (vec3_t org)
 	{
 		if (!free_particles)
 			return;
-
 		p = free_particles;
 		free_particles = p->next;
 		p->next = active_particles;
@@ -449,9 +450,10 @@ void Classic_BlobExplosion (vec3_t org)
 /*
 ===============
 R_RunParticleEffect
+
 ===============
 */
-void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
+void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
 {
 	int			i, j;
 	particle_t	*p;
@@ -460,7 +462,6 @@ void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int cou
 	{
 		if (!free_particles)
 			return;
-
 		p = free_particles;
 		free_particles = p->next;
 		p->next = active_particles;
@@ -512,9 +513,10 @@ void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int cou
 /*
 ===============
 R_LavaSplash
+
 ===============
 */
-void Classic_LavaSplash (vec3_t org)
+void R_LavaSplash (vec3_t org)
 {
 	int			i, j, k;
 	particle_t	*p;
@@ -557,9 +559,10 @@ void Classic_LavaSplash (vec3_t org)
 /*
 ===============
 R_TeleportSplash
+
 ===============
 */
-void Classic_TeleportSplash (vec3_t org)
+void R_TeleportSplash (vec3_t org)
 {
 	int			i, j, k;
 	particle_t	*p;
@@ -574,7 +577,6 @@ void Classic_TeleportSplash (vec3_t org)
 			{
 				if (!free_particles)
 					return;
-
 				p = free_particles;
 				free_particles = p->next;
 				p->next = active_particles;
@@ -607,7 +609,7 @@ R_RocketTrail
 FIXME -- rename function and use #defined types instead of numbers
 ===============
 */
-void Classic_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
+void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t type)
 {
 	vec3_t		vec;
 	float		len;
@@ -715,25 +717,15 @@ CL_RunParticles -- johnfitz -- all the particle behavior, separated from R_DrawP
 WinQuake: R_DrawParticles (it draws them here too)
 ===============
 */
-void Classic_RunParticles (void);
 
 void CL_RunParticles (void)
-{
-	Classic_RunParticles ();
-#ifdef GLQUAKE_SUPPORTS_QMB
-	QMB_RunParticles ();
-#endif // GLQUAKE_SUPPORTS_QMB
-}
-
-void Classic_RunParticles (void)
 {
 	particle_t		*p, *kill;
 	int				i;
 	float  time1, time2, time3, dvel, grav;
 	float			frametime = fabs(cl.time - cl.oldtime);
 
-	if (!active_particles)
-		return; // JoeQuake suggests.
+//	if (!active_particles)		return; // JoeQuake suggests.
 
 	time3 = frametime * 15;
 	time2 = frametime * 10;
@@ -836,8 +828,8 @@ void Classic_RunParticles (void)
 R_DrawParticles
 ===============
 */
-void Classic_DrawParticles (void)
-{ // WinQuake
+void R_DrawParticles (void)
+{
 	particle_t		*p;
 
 	VectorScale (vright, xscaleshrink, r_pright);
@@ -855,16 +847,16 @@ void Classic_DrawParticles (void)
 R_DrawParticles
 ===============
 */
-void Classic_DrawParticles (void)
-{ // GLQuake
+void R_DrawParticles (void)
+{
 	particle_t		*p;
 	float			scale;
 	vec3_t			up, right, p_up, p_right, p_upright; //johnfitz -- p_ vectors
 	byte			color[4], *c; //johnfitz -- particle transparency
 //	float			alpha; //johnfitz -- particle transparency
 
-	if (!gl_particles.value) 	return;
-//	if (!active_particles)		return;	// JoeQuake suggests
+	if (!gl_particles.value)
+		return;
 
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
@@ -1070,7 +1062,7 @@ int Effects_Bit_Flag (int flags)
 #define NEHSMOKE 987
 void Effects_Evaluate (int i, entity_t* ent, vec3_t oldorg)
 {
-	int effects = Effects_Bit_Flag (ent->model->modelflags);
+	int effects = Effects_Bit_Flag (ent->model->flags);
 
 	if (!effects)
 		return;
@@ -1127,121 +1119,4 @@ void DLight_Add (int keyx, vec3_t originx, float radiusx, float minlightx, doubl
 #endif // GLQUAKE_COLORED_LIGHTS
 }
 
-// Control ... 
-
-
-
-
-
-void R_DrawParticles (void)
-{
-// cvar
-	Classic_DrawParticles ();
-#ifdef GLQUAKE_SUPPORTS_QMB
-	QMB_DrawParticles ();
-#endif // GLQUAKE_SUPPORTS_QMB
-}
-
-void R_InitParticles (void)
-{
-	const char *errmsg;
-
-	Classic_InitParticles ();
-#ifdef GLQUAKE_SUPPORTS_QMB
-	qmb_initialized = (  (errmsg = QMB_InitParticles_Error ()) == NULL);
-	if (!qmb_initialized) {
-		Con_Printf ("QMB unavailable: %s\n", errmsg);
-	}
-#endif // GLQUAKE_SUPPORTS_QMB
-}
-
-void R_ClearParticles (void)
-{
-	Classic_ClearParticles ();
-#ifdef GLQUAKE_SUPPORTS_QMB
-	QMB_ClearParticles ();
-#endif // GLQUAKE_SUPPORTS_QMB
-}
-
-// Uh?  No we're good
-void R_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
-{
-#if 0 //def // GLQUAKE_SUPPORTS_QMB
-	if (qmb_initialized && qmb_explosions.value)
-		QMB_ColorMappedExplosion (org, colorStart, colorLength);
-	else
-#endif // GLQUAKE_SUPPORTS_QMB
-		Classic_ColorMappedExplosion (org, colorStart, colorLength);
-}
-
-#if 0 //def // GLQUAKE_SUPPORTS_QMB
-#define RunParticleEffect(var, org, dir, color, count)			\
-	if (qmb_initialized && qmb_##var.value)			\
-		QMB_RunParticleEffect (org, dir, color, count);		\
-	else								\
-		Classic_RunParticleEffect (org, dir, color, count);
-#endif
-
-void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
-{
-
-	Classic_RunParticleEffect (org, dir, color ,count);
-#if 0 //def // GLQUAKE_SUPPORTS_QMB
-	if (qmb_disableblood.value && (color == 73 || color == 225))
-		color = 20;		// Switch to spark
-
-	if (color == 73 || color == 225)
-	{
-		RunParticleEffect(blood, org, dir, color, count);
-		return;
-	}
-
-	switch (count)
-	{
-	case 10:
-	case 20:
-	case 30:
-		RunParticleEffect(spikes, org, dir, color, count);
-		break;
-	default:
-		RunParticleEffect(gunshots, org, dir, color, count);
-	}
-#endif
-}
-
-void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
-{
-#if 0 //def // GLQUAKE_SUPPORTS_QMB
-	if (qmb_initialized && qmb_trails.value)
-		QMB_RocketTrail (start, end, trail_origin, type);
-	else
-#endif // GLQUAKE_SUPPORTS_QMB
-		Classic_RocketTrail (start, end, trail_origin, type);
-}
-
-
-
-
-void R_ParticleExplosion (vec3_t org)
-{
-	Classic_ParticleExplosion (org);
-}
-
-
-void R_BlobExplosion (vec3_t org)
-{
-	Classic_BlobExplosion (org);
-}
-
-
-void R_LavaSplash (vec3_t org)
-{
-	Classic_LavaSplash (org);
-}
-
-
-void R_TeleportSplash (vec3_t org)
-{
-	Classic_TeleportSplash (org);
-}
 

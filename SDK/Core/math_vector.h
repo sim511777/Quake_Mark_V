@@ -103,7 +103,7 @@ void VectorExtendLimits (vec3_t newvalue, vec3_t minlimit, vec3_t maxlimit);
 int ParseFloats(const char *s, float *f, int *f_size);
 cbool PointInCube(vec3_t point, vec3_t cube_mins, vec3_t cube_maxs);
 
-void vectoangles (const vec3_t vec, vec3_t ang);
+
 
 #endif	// ! __MATH_VECTOR_H__
 

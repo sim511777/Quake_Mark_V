@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
 #define ENGINE_VERSION			1.00
-#define	ENGINE_BUILD			1002
+#define	ENGINE_BUILD			1003
 //#define AUTODEMO_BUILD			0
 //#define AUTODEMO_BUILD		1	// Autodemo build.
 

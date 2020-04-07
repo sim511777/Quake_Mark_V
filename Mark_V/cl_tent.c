@@ -223,15 +223,17 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
+		R_ParticleExplosion (pos);
 		SetCommonExploStuff;
 /*
-		R_ParticleExplosion (pos);
+		
 		dl = CL_AllocDlight (0);
 		VectorCopy (pos, dl->origin);
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
 		dl->decay = 300;
 */
+		
 
 		Stain_AddStain(pos, 5, 50); // Fair darkening, large radius
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);

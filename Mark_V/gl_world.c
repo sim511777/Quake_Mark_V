@@ -507,7 +507,8 @@ void R_DrawTextureChains_Multitexture (void)
 
 		if (!t || !t->texturechain || t->texturechain->flags & (SURF_DRAWTILED | SURF_NOTEXTURE)) // Make a draw mirror pass using flags.
 			continue;
-
+		if (strstr (t->name, "window02_1"))
+			t=t;
 		R_DrawTextureChains_Multitexture_Tex (t);
 	}
 }

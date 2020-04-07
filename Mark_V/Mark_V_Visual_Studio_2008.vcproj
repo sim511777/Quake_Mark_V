@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\dx8_mark_v_vs2008.exe"
+				OutputFile="c:\quake\dx8_mark_v.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"
@@ -182,7 +182,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v_winquake_vs2008.exe"
+				OutputFile="c:\quake\mark_v_winquake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"
@@ -281,7 +281,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v_vs2008.exe"
+				OutputFile="c:\quake\mark_v.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"

@@ -97,8 +97,17 @@ void CL_Disconnect (void)
 // stop sounds (especially looping!)
 	S_StopAllSounds (true);
 	CDAudio_Stop();
-
-// HTTP Depot download shutdown in CL_Disconnect_f instead of here.
+//make sure every pathway gets here
+//#ifdef HTTP_DOWNLOAD
+//	// We have to shut down webdownloading first
+//
+//	if( cls.download.web )
+//	{
+//		cls.download.disconnect = true;
+//		return;
+//	}
+//
+//#endif
 
 #ifdef SUPPORTS_NEHAHRA
 	if (nehahra_active)
@@ -275,7 +284,7 @@ void CL_SignonReply (void)
 
 	case 4:
 		SCR_EndLoadingPlaque ();		// allow normal screen updates
-		if (cl_autodemo.value && !cls.demoplayback && !cls.demorecording && (cl_autodemo.value >= 2 || host_maxfps.value == 72))
+		if (cl_autodemo.value && !cls.demoplayback && !cls.demorecording && host_maxfps.value == 72)
 		{
 			// Baker: host_maxfps > 72 will lead to really big demos.
 			Cmd_ExecuteString ("record " AUTO_DEMO_NAME "\n", src_command);
@@ -623,27 +632,21 @@ static void CL_RelinkEntities (void)
 				ent->angles[j] = ent->msg_angles[1][j] + f*d;
 			}
 
-		} // End interpolation, etc.
-
-// rotate binary objects locally
-		if (ent->model->modelflags & EF_ROTATE) {
-			ent->angles[1] = bobjrotate;
-			if (cl_item_bobbing.value)
-				ent->origin[2] += sin(bobjrotate / 90 * M_PI) * 5 + 5;
 		}
 
-		// EF_BRIGHTFIELD is not used by original progs
+// rotate binary objects locally
+		if (ent->model->flags & EF_ROTATE)
+			ent->angles[1] = bobjrotate;
+
 		if (ent->effects & EF_BRIGHTFIELD)
 			R_EntityParticles (ent);
 
-		// EF_BRIGHTLIGHT is not used by original progs
 		if (ent->effects & EF_BRIGHTLIGHT)
 		{
 			vec3_t org = {ent->origin[0], ent->origin[1], ent->origin[2] + 16};
 			DLight_Add (i, org, 400 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1,1);
 		}
 
-		// EF_DIMLIGHT is for powerup glows and enforcer's laser
 		if (ent->effects & EF_DIMLIGHT)
 		{
 			DLight_Add (i, ent->origin, 200 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1,1);
@@ -1061,10 +1064,7 @@ void CL_Init (void)
 	SZ_Alloc (&cls.message, 1024);
 
 	CL_InitInput ();
-#ifdef GLQUAKE_SUPPORTS_QMB
-	GameHacks_InitModelnames (); // QMB
-#endif // GLQUAKE_SUPPORTS_QMB
-	CL_InitTEnts ();  // Technically should occur at game dir change time. 
+	CL_InitTEnts ();
 
 	Cmd_AddCommands (CL_Init);
 }

@@ -297,11 +297,6 @@ void TexMgr_Imagedump_f (void)
 	unsigned *buffer;
 	char *c;
 
-	{
-		Con_Printf ("This can be slow if there are many textures ...\nespecially writing png files ...\n");
-		SCR_UpdateScreen (); // Force!
-	}
-
 	//create directory
 	FS_FullPath_From_QPath (dirname, "imagedump");
 	File_Mkdir (dirname);
@@ -314,9 +309,6 @@ void TexMgr_Imagedump_f (void)
 		while ( (c = strchr(tempname, '/')) ) *c = '_';
 		while ( (c = strchr(tempname, '*')) ) *c = '_';
 		c_snprintf(image_qpath, "imagedump/%s", tempname);
-
-		if (glt->width < 4 || glt->height < 4)
-			continue; // Too small for PNG, don't bother.
 
 		GL_Bind (glt);
 		if (glt->flags & TEXPREF_ALPHA)
@@ -339,7 +331,7 @@ void TexMgr_Imagedump_f (void)
 
 	Recent_File_Set_FullPath (dirname);
 
-	Con_Printf ("dumped %d textures to %s\n", numgltextures, dirname);
+	Con_Printf ("dumped %i textures to %s\n", numgltextures, dirname);
 }
 
 /*

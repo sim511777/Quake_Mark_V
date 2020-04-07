@@ -466,87 +466,6 @@ extern	trivertx_t	*poseverts[MAXALIASFRAMES];
 
 typedef enum {mod_brush, mod_sprite, mod_alias} modtype_t;
 
-typedef	enum
-{
-	mi_player,
-	mi_eyes,
-	mi_rocket,
-	mi_grenade,
-	mi_flame0,
-	mi_flame1,
-	mi_flame2,
-	mi_explo1,
-	mi_explo2,
-	mi_bubble,
-	mi_fish,		// Monsters begin here
-	mi_dog,
-	mi_soldier,
-	mi_enforcer,
-	mi_knight,
-	mi_hknight,
-	mi_scrag,
-	mi_ogre,
-	mi_fiend,
-	mi_vore,
-	mi_shambler,
-	mi_h_dog,		// Dead body models begin here
-	mi_h_soldier,
-	mi_h_enforcer,
-	mi_h_knight,
-	mi_h_hknight,
-	mi_h_scrag,
-	mi_h_ogre,
-	mi_h_fiend,
-	mi_h_vore,
-	mi_h_shambler,
-	mi_h_zombie,
-	mi_h_player,
-	mi_gib1,
-	mi_gib2,
-	mi_gib3,
-	modelindex_max,
-} modelindex_e;
-
-
-extern	modelindex_e	cl_modelindex[modelindex_max];
-extern	char			*cl_modelnames[modelindex_max];
-
-
-// some models are special
-typedef enum {
-	MOD_NORMAL_0,			// 0
-	MOD_PLAYER_1,			// 1
-	MOD_EYES_2,				// 2
-	MOD_FLAME_3,			// 3
-	MOD_THUNDERBOLT_4,		// 4
-	MOD_WEAPON_5,			// 5
-	MOD_LAVABALL_6,			// 6
-	MOD_SPIKE_7,			// 7
-	MOD_SHAMBLER_8,			// 8
-	MOD_SPR_9,				// 9		WHY?
-	MOD_SPR32_10,			// 10		WHY?
-} modhint_e;
-
-
-void GameHacks_InitModelnames (void);
-
-#define VENTILLIATION_WIND_COUNT_10			10 
-#define COLOR_SPARK_20						20 
-#define COLOR_EXPLOSION_225					225
-#define COLOR_UNKNOWN_BLOOD_73				73 // Unused?
-#define COLOR_KNIGHTSPIKE_226				226
-#define KNIGHTSPIKE_COUNT_20				20
-
-#define COLOR_WIZSPIKE_20					20
-#define WIZSPIKE_COUNT_30					30
-
-#define NAIL_SPIKE_COUNT_9					9
-
-#define SUPER_SPIKE_AND_BULLETS_COUNT_20	20
-#define GUNSHOT_COUNT_21					21		// Originally 20 in regular Quake.
-
-#define NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255	255		// Originally 20 in regular Quake.
-
 #define	EF_ROCKET	1			// leave a trail
 #define	EF_GRENADE	2			// leave a trail
 #define	EF_GIB		4			// leave a trail
@@ -579,15 +498,11 @@ typedef struct qmodel_s
 	char		name[MAX_QPATH_64];
 	cbool	needload;		// bmodels and sprites don't cache normally
 
-#ifdef GLQUAKE_SUPPORTS_QMB
-	modhint_e	modhint;
-#endif	// GLQUAKE_SUPPORTS_QMB
-
 	modtype_t	type;
 	int			numframes;
 	synctype_t	synctype;
 
-	int			modelflags;
+	int			flags;
 
 //
 // volume occupied by the model graphics

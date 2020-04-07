@@ -1077,13 +1077,6 @@ void Draw_SetCanvas (canvastype newcanvas)
 		eglOrtho (0, 320, 200, 0, -99999, 99999);
 		eglViewport (clx + clwidth-320 * s, cly + clheight-200 * s, 320 * s, 200 * s);
 		break;
-
-	case CANVAS_TOPLEFT: //used by disc
-		s = 1;
-		eglOrtho (0, 320, 200, 0, -99999, 99999);
-		eglViewport (clx, cly + clheight-200 * s, 320 * s, 200 * s);
-		break;
-
 	default:
 		System_Error ("Draw_SetCanvas: bad canvas type");
 	}

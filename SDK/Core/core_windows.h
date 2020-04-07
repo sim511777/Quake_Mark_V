@@ -93,7 +93,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	} *PKBDLLHOOKSTRUCT;
 		
 	#define WM_MOUSEWHEEL                   0x020A // winuser.h, unsure how not defined
-	#define MAPVK_VK_TO_VSC 0
+
 #endif // ! __WINDOWS_VC6_BANDAGES__
 
 // Vsync

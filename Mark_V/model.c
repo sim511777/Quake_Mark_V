@@ -81,22 +81,22 @@ void Mod_SetExtraFlags (qmodel_t *mod)
 	if (!mod || !mod->name || mod->type != mod_alias)
 		return;
 
-	mod->modelflags &= (0xFF | EF_ALPHA_MASKED_MDL); //only preserve first byte (and now preserve EF_ALPHA_MASKED_MDL also as not a list element but real model flag)
+	mod->flags &= (0xFF | EF_ALPHA_MASKED_MDL); //only preserve first byte (and now preserve EF_ALPHA_MASKED_MDL also as not a list element but real model flag)
 
 	// nolerp flag
 	if (COM_ListMatch (r_nolerp_list.string, mod->name) == true)
-		mod->modelflags |= MOD_NOLERP;
+		mod->flags |= MOD_NOLERP;
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 	if (COM_ListMatch (gl_noshadow_list.string, mod->name) == true)
-		mod->modelflags |= MOD_NOSHADOW;
+		mod->flags |= MOD_NOSHADOW;
 
 	if (COM_ListMatch (gl_fbrighthack_list.string, mod->name) == true)
-		mod->modelflags |= MOD_FBRIGHTHACK;
+		mod->flags |= MOD_FBRIGHTHACK;
 
 
 	if (COM_ListMatch (gl_nocolormap_list.string, mod->name) == true)
-		mod->modelflags |= MOD_NOCOLORMAP;
+		mod->flags |= MOD_NOCOLORMAP;
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 	// nolerp flag
@@ -104,10 +104,10 @@ void Mod_SetExtraFlags (qmodel_t *mod)
 //		mod->flags |= MOD_PLAYER;
 
 	if (COM_ListMatch ("progs/eyes.mdl", mod->name) == true)
-		mod->modelflags |= MOD_EYES;
+		mod->flags |= MOD_EYES;
 
 	if (COM_ListMatch (sv_filter_gibs_list.string, mod->name) == true)
-		mod->modelflags |= MOD_GIBS;
+		mod->flags |= MOD_GIBS;
 
 }
 
@@ -552,7 +552,7 @@ cbool Mod_CheckFullbrights (byte *pixels, int count, cbool alphatex)
 }
 
 
-static cbool GameHacks_Is_Game_Level (const char *stripped_name)
+cbool Is_Game_Level (const char *stripped_name)
 {
 	int i;
 	if (gl_external_textures.value > 1)
@@ -564,100 +564,6 @@ static cbool GameHacks_Is_Game_Level (const char *stripped_name)
 
 	return false;
 }
-
-static modhint_e GameHacks_IsSpecialQuakeAliasModel (const char *model_name)
-{
-	// Joszef said:  NOTE: comparing not only with player.mdl, but with all models
-	// begin with "player" coz we need to support DME models as well!
-
-	if 	    (String_Does_Start_With_Caseless (model_name, "progs/player"))	return MOD_PLAYER_1;	// Why?
-	else if (String_Does_Match_Caseless (model_name, "progs/eyes.mdl")		)	return MOD_EYES_2;		// Why?
-	else if (String_Does_Match_Caseless (model_name, "progs/flame0.mdl")	)	return MOD_FLAME_3;
-	else if (String_Does_Match_Caseless (model_name, "progs/flame.mdl")	)		return MOD_FLAME_3;
-	else if (String_Does_Match_Caseless (model_name, "progs/flame2.mdl")	)	return MOD_FLAME_3;
-	else if (String_Does_Match_Caseless (model_name, "progs/bolt.mdl")		)	return MOD_THUNDERBOLT_4;
-	else if (String_Does_Match_Caseless (model_name, "progs/bolt2.mdl")	)		return MOD_THUNDERBOLT_4;
-	else if (String_Does_Match_Caseless (model_name, "progs/bolt3.mdl")	)		return MOD_THUNDERBOLT_4;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_shot.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_shot2.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_nail.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_nail2.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_rock.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_rock2.mdl")	)	return MOD_WEAPON_5;
-	// hipnotic weapons
-	else if (String_Does_Match_Caseless (model_name, "progs/v_laserg.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_prox.mdl")	)	return MOD_WEAPON_5;
-	// rogue weapons
-	else if (String_Does_Match_Caseless (model_name, "progs/v_grpple.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_lava.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_lava2.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_multi.mdl")	)	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_multi2.mdl") )	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_plasma.mdl") )	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/v_star.mdl")   )	return MOD_WEAPON_5;
-	else if (String_Does_Match_Caseless (model_name, "progs/lavaball.mdl") )	return MOD_LAVABALL_6;
-
-	else if (String_Does_Match_Caseless (model_name, "progs/spike.mdl")	)		return MOD_SPIKE_7;
-	else if (String_Does_Match_Caseless (model_name, "progs/s_spike.mdl")	)	return MOD_SPIKE_7;
-	else if (String_Does_Match_Caseless (model_name, "progs/shambler.mdl")	)	return MOD_SHAMBLER_8;
-
-	return MOD_NORMAL_0;
-}
-
-modelindex_e	cl_modelindex[modelindex_max];
-char			*cl_modelnames[modelindex_max];
-
-void GameHacks_InitModelnames (void)
-{
-	int	i;
-
-	memset (cl_modelnames, 0, sizeof(cl_modelnames));
-
-	cl_modelnames[mi_player] 		= "progs/player.mdl";
-	cl_modelnames[mi_h_player] 		= "progs/h_player.mdl";
-	cl_modelnames[mi_eyes] 			= "progs/eyes.mdl";
-	cl_modelnames[mi_rocket] 		= "progs/missile.mdl";
-	cl_modelnames[mi_grenade] 		= "progs/grenade.mdl";
-	cl_modelnames[mi_flame0] 		= "progs/flame0.mdl";
-	cl_modelnames[mi_flame1] 		= "progs/flame.mdl";
-	cl_modelnames[mi_flame2] 		= "progs/flame2.mdl";
-	cl_modelnames[mi_explo1] 		= "progs/s_expl.spr";
-	cl_modelnames[mi_explo2] 		= "progs/s_explod.spr";
-	cl_modelnames[mi_bubble] 		= "progs/s_bubble.spr";
-	cl_modelnames[mi_gib1] 			= "progs/gib1.mdl";
-	cl_modelnames[mi_gib2] 			= "progs/gib2.mdl";
-	cl_modelnames[mi_gib3] 			= "progs/gib3.mdl";
-	cl_modelnames[mi_fish] 			= "progs/fish.mdl";
-	cl_modelnames[mi_dog] 			= "progs/dog.mdl";
-	cl_modelnames[mi_soldier] 		= "progs/soldier.mdl";
-	cl_modelnames[mi_enforcer] 		= "progs/enforcer.mdl";
-	cl_modelnames[mi_knight] 		= "progs/knight.mdl";
-	cl_modelnames[mi_hknight] 		= "progs/hknight.mdl";
-	cl_modelnames[mi_scrag] 		= "progs/wizard.mdl";
-	cl_modelnames[mi_ogre] 			= "progs/ogre.mdl";
-	cl_modelnames[mi_fiend] 		= "progs/demon.mdl";
-	cl_modelnames[mi_vore] 			= "progs/shalrath.mdl";
-	cl_modelnames[mi_shambler] 		= "progs/shambler.mdl";
-	cl_modelnames[mi_h_dog] 		= "progs/h_dog.mdl";
-	cl_modelnames[mi_h_soldier] 	= "progs/h_guard.mdl";
-	cl_modelnames[mi_h_enforcer] 	= "progs/h_mega.mdl";
-	cl_modelnames[mi_h_knight] 		= "progs/h_knight.mdl";
-	cl_modelnames[mi_h_hknight] 	= "progs/h_hellkn.mdl";
-	cl_modelnames[mi_h_scrag] 		= "progs/h_wizard.mdl";
-	cl_modelnames[mi_h_ogre] 		= "progs/h_ogre.mdl";
-	cl_modelnames[mi_h_fiend] 		= "progs/h_demon.mdl";
-	cl_modelnames[mi_h_vore] 		= "progs/h_shal.mdl";
-	cl_modelnames[mi_h_shambler] 	= "progs/h_shams.mdl";
-	cl_modelnames[mi_h_zombie] 		= "progs/h_zombie.mdl";
-
-	for (i = 0; i < modelindex_max; i++)
-	{
-		if (!cl_modelnames[i])
-			System_Error ("cl_modelnames[%d] not initialized", i);
-	}
-}
-
-
 
 enum {warp_texture, regular_texture};
 
@@ -677,7 +583,7 @@ static const char *Mod_LoadExternalTexture (qmodel_t* mod, const char *texture_n
 	{
 #define NUMDATA_SOURCES 4
 		static char filename_success[MAX_OSPATH];
-		cbool original_level = GameHacks_Is_Game_Level (plainname);
+		cbool original_level = Is_Game_Level (plainname);
 		char *fname0 = va ("texturepointer/%s", texture_name); // Remove me?  texturepointer cut/paste/temps
 		char *fname1 = va ("textures/%s/%s", plainname, texture_name); // Map named variant
 		char *fname2 = original_level ? va ("textures/exmy/%s", texture_name) : NULL;
@@ -2028,7 +1934,7 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 		if (loadmodel->isworldmodel && Is_Texture_Prefix (out->texinfo->texture->name, gl_texprefix_mirror.string) || Is_Texture_Prefix (out->texinfo->texture->name, "mirror_")) {
 			// Change to string compare method?
 			// Direct 3D wrapper can't do mirrors because it makes assumptions mirrors violate.
-			if (!vid.direct3d && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME)) {
+			if (!vid.direct3d) {
 				level.mirror = true;
 				out->flags |= SURF_DRAWMIRROR; // mirror_
 			}
@@ -3641,7 +3547,7 @@ Mod_LoadAliasModel
 =================
 */
 void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
-{ // GLQUAKE
+{
 	int					i, j;
 	mdl_t				*pinmodel;
 	stvert_t			*pinstverts;
@@ -3662,10 +3568,6 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 		Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%i should be %i)",
 				 mod->name, version, ALIAS_VERSION);
 
-#ifdef GLQUAKE_SUPPORTS_QMB
-	mod->modhint = GameHacks_IsSpecialQuakeAliasModel (mod->name);
-#endif // GLQUAKE_SUPPORTS_QMB
-
 //
 // allocate space for a working header, plus all the data except the frames,
 // skin and group info
@@ -3676,7 +3578,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 	pheader = (aliashdr_t *)Hunk_AllocName (size, loadname);
 
 	// Note: EF_ALPHA_MASKED_MDL is 16384 and requires no action for us to use if QME 3.1 was used to set the flag
-	mod->modelflags = LittleLong (pinmodel->flags);
+	mod->flags = LittleLong (pinmodel->flags);
 
 //
 // endian-adjust and copy the data, starting with the alias model header
@@ -3727,7 +3629,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 // load the skins
 //
 	pskintype = (daliasskintype_t *)&pinmodel[1];
-	pskintype = (daliasskintype_t *) Mod_LoadAllSkins (pheader->numskins, pskintype, mod->modelflags & EF_ALPHA_MASKED_MDL);
+	pskintype = (daliasskintype_t *) Mod_LoadAllSkins (pheader->numskins, pskintype, mod->flags & EF_ALPHA_MASKED_MDL);
 
 //
 // load base s and t vertices
@@ -4128,7 +4030,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 	pheader = (aliashdr_t *)Hunk_AllocName (size, loadname);
 	pmodel = (mdl_t *) ((byte *)&pheader[1] + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]));
 
-	pmodel->flags = mod->modelflags = LittleLong (pinmodel->flags); // EF_ALPHA_MASKED_MDL
+	pmodel->flags = mod->flags = LittleLong (pinmodel->flags); // EF_ALPHA_MASKED_MDL
 
 //
 // endian-adjust and copy the data, starting with the alias model header

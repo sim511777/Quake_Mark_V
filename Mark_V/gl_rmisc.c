@@ -362,7 +362,7 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 			return NULL;
 
 		// Certain models just aren't worth trying to colormap
-		if (cur_ent->model->modelflags & MOD_NOCOLORMAP)
+		if (cur_ent->model->flags & MOD_NOCOLORMAP)
 			return NULL;
 
 		//TODO: move these tests to the place where skinnum gets received from the server

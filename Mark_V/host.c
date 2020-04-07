@@ -964,31 +964,21 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 	// Because it is pretty likely that size of file will get a "SZ_GetSpace: overflow without allowoverflow set"
 	// During command execution
 
-	if (bytes_size ==-1)
-		return false;  // We failed
-	else
+	if (bytes_size !=-1)
 	{
 		int	bytes_in = c_min (bytes_size, 8000); // Cap at 8000
 		int bytes_read = fread (config_buffer, 1, bytes_in, f);
-		config_buffer [bytes_read] = 0; // Null terminate just in case
+		config_buffer [bytes_read + 1] = 0; // Null terminate just in case
 		FS_fclose (f);
 
-
+#if 0
 		// Nevermind, we don't need this.  We'll still get the settings, just not early.  And we can live with whatever unwanted video mode.
-		if (String_Does_Match_Caseless(config_file_name, CONFIG_CFG) && (size_t)bytes_read > strlen(ENGINE_FAMILY_NAME) + 3 && String_Does_Not_Start_With_Caseless(config_file_name + 3, ENGINE_FAMILY_NAME /* "// Mark V" */)) {
-			// Ok try ours
-			const char *retryname = va("%s/%s/%s", Folder_Caches_URL (), File_URL_SkipPath (game_startup_dir), config_file_name);
-			size_t bytesread, copysize; byte *data = File_To_Memory_Alloc (retryname, &bytesread);
-			if (!data)
-				return false; // Get out!  We failed.
-			
-			// Copy smaller of the size of the buffer -1 or the length of the read
-			copysize = c_min (bytesread, sizeof(config_buffer) - 1);
-			memcpy (config_buffer, data, copysize);
-			config_buffer[copysize] = 0; // Null terminate.
-			free (data);
-		}
-	}
+		if (String_Does_Match_Caseless(config_file_name, CONFIG_CFG) && bytes_read > strlen(ENGINE_FAMILY_NAME) + 3)
+			if (String_Does_Not_Start_With_Caseless(config_file_name + 3, ENGINE_FAMILY_NAME /* "// Mark V" */))
+				return false; // Not our config 
+#endif
+
+	} else return false;
 
 	for (i = 0, var = list[i]; var; i++, var = list[i])
 	{
@@ -1016,3 +1006,4 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 
 	return found_any_cvars;
 }
+

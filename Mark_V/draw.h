@@ -71,7 +71,6 @@ typedef enum
 	CANVAS_BOTTOMLEFT,
 	CANVAS_BOTTOMRIGHT,
 	CANVAS_TOPRIGHT,
-	CANVAS_TOPLEFT,
 	CANVAS_INVALID = -1
 } canvastype;
 //johnfitz

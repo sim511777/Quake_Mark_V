@@ -578,24 +578,11 @@ void SCR_DrawFPS (void)
 		oldframecount = cl.r_framecount;
 	}
 
-	if (scr_viewsize.value >= 100 && (scr_showfps.value || scr_showpos.value || (sb_showscores && (cls.demorecording || cl_autodemo.value) ) || scr_showspeed.value)) {
+	if (scr_viewsize.value >= 100 && (scr_showfps.value || scr_showpos.value || scr_showspeed.value)) {
 		char			st[64];
 		int				x, y = 12;
-		
-		if (sb_showscores && (cls.demorecording || cl_autodemo.value) ) {
-			Draw_SetCanvas (CANVAS_TOPLEFT);
-			if ( cls.demorecording) {
-				const char *demo_short_name = File_URL_SkipPath (cls.demo_url);
-				c_snprintf2 (st, "%c %s", 139, demo_short_name);
-			} else {
-				c_strlcpy (st, "No demo recording");
-			}
-			x = 8; // 320 - 8 - (strlen(st) * 8);
-			Draw_StringEx (x, y, st);  // y += 8;
-		}
-
 		Draw_SetCanvas (CANVAS_TOPRIGHT);
-
+		
 		if (scr_showpos.value) {
 			c_snprintf3 (st, "@ %3.0f %3.0f %3.0f", 
 				cl_entities[cl.viewentity_player].origin[0], 

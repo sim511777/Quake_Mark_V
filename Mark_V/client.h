@@ -237,7 +237,7 @@ typedef struct
 	double		laststop;
 
 	float		viewheight;
-	float		crouch;			// local amount for smoothing stepups.  Unused?
+	float		crouch;			// local amount for smoothing stepups
 
 	cbool	paused;			// send over by server
 	cbool	onground;

@@ -526,7 +526,8 @@ cbool Is_Texture_Prefix (const char *texturename, const char *prefixstring)
 	if (prefixstring[0] == 0)
 		return false; // 0 length string
 
-	if (strncasecmp(texturename, prefixstring, strlen(prefixstring)) == 0)
+	//if (strncasecmp(texturename, prefixstring, strlen(prefixstring)) == 0)
+	if (String_Does_Start_With_Caseless (texturename, prefixstring))
 		return true;
 
 	return false;
@@ -2029,13 +2030,9 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 			out->flags |= SURF_DRAWFENCE;
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		if (loadmodel->isworldmodel && Is_Texture_Prefix (out->texinfo->texture->name, gl_texprefix_mirror.string) || Is_Texture_Prefix (out->texinfo->texture->name, "mirror_")) {
-			// Change to string compare method?
-			// Direct 3D wrapper can't do mirrors because it makes assumptions mirrors violate.
-			if (!vid.direct3d && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME)) {
-				level.mirror = true;
-				out->flags |= SURF_DRAWMIRROR; // mirror_
-			}
+		if (loadmodel->isworldmodel /* prevent healthboxes from having mirrors*/ && GL_Mirrors_Is_TextureName_Mirror (out->texinfo->texture->name)) {
+			level.mirror = true;
+			out->flags |= SURF_DRAWMIRROR; // mirror_
 		}
 
 		if (Is_Texture_Prefix (out->texinfo->texture->name, gl_texprefix_envmap.string))

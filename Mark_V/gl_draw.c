@@ -36,7 +36,11 @@ qpic_t		*draw_disc;
 qpic_t		*draw_backtile;
 
 gltexture_t *char_texture; //johnfitz
-gltexture_t *crosshair_texture; //Baker:  gfx/crosshairs/default.tga
+gltexture_t *crosshair_weapon_textures[MAX_CROSSHAIRS_25]; // gfx/crosshairs/crosshair1.tga
+int			crosshair_weapon_textures_found;
+
+gltexture_t *crosshair_default_texture; // gfx/crosshairs/crosshair1.tga
+
 qpic_t		*pic_ovr, *pic_ins; //johnfitz -- new cursor handling
 qpic_t		*pic_nul; //johnfitz -- for missing gfx, don't crash
 
@@ -576,25 +580,47 @@ void Draw_LoadPics (void)
 // RELOAD:  CONCHARS IS HERE
 	draw_disc = Draw_PicFromWad ("disc");
 	draw_backtile = Draw_PicFromWad ("backtile");
-	crosshair_texture = NULL; // We may not have one
+
+	crosshair_weapon_textures_found = 0;
+	crosshair_default_texture = NULL;
+	{
+		int n; for (n = 0; n < MAX_CROSSHAIRS_25; n ++ ) {
+			crosshair_weapon_textures[n] = NULL; // We may not have one
+		}
+	}
 
 	// Crosshair
 	if (gl_external_textures.value)
 	{
 		int mark = Hunk_LowMark ();
-		char current_filename[MAX_OSPATH] = "/gfx/crosshairs/default";
+		const char *crosshair_base = "/gfx/crosshairs/weapon_";
+		char current_filename[MAX_QPATH_64];
 		char limit_path[MAX_OSPATH];
 		int fwidth, fheight;
 		unsigned *data;
+		int n;
 
-		c_strlcpy (limit_path, com_filepath);
-		data = Image_Load_Limited (current_filename, &fwidth, &fheight, limit_path);//, mod->loadinfo.searchpath);
-		if (data)
-		{
-			crosshair_texture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, current_filename, fwidth, fheight, SRC_RGBA, data, current_filename,
+		//c_strlcpy (limit_path, com_filepath);
+		data = Image_Load_Limited ("/gfx/crosshairs/default", &fwidth, &fheight, NULL); //limit_path);//, mod->loadinfo.searchpath);
+		if (data) {
+			crosshair_default_texture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, current_filename, fwidth, fheight, SRC_RGBA, data, current_filename,
 										  0, TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
 			Hunk_FreeToLowMark (mark); // Should be no files to close, LoadImage closes them.
 		}
+
+
+		for (n = 0; n < MAX_CROSSHAIRS_25; n ++) {
+			c_snprintf2 (current_filename, "%s%d", crosshair_base, n + 1);
+			data = Image_Load_Limited (current_filename, &fwidth, &fheight, NULL); //limit_path);//, mod->loadinfo.searchpath);
+			if (data) {
+				crosshair_weapon_textures[n] = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, current_filename, fwidth, fheight, SRC_RGBA, data, current_filename,
+											  0, TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
+				Hunk_FreeToLowMark (mark); // Should be no files to close, LoadImage closes them.
+				crosshair_weapon_textures_found ++;
+			}
+		}
+
+		
 	}
 
 }
@@ -682,7 +708,7 @@ void Draw_CharacterQuad (int x, int y, char num)
 	eglVertex2f (x, y+8);
 }
 
-void Draw_GLTexture (gltexture_t* tx, float x0, float y0, float x1, float y1)
+void Draw_GLTexture (gltexture_t *tx, float x0, float y0, float x1, float y1)
 {
 //	int				row, col;
 //	float			frow, fcol, size;
@@ -709,6 +735,7 @@ void Draw_GLTexture (gltexture_t* tx, float x0, float y0, float x1, float y1)
 	eglDisable (GL_BLEND);
 	eglEnable (GL_ALPHA_TEST);
 	eglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	eglColor4f (1,1,1,1);
 }
 
 

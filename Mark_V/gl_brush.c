@@ -589,7 +589,7 @@ void R_DrawBrushModel (entity_t *e)
 	psurf = &clmodel->surfaces[clmodel->firstmodelsurface];
 
 // calculate dynamic lighting for bmodel if it's not an
-// instanced model
+// instanced model (like a healthbox ... external brush models supply their own lighting)
 	if (clmodel->firstmodelsurface != 0 && !gl_flashblend.value)
 	{
 		// calculate entity local space for dlight transforms

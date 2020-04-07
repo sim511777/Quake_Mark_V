@@ -254,7 +254,7 @@ void QMB_RunParticles (void);
 
 
 void QMB_ParseParticleEffect (void);
-void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int color, int count);
+void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int color, int count, te_ef_effect_e te_ef_effect);
 void QMB_AnyTrail (const vec3_t start, const vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void QMB_EntityParticles (entity_t *ent);
 void QMB_BlobExplosion (const vec3_t org);

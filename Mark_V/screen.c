@@ -817,13 +817,44 @@ void SCR_DrawCrosshair (void)
 
 	Draw_SetCanvas (CANVAS_CROSSHAIR);
 
-	if (scr_crosshair.value > 1) // Dot crosshair
-		Draw_Character (-4, -4, 15); //0,0 is center of viewport
+
 #ifdef GLQUAKE_TEXTURE_MANAGER
-	else if (crosshair_texture)
-		Draw_GLTexture (crosshair_texture, -15,-15,16,16);
+	if (crosshair_weapon_textures_found && scr_weapon_crosshair.value  ) { // Per weapon
+		int crosshair_num = Host_ActiveWeapon_0_to_24_or_Neg1 ();
+		
+		if (crosshair_num == -1)
+			goto missing_weapon_crosshair; // This should never happen, I don't think.
+
+		//int active_weapon = cl.stats[STAT_ACTIVEWEAPON]; // 0 = axe
+		crosshair_num = CLAMP (0 /*axe*/, crosshair_num, MAX_CROSSHAIRS_25 - 1); // IT_SUPER_LIGHTNING or maybe plaz */ ); // Automatic
+		if (!crosshair_weapon_textures [crosshair_num]) 
+			goto missing_weapon_crosshair;  // Render a +
+	
+		Draw_GLTexture (crosshair_weapon_textures [crosshair_num], -15,-15,16,16);
+		return;
+	}
+		
+
+missing_weapon_crosshair:
+
+
 #endif // GLQUAKE_TEXTURE_MANAGER
-	else Draw_Character (-4, -4, '+'); // Standard Quake crosshair
+
+	if (scr_crosshair.value > 1) { // Dot crosshair
+		Draw_Character (-4, -4, 15); //0,0 is center of viewport
+		return;
+	}
+
+#ifdef GLQUAKE_TEXTURE_MANAGER
+	if (crosshair_default_texture) {
+		Draw_GLTexture (crosshair_default_texture, -15,-15,16,16);
+		return;
+	}
+
+#endif // GLQUAKE_TEXTURE_MANAGER
+
+	// Standard Quake crosshair
+	Draw_Character (-4, -4, '+'); 
 }
 
 

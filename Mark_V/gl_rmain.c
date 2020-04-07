@@ -427,7 +427,7 @@ void R_SetupView (void)
 			r_fullbright_cheatsafe = true;
 
 		r_drawworld_cheatsafe = true;
-		if (cl.maxclients == 1)
+		if (cl.maxclients == 1 || cls.demoplayback)
 		{
 			if (!gl_drawworld.value) r_drawworld_cheatsafe = false;
 

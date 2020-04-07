@@ -231,7 +231,7 @@ void CL_ParseTEnt (void)
 		
 
 		if (frame.qmb && qmb_explosiontype.value == 3)
-			R_RunParticleEffect (pos, vec3_origin, COLOR_EXPLOSION_225, 50, TE_EF_EXPLOSION_1_3); // I am QMB, explosion type 3
+			R_RunParticleEffect (pos, vec3_origin, COLOR_EXPLOSION_BLOOD_225, 50, TE_EF_EXPLOSION_1_3); // I am QMB, explosion type 3
 //			RunParticleEffect(blood, org, dir, color, count);
 		else
 			R_ParticleExplosion (pos); // Classic or QMB except 3

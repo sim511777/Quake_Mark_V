@@ -35,13 +35,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
 #define ENGINE_VERSION			1.00
-#define	ENGINE_BUILD			1011
+#define	ENGINE_BUILD			1017			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
 #define PROQUAKE_SERVER_VERSION_3_30	3.30
 #define PROQUAKE_CLIENT_VERSION_5_00	5.00
-
+#define MAX_EFFECTIVE_WEAPON_COUNT_25	25
 
 #define DEFAULT_QPORT_26000		26000
 #define	GAMENAME				"id1"					// directory to look in by default
@@ -571,6 +571,8 @@ void Host_Version_f (lparse_t *line);
 void Host_Version_Print (print_fn_t print_fn);
 void HD_Folder_f (lparse_t *line);
 cbool HD_Folder_Ok (char *s);
+int Host_ActiveWeapon_0_to_24_or_Neg1 (void);
+
 
 int Host_Gamedir_Change (const char *gamedir_new, const char *new_hud_typestr, cbool liveswitch, const char** info_string, cbool force);
 cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t *list[]);

@@ -1054,7 +1054,16 @@ __inline static void AddParticle (part_type_e type, const vec3_t org, int count,
 		case p_glow:
 			VectorCopy (org, p->org);
 			VectorCopy (dir, p->vel);
-			p->growth = -1.5;
+#if 1
+			//for (j=0 ; j<3 ; j++)
+			//{
+			//	p->org[j] = org[j] + ((rand()&15)-8);
+			//	p->vel[j] = dir[j]*15;
+			//}
+
+#else
+			p->growth = -1.5; // Here
+#endif
 			break;
 
 		case p_streaktrail:
@@ -1342,16 +1351,16 @@ void QMB_ColorMappedExplosion (const vec3_t org, int colorStart, int colorLength
 	}
 }
 
-void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int count)
+void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int count, te_ef_effect_e te_ef_effect)
 {
 	color_vec4b_t	color;
 	vec3_t	neworg, newdir;
 	int	i, j, particlecount;
 
-	if (qmb_disableblood.value && (col == COLOR_UNKNOWN_BLOOD_73 || col == COLOR_EXPLOSION_225))
-		col = COLOR_SPARK_20;		// Switch to spark
+//	if (qmb_disableblood.value && (col == COLOR_UNKNOWN_BLOOD_73 || col == COLOR_EXPLOSION_225))
+//		col = COLOR_SPARK_20;		// Switch to spark
 
-	if (col == COLOR_UNKNOWN_BLOOD_73)
+	if (col == COLOR_UNKNOWN_BLOOD_73 || col == COLOR_EXPLOSION_BLOOD_225) // This really must work like this, special color of parsed effect :(
 	{
 		int	bloodcount;
 
@@ -1364,7 +1373,9 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 		}
 		return;
 	}
-	else if (col == COLOR_EXPLOSION_225)
+
+	// I don't think the following ever gets used ...
+	if (te_ef_effect == TE_EF_EXPLOSION_1_3) // col == COLOR_EXPLOSION_225)
 	{
 		int	scale;
 
@@ -1378,7 +1389,8 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 		}
 		return;
 	}
-	else if (col == COLOR_WIZSPIKE_20 && count == WIZSPIKE_COUNT_30)
+
+	if (te_ef_effect == TE_EF_WIZSPIKE) //col == COLOR_WIZSPIKE_20 && count == WIZSPIKE_COUNT_30)
 	{
 		ColorSetRGB (color, 51, 255, 51);
 //		color[0] = color[2] = 51;
@@ -1387,7 +1399,8 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 		AddParticle (p_spark, org, 12, 75, 0.4, color, zerodir);
 		return;
 	}
-	else if (col == COLOR_KNIGHTSPIKE_226 && count == KNIGHTSPIKE_COUNT_20)
+
+	if (te_ef_effect == TE_EF_KNIGHTSPIKE) // col == COLOR_KNIGHTSPIKE_226 && count == KNIGHTSPIKE_COUNT_20)
 	{
 		ColorSetRGB (color, 230, 204, 26);
 		AddParticle (p_chunk, org, 1, 1, 0.75, color, zerodir);
@@ -1395,11 +1408,7 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 		return;
 	}
 
-	switch (count)
-	{
-	case NAIL_SPIKE_COUNT_9:
-	case VENTILLIATION_WIND_COUNT_10:
-
+	if (te_ef_effect == TE_EF_SPIKE || te_ef_effect == TE_EF_VENTILLIATION) {
 		if (com_gametype == gametype_nehahra && count == VENTILLIATION_WIND_COUNT_10)	// ventillation's wind
 		{
 			for (i=0 ; i<count ; i++)
@@ -1417,13 +1426,15 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 		{
 			AddParticle (p_spark, org, 6, 70, 0.6, NULL, zerodir);
 		}
-		break;
+		return;
+	}
 
-	case SUPER_SPIKE_AND_BULLETS_COUNT_20:
+	if (te_ef_effect == TE_EF_SUPERSPIKE) { // case SUPER_SPIKE_AND_BULLETS_COUNT_20:
 		AddParticle (p_spark, org, 12, 85, 0.6, NULL, zerodir);
-		break;
+		return;
+	}
 
-	case GUNSHOT_COUNT_21:	// gunshot
+	if (te_ef_effect == TE_EF_GUNSHOT) { //case GUNSHOT_COUNT_21:	// gunshot
 		particlecount = count >> 1;
 		AddParticle (p_gunblast, org, 15, 5, 0.15, NULL, zerodir);
 		for (i=0 ; i<particlecount ; i++)
@@ -1434,62 +1445,74 @@ void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int cou
 			if ((i % particlecount) == 0)
 				AddParticle (p_chunk, neworg, 1, 0.75, 3.75, NULL, zerodir);
 		}
-		break;
+		return;
+	}
 
-	case 30:
+
+	if (qmb_particles_quakec_count_30.value && count == 30) {
+		// Baker: Meh .. another special count.  Grrrr.
 		AddParticle (p_chunk, org, 10, 1, 4, NULL, zerodir);
 		AddParticle (p_spark, org, 8, 105, 0.9, NULL, zerodir);
-		break;
-
-	default:
-		if (com_gametype == gametype_hipnotic)
-		{
-			switch (count)
-			{
-			case 1:		// particlefields
-			case 2:
-			case 3:
-			case 4:
-				d8to24col (color, (col & ~7) + (rand() & 7));
-				AddParticle (p_gunblast, org, 15, 5, 0.1 * (rand() % 5), color, zerodir);
-				return;
-			}
-		}
-		else if (com_gametype == gametype_nehahra)
-		{
-			switch (count)
-			{
-			case 25:	// slime barrel chunks
-				return;
-
-			case 244:	// sewer
-				for (i=0 ; i<(count>>3) ; i++)
-				{
-					for (j=0 ; j<3 ; j++)
-						neworg[j] = org[j] + ((rand() % 24) - 12);
-					newdir[0] = dir[0] * (10 + (rand() % 5));
-					newdir[1] = dir[1] * (10 + (rand() % 5));
-					newdir[2] = dir[2] * 15;
-					d8to24col (color, (col & ~7) + (rand() & 7));
-					AddParticle (p_glow, neworg, 1, 3.5, 0.5 + 0.1 * (rand() % 3), color, newdir);
-				}
-				return;
-			}
-		}
-
-		particlecount = c_max(1, count>>1);
-		for (i=0 ; i<particlecount ; i++)
-		{
-			for (j=0 ; j<3 ; j++)
-			{
-				neworg[j] = org[j] + ((rand() % 20) - 10);
-				newdir[j] = dir[j] * (10 + (rand() % 5));
-			}
-			d8to24col (color, (col & ~7) + (rand() & 7));
-			AddParticle (p_glow, neworg, 1, 3, 0.2 + 0.1 * (rand() % 4), color, newdir);
-		}
-		break;
+		return;
 	}
+
+
+	if (com_gametype == gametype_hipnotic)
+	{
+		switch (count)
+		{
+		case 1:		// particlefields
+		case 2:
+		case 3:
+		case 4:
+			d8to24col (color, (col & ~7) + (rand() & 7));
+			AddParticle (p_gunblast, org, 15, 5, 0.1 * (rand() % 5), color, zerodir);
+			return;
+		}
+		// Apparently certain cases fall through to bottom ...
+	}
+	
+	if (com_gametype == gametype_nehahra)
+	{
+		switch (count)
+		{
+		case 25:	// slime barrel chunks
+			return;
+
+		case 244:	// sewer
+			for (i = 0 ; i < (count>>3) /*divide by 8*/ ; i++)
+			{
+				for (j=0 ; j<3 ; j++)
+					neworg[j] = org[j] + ((rand() % 24) - 12);
+				newdir[0] = dir[0] * (10 + (rand() % 5));
+				newdir[1] = dir[1] * (10 + (rand() % 5));
+				newdir[2] = dir[2] * 15;
+				d8to24col (color, (col & ~7) + (rand() & 7));
+				AddParticle (p_glow, neworg, 1, 3.5, 0.5 + 0.1 * (rand() % 3), color, newdir);
+			}
+			return;
+		}
+		// Apparently certain cases fall through to bottom ...
+	}
+
+	particlecount = c_max(1, count >> 1);  // divide by 2?
+	for (i = 0 ; i < particlecount ; i++)
+	{
+		for (j=0 ; j<3 ; j++)
+		{
+#if 1
+			neworg[j] = org[j] + ((rand()&15)-8);
+			newdir[j] = dir[j] * 15;
+#else
+			neworg[j] = org[j] + ((rand() % 20) - 10);
+			newdir[j] = dir[j] * (10 + (rand() % 5));
+#endif
+		}
+		d8to24col (color, (col & ~7) + (rand() & 7));
+		AddParticle (p_glow, neworg, 1, 3, 0.2 + 0.1 * (rand() % 4), color, newdir);
+	}
+	
+	
 }
 
 void QMB_AnyTrail (const vec3_t start, const vec3_t end, vec3_t *trail_origin, trail_type_e type)

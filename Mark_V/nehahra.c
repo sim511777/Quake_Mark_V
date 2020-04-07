@@ -201,6 +201,9 @@ void FMOD_Play_f (lparse_t *line)
 	char	modname[256], *buffer;
 	int	mark;
 
+	if (!qFMUSIC_LoadSongEx)
+		return; 
+
 	c_strlcpy (modname, line->args[1]);
 
 	if (modplaying)

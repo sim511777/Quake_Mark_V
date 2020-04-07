@@ -836,6 +836,23 @@ SERVER TRANSITIONS
 ===============================================================================
 */
 
+int Host_ActiveWeapon_0_to_24_or_Neg1 (void)
+{
+	int active_weapon = cl.stats[STAT_ACTIVEWEAPON];
+	int weapon_number = -1;
+	
+	// active_weapon 0 = axe
+	if (!active_weapon)
+		return (weapon_number = 0);
+	else {
+		int j;  for (j = 0; j < MAX_EFFECTIVE_WEAPON_COUNT_25 - 1 ; j ++) {
+			int thisweap = ( 1 << j );
+			if (active_weapon == ( 1 << j ) ) 
+				return (weapon_number = j + 1);
+		}
+		return weapon_number; // Which is -1
+	}
+}
 
 /*
 ======================
@@ -865,7 +882,7 @@ void Host_Map_f (lparse_t *line)
 		{
 			char buf[32] = {0};
 
-			Con_Printf ("\nCurrent map: %s (%s)\n", cl.worldname, cl.levelname);
+			Con_Printf ("\nCurrent map: %s (title: %s)\n", cl.worldname, cl.levelname);
 			Con_Printf ("\n");
 			Con_Printf ("Sky key:         %s\n", level.sky_key);
 			Con_Printf ("Fog key:	      %s\n", level.fog_key);
@@ -877,6 +894,10 @@ void Host_Map_f (lparse_t *line)
 			Con_Printf ("Water key:       %s\n", level.is_wateralpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.wateralpha)	: "" );
 			Con_Printf ("\n");
 			Con_Printf ("Water-vised:     %s\n", level.water_vis_known ? (level.water_vis ? "Yes" : "No") : "Not determined yet" );
+			
+			Con_Printf ("\n");
+			Con_Printf ("Active Weapon #: %d\n", Host_ActiveWeapon_0_to_24_or_Neg1() + 1 );
+
 			Con_Printf ("\nType \"copy ents\" to copy entities to clipboard\n\n");
 		}
 		else

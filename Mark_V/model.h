@@ -515,8 +515,8 @@ void GameHacks_InitModelnames (void);
 
 #define VENTILLIATION_WIND_COUNT_10			10
 #define COLOR_SPARK_20						20
-#define COLOR_EXPLOSION_225					225
-#define COLOR_UNKNOWN_BLOOD_73				73 // Unused?
+#define COLOR_EXPLOSION_BLOOD_225			225		// Barrel and lightning gun
+#define COLOR_UNKNOWN_BLOOD_73				73		// Unused?  NO.  It's used.
 #define COLOR_KNIGHTSPIKE_226				226
 #define KNIGHTSPIKE_COUNT_20				20
 

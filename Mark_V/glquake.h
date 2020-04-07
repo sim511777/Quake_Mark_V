@@ -68,8 +68,13 @@ void GL_SetupState (void);
 
 extern cbool envmap; // don't draw viewmodel during this
 
+#define MAX_CROSSHAIRS_25 (MAX_EFFECTIVE_WEAPON_COUNT_25)
+
 extern gltexture_t *char_texture; // conchars
-extern gltexture_t *crosshair_texture; // crosshair
+extern gltexture_t *crosshair_weapon_textures[MAX_CROSSHAIRS_25]; // crosshair
+extern int crosshair_weapon_textures_found;
+
+extern gltexture_t *crosshair_default_texture;
 extern float load_subdivide_size; //johnfitz -- remember what subdivide_size value was when this map was loaded
 
 
@@ -189,6 +194,7 @@ cbool R_SkinTextureChanged (entity_t *cur_ent); // Baker: Colored dead bodies an
 gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent);
 
 
+cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname);
 // Baker: For drawing a simple texture, like a crosshair texture.
 // Crosshair texture must be named /gfx/crosshair.tga
 void Draw_GLTexture (gltexture_t *tx, float x0, float y0, float x1, float y1);

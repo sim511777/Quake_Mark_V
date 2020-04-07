@@ -200,6 +200,24 @@ Point3D R_SurfCenter (msurface_t *surf)
 	return center;
 }
 
+cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname)
+{
+	cbool Is_Texture_Prefix (const char *texturename, const char *prefixstring);
+
+	if (vid.direct3d)
+		return false; // Not supported right now.
+	
+	if (Is_Texture_Prefix (txname, gl_texprefix_mirror.string) && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME)) {
+		return true; // id1 gamedir
+	}
+	
+	if (Is_Texture_Prefix (txname, "mirror_")) {
+		return true;
+	}
+
+	return false;
+}
+
 /*
 ===============
 R_NewMap_Local

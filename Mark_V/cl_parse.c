@@ -1207,7 +1207,7 @@ void CL_ParseStatic (int version) //johnfitz -- added a parameter
 #endif
 
 	ent = (entity_t *) Hunk_Alloc (sizeof(entity_t));  // Feb 4 2016 - static ents on hunk
-	cl.num_statics++;
+	cl.num_statics ++;
 	CL_ParseBaseline (ent, version); //johnfitz -- added second parameter
 
 // copy it to the current state
@@ -1999,6 +1999,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 					Con_DWarning ("%i static entities exceeds standard limit of 128.\n", cl.num_statics);
 				R_CheckEfrags ();
 			}
+
 			//johnfitz
 			CL_SignonReply ();
 			break;

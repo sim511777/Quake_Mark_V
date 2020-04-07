@@ -7,9 +7,12 @@
 #include <windows.h> // Why?  APIENTRY?
 #endif
 
-#ifdef DIRECT3D_WRAPPER
-#include "dx8_mh_wrapper.h"
-#endif // DIRECT3D_WRAPPER
+#ifdef DIRECT3D8_WRAPPER // dx8 - The #include for the wrapper
+	#include "dx8_mh_wrapper.h"
+#endif // DIRECT3D8_WRAPPER
+#ifdef DIRECT3D9_WRAPPER // dx9 - The #include for the wrapper
+	#include "dx9_mh_wrapper.h"
+#endif // DIRECT3D9_WRAPPER
 
 
 extern void (APIENTRY *eglAlphaFunc) (GLenum func, GLclampf ref);

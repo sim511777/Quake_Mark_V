@@ -48,9 +48,9 @@ void f (void)
 	build.renderer = renderer_software;
 #endif // GLQUAKE
 
-#ifdef DIRECT3D_WRAPPER
-	build.direct3d = true;
-#endif // DIRECT3D_WRAPPER --- Otherwise it is false
+//#ifdef DIRECT3DX_WRAPPER // This code is commented out.  Possibly endangered.
+//	build.direct3d = true;
+//#endif // DIRECT3DX_WRAPPER --- Otherwise it is false
 
 #ifdef SUPPORTS_MP3
 	build.music_mp3 = true;

@@ -700,10 +700,8 @@ void TexMgr_RecalcWarpImageSize (void)
 	gltexture_t *glt;
 	byte *dummy;
 
-#ifdef DIRECT3D_WRAPPER
-	if (vid.direct3d)
+	if (vid.direct3d == 8) // DIRECT3D8_WRAPPER
 		return;
-#endif // DIRECT3D_WRAPPER
 
 	//
 	// find the new correct size
@@ -726,7 +724,7 @@ void TexMgr_RecalcWarpImageSize (void)
 	// resize the textures in opengl
 	//
 
-	if (!vid.direct3d)
+	if (vid.direct3d != 8 /*vid.direct3d*/ )
 	{
 		mark = Hunk_LowMark();
 		dummy = (byte *) Hunk_AllocName (gl_warpimagesize*gl_warpimagesize * RGBA_4, "warpbuf");
@@ -1839,6 +1837,10 @@ gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const cha
 	// copy data
 	glt->owner = owner;
 	c_strlcpy (glt->name, name);
+
+	if (glt->name[0] == 0)
+		glt->name[0] = glt->name[0];
+
 	glt->width = width;
 	glt->height = height;
 	glt->flags = flags;

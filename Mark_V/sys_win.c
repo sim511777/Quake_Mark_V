@@ -204,7 +204,7 @@ void System_Error (const char *fmt, ...)
 
 	case false:
 
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Temp maybe for Direct3D 9.  Possibly.  Relates to TOPMOST.  Must determine if we can detect scenario
 		// Baker: Direct3D hides popups, although this assumes window is setup which might be bad assumption
 		if (vid.initialized && vid.screen.type == MODE_FULLSCREEN)
 		{
@@ -212,7 +212,7 @@ void System_Error (const char *fmt, ...)
 			Input_Shutdown ();
 			System_Process_Messages_Sleep_100 ();
 		}
-#endif // DIRECT3D_WRAPPER
+#endif // DIRECT3DX_WRAPPER ... TopMost.
 
 		switch (in_sys_error0)
 		{
@@ -327,11 +327,11 @@ void System_Init (void)
 	}
 #pragma message ("Baker: I'm not sure we can run on Windows 98 any more or even Windows 2000")
 
-#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D_WRAPPER)
+#ifdef GLQUAKE_RENDERER_SUPPORT
 	// This is the "starting Quake" dialog which we abuse for multisample
 	if (!isDedicated)
 		VID_Local_Startup_Dialog ();
-#endif // GLQUAKE_RENDERER_SUPPORT + ! DIRECT3D_WRAPPER
+#endif // GLQUAKE_RENDERER_SUPPORT
 
 	if (!(sysplat.tevent = CreateEvent(NULL, FALSE, FALSE, NULL)))
 		System_Error ("Couldn't create event");

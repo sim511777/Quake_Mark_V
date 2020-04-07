@@ -55,7 +55,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;DIRECT3D_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -451,7 +451,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;DIRECT3D_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
 				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
@@ -699,6 +699,206 @@
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
 				OutputFile=".\Object_Files\Debug_MSVC_2008_SDLQuake/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="DX9 Debug|Win32"
+			OutputDirectory=".\Object_Files\Debug_MSVC_2008_DX9Quake"
+			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_DX9Quake"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthreads-w32-2-9-1-release/include"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				RuntimeLibrary="0"
+				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
+				ObjectFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
+				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\DirectMark5_debug_vs2008.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
+				GenerateManifest="false"
+				IgnoreDefaultLibraryNames="libci.lib"
+				DelayLoadDLLs="libcurl.dll"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/DirectMark5_debug.pdb"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="DX9 Release|Win32"
+			OutputDirectory=".\Object_Files\Release_MSVC_2008_DX9Quake"
+			IntermediateDirectory=".\Object_Files\Release_MSVC_2008_DX9Quake"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="0"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthread-static-msvc2010/include"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_DX9Quake/"
+				ObjectFile=".\Object_Files\Release_MSVC_2008_DX9Quake/"
+				ProgramDataBaseFileName=".\Object_Files\Release_MSVC_2008_DX9Quake/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\DirectMark5.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthread-static-msvc2010/lib"
+				IgnoreDefaultLibraryNames="libci.lib"
+				DelayLoadDLLs="libcurl.dll"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -5431,6 +5631,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\d_draw.S"
@@ -5488,6 +5704,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5549,6 +5781,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\d_parta.S"
@@ -5606,6 +5854,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5667,6 +5931,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\d_spr8.S"
@@ -5724,6 +6004,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5785,6 +6081,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\math.S"
@@ -5844,6 +6156,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="quakeasm.h"
@@ -5882,6 +6210,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="SDL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -5947,6 +6291,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\r_aliasa.S"
@@ -6004,6 +6364,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6065,6 +6441,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\r_edgea.S"
@@ -6122,6 +6514,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6183,6 +6591,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\surf16.S"
@@ -6240,6 +6664,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6301,6 +6741,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\sys_wina.S"
@@ -6358,6 +6814,22 @@
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6436,6 +6908,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_fill.c"
@@ -6506,6 +6994,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6580,6 +7084,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_modech.c"
@@ -6650,6 +7170,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6724,6 +7260,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_polyse.c"
@@ -6794,6 +7346,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6868,6 +7436,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_sky.c"
@@ -6938,6 +7522,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -7012,6 +7612,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_surf.c"
@@ -7082,6 +7698,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -7156,6 +7788,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_zpoint.c"
@@ -7226,6 +7874,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -8408,6 +9072,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_iface.h"
@@ -8452,6 +9132,22 @@
 							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="d_local.h"
@@ -8490,6 +9186,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="SDL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -8568,6 +9280,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_aclip.c"
@@ -8638,6 +9366,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -8712,6 +9456,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_bsp.c"
@@ -8782,6 +9542,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -8856,6 +9632,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_edge.c"
@@ -8928,6 +9720,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_local.h"
@@ -8966,6 +9774,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="SDL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9045,6 +9869,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_misc.c"
@@ -9117,6 +9957,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_shared.h"
@@ -9155,6 +10011,22 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="SDL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9233,6 +10105,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="r_sprite.c"
@@ -9303,6 +10191,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -9377,6 +10281,22 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="vid_wsoft.c"
@@ -9447,6 +10367,22 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -11537,6 +12473,82 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="Ref DX9"
+				>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_framebuffer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_gammaandcontrast.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_geometry.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_glcontext.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_internal.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_mathlib.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_matrix.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_publicapi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_publicapi.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_readme.txt"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_states.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_texenv.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_teximage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_unimplemented.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_vertexarray.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_vertexshader.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\d3d9_viewport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Direct3D_9_MH\dx9_mh_wrapper.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -11678,6 +12690,22 @@
 					<Tool
 						Name="VCResourceCompilerTool"
 						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>

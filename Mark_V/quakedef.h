@@ -34,8 +34,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.20
-#define	ENGINE_BUILD			1020			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_VERSION			1.21
+#define	ENGINE_BUILD			1021			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -82,7 +82,10 @@ extern fn_set_t qfunction_set;
 	#define QUAKE_SLEEP_TIME 50 // Baker: Software renderer without asm can eat up cpu
 #endif
 
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3D9_WRAPPER // dx9 - engine name (DirectX 9)
+	#define TEMP_BASE_NAME "DirectX 9 " ENGINE_FAMILY_NAME
+	#define ENGINE_SHOT_PREFIX "mark_v_"
+#elif DIRECT3D8_WRAPPER // dx8 - engine name (DirectX 8)
 	#define TEMP_BASE_NAME "DirectX 8 " ENGINE_FAMILY_NAME
 	#define ENGINE_SHOT_PREFIX "mark_v_"
 #elif defined(GLQUAKE)
@@ -100,7 +103,9 @@ extern fn_set_t qfunction_set;
 	#define ENGINE_NAME	  TEMP_BASE_NAME
 #endif
 
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3D9_WRAPPER // dx9 - renderer name (DX9)
+	#define RENDERER_NAME "DX9"
+#elif defined(DIRECT3D8_WRAPPER) // dx8 - renderer name (DX8)
 	#define RENDERER_NAME "DX8"
 #elif defined(GLQUAKE)
 	#define RENDERER_NAME "GL"

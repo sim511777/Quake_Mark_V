@@ -601,7 +601,8 @@ void Draw_LoadPics (void)
 		int n;
 
 		//c_strlcpy (limit_path, com_filepath);
-		data = Image_Load_Limited ("/gfx/crosshairs/default", &fwidth, &fheight, NULL); //limit_path);//, mod->loadinfo.searchpath);
+		c_strlcpy (current_filename, "/gfx/crosshairs/default");
+		data = Image_Load_Limited (current_filename, &fwidth, &fheight, NULL); //limit_path);//, mod->loadinfo.searchpath);
 		if (data) {
 			crosshair_default_texture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, current_filename, fwidth, fheight, SRC_RGBA, data, current_filename,
 										  0, TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_NOPICMIP); //johnfitz -- TexMgr

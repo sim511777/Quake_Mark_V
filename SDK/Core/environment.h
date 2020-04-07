@@ -148,6 +148,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DEBUG
 #endif // DEBUG Consistency
 
+#ifdef DIRECT3D8_WRAPPER // dx8 - Define DIRECT3D_WRAPPER_VERSION 8
+	#define DIRECT3D_WRAPPER_VERSION 8
+#endif
+
+#ifdef DIRECT3D9_WRAPPER // dx9 - Define DIRECT3D_WRAPPER_VERSION
+	#define DIRECT3D_WRAPPER_VERSION 9
+#endif
+
+#ifndef DIRECT3D_WRAPPER_VERSION
+	#define DIRECT3D_WRAPPER_VERSION 0
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //  GCC compile attributes, not needed for CLANG and not supported in MSVC6

@@ -20,8 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#ifdef DIRECT3D_WRAPPER
-
+#ifdef DIRECT3D8_WRAPPER // dx8 - compile or do not compile wrapper code
 
 // Baker:
 #define DX8_USE_POLYGON_OFFSET 0 // Baker: KEEP THIS OFF.  Shows seams, secret doors, etc.
@@ -3665,7 +3664,7 @@ PROC WINAPI d3dmh_wglGetProcAddress (LPCSTR s)
 
 #pragma warning (pop)
 
-#endif	// DIRECT3D_WRAPPER
+#endif	// DIRECT3D8_WRAPPER
 
 
 

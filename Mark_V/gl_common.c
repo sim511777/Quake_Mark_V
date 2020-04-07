@@ -323,7 +323,8 @@ void GL_Evaluate_Renderer (void)
 	GL_CheckExtensions (); //johnfitz
 
 	//johnfitz -- intel video workarounds from Baker
-	if (!strcmp(renderer.gl_vendor, "Intel"))
+	//if (!strcmp(renderer.gl_vendor, "Intel"))
+	if (strstr(renderer.gl_vendor, "Intel")) // MH says
 	{
 		safeprintf_fn ("Intel Display Adapter detected\n");
 		renderer.isIntelVideo = true;
@@ -331,7 +332,8 @@ void GL_Evaluate_Renderer (void)
 	//johnfitz
 
 	//johnfitz -- confirm presence of stencil buffer
-	if (vid.direct3d)
+	//if (vid.direct3d)
+	if (vid.direct3d == 8)
 		Con_DPrintf ("Stencil not supported by Direct3D wrapper at this time\n");
 	else if (COM_CheckParm("-nostencil"))
 		warn_fn ("Stencil disabled at command line\n"); // Stencil will be 0.

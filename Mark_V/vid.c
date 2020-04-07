@@ -308,10 +308,8 @@ void VID_AppActivate(cbool fActive, cbool minimize, cbool hide)
 			VID_Local_Suspend (false);
 			vid.wassuspended = false;
 
-#ifdef DIRECT3D_WRAPPER
-		Sbar_Changed ();
-#endif // DIRECT3D_WRAPPER
-
+			if (vid.direct3d) // I can't recall why we need special treatment for Direct3D here ... but not messing with it now.
+				Sbar_Changed ();
 		}
 	}
 
@@ -1076,12 +1074,9 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
 		VID_Resize_Think (); // Optional resize window on-the-fly
 #endif // ! GLQUAKE_RESIZABLE_WINDOW
 
-#ifdef DIRECT3D_WRAPPER
-//#pragma message ("Baker: I would like to remove this.  I use it for ALT-TAB and the Direct3D to refresh the status bar")
-	vid.numpages = 4;
-#else
-	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
-#endif
+	// Baker: For Direct3D = 4 ... I would like to remove this.  I use it for ALT-TAB and the Direct3D to refresh the status bar
+	vid.numpages = vid.direct3d ? 4  /*d3d*/ : /*opengl -> */ (gl_triplebuffer.value) ? 3 : 2; 
+
 	sbar_drawn = 0;
 
 // Baker: Commented out client canvas centering for GL.

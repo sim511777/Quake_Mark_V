@@ -52,7 +52,7 @@ void VID_Local_Window_PreSetup (void)
 		System_Error ("Couldn't register window class");
 
 #pragma message ("Baker: See if we can get multisample to work for Direct3D")
-#ifndef DIRECT3D_WRAPPER
+
 	 // Baker: Multisample support
 	if (sysplat.hwnd_dialog)
 	{
@@ -94,7 +94,6 @@ void VID_Local_Window_PreSetup (void)
 		sysplat.hwnd_dialog = NULL;
 	}
 	// Baker: End multisample support
-#endif // ! DIRECT3D_WRAPPER
 }
 
 vmode_t VID_Local_GetDesktopProperties (void)
@@ -123,11 +122,10 @@ vmode_t VID_Local_GetDesktopProperties (void)
 
 cbool VID_Local_Vsync_Init (const char *gl_extensions_str)
 {
-#ifdef DIRECT3D_WRAPPER
-	return true;
-#else
-	if (strstr(gl_extensions_str, "GL_EXT_swap_control") || strstr(gl_extensions_str, "GL_WIN_swap_hint"))
+	if (vid.direct3d == 8) // dx8 - vsync handled specially, automatically available, but not used through functions and requires vid_restart
+		return true; 
 
+	if (strstr(gl_extensions_str, "GL_EXT_swap_control") || strstr(gl_extensions_str, "GL_WIN_swap_hint"))
 	{
 		sysplat.wglSwapIntervalEXT = (SETSWAPFUNC) ewglGetProcAddress("wglSwapIntervalEXT");
 		sysplat.wglGetSwapIntervalEXT = (GETSWAPFUNC) ewglGetProcAddress("wglGetSwapIntervalEXT");
@@ -137,12 +135,13 @@ cbool VID_Local_Vsync_Init (const char *gl_extensions_str)
 				return true;
 	}
 	return false;
-#endif
 }
 
 void VID_Local_Vsync (void)
 {
-#ifndef DIRECT3D_WRAPPER
+	if (vid.direct3d == 8) // dx8 - vsync only through mode switch
+		return; // Can only be performed on mode switch
+
 	if (renderer.gl_swap_control)
 	{
 		if (vid_vsync.value)
@@ -156,15 +155,16 @@ void VID_Local_Vsync (void)
 				Con_Printf ("VID_Vsync_f: failed on wglSwapIntervalEXT\n");
 		}
 	}
-#endif // DIRECT3D_WRAPPER
 }
 
 void VID_Local_Vsync_f (cvar_t *var)
 {
-#ifdef DIRECT3D_WRAPPER
-	if (host_post_initialized)
-		Con_Printf ("Direct3D: vid_vsync takes effect after mode change\n          vsync only works for fullscreen\n");
-#endif // DIRECT3D_WRAPPER
+
+	if (vid.direct3d == 8) { // dx8 - mode switch handled specially
+		if (host_post_initialized)
+			Con_Printf ("Direct3D: vid_vsync takes effect after mode change\n          vsync only works for fullscreen\n");
+	}
+
 	VID_Local_Vsync ();
 }
 
@@ -234,7 +234,7 @@ void VID_Local_Resize_Act (void)
 	vid.client_window.width = vid.client_window.right - vid.client_window.left;
 	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
 
-#ifndef DIRECT3D_WRAPPER
+#ifndef DIRECT3DX_WRAPPER // Temp!
 	if (1 /*COM_CheckParm ("-resizable")*/)
 	{
 		vid.screen.width = vid.client_window.width;
@@ -242,7 +242,7 @@ void VID_Local_Resize_Act (void)
 		vid.consize_stale = true;
 		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.
 	}
-#endif // DIRECT3D_WRAPPER
+#endif // DIRECT3DX_WRAPPER  // Temp!
 }
 // End resize window on the fly
 
@@ -300,11 +300,29 @@ cbool VID_Local_SetMode (int modenum)
 	HDC wglHDC 		= restart ? ewglGetCurrentDC() : 0;
 	HGLRC wglHRC 	= restart ? ewglGetCurrentContext() : 0;
 
+#if 1 // def DIRECT3D9_WRAPPER // dx9 - an alternate resize that may not be friendly to Windows 8 or Windows 10 but I don't know for sure.  At one point in time, Windows 8 was very stupid about changing window attributes without destroying the window, did SP1 change that?  Is Windows 10 affected?
+	if (restart) {
+		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
+		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.
+		if (vid.modelist[modenum].type == MODE_WINDOWED)
+			eChangeDisplaySettings (NULL, 0);
+
+#pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
+		Direct3D9_ResetMode (vid.modelist[modenum].width, vid.modelist[modenum].height, vid.desktop.bpp, (vid.modelist[modenum].type == MODE_WINDOWED) );
+		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
+		return reuseok; // Reuseok!
+	}
+
+
+#endif // DIRECT3D9_WRAPPER
+
+
+
 // Baker: begin resize window on the fly
-#ifndef DIRECT3D_WRAPPER
+#ifndef DIRECT3DX_WRAPPER // Temp!
 	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
 		WindowStyle = WindowStyle | WS_SIZEBOX;
-#endif // DIRECT3D_WRAPPER
+#endif // DIRECT3DX_WRAPPER // Temp!
 
 // End resize window on the fly
 	if (restart)
@@ -354,11 +372,11 @@ cbool VID_Local_SetMode (int modenum)
 
 	WIN_SetupPixelFormat (sysplat.draw_context);
 
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 	Direct3D_SetVsync (vid_vsync.value); // Baker
 	Direct3D_SetFullscreen (vid.modelist[modenum].type == MODE_FULLSCREEN); // Baker
 	Direct3D_SetBPP (vid.desktop.bpp);
-#endif // DIRECT3D_WRAPPER
+#endif // DIRECT3DX_WRAPPER
 
 	if (wglHRC && (reuseok = ewglMakeCurrent (sysplat.draw_context, wglHRC)) == 0)
 	{
@@ -374,11 +392,11 @@ cbool VID_Local_SetMode (int modenum)
 		// Must create a context.
 		wglHRC = ewglCreateContext( sysplat.draw_context );
 
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 		Direct3D_SetVsync (vid_vsync.value); // Baker
 		Direct3D_SetFullscreen (vid.modelist[modenum].type == MODE_FULLSCREEN); // Baker
 		Direct3D_SetBPP (vid.desktop.bpp);
-#endif // DIRECT3D_WRAPPER
+#endif // DIRECT3DX_WRAPPER
 
 		if (!wglHRC)
 			System_Error ("Could not initialize GL (wglCreateContext failed).\n\nMake sure you in are 65535 color mode, and try running -window.");
@@ -402,13 +420,17 @@ cbool VID_Local_SetMode (int modenum)
 
 void VID_Local_SwapBuffers (void)
 {
-#ifdef DIRECT3D_WRAPPER
-	Direct3D_SwapBuffers ();
-#else
+#ifdef DIRECT3D8_WRAPPER // dx8 - call Direct3D_SwapBuffers instead of Windows Swap_Buffers
+	Direct3D_SwapBuffers (); // Add void param?  Add swapbuffers as a sysplat.function?
+#endif // DIRECT3D8_WRAPPER
+#ifdef DIRECT3D9_WRAPPER // dx9 - call Direct3D9_SwapBuffers instead of Windows Swap_Buffers
+	Direct3D9_SwapBuffers ();
+#endif // DIRECT3D9_WRAPPER
+#ifndef DIRECT3DX_WRAPPER
 	if (SwapBuffers (sysplat.draw_context) == 0)
 		if (vid.ActiveApp) // I'm getting this inappropriately after changing input for some reason.  Quit does a disconnect, which causes a screen update?
-			System_MessageBox ("Quake", "Swapbuffers failed");
-#endif // DIRECT3D_WRAPPER
+			System_MessageBox ("Quake", "Swapbuffers failed"); // I've not seen this happen in at least a month.  But since it doesn't happen, little harm in leaving it here, right?
+#endif // !DIRECT3DX_WRAPPER
 }
 
 
@@ -445,7 +467,7 @@ BOOL WIN_SetupPixelFormat (HDC hDC)
 	0,						// shift bit ignored
 	0,						// no accumulation buffer
 	0, 0, 0, 0, 			// accum bits ignored
-	32,						// 32-bit z-buffer
+	24,						// 32-bit z-buffer
 	8,						// 8-bit stencil buffer
 	0,						// no auxiliary buffer
 	PFD_MAIN_PLANE,			// main layer
@@ -453,7 +475,7 @@ BOOL WIN_SetupPixelFormat (HDC hDC)
 	0, 0, 0					// layer masks ignored
     };
     int pixelformat;
-	PIXELFORMATDESCRIPTOR  test; //johnfitz
+	PIXELFORMATDESCRIPTOR test; //johnfitz
 
 	if (!sysplat.multisamples)
 	{
@@ -528,20 +550,20 @@ int	arbMultisampleFormat	= 0;
 
 cbool WGLisExtensionSupported(const char *extension)
 {
-#ifndef DIRECT3D_WRAPPER
+//#if !defined(DIRECT3D_WRAPPER) && !defined(DIRECT3D9_WRAPPER)
 	const size_t extlen = strlen(extension);
 	const char *supported = NULL;
 	const char *p;
 
 	// Try To Use wglGetExtensionStringARB On Current DC, If Possible
-	PROC wglGetExtString = ewglGetProcAddress("wglGetExtensionsStringARB");
+	PROC PVT_wglGetExtString = ewglGetProcAddress("wglGetExtensionsStringARB");
 
-	if (wglGetExtString)
-		supported = ((char*(__stdcall*)(HDC))wglGetExtString)(wglGetCurrentDC());
+	if (PVT_wglGetExtString)
+		supported = ((char *(__stdcall*)(HDC))PVT_wglGetExtString)(ewglGetCurrentDC());
 
 	// If That Failed, Try Standard Opengl Extensions String
 	if (supported == NULL)
-		supported = (char*)eglGetString(GL_EXTENSIONS);
+		supported = (char *)PVT_wglGetExtString(GL_EXTENSIONS);
 
 	// If That Failed Too, Must Be No Extensions Supported
 	if (supported == NULL)
@@ -565,10 +587,10 @@ cbool WGLisExtensionSupported(const char *extension)
 		if ((p==supported || p[-1]==' ') && (p[extlen]=='\0' || p[extlen]==' '))
 			return true;															// Match
 	}
-#else
-	return false;
+//#else
+//	return false;
 
-#endif // DIRECT3D_WRAPPER
+//#endif // !DIRECT3D_WRAPPER && !DIRECT3D9_WRAPPER
 }
 
 // InitMultisample: Used To Query The Multisample Frequencies
@@ -680,6 +702,14 @@ int VID_Local_Gamma_Reset (void)
 // Baker: Starting Quake Dialog
 void VID_Local_Startup_Dialog (void)
 {
+	if (DIRECT3D_WRAPPER_VERSION != 0) {
+		// Multisample not supported in Direct 3D version.
+		Con_DebugLog ("Direct 3D version does not support multisample\n");
+		return;
+	}
+
+	// Baker: I think this is broke somehow.  Although doesn't matter that much.  Few situations that it would matter.
+
 	if (COM_CheckParm ("-nomultisample")) {
 		//Con_DPrintf ("Multisample disabled at command line\n"); // This is WAY TOO early.
 		return;

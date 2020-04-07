@@ -1030,10 +1030,10 @@ void Sky_DrawSky (void)
 	if (!level.sky)
 		return;
 
-#ifndef DIRECT3D_WRAPPER // Baker: Direct3D no stencil at this time :(
-// 	if (!frame.has_sky)
+//#ifndef DIRECT3D8_WRAPPER // Baker: Direct3D no stencil at this time :(
+// 	if (!frame.has_sky) // Investigate this
 //		return;
-#endif // DIRECT3D_WRAPPER
+//#endif // DIRECT3D8_WRAPPER
 
 	//in these special render modes, the sky faces are handled in the normal world/brush renderer
 	if (r_drawflat_cheatsafe || r_lightmap_cheatsafe )

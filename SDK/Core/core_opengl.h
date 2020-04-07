@@ -30,16 +30,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	#include <windows.h> // APIENTRY
 	#include "core_windows.h" // If it fucks up, then bail
 
-	#ifdef DIRECT3D_WRAPPER
+	#ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Need "gl_constants.h"
 		#include "gl_constants.h"
-	#endif // DIRECT3D_WRAPPER
+	#endif // DIRECT3DX_WRAPPER
 
-	#ifndef DIRECT3D_WRAPPER
+	#ifndef DIRECT3DX_WRAPPER
 		#include <GL/gl.h>
 		#include <GL/glu.h>
 		#pragma comment (lib, "opengl32.lib")
 		#pragma comment (lib, "glu32.lib")
-	#endif // ! DIRECT3D_WRAPPER
+	#endif // DIRECT3DX_WRAPPER
 
 	#undef APIENTRY
 	#define APIENTRY WINAPI

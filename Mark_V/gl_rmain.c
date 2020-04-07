@@ -362,7 +362,7 @@ void R_SetupView (void)
 	Fog_SetupFrame (); //johnfitz
 
 // Setup per frame variables
-	frame.oldwater = (gl_oldwater.value || vid.direct3d);
+	frame.oldwater = (gl_oldwater.value || (vid.direct3d == 8) );
 
 // build the transformation matrix for the given view angles
 	VectorCopy (r_refdef.vieworg, r_origin);

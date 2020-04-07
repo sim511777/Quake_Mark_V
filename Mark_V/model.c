@@ -787,10 +787,10 @@ void Mod_Load_Brush_Model_Texture (qmodel_t* ownermod, int bsp_texnum, texture_t
 			);
 			warp_texturename = va ("%s_warp", in_model_texturename);
 		}
-#ifdef DIRECT3D_WRAPPER
+#ifdef DIRECT3D8_WRAPPER // dx8 - no oldwater
 				// no warp updates
 				tx->update_warp = false;
-#else // NOT DIRECT3D_WRAPPER ...
+#else // NOT DIRECT3D8_WRAPPER ...
 		{
 			extern byte *hunk_base;
 
@@ -806,7 +806,7 @@ void Mod_Load_Brush_Model_Texture (qmodel_t* ownermod, int bsp_texnum, texture_t
 			);
 			tx->update_warp = true;
 		}
-#endif // ! DIRECT3D_WRAPPER
+#endif // ! DIRECT3D8_WRAPPER
 		// Warp texture we already cleared the hunk
 		break;
 
@@ -2041,7 +2041,7 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 			out->flags |= SURF_DRAWFENCE;
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		if (loadmodel->isworldmodel /* prevent healthboxes mirrors*/ && !vid.direct3d && GL_Mirrors_Is_TextureName_Mirror (out->texinfo->texture->name)) {
+		if (loadmodel->isworldmodel /* prevent healthboxes mirrors*/ && renderer.gl_stencilbits && GL_Mirrors_Is_TextureName_Mirror (out->texinfo->texture->name)) {
 			level.mirror = true;
 			out->flags |= SURF_DRAWMIRROR; // mirror_		// Yes submodel surfaces get marked here.
 		}

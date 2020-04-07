@@ -118,108 +118,9 @@ BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
 BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
 #endif
 
-#ifndef DIRECT3D_WRAPPER
+#ifdef DIRECT3D8_WRAPPER // dx8 - Hookup Open GL functions (or at least our equivalents)
 
-void VID_Renderer_Set_OpenGL (void)
-{
-	eglAlphaFunc            = glAlphaFunc;
-	eglBegin                = glBegin;
-	eglBindTexture          = glBindTexture;
-	eglBlendFunc            = glBlendFunc;
-	eglClear                = glClear;
-	eglClearColor           = glClearColor;
-	eglClearStencil         = glClearStencil;
-	eglColor3f              = glColor3f;
-	eglColor3fv             = glColor3fv;
-	eglColor3ubv            = glColor3ubv;
-	eglColor4f              = glColor4f;
-	eglColor4fv             = glColor4fv;
-	eglColor4ub             = glColor4ub;
-	eglColor4ubv            = glColor4ubv;
-	eglColorMask            = glColorMask;
-
-	eglCopyTexSubImage2D	= glCopyTexSubImage2D;
-
-	eglCullFace             = glCullFace;
-	eglDeleteTextures       = glDeleteTextures;
-	eglDepthFunc            = glDepthFunc;
-	eglDepthMask            = glDepthMask;
-	eglDepthRange           = glDepthRange;
-	eglDisable              = glDisable;
-	eglDrawBuffer           = glDrawBuffer;
-	eglEnable               = glEnable;
-	eglEnd                  = glEnd;
-	eglFinish               = glFinish;
-	eglFogf                 = glFogf;
-	eglFogfv                = glFogfv;
-	eglFogi                 = glFogi;
-	eglFogiv                = glFogiv;
-	eglFrontFace            = glFrontFace;
-	eglFrustum              = glFrustum;
-	eglGenTextures          = glGenTextures;
-	eglGetFloatv            = glGetFloatv;
-	eglGetIntegerv          = glGetIntegerv;
-	eglGetString            = glGetString;
-	eglGetTexImage          = glGetTexImage;
-	eglGetTexParameterfv    = glGetTexParameterfv;
-	eglHint                 = glHint;
-	eglLineWidth            = glLineWidth;
-	eglLoadIdentity         = glLoadIdentity;
-	eglLoadMatrixf          = glLoadMatrixf;
-	eglMatrixMode           = glMatrixMode;
-	eglMultMatrixf          = glMultMatrixf;
-	eglNormal3f             = glNormal3f;
-	eglOrtho                = glOrtho;
-	eglPixelStorei			= glPixelStorei;
-	eglPolygonMode          = glPolygonMode;
-	eglPolygonOffset        = glPolygonOffset;
-	eglPopMatrix            = glPopMatrix;
-	eglPushMatrix           = glPushMatrix;
-	eglReadBuffer           = glReadBuffer;
-	eglReadPixels           = glReadPixels;
-	eglRotatef              = glRotatef;
-	eglScalef               = glScalef;
-	eglScissor              = glScissor;
-	eglShadeModel           = glShadeModel;
-	eglStencilFunc          = glStencilFunc;
-	eglStencilOp            = glStencilOp;
-	eglTexCoord2f           = glTexCoord2f;
-	eglTexCoord2fv          = glTexCoord2fv;
-	eglTexEnvf              = glTexEnvf;
-	eglTexEnvi              = glTexEnvi;
-	eglTexImage2D           = glTexImage2D;
-	eglTexParameterf        = glTexParameterf;
-	eglTexParameteri        = glTexParameteri;
-	eglTexSubImage2D        = glTexSubImage2D;
-	eglTranslatef           = glTranslatef;
-	eglVertex2f             = glVertex2f;
-	eglVertex2fv            = glVertex2fv;
-	eglVertex3f             = glVertex3f;
-	eglVertex3fv            = glVertex3fv;
-	eglViewport             = glViewport;
-
-#ifdef _WIN32
-	ewglCreateContext       = wglCreateContext;
-	ewglDeleteContext       = wglDeleteContext;
-	ewglGetCurrentContext   = wglGetCurrentContext;
-	ewglGetCurrentDC        = wglGetCurrentDC;
-	ewglMakeCurrent         = wglMakeCurrent;
-	ewglGetProcAddress		= wglGetProcAddress;
-
-	eSetPixelFormat         = SetPixelFormat;
-
-	eChangeDisplaySettings  = ChangeDisplaySettings;
-#endif
-
-	vid.direct3d = 0;
-
-}
-
-#endif // ! DIRECT3D_WRAPPER
-
-#ifdef DIRECT3D_WRAPPER
-
-void VID_Renderer_Set_Direct3D (void)
+void VID_Renderer_Set_Render_Functions (void)
 {
 	eglAlphaFunc            = d3dmh_glAlphaFunc;
 	eglBegin                = d3dmh_glBegin;
@@ -310,21 +211,204 @@ void VID_Renderer_Set_Direct3D (void)
 	eChangeDisplaySettings  = ChangeDisplaySettings_FakeGL;
 #endif
 
-
-	vid.direct3d = 1;
 }
 
+#elif defined(DIRECT3D9_WRAPPER)
 
-#endif // DIRECT3D_WRAPPER
+void VID_Renderer_Set_Render_Functions (void)
+{
+	eglAlphaFunc            = d3d9mh_glAlphaFunc;
+	eglBegin                = d3d9mh_glBegin;
+	eglBindTexture          = d3d9mh_glBindTexture;
+	eglBlendFunc            = d3d9mh_glBlendFunc;
+	eglClear                = d3d9mh_glClear;
+	eglClearColor           = d3d9mh_glClearColor;
+	eglClearStencil         = d3d9mh_glClearStencil;
+	eglColor3f              = d3d9mh_glColor3f;
+	eglColor3fv             = d3d9mh_glColor3fv;
+	eglColor3ubv            = d3d9mh_glColor3ubv;
+	eglColor4f              = d3d9mh_glColor4f;
+	eglColor4fv             = d3d9mh_glColor4fv;
+	eglColor4ub             = d3d9mh_glColor4ub;
+	eglColor4ubv            = d3d9mh_glColor4ubv;
+	eglColorMask            = d3d9mh_glColorMask;
+
+	eglCopyTexSubImage2D	= d3d9mh_glCopyTexSubImage2D;
+
+	eglCullFace             = d3d9mh_glCullFace;
+	eglDeleteTextures       = d3d9mh_glDeleteTextures;
+	eglDepthFunc            = d3d9mh_glDepthFunc;
+	eglDepthMask            = d3d9mh_glDepthMask;
+	eglDepthRange           = d3d9mh_glDepthRange;
+	eglDisable              = d3d9mh_glDisable;
+	eglDrawBuffer           = d3d9mh_glDrawBuffer;
+	eglEnable               = d3d9mh_glEnable;
+	eglEnd                  = d3d9mh_glEnd;
+	eglFinish               = d3d9mh_glFinish;
+	eglFogf                 = d3d9mh_glFogf;
+	eglFogfv                = d3d9mh_glFogfv;
+	eglFogi                 = d3d9mh_glFogi;
+	eglFogiv                = d3d9mh_glFogiv;
+	eglFrontFace            = d3d9mh_glFrontFace;
+	eglFrustum              = d3d9mh_glFrustum;
+	eglGenTextures          = d3d9mh_glGenTextures;
+	eglGetFloatv            = d3d9mh_glGetFloatv;
+	eglGetIntegerv          = d3d9mh_glGetIntegerv;
+	eglGetString            = d3d9mh_glGetString;
+	eglGetTexImage          = d3d9mh_glGetTexImage;
+	eglGetTexParameterfv    = d3d9mh_glGetTexParameterfv;
+	eglHint                 = d3d9mh_glHint;
+	eglLineWidth            = d3d9mh_glLineWidth;
+	eglLoadIdentity         = d3d9mh_glLoadIdentity;
+	eglLoadMatrixf          = d3d9mh_glLoadMatrixf;
+	eglMatrixMode           = d3d9mh_glMatrixMode;
+	eglMultMatrixf          = d3d9mh_glMultMatrixf;
+	eglNormal3f             = d3d9mh_glNormal3f;
+	eglOrtho                = d3d9mh_glOrtho;
+	eglPixelStorei			= d3d9mh_glPixelStorei;
+	eglPolygonMode          = d3d9mh_glPolygonMode;
+	eglPolygonOffset        = d3d9mh_glPolygonOffset;
+	eglPopMatrix            = d3d9mh_glPopMatrix;
+	eglPushMatrix           = d3d9mh_glPushMatrix;
+	eglReadBuffer           = d3d9mh_glReadBuffer;
+	eglReadPixels           = d3d9mh_glReadPixels;
+	eglRotatef              = d3d9mh_glRotatef;
+	eglScalef               = d3d9mh_glScalef;
+	eglScissor              = d3d9mh_glScissor;
+	eglShadeModel           = d3d9mh_glShadeModel;
+	eglStencilFunc          = d3d9mh_glStencilFunc;
+	eglStencilOp            = d3d9mh_glStencilOp;
+	eglTexCoord2f           = d3d9mh_glTexCoord2f;
+	eglTexCoord2fv          = d3d9mh_glTexCoord2fv;
+	eglTexEnvf              = d3d9mh_glTexEnvf;
+	eglTexEnvi              = d3d9mh_glTexEnvi;
+	eglTexImage2D           = d3d9mh_glTexImage2D;
+	eglTexParameterf        = d3d9mh_glTexParameterf;
+	eglTexParameteri        = d3d9mh_glTexParameteri;
+	eglTexSubImage2D        = d3d9mh_glTexSubImage2D;
+	eglTranslatef           = d3d9mh_glTranslatef;
+	eglVertex2f             = d3d9mh_glVertex2f;
+	eglVertex2fv            = d3d9mh_glVertex2fv;
+	eglVertex3f             = d3d9mh_glVertex3f;
+	eglVertex3fv            = d3d9mh_glVertex3fv;
+	eglViewport             = d3d9mh_glViewport;
+
+#ifdef _WIN32
+	ewglCreateContext       = Direct3D9_wglCreateContext;
+	ewglDeleteContext       = Direct3D9_wglDeleteContext;
+	ewglGetCurrentContext   = Direct3D9_wglGetCurrentContext;
+	ewglGetCurrentDC        = Direct3D9_wglGetCurrentDC;
+	ewglMakeCurrent         = Direct3D9_wglMakeCurrent;
+	ewglGetProcAddress		= Direct3D9_wglGetProcAddress;
+
+	eSetPixelFormat         = Direct3D9_SetPixelFormat;
+
+	eChangeDisplaySettings  = Direct3D9_ChangeDisplaySettings;
+#endif // WIN32
+
+}
+
+#else // OpenGL
+
+void VID_Renderer_Set_Render_Functions (void)
+{
+	eglAlphaFunc            = glAlphaFunc;
+	eglBegin                = glBegin;
+	eglBindTexture          = glBindTexture;
+	eglBlendFunc            = glBlendFunc;
+	eglClear                = glClear;
+	eglClearColor           = glClearColor;
+	eglClearStencil         = glClearStencil;
+	eglColor3f              = glColor3f;
+	eglColor3fv             = glColor3fv;
+	eglColor3ubv            = glColor3ubv;
+	eglColor4f              = glColor4f;
+	eglColor4fv             = glColor4fv;
+	eglColor4ub             = glColor4ub;
+	eglColor4ubv            = glColor4ubv;
+	eglColorMask            = glColorMask;
+
+	eglCopyTexSubImage2D	= glCopyTexSubImage2D;
+
+	eglCullFace             = glCullFace;
+	eglDeleteTextures       = glDeleteTextures;
+	eglDepthFunc            = glDepthFunc;
+	eglDepthMask            = glDepthMask;
+	eglDepthRange           = glDepthRange;
+	eglDisable              = glDisable;
+	eglDrawBuffer           = glDrawBuffer;
+	eglEnable               = glEnable;
+	eglEnd                  = glEnd;
+	eglFinish               = glFinish;
+	eglFogf                 = glFogf;
+	eglFogfv                = glFogfv;
+	eglFogi                 = glFogi;
+	eglFogiv                = glFogiv;
+	eglFrontFace            = glFrontFace;
+	eglFrustum              = glFrustum;
+	eglGenTextures          = glGenTextures;
+	eglGetFloatv            = glGetFloatv;
+	eglGetIntegerv          = glGetIntegerv;
+	eglGetString            = glGetString;
+	eglGetTexImage          = glGetTexImage;
+	eglGetTexParameterfv    = glGetTexParameterfv;
+	eglHint                 = glHint;
+	eglLineWidth            = glLineWidth;
+	eglLoadIdentity         = glLoadIdentity;
+	eglLoadMatrixf          = glLoadMatrixf;
+	eglMatrixMode           = glMatrixMode;
+	eglMultMatrixf          = glMultMatrixf;
+	eglNormal3f             = glNormal3f;
+	eglOrtho                = glOrtho;
+	eglPixelStorei			= glPixelStorei;
+	eglPolygonMode          = glPolygonMode;
+	eglPolygonOffset        = glPolygonOffset;
+	eglPopMatrix            = glPopMatrix;
+	eglPushMatrix           = glPushMatrix;
+	eglReadBuffer           = glReadBuffer;
+	eglReadPixels           = glReadPixels;
+	eglRotatef              = glRotatef;
+	eglScalef               = glScalef;
+	eglScissor              = glScissor;
+	eglShadeModel           = glShadeModel;
+	eglStencilFunc          = glStencilFunc;
+	eglStencilOp            = glStencilOp;
+	eglTexCoord2f           = glTexCoord2f;
+	eglTexCoord2fv          = glTexCoord2fv;
+	eglTexEnvf              = glTexEnvf;
+	eglTexEnvi              = glTexEnvi;
+	eglTexImage2D           = glTexImage2D;
+	eglTexParameterf        = glTexParameterf;
+	eglTexParameteri        = glTexParameteri;
+	eglTexSubImage2D        = glTexSubImage2D;
+	eglTranslatef           = glTranslatef;
+	eglVertex2f             = glVertex2f;
+	eglVertex2fv            = glVertex2fv;
+	eglVertex3f             = glVertex3f;
+	eglVertex3fv            = glVertex3fv;
+	eglViewport             = glViewport;
+
+#ifdef _WIN32
+	ewglCreateContext       = wglCreateContext;
+	ewglDeleteContext       = wglDeleteContext;
+	ewglGetCurrentContext   = wglGetCurrentContext;
+	ewglGetCurrentDC        = wglGetCurrentDC;
+	ewglMakeCurrent         = wglMakeCurrent;
+	ewglGetProcAddress		= wglGetProcAddress;
+
+	eSetPixelFormat         = SetPixelFormat;
+
+	eChangeDisplaySettings  = ChangeDisplaySettings;
+#endif
+}
+
+#endif // ! DIRECT3DX_WRAPPER
+
 
 void VID_Renderer_Setup (void)
 {
+	VID_Renderer_Set_Render_Functions ();
 
-#ifdef DIRECT3D_WRAPPER
-	VID_Renderer_Set_Direct3D ();
-#else
-	VID_Renderer_Set_OpenGL ();
-#endif // DIRECT3D_WRAPPER
-
+	vid.direct3d = DIRECT3D_WRAPPER_VERSION;
 }
 

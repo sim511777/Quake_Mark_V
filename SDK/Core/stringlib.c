@@ -60,7 +60,7 @@ void String_Command_String_To_Argv (char *cmdline, int *numargc, char **argvz, i
 #endif
 		// Advance beyond spaces, white space, delete and non-ascii characters
 		// ASCII = chars 0-127, where chars > 127 = ANSI codepage 1252
-		while (*cmdline && (*cmdline <= 32 || 127 <= *cmdline ) )
+		while (*cmdline && (*cmdline <= SPACE_CHAR_32 || MAX_ASCII_PRINTABLE_126 <= *cmdline ) ) // Was 127, but 127 is DELETE
 			cmdline++;
 
 		switch (*cmdline)
@@ -89,7 +89,7 @@ void String_Command_String_To_Argv (char *cmdline, int *numargc, char **argvz, i
 			(*numargc)++;
 
 			// Advance until reach space, white space, delete or non-ascii
-			while (*cmdline && (32 < *cmdline && *cmdline < 127 ) )
+			while (*cmdline && (SPACE_CHAR_32 < *cmdline && *cmdline <= MAX_ASCII_PRINTABLE_126  ) ) // Was < 127
 				cmdline++;
 #if 0
 			len = cmdline - start;
@@ -165,10 +165,10 @@ int String_Does_Contain (const char *s, const char *s_find)
 
 
 // Short: Returns 1 if string contains spaces, otherwise returns 0
-// Notes: Offers no advantage over strchr(s, 32).
+// Notes: Offers no advantage over strchr(s, SPACECHAR_32).
 int String_Does_Contain_Spaces (const char *s)
 {
-	if (strchr(s, 32))
+	if (strchr(s, SPACE_CHAR_32))
 		return 1;
 
 	return 0;
@@ -404,7 +404,7 @@ int String_Edit_Insert_At (char* s_edit, size_t s_size, const char* s_insert, si
 }
 
 
-// Short: Removes all leading white-spaces (char < 32) from string except for spaces (char 32)
+// Short: Removes all leading white-spaces (char < SPACECHAR_32) from string except for spaces (char SPACECHAR_32)
 // Notes: None.
 char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit)
 {
@@ -417,7 +417,7 @@ char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all leading white-spaces (char <=32 ) from string including spaces (char 32)
+// Short: Removes all leading white-spaces (char <=SPACECHAR_32 ) from string including spaces (char SPACECHAR_32)
 // Notes: None.
 char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit)
 {
@@ -434,7 +434,7 @@ char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all trailing white-spaces (char < 32) from string except for spaces (char 32) by replacing with null characters
+// Short: Removes all trailing white-spaces (char < SPACECHAR_32) from string except for spaces (char SPACECHAR_32) by replacing with null characters
 // Notes: None.
 char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit)
 {
@@ -442,7 +442,7 @@ char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit)
 
 	for (j = len - 1; j >= 0; j --)
 	{
-		if (s_edit[j] < 32)
+		if (s_edit[j] < SPACE_CHAR_32)
 			s_edit[j] = 0;
 		else break;
 	}
@@ -451,7 +451,7 @@ char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all trailing white-spaces (char <= 32) from string including for spaces (char 32) by replacing with null characters
+// Short: Removes all trailing white-spaces (char <= SPACECHAR_32) from string including for spaces (char SPACECHAR_32) by replacing with null characters
 // Notes: None.
 char *String_Edit_RTrim_Whitespace_Including_Spaces (char *s_edit)
 {
@@ -459,7 +459,7 @@ char *String_Edit_RTrim_Whitespace_Including_Spaces (char *s_edit)
 
 	for (j = len - 1; j >= 0; j --)
 	{
-		if (s_edit[j] <= 32)
+		if (s_edit[j] <= SPACE_CHAR_32)
 			s_edit[j] = 0;
 		else break;
 	}
@@ -485,7 +485,7 @@ char *String_Edit_Remove_End (char *s_edit)
 char *String_Edit_RemoveTrailingSpaces (char *s_edit)
 {
 	ssize_t offset;
-	for (offset = strlen(s_edit) - 1; offset >= 0 && s_edit[offset] == 32; offset--)
+	for (offset = strlen(s_edit) - 1; offset >= 0 && s_edit[offset] == SPACE_CHAR_32; offset--)
 		s_edit[offset] = 0; // remove trailing spaces
 
 	return s_edit;
@@ -683,7 +683,7 @@ char *String_Edit_Unquote (char *s_edit)
 }
 
 
-// Short: Replaces all white-space characters (char < 32) with spaces (char 32)
+// Short: Replaces all white-space characters (char < SPACECHAR_32) with spaces (char SPACECHAR_32)
 // Notes: None.
 char *String_Edit_Whitespace_To_Space (char *s_edit)
 {
@@ -693,8 +693,8 @@ char *String_Edit_Whitespace_To_Space (char *s_edit)
 	for (cursor = s_edit; *cursor; cursor ++)
 	{
 		c = *cursor;
-		if (c < 32)
-			*cursor = 32;
+		if (c < SPACE_CHAR_32)
+			*cursor = SPACE_CHAR_32;
 	}
 
 	return s_edit;
@@ -927,7 +927,7 @@ char *String_Skip_Char (const char *s, int ch_findchar)
 }
 
 
-// Short: Returns a pointer beyond any leading white-space (char < 32) in a string except for spaces (char 32)
+// Short: Returns a pointer beyond any leading white-space (char < SPACECHAR_32) in a string except for spaces (char 32)
 // Notes: None.
 char *String_Skip_WhiteSpace_Excluding_Space (const char *s)
 {
@@ -1884,7 +1884,7 @@ lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args)
 		const char *pre_advance = cmdline;
 
 		// Advance beyond spaces, white space, delete and non-ascii characters
-		while (*cmdline && (*cmdline <= 32) )
+		while (*cmdline && (*cmdline <= SPACE_CHAR_32) )
 			cmdline ++;
 
 		// We advanced past spaces and hit terminator.  If we allow empty args, we have an empty final argument.
@@ -1924,7 +1924,7 @@ lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args)
 			line->args[line->count++] = cmdline;
 
 			// Advance until reach space, white space, delete or non-ascii
-			while (*cmdline && (*cmdline > 32) )
+			while (*cmdline && (*cmdline > SPACE_CHAR_32) )
 				cmdline++;
 		} // End of switch
 
@@ -2042,7 +2042,7 @@ typedef struct split_s
 	{
 		// Advance beyond spaces, white space, delete and non-ascii characters
 		// ASCII = chars 0-127, where chars > 127 = ANSI codepage 1252
-		while (*c && (*c <= 32 || 127 <= *c ) )
+		while (*c && (*c <= SPACECHAR_32 || MAX_ASCII_PRINTABLE_126 <= *c ) ) // Changed to 126, 127 is delete and cannot print
 			c ++;
 
 		if (*c == 0)
@@ -2087,7 +2087,7 @@ typedef struct split_s
 				break;
 
 			default:
-				if (*c <= 32 <  && 127 <= *c)
+				if (*c <= SPACECHAR_32 <  && MAX_ASCII_PRINTABLE_126 <= *c) // Changed to 126, 127 is delete and cannot print
 					end = c;
 			}
 			c ++;
@@ -2100,7 +2100,7 @@ typedef struct split_s
 				c++
 
 				// Advance until reach space, white space, delete or non-ascii
-				while (*cmdline && (32 < *cmdline && *cmdline < 127 ) )
+				while (*cmdline && (SPACECHAR_32 < *cmdline && *cmdline <= MAX_ASCII_PRINTABLE_126 ) )  // Changed from < 127 to <=126 for better clarity
 					cmdline++;
 			} // End of switch
 
@@ -2315,8 +2315,8 @@ char *String_C_Escape_Alloc (const char *s)
 		case '\?': StringAlloc_Cat (&str_o, "\\" "\?"); break;	// \? 	3F 	Question mark
 
 		default:
-			// 32 to 126 print normal ---  Somewhat inefficient
-			if (32 <= *s && *s <= 126)
+			// SPACECHAR_32 to MAX_ASCII_PRINTABLE_126 print normal ---  Somewhat inefficient
+			if (SPACE_CHAR_32 <= *s && *s <= MAX_ASCII_PRINTABLE_126)
 				StringAlloc_Catf (&str_o, "%c", *s);
 			else  StringAlloc_Catf (&str_o, "\\x%02x", (unsigned char)*s);  // otherwise hex encode
 			break;

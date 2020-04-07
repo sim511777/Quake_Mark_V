@@ -365,9 +365,9 @@ void SND_InitScaletable (void)
 {
 	int		i, j;
 
-	for (i=0 ; i<32 ; i++)
-		for (j=0 ; j<256 ; j++)
-			snd_scaletable[i][j] = ((signed char)j) * i * 8;
+	for (i = 0; i < 32 /*dimension 1 size*/; i++)
+		for (j = 0; j < 256 /*dimension 2 size*/; j++)
+			snd_scaletable[i][j] = ((signed char)j) * i * 8; // Baker: signed char evil lives here.  Watch out!
 }
 
 

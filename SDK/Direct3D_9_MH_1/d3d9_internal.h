@@ -524,7 +524,7 @@ public:
 	void ResetViewport (void);
 	void GetViewport (GLint *params);
 	void UpdateViewport (void);
-	void ScreenShot (const char *filename, D3DXIMAGE_FILEFORMAT format);
+	void ScreenShot (char *filename, D3DXIMAGE_FILEFORMAT format);
 
 	void SetupTexturesForDrawing (void);
 
@@ -556,10 +556,7 @@ public:
 
 	void PreReset (void);
 	void ResetDevice (void);
-	
-	void ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-	void ResizeWindow (int width, int height, int bpp); // Windowed resize on fly
-
+	void ResetMode (int width, int height, int bpp, BOOL windowed);
 	void PostReset (void);
 	void Sync (void);
 

@@ -316,7 +316,7 @@ double Movie_FrameTime (void)
 
 void Movie_UpdateScreen (void)
 {
-	int	size = clwidth * clheight * 3; // vid.screen.width * vid.screen.height * 3;
+	int	size = clwidth * clheight * RGB_3; // vid.screen.width * vid.screen.height * 3;
 #pragma message ("Baker: GL gets from ReadPixels, which can be specified.  WinQuake gets from vid.buffer")
 	byte	*buffer;
 

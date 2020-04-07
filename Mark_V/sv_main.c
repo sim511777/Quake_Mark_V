@@ -1044,7 +1044,7 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 	case gametype_hipnotic:
 	case gametype_quoth:
 	case gametype_rogue:
-		for (i = 0; i < 32; i++)
+		for (i = 0; i < INT32_BITCOUNT_32; i++)
 		{
 			if ( ((int)ent->v.weapon) & (1<<i) )
 			{

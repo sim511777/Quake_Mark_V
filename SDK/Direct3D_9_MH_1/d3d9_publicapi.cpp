@@ -122,20 +122,14 @@ void Direct3D9_ResetDevice (void)
 	d3d_Context->ResetDevice ();
 }
 
-void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style)
+void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed)
 {
-	d3d_Context->ResetMode (width, height, bpp, windowed, window_style, window_ex_style);
+	d3d_Context->ResetMode (width, height, bpp, windowed);
 }
 
- // Windowed resize on fly
-void Direct3D9_ResizeWindow (int width, int height, int bpp)
-{
-	d3d_Context->ResizeWindow (width, height, bpp);
-}
-
-void Direct3D9_ScreenShotBMP (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_BMP);}
-void Direct3D9_ScreenShotJPG (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_JPG);}
-void Direct3D9_ScreenShotPNG (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_PNG);}
+void Direct3D9_ScreenShotBMP (char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_BMP);}
+void Direct3D9_ScreenShotJPG (char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_JPG);}
+void Direct3D9_ScreenShotPNG (char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_PNG);}
 
 BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR *ppfd)
 {

@@ -109,7 +109,10 @@ void TexMgr_FreeTextures (unsigned int flags, unsigned int mask);
 void TexMgr_FreeTexturesForOwner (qmodel_t *owner);
 void TexMgr_NewGame (void);
 void TexMgr_Init (void);
+
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 void TexMgr_Gamma_Execute (float newvalue); // Clamped non-zero value
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
 
 // IMAGE LOADING
 gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const char *description_name, int width, int height, enum srcformat format,
@@ -138,7 +141,7 @@ extern gltexture_t *playertextures[MAX_COLORMAP_SKINS_1024];
 
 cbool TexMgr_Clipboard_Set (gltexture_t *glt);
 const char *TexMgr_TextureModes_ListExport (void); // Baker
-void TexMgr_RecalcWarpImageSize (void);
+void TexMgr_R_SetupView_RecalcWarpImageSize (void);
 
 
 

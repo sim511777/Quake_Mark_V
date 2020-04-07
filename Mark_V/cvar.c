@@ -1216,6 +1216,11 @@ void Cvar_AddCvars (voidfunc_t initializer)
 
 		switch (cur->dependency)
 		{
+		case DEP_D3D9:
+			if (DIRECT3D_WRAPPER_VERSION != 9)
+				continue; // d3d var in non-d3d
+			break;
+
 		case DEP_GL:
 			if (build.renderer != renderer_hardware)
 				continue; // gl var in software renderer

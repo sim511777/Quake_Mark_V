@@ -160,7 +160,7 @@ void context_t::ReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLe
 }
 
 
-void context_t::ScreenShot (const char *filename, D3DXIMAGE_FILEFORMAT format)
+void context_t::ScreenShot (char *filename, D3DXIMAGE_FILEFORMAT format)
 {
 	IDirect3DSurface9 *bbsurf;
 

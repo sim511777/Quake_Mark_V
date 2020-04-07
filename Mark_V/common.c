@@ -741,7 +741,7 @@ skipwhite:
 		/* commented out the check for ':' so that ip:port works */
 		if (c=='{' || c=='}'|| c=='(' || c==')' || c=='\'' /* || c == ':' */)
 			break;
-	} while (c>32);
+	} while (c > SPACE_CHAR_32);
 
 	com_token[len] = 0;
 	return data;
@@ -2450,7 +2450,7 @@ void COM_DeQuake_String (char *s_edit)
 //			int new_ch = dequake[ch];
 //			if (ch >= 128 || ch < 0)
 //				ch = ch;
-//			if (new_ch < 32 || new_ch >= 127)
+//			if (new_ch < SPACE_CHAR_32 || new_ch >= MAX_ASCII_DELETE_CHAR_127)
 //				new_ch = new_ch;
 
 			*s_edit = dequake[ch];

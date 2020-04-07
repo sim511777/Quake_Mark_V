@@ -316,7 +316,8 @@ void R_SetupGL (void)
 R_Clear -- johnfitz -- rewritten and gutted
 =============
 */
-void R_Clear (void)
+// Only R_SetupView
+static void R_SetupView_R_Clear (void)
 {
 	unsigned int clearbits;
 	
@@ -407,13 +408,13 @@ void R_SetupView (void)
 
 		if (vid.warp_stale == true)
 		{
-			TexMgr_RecalcWarpImageSize ();
+			TexMgr_R_SetupView_RecalcWarpImageSize ();
 			vid.warp_stale = false;
 		}
 
-		R_UpdateWarpTextures (); //johnfitz -- do this before R_Clear
+		R_SetupView_UpdateWarpTextures (); //johnfitz -- do this before R_Clear
 
-		R_Clear ();
+		R_SetupView_R_Clear ();
 
 		//johnfitz -- cheat-protect some draw modes
 		r_drawflat_cheatsafe = r_fullbright_cheatsafe = r_lightmap_cheatsafe = false;
@@ -510,7 +511,10 @@ void R_DrawPlayerModel (entity_t *ent) //Baker --- for mirrors
 		ent->coloredskin = R_TranslateNewModelSkinColormap (ent);
 
 	currententity = ent;
-#pragma message ("Baker: Is this working with alpha?  I have no reason to think it doesn't but there is a comment I left here")
+
+// Baker: Is this working with alpha?  I have no reason to think it doesn't but there is a comment I left here
+// Dec 2016: I'm pretty sure that it is.  Nothing undesirable has come up in testing.
+
 	switch (currententity->model->type)
 	{
 		case mod_alias:

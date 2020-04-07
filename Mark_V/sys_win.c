@@ -431,7 +431,7 @@ LRESULT CALLBACK WIN_MainWndProc (
 		if (wParam == SIZE_MINIMIZED)
 			return 0;
 
-		VID_Resize_Check ();
+		VID_Resize_Check (1);
 		return 0;
 #endif  // GLQUAKE_RESIZABLE_WINDOW // Baker: Optional resizable window
 

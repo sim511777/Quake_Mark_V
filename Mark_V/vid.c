@@ -226,10 +226,10 @@ void VID_Restart_f (void)
 
 #ifdef GLQUAKE_RESIZABLE_WINDOW
 // Baker: Optional resize on-the-fly start ...
-void VID_Resize_Check (void)
+void VID_Resize_Check (int resize_level) // 1 = resize, 2 = setmode
 {
 	// Perform resize check
-	vid.resized = true;
+	vid.resized = resize_level; // 1 or 2
 	vid.recalc_refdef = 1;
 	vid.warp_stale = true;
 }
@@ -721,7 +721,7 @@ void VID_Shutdown (void)
 	vid.initialized = false;
 }
 
-#ifdef GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 static float vid_texgamma_user_req = 0; // Set back to 0 if changed.  Solely belongs to vid
 #endif // GLQUAKE_RENDERER_SUPPORT
 
@@ -796,6 +796,17 @@ void VID_Gamma_Clock_Set (void)
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 
+void VID_Gamma_Contrast_Clamp_Cvars (void)
+{
+	// bound cvars to menu range
+	if (vid_contrast.value < VID_MIN_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST);
+	if (vid_contrast.value > VID_MAX_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST);
+	if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA);
+	if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
+
+
+}
+
 void VID_Gamma_Think (void)
 {
 	static cbool	hardware_is_active = false;
@@ -804,11 +815,15 @@ void VID_Gamma_Think (void)
 	static unsigned short ramps[768]; // restore gamma on exit and/or alt-tab
 	static	float	previous_gamma, previous_contrast;
 
+#if 1
+	VID_Gamma_Contrast_Clamp_Cvars ();
+#else
 	// bound cvars to menu range
 	if (vid_contrast.value < VID_MIN_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST);
 	if (vid_contrast.value > VID_MAX_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST);
 	if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA);
 	if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
+#endif
 
 	{
 #ifdef GLQUAKE_HARDWARE_GAMMA
@@ -829,6 +844,8 @@ void VID_Gamma_Think (void)
 		// 1) There is a hardware change
 		// 2) There is a color change *AND* hardware is active
 		// 3) If hardware is active and no color change but timer fires.
+
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 		if (vid_hardwaregamma_old != -1 && vid_hardwaregamma_old != !!vid_hardwaregamma.value) {
 			if (vid_hardwaregamma.value) {
 				// Hardware gamma is becoming active.
@@ -837,12 +854,14 @@ void VID_Gamma_Think (void)
 				// Texture gamma is becoming active
 				TexMgr_Gamma_Execute (vid_gamma.value);
 			}
-		} else if (vid_hardwaregamma_old == 0 && vid_texgamma_user_req) {
+		} 
+		else if (vid_hardwaregamma_old == 0 && vid_texgamma_user_req) {
 			// We were "texture gamma" last frame.  And the user has type "txgamma something" in the console.
 			Cvar_SetValueQuick (&vid_gamma, vid_texgamma_user_req); // Match up the gamma cvar
 			TexMgr_Gamma_Execute (vid_texgamma_user_req);
 			vid_texgamma_user_req = 0;
 		}
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
 
 		vid_hardwaregamma_old = !!vid_hardwaregamma.value; // We use this for the texture based control.
 		//if (vid_hardwaregamma_old != -1 && vid_hardwaregamma_old vid_hardwaregamma. &&  vid_texgamma_user_req) {
@@ -859,8 +878,10 @@ void VID_Gamma_Think (void)
 		//	TexMgr_Gamma_Execute (vid_gamma.value); // Turn on texture gamma by setting it.
 		//}
 
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 		if (vid_texgamma_user_req)
 			vid_texgamma_user_req = 0; // breakpoint me.  Should be hard to happen.
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
 
 #ifdef GLQUAKE_HARDWARE_GAMMA
 		if (!hardware_change && hardware_should_be_active && hardware_active_enforcer_time_clock)
@@ -1022,7 +1043,7 @@ cbool VID_CheckGamma (void)
 #ifdef GLQUAKE_RENDERER_SUPPORT
 void Vid_Gamma_TextureGamma_f (lparse_t *line)
 {
-
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 	float val = atof(line->args[1]), clamped_value = CLAMP(VID_MIN_POSSIBLE_GAMMA, val, VID_MAX_POSSIBLE_GAMMA);
 	extern float texmgr_texturegamma_current;
 
@@ -1054,7 +1075,7 @@ void Vid_Gamma_TextureGamma_f (lparse_t *line)
 	}
 	// Switch num parms texture gamma request end
 
-	
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT	
 }
 #endif // GLQUAKE_RENDERER_SUPPORT
 
@@ -1068,33 +1089,60 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
 {
 #ifdef GLQUAKE_RENDERER_SUPPORT
 
-#pragma message ("Make sure VID_Resize_Think does NOT do anything essential ever")
-#ifdef GLQUAKE_RESIZABLE_WINDOW
-	if (!vid.Minimized && vid.ActiveApp)
-		VID_Resize_Think (); // Optional resize window on-the-fly
-#endif // ! GLQUAKE_RESIZABLE_WINDOW
+	#pragma message ("Make sure VID_Resize_Think does NOT do anything essential ever")
+	#ifdef GLQUAKE_RESIZABLE_WINDOW
+		if (!vid.Minimized && vid.ActiveApp)
+			VID_Resize_Think (); // Optional resize window on-the-fly
+	#endif // ! GLQUAKE_RESIZABLE_WINDOW
 
-	// Baker: For Direct3D = 4 ... I would like to remove this.  I use it for ALT-TAB and the Direct3D to refresh the status bar
-	vid.numpages = vid.direct3d ? 4  /*d3d*/ : /*opengl -> */ (gl_triplebuffer.value) ? 3 : 2; 
+		// Baker: For Direct3D = 4 ... I would like to remove this.  I use it for ALT-TAB and the Direct3D to refresh the status bar
+		vid.numpages = vid.direct3d ? 4  /*d3d*/ : /*opengl -> */ (gl_triplebuffer.value) ? 3 : 2; 
 
-	sbar_drawn = 0;
+		sbar_drawn = 0;
 
-// Baker: Commented out client canvas centering for GL.
-// Center these on the client_canvas
-//	*x = (client_window.width - vid.screen.width) / 2;
-//	*y = (client_window.height - vid.screen.height) / 2;
+	// Baker: Commented out client canvas centering for GL.
+	// Center these on the client_canvas
+	//	*x = (client_window.width - vid.screen.width) / 2;
+	//	*y = (client_window.height - vid.screen.height) / 2;
 
-//	*width = vid.screen.width;
-//	*height = vid.screen.height;
-	*x = *y = 0;
-#ifdef GLQUAKE_RESIZABLE_WINDOW
-	*width = vid.client_window.width;
-	*height = vid.client_window.height;
-#else
-	*width = vid.screen.width;
-	*height = vid.screen.height;
-#endif // GLQUAKE_RESIZABLE_WINDOW
+	//	*width = vid.screen.width;
+	//	*height = vid.screen.height;
+		*x = *y = 0;
+	#ifdef GLQUAKE_RESIZABLE_WINDOW
+		if (vid.screen.type == MODE_FULLSCREEN) {
+			*width = vid.screen.width;
+			*height = vid.screen.height;
+		}
+		else {
+			*width = vid.client_window.width;
+			*height = vid.client_window.height;
+		}
+	#else
+		*width = vid.screen.width;
+		*height = vid.screen.height;
+	#endif // GLQUAKE_RESIZABLE_WINDOW
 
+	#if 1 //def DIRECT3D9_WRAPPER // Shader gamma.
+		{
+			static cbool old_shadergamma = 0; // If this is turned from on to off, we need to disable it.
+			cbool new_shadergamma = (vid_hardwaregamma.value == 0) && vid_shadergamma.value;
+
+			VID_Gamma_Contrast_Clamp_Cvars ();
+
+			if (!new_shadergamma) {
+			//if (new_shadergamma == 0 && old_shadergamma !=0) { // It hates this!
+				// Shut it down.
+				Direct3D9_SetupGammaAndContrast (1.0, 1.0);
+			}
+			else if (new_shadergamma) {
+				void VID_Gamma_Think (void); // Quick access
+			
+				if (!Direct3D9_SetupGammaAndContrast (vid_gamma.value, vid_contrast.value)) {
+					// TO DO: set up your fallback mode here
+				}
+			}
+		}
+	#endif // DIRECT3D9_WRAPPER
 
 #endif // GLQUAKE_RENDERER_SUPPORT
 

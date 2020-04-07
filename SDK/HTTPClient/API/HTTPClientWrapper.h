@@ -34,6 +34,10 @@
 
 // Kluge alert: redefining strncasecmp() as memicmp() for Windows.
 //
+
+#define ASCII_A_65					65
+#define ASCII_Z_90					90
+
 #define		strncasecmp			memicmp
 #define		strcasecmp			stricmp
 

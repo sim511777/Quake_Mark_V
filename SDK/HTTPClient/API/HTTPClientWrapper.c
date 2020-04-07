@@ -50,7 +50,7 @@ int HTTPWrapperToLower(int c)
     // +32
     if(HTTPWrapperIsAscii(c) > 0)
     {
-        if(c >= 65 && c <= 90)
+        if(c >= ASCII_A_65 && c <= ASCII_Z_90)
         {
             return (c + 32);
         }
@@ -73,7 +73,7 @@ int HTTPWrapperIsAlpha(int c)
 
     if(HTTPWrapperIsAscii(c) > 0)
     {
-        if( (c >= 97 && c <= 122) || (c >= 65 && c <= 90)) 
+        if( (c >= 97 /* 'a' */ && c <= 122 /* 'z' */) || (c >= ASCII_A_65 && c <= ASCII_Z_90)) 
         {
             return c;
         }

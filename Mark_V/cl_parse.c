@@ -1017,7 +1017,8 @@ void CL_ParseClientdata (void)
 	if (cl.items != i)
 	{	// set flash times
 		Sbar_Changed ();
-		for (j=0 ; j<32 ; j++)
+
+		for (j=0 ; j < INT32_BITCOUNT_32 ; j++)
 			if ( (i & (1<<j)) && !(cl.items & (1<<j)))
 				cl.item_gettime[j] = cl.time;
 
@@ -1841,8 +1842,8 @@ void CL_ParseServerMessage (cbool *found_server_command)
 			// Baker: Remove control characters except for newlines
 			j = strlen (str);
 			for (i = 0; i < j; i++)
-				if (!str[i] == 10 && str[i] < 32)
-					str[i] = 32;
+				if (!str[i] == NEWLINE_CHAR_10 && str[i] < SPACE_CHAR_32)
+					str[i] = SPACE_CHAR_32;
 #endif // SUPPORTS_CUTSCENE_PROTECTION
 			if (str[0]) {
 				if (devstuffcmdprint.value) {

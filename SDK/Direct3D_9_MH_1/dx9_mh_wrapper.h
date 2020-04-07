@@ -356,11 +356,7 @@ BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESC
 // our fake CDS replacement
 LONG WINAPI Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags);
 
-void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-void Direct3D9_ResizeWindow (int width, int height, int bpp);
+void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed);
 void Direct3D9_SwapBuffers (void); // Baker
-
-void Direct3D9_ScreenShotPNG (const char *filename);
-BOOL Direct3D9_SetupGammaAndContrast (float gamma, float contrast);
 
 #endif // ! __DX9_MH_WRAPPER_H

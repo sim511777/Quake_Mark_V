@@ -1498,8 +1498,7 @@ LONG WINAPI Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags)
 void Direct3D9_SwapBuffers (void);
 
 // replacement for mode resets
-void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-void Direct3D9_ResizeWindow (int width, int height, int bpp);
+void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed);
 void Direct3D9_ResetDevice (void);
 
 // extra stencil op modes
@@ -2357,9 +2356,9 @@ void Direct3D9_ResetDevice (void);
 
 
 // native exports
-void Direct3D9_ScreenShotPNG (const char *filename);
-void Direct3D9_ScreenShotJPG (const char *filename);
-void Direct3D9_ScreenShotBMP (const char *filename);
+void Direct3D9_ScreenShotPNG (char *filename);
+void Direct3D9_ScreenShotJPG (char *filename);
+void Direct3D9_ScreenShotBMP (char *filename);
 
 
 BOOL Direct3D9_SetupGammaAndContrast (float gamma, float contrast);

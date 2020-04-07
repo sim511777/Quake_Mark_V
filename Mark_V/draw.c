@@ -260,7 +260,7 @@ void Draw_Character (int _x, int _y, int num)
 
 	num &= 255;
 
-	if (num == 32)
+	if (num == SPACECHAR_32)
 		return; // Don't waste time
 
 	if (y <= -8)
@@ -334,7 +334,7 @@ void Draw_String (int x, int y, const char *str)
 
 	while (*str)
 	{
-		if (*str != 32) //don't waste verts on spaces
+		if (*str != SPACECHAR_32) //don't waste verts on spaces
 		Draw_Character (x, y, *str);
 		str++;
 		x += 8;

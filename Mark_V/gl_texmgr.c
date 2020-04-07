@@ -520,6 +520,7 @@ void TexMgr_FreeTexturesForOwner (qmodel_t *owner)
 float texmgr_texturegamma_exec = 0; // Set back to 0 if changed
 float texmgr_texturegamma_current = -1.0;
 
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 void TexMgr_Gamma_Execute (float newvalue) // Don't give us a 0
 {
 //    return;
@@ -542,6 +543,8 @@ void TexMgr_Gamma_Execute (float newvalue) // Don't give us a 0
 //	Cbuf_AddText ("texreload\n");
 	Con_SafePrintf ("Texture gamma applied %g\n", texmgr_texturegamma_current ? texmgr_texturegamma_current : 1);
 }
+
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
 
 
 
@@ -581,6 +584,7 @@ void TexMgr_Regamma (float gamma_level)
 	if (gamma_level == 1)
 		gamma_level = 0; // Default request may as well be no request.
 
+#ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
 	if (gamma_level) {
 		// If texture gamma is wanted, build and apply the gamma table.
 		byte *pal_edit;
@@ -593,6 +597,7 @@ void TexMgr_Regamma (float gamma_level)
 		}
 		gamma_level = 0;
 	}
+#endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
 
 	// Now do the other tables.
 
@@ -694,7 +699,7 @@ TexMgr_RecalcWarpImageSize -- called during init, and after a vid_restart
 choose safe warpimage size and resize existing warpimage textures
 =============
 */
-void TexMgr_RecalcWarpImageSize (void)
+void TexMgr_R_SetupView_RecalcWarpImageSize (void)
 {
 	int	mark;
 	gltexture_t *glt;
@@ -798,9 +803,9 @@ void TexMgr_Init (void)
 
 	//set safe size for warpimages
 	gl_warpimagesize = 0;
-	TexMgr_RecalcWarpImageSize ();
+	TexMgr_R_SetupView_RecalcWarpImageSize (); // This must be here.
 
-	vid.warp_stale = true;
+	vid.warp_stale = true; // <--- means warp needs recalculated.
 }
 
 /*
@@ -1651,14 +1656,16 @@ static void TexMgr_LoadImage8 (gltexture_t *glt, byte *data, byte *palette_data)
 
 	// Baker: This must be here for texture reload
 	// HACK HACK HACK -- taken from tomazquake
+#define SHOT1SID_WIDTH_32 32
+#define SHOT1SID_HEIGHT_32 32
 	if (strstr(glt->name, "shot1sid") &&
-		glt->width==32 && glt->height==32 &&
+		glt->width == SHOT1SID_WIDTH_32 && glt->height == SHOT1SID_HEIGHT_32 &&
 		CRC_Block(data, 1024) == 65393)
 	{
 		// This texture in b_shell1.bsp has some of the first 32 pixels painted white.
 		// They are invisible in software, but look really ugly in GL. So we just copy
 		// 32 pixels from the bottom to make it look nice.
-		memcpy (data, data + 32*31, 32);
+		memcpy (data, data + SHOT1SID_WIDTH_32 * 31, SHOT1SID_WIDTH_32);
 	}
 
 	// detect false alpha cases
@@ -2337,13 +2344,13 @@ static void TexMgr_Replacement_Save_f (void)
 		{
 			buffer = (byte *) malloc(glt->width*glt->height*RGBA_4);
 			eglGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-			Image_WriteTGA_QPath (tganame, buffer, glt->width, glt->height, 32, true);
+			Image_WriteTGA_QPath (tganame, buffer, glt->width, glt->height, BPP_32, true);
 		}
 		else
 		{
 			buffer = (byte *) malloc(glt->width*glt->height*RGB_3);
 			eglGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-			Image_WriteTGA_QPath (tganame, buffer, glt->width, glt->height, 24, true);
+			Image_WriteTGA_QPath (tganame, buffer, glt->width, glt->height, BPP_24, true);
 		}
 		free (buffer);
 	}

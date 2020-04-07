@@ -693,11 +693,11 @@ void Key_Console (int key)
 		break;
 	}
 
-	if (key < 32 || key > 127)
+	if (key < SPACE_CHAR_32 || key > MAX_ASCII_DELETE_CHAR_127 /* should be 126? */) // Baker: Is context scancode or ascii?  I'm not quite sure or both?  Future: Make it clear.  I think context is key_scancode_e  I think 127 is impossible here?
 		return;	// non printable
 
 	// If we had a selection, it is getting stomped now ...
-	Con_Undo_Point (1, key == 32);
+	Con_Undo_Point (1, key == SPACE_CHAR_32);
 
 	if (key_sellength)
 		Key_Console_Delete_Selection_Move_Cursor (workline);
@@ -1307,7 +1307,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 		if (!down)  return;		// Keyups only go to game.
 
 		// We are considering passing our scancode to the menu/console.  If it's ascii, don't!
-		if (in_range (32, scancode, 126))
+		if (in_range (SPACE_CHAR_32, scancode, MAX_ASCII_PRINTABLE_126))
 			return;
 
 		// Send this to console or menu
@@ -1319,7 +1319,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 	//
 	if (!scancode) {
 		// Control key come from scancode only.  Get out.
-		if (!in_range (32, ascii, 126))
+		if (!in_range (SPACE_CHAR_32, ascii, MAX_ASCII_PRINTABLE_126))
 			return;
 
 		// Quake exception.  Under normal cirumstances, this must bring up the menu.
@@ -1711,7 +1711,7 @@ int Key_Event (int key, cbool down, int special)
 		key = keyshift[key];
 
 	// Let CTRL + (key) combos through to the console/menu, even if we are instructed to filter.
-	if (special && Key_Ctrl_Down () && in_range(32, key, 126))
+	if (special && Key_Ctrl_Down () && in_range(SPACE_CHAR_32, key, MAX_ASCII_PRINTABLE_126))
 		special = 0;
 
 	switch (key_dest)

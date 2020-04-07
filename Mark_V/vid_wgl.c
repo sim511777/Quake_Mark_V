@@ -234,13 +234,29 @@ void VID_Local_Resize_Act (void)
 	vid.client_window.width = vid.client_window.right - vid.client_window.left;
 	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
 
-#ifndef DIRECT3DX_WRAPPER // Temp!
+#ifndef DIRECT3D8_WRAPPER // dx8 - Not for Direct3D 8! (-resizable)  Keep in mind we are in a windows source file! vid_wgl.c
 	if (1 /*COM_CheckParm ("-resizable")*/)
 	{
 		vid.screen.width = vid.client_window.width;
 		vid.screen.height = vid.client_window.height;
-		vid.consize_stale = true;
+		vid.consize_stale = true; // This triggers a cascade of recalculations in SCR_UpdateScreen
+		vid.warp_stale = true; // Means warp needs recalculated.
+#ifdef DIRECT3D9_WRAPPER 
+		Direct3D9_ResizeWindow (vid.screen.width, vid.screen.height, vid.desktop.bpp); //, true /*windowed*/);
+		
+		{
+			// Right now for Open GL, clwidth is the same as the client width.  
+			// In the software renderer, this is not the case if vid_stretch is used.
+			// OR ... if the window resolution exceeds the maximum WinQuake supported resolution (forced stretch).
+//			clwidth = vid.screen.width;
+//			clheight = vid.screen.height;
+		}
+//		vid.warp_stale = true; // 
+//		TexMgr_RecalcWarpImageSize (); <--- Mark V OpenGL doesn't seem to need this, I suspect Direct3D will.
+#endif // DIRECT3D9_WRAPPER
 		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.
+
+		
 	}
 #endif // DIRECT3DX_WRAPPER  // Temp!
 }
@@ -254,7 +270,7 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 	int w = RECT_WIDTH(window_rect), h = RECT_HEIGHT(window_rect);
 
 // Baker: begin resize window on the fly
-	VID_Resize_Check ();
+	VID_Resize_Check (2);
 // End resize window on the fly
 	if (sysplat.mainwindow)
 	{
@@ -300,6 +316,15 @@ cbool VID_Local_SetMode (int modenum)
 	HDC wglHDC 		= restart ? ewglGetCurrentDC() : 0;
 	HGLRC wglHRC 	= restart ? ewglGetCurrentContext() : 0;
 
+// Baker: begin resize window on the fly
+#ifndef DIRECT3D8_WRAPPER // dx8 - Not for DirectX 8 (-resizable) - Keep in mind we are in a windows source file.
+	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
+		WindowStyle = WindowStyle | WS_SIZEBOX;
+#endif // DIRECT3DX_WRAPPER // Temp!
+
+// End resize window on the fly
+
+
 #if 1 // def DIRECT3D9_WRAPPER // dx9 - an alternate resize that may not be friendly to Windows 8 or Windows 10 but I don't know for sure.  At one point in time, Windows 8 was very stupid about changing window attributes without destroying the window, did SP1 change that?  Is Windows 10 affected?
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
@@ -308,7 +333,7 @@ cbool VID_Local_SetMode (int modenum)
 			eChangeDisplaySettings (NULL, 0);
 
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
-		Direct3D9_ResetMode (vid.modelist[modenum].width, vid.modelist[modenum].height, vid.desktop.bpp, (vid.modelist[modenum].type == MODE_WINDOWED) );
+		Direct3D9_ResetMode (vid.modelist[modenum].width, vid.modelist[modenum].height, vid.desktop.bpp, (vid.modelist[modenum].type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
 		return reuseok; // Reuseok!
 	}
@@ -318,13 +343,6 @@ cbool VID_Local_SetMode (int modenum)
 
 
 
-// Baker: begin resize window on the fly
-#ifndef DIRECT3DX_WRAPPER // Temp!
-	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
-		WindowStyle = WindowStyle | WS_SIZEBOX;
-#endif // DIRECT3DX_WRAPPER // Temp!
-
-// End resize window on the fly
 	if (restart)
 		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT);
 
@@ -467,7 +485,7 @@ BOOL WIN_SetupPixelFormat (HDC hDC)
 	0,						// shift bit ignored
 	0,						// no accumulation buffer
 	0, 0, 0, 0, 			// accum bits ignored
-	24,						// 32-bit z-buffer
+	BPP_24,					// 32-bit z-buffer
 	8,						// 8-bit stencil buffer
 	0,						// no auxiliary buffer
 	PFD_MAIN_PLANE,			// main layer

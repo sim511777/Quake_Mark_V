@@ -365,6 +365,8 @@ CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gam
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
 #endif
 
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_D3D9 , vid_shadergamma           , "vid_shadergamma"         , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of shader gamma as primary gamma/contrast method when hardware is not being used."            )
+
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_multisample           , "vid_multisample"         , "0"       , CVAR_ARCHIVE      , VID_Local_Multisample_f,  "Enables costly edge smoothing (values: 0, 2, 4, 8)"          )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_contrast              , "contrast"                , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen contrast correction level."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_fullscreen            , "vid_fullscreen"          , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Set fullscreen preference. Requires vid_restart."            )

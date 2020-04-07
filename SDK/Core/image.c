@@ -446,11 +446,11 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 	targa_header.pixel_size = fgetc(fin);
 	targa_header.attributes = fgetc(fin);
 
-	if (targa_header.image_type!=2 && targa_header.image_type!=10)
+	if (targa_header.image_type != 2 && targa_header.image_type != 10)
 		Core_Error ("Image_LoadTGA: %s is not a type 2 or type 10 targa", description);
 
-	if (targa_header.colormap_type !=0 || (targa_header.pixel_size!=32 && targa_header.pixel_size!=24))
-		Core_Error ("Image_LoadTGA: %s is not a 24bit or 32bit targa", description);
+	if (targa_header.colormap_type != 0 || (targa_header.pixel_size!= BPP_32 && targa_header.pixel_size != BPP_24))
+		Core_Error ("Image_LoadTGA: %s is not a 24-bit or 32-bit targa", description);
 
 	columns = targa_header.width;
 	rows = targa_header.height;
@@ -477,7 +477,7 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 				unsigned char red,green,blue,alphabyte;
 				switch (targa_header.pixel_size)
 				{
-				case 24:
+				case BPP_24:
 					blue = Buf_GetC(buf);
 					green = Buf_GetC(buf);
 					red = Buf_GetC(buf);
@@ -486,7 +486,7 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 					*pixbuf++ = blue;
 					*pixbuf++ = 255;
 					break;
-				case 32:
+				case BPP_32:
 					blue = Buf_GetC(buf);
 					green = Buf_GetC(buf);
 					red = Buf_GetC(buf);
@@ -517,13 +517,13 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 				{
 					switch (targa_header.pixel_size)
 					{
-					case 24:
+					case BPP_24:
 						blue = Buf_GetC(buf);
 						green = Buf_GetC(buf);
 						red = Buf_GetC(buf);
 						alphabyte = 255;
 						break;
-					case 32:
+					case BPP_32:
 						blue = Buf_GetC(buf);
 						green = Buf_GetC(buf);
 						red = Buf_GetC(buf);
@@ -560,7 +560,7 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 					{
 						switch (targa_header.pixel_size)
 						{
-						case 24:
+						case BPP_24:
 							blue = Buf_GetC(buf);
 							green = Buf_GetC(buf);
 							red = Buf_GetC(buf);
@@ -569,7 +569,7 @@ unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_
 							*pixbuf++ = blue;
 							*pixbuf++ = 255;
 							break;
-						case 32:
+						case BPP_32:
 							blue = Buf_GetC(buf);
 							green = Buf_GetC(buf);
 							red = Buf_GetC(buf);

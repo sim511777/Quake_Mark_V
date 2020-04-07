@@ -32,6 +32,15 @@ void perrorf (const char *fmt, ...);
 
 char *va (const char *format, ...) __core_attribute__((__format__(__printf__,1,2)));
 
+#define ASCII_A_65					65
+#define ASCII_Z_90					90
+#define TAB_CHAR_9					9
+#define NEWLINE_CHAR_10				10
+#define CARRIAGE_RETURN_CHAR_13		13
+#define SPACE_CHAR_32				32
+#define MAX_ASCII_PRINTABLE_126		126 // TILDE
+#define MAX_ASCII_DELETE_CHAR_127	127 // DELETE CHAR, which might be a key, but isn't really printable.  
+											// Depending on situation may be desirable (key input) or undesirable (printing ... usually ...)
 
 #define c_snprintf(_var,_fmt,_s1) c_snprintfc (_var, sizeof(_var), _fmt, _s1)
 #define c_snprintf2(_var,_fmt,_s1,_s2) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2)

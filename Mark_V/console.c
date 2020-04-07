@@ -1026,7 +1026,7 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 	char partial_buffer[CONSOLE_MAX_CMDLINE_256];
 	cbool	first_time_through = false;
 
-	if ( (text[cursor] > 32) || (text[0] == 0 && !force_completion)  ) // If cursor on letter or zero length without force, get out.
+	if ( (text[cursor] > SPACE_CHAR_32) || (text[0] == 0 && !force_completion)  ) // If cursor on letter or zero length without force, get out.
 		return 0;
 
 	if ( cursor >= (ssize_t)s_size - 1) // Last char reserved for null
@@ -1099,7 +1099,7 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 				// We've been in autocomplete before, find the length of last autocomplete so we can find.
 				const char *cur;
 				int n;
-				for (cur = *match_start, n = 0; *cur && *cur != 32; cur ++, n ++)
+				for (cur = *match_start, n = 0; *cur && *cur != SPACE_CHAR_32; cur ++, n ++)
 					completion_buffer[n] = *cur;
 				completion_buffer[n] = 0;
 				curlen = n;

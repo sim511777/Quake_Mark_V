@@ -93,42 +93,43 @@ typedef struct mrect_s
 
 typedef struct
 {
-	vmode_t		modelist[MAX_MODE_LIST];
-	int			nummodes; // The number of them filled in
+	vmode_t			modelist[MAX_MODE_LIST];
+	int				nummodes; // The number of them filled in
 
-	vmode_t		screen;
+	vmode_t			screen;
 
 #ifdef GLQUAKE_RESIZABLE_WINDOW // Windows resize on the fly
 	int				border_width;
 	int				border_height;
 	mrect_t			client_window;
 #endif // GLQUAKE_RESIZABLE_WINDOW
-	int			modenum_screen;		// mode # on-screen now
-	int			modenum_user_selected;	// mode # user intentionally selected (i.e. not an ALT-ENTER toggle)
+	int				modenum_screen;		// mode # on-screen now
+	int				modenum_user_selected;	// mode # user intentionally selected (i.e. not an ALT-ENTER toggle)
 
-	int			conwidth;
-	int			conheight;
+	int				conwidth;
+	int				conheight;
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
 // These need to be set when screen changes
-	unsigned	rowbytes;		// may be > width if displayed in a window
-	float		stretch_x;		// If we scaled for large resolution  WINDOWS StretchBlt usage
-	float		stretch_y;		// If we scaled for large resolution  WINDOWS StretchBlt usage
-	float		aspect;			// width / height -- < 0 is taller than wide
+	unsigned		rowbytes;		// may be > width if displayed in a window
+	float			stretch_x;		// If we scaled for large resolution  WINDOWS StretchBlt usage
+	float			stretch_y;		// If we scaled for large resolution  WINDOWS StretchBlt usage
+	float			aspect;			// width / height -- < 0 is taller than wide
 
-	pixel_t		*buffer;		// invisible buffer, the main vid.buffer!
-	byte		*basepal;		// host_basepal
-	pixel_t		*colormap;		// 256 * VID_GRADES size
-	byte		altblack;
-	byte		alpha50map[PALETTE_COLORS_256 * PALETTE_COLORS_256]; // Best in front and best behind
+	pixel_t			*buffer;		// invisible buffer, the main vid.buffer!
+	byte			*basepal;		// host_basepal
+	pixel_t			*colormap;		// 256 * VID_GRADES size
+	byte			altblack;
+	byte			alpha50map[PALETTE_COLORS_256 * PALETTE_COLORS_256]; // Best in front and best behind
 
-	byte		*surfcache;
-	int			surfcachesize;
-	int			highhunkmark;
+	byte			*surfcache;
+	int				surfcachesize;
+	int				highhunkmark;
 
-	int			stretch_old_cvar_val;	// The cvar value at time of set.
-#ifdef PLATFORM_OSX
-	short*			pzbuffer;
+	int				stretch_old_cvar_val;	// The cvar value at time of set.
+#endif // WINQUAKE_RENDERER_SUPPORT
+#if defined(WINQUAKE_RENDERER_SUPPORT) && defined(PLATFORM_OSX)
+	short			*pzbuffer;
 
 	unsigned int	texture;
 	unsigned int	texture_actual_width, texture_actual_height; //POW2 upsized
@@ -137,11 +138,8 @@ typedef struct
 	unsigned int    rgbapal[PALETTE_COLORS_256];
 	unsigned int	*bitmap;
 
-	cbool		texture_initialized;
-
-#endif // PLATFORM_OSX
-
-#endif // WINQUAKE_RENDERER_SUPPORT
+	cbool			texture_initialized;
+#endif // WINQUAKE_RENDERER_SUPPORT + PLATFORM_OSX
 
 // Color
 #ifdef GLQUAKE_RENDERER_SUPPORT
@@ -155,32 +153,32 @@ typedef struct
 	byte			curpal[PALETTE_SIZE_768];	// Palette RGB with gamma ramp
 #endif // WINQUAKE_RENDERER_SUPPORT
 
-	int			numpages;
-	int			recalc_refdef;		// if true, recalc vid-based stuff
+	int				numpages;
+	int				recalc_refdef;		// if true, recalc vid-based stuff
 
-	vmode_t		desktop;
-	cbool		canalttab;
-	cbool		wassuspended;
-	cbool		ActiveApp;
-	cbool		Hidden;
-	cbool		Minimized;
-	cbool		sound_suspended;
-	cbool		initialized;
-	cbool		system_enhanced_keys; // A bit dumb, but we need this somewhere global and it relates to video directly because initial video setup triggers this.
-	cbool		nomouse;
+	vmode_t			desktop;
+	cbool			canalttab;
+	cbool			wassuspended;
+	cbool			ActiveApp;
+	cbool			Hidden;
+	cbool			Minimized;
+	cbool			sound_suspended;
+	cbool			initialized;
+	cbool			system_enhanced_keys; // A bit dumb, but we need this somewhere global and it relates to video directly because initial video setup triggers this.
+	cbool			nomouse;
+
 #ifdef GLQUAKE_RENDERER_SUPPORT // Windows resize on the fly
-	cbool		resized; // Baker: resize on fly, if resized this flag gets cleared after resize actions occur
-	cbool		warp_stale;
-	cbool		consize_stale;
+	int				resized; // Baker: resize on fly, if resized this flag gets cleared after resize actions occur.  Set 2 for setmode.
+	cbool			warp_stale;
+	cbool			consize_stale;
 
-	cbool		scale_dirty; // Happens if vid.conwidth changes, scr_scaleauto changes, scr_menuscale changes, scr_sbarscalechanges, vid_conscale
-	float		menu_scale;
-	float		sbar_scale;
-	
+	cbool			scale_dirty; // Happens if vid.conwidth changes, scr_scaleauto changes, scr_menuscale changes, scr_sbarscalechanges, vid_conscale
+	float			menu_scale;
+	float			sbar_scale;	
 #endif  // GLQUAKE_RENDERER_SUPPORT
 
-	int			direct3d;
-	int			multisamples;
+	int				direct3d;
+	int				multisamples;
 } viddef_t;
 
 extern	viddef_t	vid;				// global video state
@@ -247,7 +245,7 @@ void Vid_Gamma_TextureGamma_f (lparse_t *line);
 
 #ifdef GLQUAKE_RESIZABLE_WINDOW
 // Baker: resize on the fly
-void VID_Resize_Check (void);
+void VID_Resize_Check (int resize_level);
 void VID_Resize_Think (void);
 void VID_Local_Resize_Act (void);
 // Baker: end resize on the fly

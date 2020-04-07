@@ -267,10 +267,10 @@ int CharToCode (char c)
 	}
 
 	if (isalpha(c))
-		return (30 + upper - 65);
+		return (30 + upper - ASCII_A_65);
 
 	if (isdigit(c))
-		return (1 + upper - 47);
+		return (1 + upper - 47); // Baker: Change to 2 + upper - ASCII_ZERO_CHAR_48
 
 	return c;
 }

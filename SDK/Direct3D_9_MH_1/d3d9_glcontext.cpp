@@ -397,25 +397,12 @@ void context_t::PostReset (void)
 	this->InitGeometry ();
 }
 
-void context_t::ResizeWindow (int width, int height, int bpp)
-{
-	// reset present params
-	this->SetupPresentParams (width, height, bpp, true /*we have to be windowed to be calling Resize*/ );
-	this->ResetDevice ();
 
-	// repaint all windows
-	InvalidateRect (NULL, NULL, TRUE); // Really?
-
-//	Sleep (10); // Really?
-}
-
-void context_t::ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style)
+void context_t::ResetMode (int width, int height, int bpp, BOOL windowed)
 {
 	RECT winrect;
-#if 0  // Baker ... let the engine tell us the window decoration, keep things flexible.
-//	int winstyle;
+	int winstyle;
 	int winexstyle;
-#endif 
 
 	// reset present params
 	this->SetupPresentParams (width, height, bpp, windowed);
@@ -427,29 +414,18 @@ void context_t::ResetMode (int width, int height, int bpp, BOOL windowed, int wi
 	winrect.top = 0;
 	winrect.bottom = height;
 
-//WS_OVERLAPPEDWINDOW
-#if 0 // Baker: Let the engine decide on window decoration, keep things flexible
 	winexstyle = 0;
 
 #ifdef D3D_RESIZABLE_WINDOW
-	winstyle = windowed ? WS_OVERLAPPEDWINDOW /* <--- this bastard just hides what it is*/ : WS_POPUP;
-
-	//#define WS_OVERLAPPEDWINDOW (WS_OVERLAPPED     | \	// Want
-	//                             WS_CAPTION        | \	// Want
-	//                             WS_SYSMENU        | \	// Want
-	//                             WS_THICKFRAME     | \	// MSDN: "Same as the WS_SIZEBOX style"
-	//                             WS_MINIMIZEBOX    | \	// Want
-	//                             WS_MAXIMIZEBOX)			// Do not want.
-
+	winstyle = windowed ? WS_OVERLAPPEDWINDOW : WS_POPUP;
 #else
 	winstyle = windowed ? WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : WS_POPUP;
 #endif
-#endif
 
 	// reset stuff
-	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_EXSTYLE, window_ex_style);
-	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_STYLE, window_style);
-	AdjustWindowRectEx (&winrect, window_style, FALSE, window_ex_style);
+	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_EXSTYLE, winexstyle);
+	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_STYLE, winstyle);
+	AdjustWindowRectEx (&winrect, winstyle, FALSE, 0);
 
 	// repaint all windows
 	InvalidateRect (NULL, NULL, TRUE);
@@ -469,8 +445,8 @@ void context_t::ResetMode (int width, int height, int bpp, BOOL windowed, int wi
 #else
 		NULL,
 #endif
-		windowed ? (d3d_Globals.DesktopMode.Width - (winrect.right - winrect.left)) / 2 : 0,	// Baker: Review this centering calculation.
-		windowed ? (d3d_Globals.DesktopMode.Height - (winrect.bottom - winrect.top)) / 2 : 0,	// Baker: Review this centering calculation.
+		windowed ? (d3d_Globals.DesktopMode.Width - (winrect.right - winrect.left)) / 2 : 0,
+		windowed ? (d3d_Globals.DesktopMode.Height - (winrect.bottom - winrect.top)) / 2 : 0,
 		winrect.right - winrect.left,
 		winrect.bottom - winrect.top,
 		SWP_NOOWNERZORDER | SWP_NOREPOSITION | SWP_NOZORDER | SWP_SHOWWINDOW
@@ -481,16 +457,12 @@ void context_t::ResetMode (int width, int height, int bpp, BOOL windowed, int wi
 
 #if 1 // Baker modification: See if we can make it non-topmost.  Problem: If window starts as fullscreen on engine start, it will always stay topmost even if we change to windowed mode.
 	// THIS WORKS!
-#ifndef _DEBUG // Baker: Hopefully this will allow me to debug better	
 	if (windowed)
-#endif // _DEBUG
 		SetWindowPos (this->PresentParams.hDeviceWindow, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-
 #endif //
 
 	// because a lot of things are now bouncing around the system we take a breather
-//	Sleep (10);  // Neither seems to help nor hurt anything in any circustance I've encountered so far ...
+	Sleep (10);
 }
 
 

@@ -380,7 +380,7 @@ void Dedicated_Local_Print (const char *text)
     {
         *i &= 0x7f;
 
-        if ((*i > 128 || *i < 32) && (*i != 10) && (*i != 13) && (*i != 9))
+        if ((*i >= MAX_ASCII_DELETE_CHAR_127 || *i < SPACE_CHAR_32) && (*i != NEWLINE_CHAR_10) && (*i != CARRIAGE_RETURN_CHAR_13) && (*i != TAB_CHAR_9))
         {
             fprintf (stderr, "[%02x]", *i);
         }

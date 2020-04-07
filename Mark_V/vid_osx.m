@@ -68,10 +68,10 @@ void VID_Local_AddFullscreenModes (void)
     
     for (FDDisplayMode* displayMode in [sysplat.gVidDisplay displayModes])
     {
-        if ([displayMode bitsPerPixel] != 32)
+        if ([displayMode bitsPerPixel] != BPP_32)
          continue;
 
-        vmode_t test = { MODE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], 32};
+        vmode_t test = { MODE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], BPP_32};
     
         cbool bpp_ok     = true;
         cbool width_ok   = in_range (MIN_MODE_WIDTH, (int)[displayMode width], MAX_MODE_WIDTH);

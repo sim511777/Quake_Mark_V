@@ -1913,7 +1913,7 @@ void M_NameMaker_Key (int key)
 		break;
 
 	default:
-		if (key < 32 || key > 127)
+		if (key < SPACE_CHAR_32 || key > MAX_ASCII_DELETE_CHAR_127)
 			break;
 
 		l = strlen (cl_name.string);
@@ -2275,15 +2275,16 @@ void M_Options_Draw (void)
 	p = Draw_CachePic ("gfx/p_option.lmp");
 	M_DrawPicCentered (4, p);
 
-#ifdef GLQUAKE_RENDERER_SUPPORT
-	if ((menu_options_draw[opt_gamma_041].disabled = !vid_hardwaregamma.value))
+
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // dx9 = No ... future (vid_shadergamma.value == 0)
+	if ((menu_options_draw[opt_gamma_041].disabled = (vid_hardwaregamma.value == 0) ))
 	{
 		options_available = num_menu_options_draw - 1; // Disabled
 		if (options_cursor >= options_available)
 			options_cursor = options_available - 1;
 	}
 	else options_available = num_menu_options_draw;
-#endif // GLQUAKE_RENDERER_SUPPORT
+#endif // GLQUAKE_RENDERER_SUPPORT && !DIRECT3D9_WRAPPER
 
 	for (i = 0, row = 32; i < num_menu_options_draw; i ++)
 	{

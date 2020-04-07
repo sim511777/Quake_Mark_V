@@ -267,7 +267,7 @@ void CL_KeepaliveMessage (void)
 	SZ_Clear (&cls.message);
 }
 
-#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 
 static cbool Install_Command_Progress (void *id, int old_total, int new_total)
 {
@@ -292,7 +292,7 @@ static cbool Install_Command_Progress (void *id, int old_total, int new_total)
 		static double oldtime;
 		double newtime = System_DoubleTime ();
 		double timeslice = newtime - oldtime;
-	
+
 		if (!sv.active || !cls.demoplayback)
 			CL_KeepaliveMessage();
 
@@ -307,7 +307,7 @@ static cbool Install_Command_Progress (void *id, int old_total, int new_total)
 // File to download is like progs/g_rock2.mdl or maps/intro.bsp ... no leading
 char *VersionString (void);
 cbool CL_Download_Attempt (const char *file_to_download)
-{		
+{
 	char local_tempname_url[MAX_OSPATH];
 	char remote_url[SYSTEM_STRING_SIZE_1024];
 	char download_finalname_url[MAX_OSPATH];
@@ -343,7 +343,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 
 	// CL_Download_After
 	// We detect whether or not a download is going on solely by cls.download.name[0]
-	if (cls.download.name[0]) 
+	if (cls.download.name[0])
 		Host_Error ("Already downloading: %s", cls.download.name); // Can this happen?
 
 	memset (&cls.download, 0, sizeof(cls.download));
@@ -358,7 +358,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 	// BEGIN THE DOWNLOAD
 
 	//success = Web_Get(remote_url, NULL, local_tempname, false, 600, 30, CL_WebDownloadProgress);
-	
+
 	// Because of the nature of the internet.  We don't know if this file exists or we are getting some dumb "page not found" page.
 	// So we can't trust the size or trust what we get to even be a map
 	// However, we have a bit more control over this because a depot can have a standard.
@@ -367,7 +367,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 	// Problems:  We get an "ok" if we get a 302.
 
 	// Install_Download_After
-	
+
 
 	CL_KeepaliveMessage ();
 
@@ -403,7 +403,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 }
 
 
-#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 
 
 /*
@@ -576,7 +576,9 @@ void CL_ParseServerInfo (void)
 		for (i = 1 ; i < numsounds ; i++)
 			List_Add_No_Case_To_Lower (&list,  va ("sound/%s", sound_precache[i])  );
 
+#ifdef CORE_PTHREADS
 		Admin_Game_Files_List_Update_Client (list);
+#endif // CORE_PTHREADS
 
 		List_Free (&list); // Discard
 	}
@@ -596,15 +598,15 @@ void CL_ParseServerInfo (void)
 		if (cl.model_precache[i] == NULL)
 		{
 // DOWNLOAD START
-#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 			// Maybe try download process.
-			if (CL_Download_Attempt (model_precache[i])) 
+			if (CL_Download_Attempt (model_precache[i]))
 			{
 				// Download worked.
 				i--; // Subtract 1 so we try this model again in next iteration
 				continue;  // Bail on loop and resume
 			}
-#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 
 			Con_PrintLinef ("Model %s not found", model_precache[i]);
 			return;  //don't disconnect, let them sit in console and ask for help.
@@ -619,17 +621,17 @@ void CL_ParseServerInfo (void)
 	{
 		cbool precached_worked = true;
 		cl.sound_precache[i] = S_PrecacheSound (sound_precache[i], &precached_worked);
-#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 		if (precached_worked == false)
 		{
 // download start
 
 			cbool download_try_worked = CL_Download_Attempt (va ("sound/%s", sound_precache[i]) ) ;
-				   
+
 			if (download_try_worked)
-				S_PrecacheSound_Again (cl.sound_precache[i]);		
+				S_PrecacheSound_Again (cl.sound_precache[i]);
 		}
-#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 		COM_Uppercase_Check (sound_precache[i]); // Baker: Use this as a place to warn about dumbness
 		CL_KeepaliveMessage ();
 	}
@@ -638,7 +640,7 @@ void CL_ParseServerInfo (void)
 
 // local state
 	cl_entities[0].model = cl.worldmodel = cl.model_precache[1];
-	
+
 	str = LOC_LoadLocations(); // NULL on success.  Pointer to qpath string on failure.
 
 	// If no loc file and we download .locs, try to download it and if so load .loc again.

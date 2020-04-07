@@ -52,6 +52,7 @@
 					<Add option="-D_WINDOWS" />
 					<Add option="-DNDEBUG" />
 					<Add option="-Did386=1" />
+					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DPTW32_STATIC_LIB" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
 				</Compiler>
@@ -229,7 +230,6 @@
 					<Add option="-DDEBUG" />
 					<Add option="-DDEBUGGL" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 					<Add option="-Did386=0" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
@@ -249,7 +249,6 @@
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
-					<Add library="libpthreadGC2.a" />
 					<Add library="mingw32" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
@@ -258,7 +257,7 @@
 				</Linker>
 			</Target>
 			<Target title="Win32 SDL WinQuake GL Release">
-				<Option output="c:/quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option output="c:/quake/mark_v_sdl_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="./Object_Files/Release_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
@@ -270,10 +269,8 @@
 					<Add option="-DNDEBUG" />
 					<Add option="-Did386=1" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 					<Add option="-DCORE_SDL_STATIC" />
-					<Add option="-DPTW32_STATIC_LIB" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
 					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
 				</Compiler>
@@ -291,7 +288,6 @@
 					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
-					<Add library="libpthreadGC2.a" />
 					<Add library="mingw32" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
@@ -324,7 +320,6 @@
 					<Add option="-DGLQUAKE" />
 					<Add option="-DDEBUGGL" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
 					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
@@ -343,7 +338,6 @@
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
-					<Add library="libpthreadGC2.a" />
 					<Add library="mingw32" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
@@ -364,10 +358,8 @@
 					<Add option="-DNDEBUG" />
 					<Add option="-DGLQUAKE" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 					<Add option="-DCORE_SDL_STATIC" />
-					<Add option="-DPTW32_STATIC_LIB" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
 					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
 				</Compiler>
@@ -384,7 +376,6 @@
 					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
-					<Add library="libpthreadGC2.a" />
 					<Add library="mingw32" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
@@ -412,12 +403,10 @@
 					<Add option="-DDEBUG" />
 					<Add option="-DDEBUGGL" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 				</Compiler>
 				<Linker>
 					<Add option="`sdl2-config --libs`" />
-					<Add option="-pthread" />
 					<Add library="GL" />
 					<Add library="GLU" />
 					<Add library="dl" />
@@ -433,14 +422,11 @@
 					<Add option="-O3" />
 					<Add option="-DNDEBUG" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
-					<Add option="-DPTW32_STATIC_LIB" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add option="`sdl2-config --libs`" />
-					<Add option="-pthread" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
 					<Add library="GL" />
@@ -462,12 +448,10 @@
 					<Add option="-DGLQUAKE" />
 					<Add option="-DDEBUGGL" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
 				</Compiler>
 				<Linker>
 					<Add option="`sdl2-config --libs`" />
-					<Add option="-pthread" />
 					<Add library="GL" />
 					<Add library="GLU" />
 					<Add library="dl" />
@@ -484,14 +468,11 @@
 					<Add option="-DNDEBUG" />
 					<Add option="-DGLQUAKE" />
 					<Add option="-DCORE_GL" />
-					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DCORE_SDL" />
-					<Add option="-DPTW32_STATIC_LIB" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 					<Add option="`sdl2-config --libs`" />
-					<Add option="-pthread" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
 					<Add library="GL" />
@@ -510,7 +491,6 @@
 			<Add option="-fexceptions" />
 			<Add option="-Wno-trigraphs" />
 			<Add option="-DQUAKE_GAME" />
-			<Add option="-DCORE_PTHREADS" />
 			<Add directory="../SDK" />
 			<Add directory="../SDK/Core" />
 			<Add directory="../SDK/dxsdk/sdk/inc" />
@@ -1019,8 +999,13 @@
 			<Option target="Win32 GL Debug" />
 			<Option target="Win32 SDL Release" />
 			<Option target="Win32 SDL Debug" />
+			<Option target="Win32 SDL GL Release" />
 		</Unit>
 		<Unit filename="mark_v_glquake2.ico" />
+		<Unit filename="mark_v_glquake_vs2008.rc">
+			<Option compilerVar="WINDRES" />
+			<Option target="Win32 SDL GL Debug" />
+		</Unit>
 		<Unit filename="mark_v_lmp.h" />
 		<Unit filename="mark_v_qmb.h" />
 		<Unit filename="mark_v_winquake.ico" />
@@ -1030,6 +1015,9 @@
 			<Option target="Win32 WinQuake GL Release" />
 			<Option target="Win32 SDL WinQuake GL Release" />
 			<Option target="Win32 Debug" />
+			<Option target="Win32 WinQuake Debug" />
+			<Option target="Win32 WinQuake GL Debug" />
+			<Option target="Win32 SDL WinQuake GL Debug" />
 		</Unit>
 		<Unit filename="math.S">
 			<Option target="Win32 WinQuake Release" />

@@ -300,7 +300,7 @@ static void SV_HintStrings_NewMap (void)
 				c_snprintfc (sv_make_hint_string, MAX_HINT_BUF_64, "%d", sv.fileserver_port );
 			break;
 
-		
+
 		default:
 			Host_Error ("SV_HintStrings: Unknown hint_num %d", hint_num);
 		}
@@ -439,7 +439,9 @@ void SV_ConnectClient (int clientnum)
 
 	c_strlcpy (client->name, "unconnected");
 	client->active = true;
+#ifdef CORE_PTHREADS
 	Player_IPv4_List_Update ();
+#endif // 	CORE_PTHREADS
 	client->spawned = false;
 	client->edict = ent;
 	client->message.data = client->msgbuf;
@@ -730,11 +732,11 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 
 			if (sv_full_invisibility.value && /*ent->v.modelindex == 1*/ (sv.models[ (int)ent->v.modelindex]->modelflags & MOD_EYES))
 				continue;
-	
-			if (sv_filter_gibs.value && (sv.models[ (int)ent->v.modelindex]->modelflags & MOD_GIBS) )	
+
+			if (sv_filter_gibs.value && (sv.models[ (int)ent->v.modelindex]->modelflags & MOD_GIBS) )
 				continue;
 
-			
+
 
 		}
 
@@ -920,7 +922,7 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 		float pct1 = 1 - CLAMP(0, pct0, 1);
 		float pct  = CLAMP( (1/128.0), pct1, 1);
 		ent_alpha = ENTALPHA_ENCODE (pct); // Right?
-	} 
+	}
 
 
 // send a damage message
@@ -1292,7 +1294,7 @@ void SV_Autosave_Think (void)
 	if (svs.clients[0].edict->v.health <= 0)
 		return;
 
-	
+
 /*
 	// Baker: What if map is so hard you have to godmode it.
 	// If in a cheat-mode, why bother.
@@ -1696,7 +1698,7 @@ void SV_SpawnServer (const char *server)
 
 	sv.fileserver_port = 0;
 	if (isDedicated || svs.maxclients_internal > 1) // Because the cap can change at any time now.  But 1 still is special and means single player.
-		if (sv_fileserver_port.string[0] == '+') 
+		if (sv_fileserver_port.string[0] == '+')
 			sv.fileserver_port = net_hostport + atoi (&sv_fileserver_port.string[0]);
 		else sv.fileserver_port = (int)sv_fileserver_port.value;
 
@@ -1795,7 +1797,7 @@ void SV_SpawnServer (const char *server)
 	case PROTOCOL_FITZQUAKE:
 	case PROTOCOL_FITZQUAKE_PLUS:
 		sv.max_edicts = MAX_SANE_EDICTS_8192;
-		
+
 #if 0 // Goodbye to guessing ...
 		{
 			int classname_count = String_Count_String (entity_string, "classname");
@@ -1890,7 +1892,9 @@ void SV_SpawnServer (const char *server)
 
 // create a baseline for more efficient communications
 	SV_CreateBaseline ();
+#ifdef CORE_PTHREADS
 	Admin_Game_Files_List_Update_Server ();
+#endif // 	CORE_PTHREADS
 	//johnfitz -- warn if signon buffer larger than standard server can handle
 //	Con_PrintLinef ("Signon size is %d", sv.signon.cursize);
 	if (sv.signon.cursize > (MAX_WINQUAKE_MSGLEN /*8000*/ - 2) ) //max size that will fit into 8000-sized client->message buffer with 2 extra bytes on the end

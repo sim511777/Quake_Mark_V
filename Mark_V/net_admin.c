@@ -32,7 +32,7 @@
 #include "quakedef.h"
 #include "net_defs.h"
 
-
+#ifdef CORE_PTHREADS
 
 
 void Admin_Mute_f (lparse_t *line) {}
@@ -178,11 +178,11 @@ cbool Admin_Check_Ban (const char *unvalidated_ipv4_string)
 #include "download_procs.h"
 void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 {
-	
+
 
 	// We only run in the main thread.  We could use con_printf.  But we use queue_printf so messages print sequentially.
 	Con_Queue_PrintLinef ("Event dispatching event:%d code:%d id:%p data:%p ", event, code, id, data);
-	
+
 	switch (event)
 	{
 	case EVENT_DOWNLOAD_COMPLETE: // Check the code for whitelist vs banlist
@@ -234,7 +234,7 @@ void Admin_Remote_Update (void)
 	for (i = 0; tt[i]; i ++)
 	{
 		remotelist_t *cur = tt[i];
-	
+
 		if (cur->download_complete)
 		{
 			if (cur->download_data) // And there might not be because it could have failed
@@ -248,14 +248,14 @@ void Admin_Remote_Update (void)
 
 					if (!newcount)
 						break; // Reject 0 size list
-				
+
 					// Determine if first
 					if (!cur->list)
 						Con_PrintLinef ("List initial set");
-					
+
 					// Determine if change
 					changed = !cur->list || cur->listcount != newcount || List_Compare (test, cur->list) !=0;
-					
+
 					if (changed)
 					{
 						// This is where we set the list.
@@ -263,22 +263,22 @@ void Admin_Remote_Update (void)
 						// If banlist changed, check everyone.
 						// If whitelist changed, ??  Do we still do it?  I think no.
 						List_Free (&cur->list); // Discard old list
-						
-						
+
+
 						cur->list = test;
 						cur->listcount = newcount;
-						
+
 					} else List_Free (&test); // Discard new list
 
 					// Now just seeing if anything changed.
-					
+
 
 				} while (0);
 				// List Count.  List compare?
 				cur->download_data = core_free (cur->download_data);
 				cur->download_size = 0;
 				Con_Queue_PrintLinef ("Updated list %s with count %d", cur->remote_url, List_Count (cur->list));
-			}	
+			}
 			if (!cur->listcount)
 				System_Error ("Remote host with empty banlist or whitelist is not allowed.  Add a fake real valid ip if needed. %s", cur->remote_url);
 
@@ -299,6 +299,7 @@ void Admin_Remote_Update (void)
 ///////////////////////////////////////////////////////////////////////////////
 
 // Ensures thread and main thread can't stomp.  Probably pretty damn unlikely anyway.
+
 void Set_List_Download_Status (pthread_mutex_t *plock, int *var_int, int newstatus)
 {
 	pthread_mutex_lock (plock);
@@ -306,12 +307,13 @@ void Set_List_Download_Status (pthread_mutex_t *plock, int *var_int, int newstat
 	pthread_mutex_unlock (plock);
 }
 
+
 #define	BANLIST				"banlist"		// banfile.  Lives in id1.
 #define	WHITELIST			"whitelist"		// banfile.  Lives in id1.
 
 
 void Admin_Init (void)
-{	
+{
 	void Install_Init (void);
 //	return;
 	Install_Init ();
@@ -348,18 +350,20 @@ void Admin_Init (void)
 #include "core_net_sys.h"
 #include "net_simple.h"
 
+
 // Update this anytime someone connects or disconnects.
 clist_t *player_list_thread_safe;
 pthread_mutex_t player_list_lock = PTHREAD_MUTEX_INITIALIZER;
+
 
 // The writing of the list is only done in the main thread.
 void Player_IPv4_List_Update (void)
 {
 	client_t	*client;
 	int n;
-#if 0 
+#if 0
 	Con_PrintLinef ("Updated player list");
-#endif
+#endif // 0
 
 	pthread_mutex_lock (&player_list_lock);
 
@@ -376,9 +380,9 @@ void Player_IPv4_List_Update (void)
 
 #if 0
 		Con_PrintLinef ("Found an active one %s", NET_QSocketGetTrueAddressString(client->netconnection));
-#endif
+#endif // 0
 
-		if (!IPv4_String_Validated (prepared_ip_string, sizeof(prepared_ip_string), unvalidated_ipstring))	
+		if (!IPv4_String_Validated (prepared_ip_string, sizeof(prepared_ip_string), unvalidated_ipstring))
 			continue; // Something like "local"
 		Con_PrintLinef ("%s", prepared_ip_string);
 		List_Add (&player_list_thread_safe, prepared_ip_string);
@@ -414,7 +418,7 @@ void ServeFile_Shutdown_Command_f (lparse_t *unused)
 	Net_Simple_Server_Force_Shutdown (fileserver_notify_socket);
 }
 
-void ServeFile_Command_f (lparse_t *unused) 
+void ServeFile_Command_f (lparse_t *unused)
 {
 	int baseport = net_hostport ? net_hostport : DEFAULTnet_hostport /*26000*/;
 	int port = sv_fileserver_port.string[0] == '+' ? baseport + atoi (&sv_fileserver_port.string[0]) : (int)sv_fileserver_port.value;
@@ -425,13 +429,13 @@ void ServeFile_Command_f (lparse_t *unused)
 		return;
 	}
 
-	if (!Net_Simple_Server_Async (NULL, port, "c:/", 
+	if (!Net_Simple_Server_Async (NULL, port, "c:/",
 		(errorline_fn_t)Con_Queue_Printf, Con_Queue_Printf, Con_Queue_Printf, Player_IP_List_Find, &fileserver_notify_socket))
 	{
 		Con_PrintLinef ("Server failed to start");
 		return;
-	} 
-	
+	}
+
 	// fileserver_notify_socket should be set at some point.
 	Con_PrintLinef ("Server started ok");
 }
@@ -442,7 +446,7 @@ pthread_mutex_t gamefiles_list_lock = PTHREAD_MUTEX_INITIALIZER;
 
 // Provide our local list, output a paklike list.
 clist_t *Create_Source_List_Alloc (const clist_t *list)
-{ 
+{
 	// STAGE 2:  Find out where it came from, the size and record entire path
 
 	clist_t *out = NULL;
@@ -450,16 +454,16 @@ clist_t *Create_Source_List_Alloc (const clist_t *list)
 	const clist_t *cur;
 	int count, h;
 	const char *tmp;
-	
+
 	for (cur = list, count = 0; cur; cur = cur->next)
 	{
 		COM_FindFile (cur->name, &h, NULL, NULL); // returns filesize or -1
-		
+
 //		if (h != -1)
-//		{	//name           source     size   offset  inzip 
+//		{	//name           source     size   offset  inzip
 			//"progs/backpack.mdl" "quoth/pak1.pak" size 331328 ispak: 1
 			// Get source size?
-		
+
 			tmp = com_filepath[0] ? &com_filepath[path_strip] : com_filepath; // Don't skip null terminator if file wasn't found ;-)
 			// com_filesize is -1 is wasn't found
 			tmp = va (QUOTED_S " " QUOTED_S " %d %s", cur->name, tmp, com_filesize, com_filesrcpak ? "pak" : "dir");
@@ -473,10 +477,10 @@ clist_t *Create_Source_List_Alloc (const clist_t *list)
 	}
 
 	return out;
-}			
+}
 
 // List cmp
-// Get sv list if we have a 
+// Get sv list if we have a
 
 clist_t *Admin_Game_Files_List_Client_Missing (clist_t *cl_list, clist_t *sv_list)
 {
@@ -499,16 +503,16 @@ void Admin_Game_Files_List_Update_Client (clist_t *cl_list)
 
 #if 0  // This is where we can compare
 	List_Print (cl_list);
-#endif
+#endif // 0
 	cl_gamefiles_list = Create_Source_List_Alloc (cl_list);
 #if 0
 	List_Print (cl_gamefiles_list);
-#endif
+#endif // 0
 
 //	alert ( "%d", List_Compare (cl_gamefiles_list, gamefiles_list_thread_safe ) );
 
 
-}	
+}
 
 void Admin_Game_Files_List_Update_Server (void)
 {
@@ -532,11 +536,11 @@ void Admin_Game_Files_List_Update_Server (void)
 
 	gamefiles_list_thread_safe = Create_Source_List_Alloc (rawlist);
 
-#if 0 
-Con_PrintLinef ("Startssz");	
+#if 0
+Con_PrintLinef ("Startssz");
 	List_Print (gamefiles_list_thread_safe);
 Con_PrintLinef ("Stopsz");
-#endif	
+#endif // 0
 
 	pthread_mutex_unlock (&gamefiles_list_lock);
 
@@ -557,7 +561,7 @@ void Admin_Game_Files_List_Update_Server (void)
 	{ // STAGE 1:  Generate
 		const char		**s;
 		int i;
-	
+
 		for (i = 0, s = sv.model_precache + 1; *s; s++, i++) // This list is null terminated?
 			if (*s && *s[0] != '*') // Don't add map submodels.
 				List_Add_No_Case_To_Lower (&list, *s);
@@ -579,8 +583,8 @@ void Admin_Game_Files_List_Update_Server (void)
 		char buf[SYSTEM_STRING_SIZE_1024];
 		const clist_t *cur;
 
-//name           extended name     size   offset  inzip 
-//maps/start.bsp travail           272392 373333  yes    
+//name           extended name     size   offset  inzip
+//maps/start.bsp travail           272392 373333  yes
 //maps/start.bsp travail/pak0.pak
 		int path_strip = strlen (com_basedir) + 1;
 
@@ -590,7 +594,7 @@ void Admin_Game_Files_List_Update_Server (void)
 		for (cur = list, count = 0; cur; cur = cur->next)
 		{
 			char source[MAX_OSPATH];
-			
+
 			cbool ispak; // Is the file from a pak.
 			size_t filesize;
 			int h;
@@ -605,22 +609,22 @@ void Admin_Game_Files_List_Update_Server (void)
 				List_Add_No_Case_To_Lower (&datalist, buf);
 				COM_CloseFile (h);
 			}
-			
+
 //NOW WHAT?
-//Pak reader thread safe.				
+//Pak reader thread safe.
 		}
 
 		gamefiles_list_thread_safe = datalist;
-	}			
-	
+	}
+
 	List_Print (gamefiles_list_thread_safe);
 	List_Free (&list);
 
-	
-	
+
+
 	pthread_mutex_unlock (&gamefiles_list_lock);
 }
-#endif
+#endif // 0
 
 
 char *Admin_Game_Files_Find (const char *fp_basedir)
@@ -645,3 +649,5 @@ char *Admin_Game_Files_Find (const char *fp_basedir)
 COM_CloseFile (h);
 
 */
+
+#endif // CORE_PTHREADS

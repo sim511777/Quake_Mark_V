@@ -269,11 +269,11 @@ CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , net_masters				  , "net_masters"
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_bindprotect            , "pq_bindprotect"             , "0"       , CVAR_ARCHIVE						, NULL                 ,  "Ignore server sent key binds (1: Ignore silently, 2: Ignore and print).  Disabled by default.   "            )
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_teamscores             , "pq_teamscores"              , "1"       , CVAR_NONE						, NULL                 ,  "Displays teamscores in HUD status bar for supporting mods (ProQuake extension)."            )
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_moveup		          , "pq_moveup"					 , "0"       , CVAR_ARCHIVE						, NULL                 ,  "Swim using +jump as if pressing +moveup instead."            )
-#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http		  , "pq_download_http"		  , "1"       , CVAR_NONE						, NULL                 ,  "Attempt downloading missing maps and models when connected to a server reporting as ProQuake 3.50 or greater server."            )
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_url	  , "pq_download_http_url",	   "downloads.quake-1.com"  , CVAR_NONE						, NULL     ,  "Download source if attempting to download a map/model/sound when connected to a ProQuake 3.5 or greater server."            )
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_locs	  , "pq_download_http_locs",	   "1"  , CVAR_ARCHIVE						, NULL     ,  "Toggle download attempt of .loc files if pq_download_http is also enabled."            )
-#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
+#endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_rquake				  , "pq_rquake"					 , "0"       , CVAR_NONE						, NULL                 ,  "Single player entities appear in deathmatch for RQuake.  RQuake is a co-op mod that uses the deathmatch scoreboard, certain entities like doors are sometimes marked NOT_IN_DEATHMATCH and would not normally appear."            )
 CVAR_DEF( CL_Init     , SV        ,  DEP_NONE , pq_timer				  , "pq_timer"					 , "1"       , CVAR_NONE						, NULL                 ,  "Toggle use of match time display when a ProQuake server sends team game match information."            )
 CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , pq_chat_frags_to_talk	  , "pq_chat_frags_to_talk"		 , "0"       , CVAR_NONE						, NULL                 ,  "Minimum score for newly connected player to talk."            )
@@ -297,8 +297,10 @@ CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , pq_chat_word_filter       , "pq_
 CVAR_DEF( SV_Init     , HOST      ,  DEP_NONE , rcon_password			  , "rcon_password"		         , ""       , CVAR_NONE						, NULL                 ,  "Remote console ability password, which is a basically admin (the ability to do \"rcon changelevel e4m5\", ..)."            )
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , rcon_server				  , "rcon_server"		         , ""       , CVAR_NONE						, NULL                 ,  "Run commands connected as if at this server console typing them."            )
 
+#ifdef CORE_PTHREADS
 CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , sv_url_banfile			  , "sv_url_banfile"    , ""       , CVAR_NONE      , Admin_Banlist_URL_Changed_f,  "(TODO: UNUSED)"            )
 CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , sv_url_whitelist		  , "sv_url_whitelist"    , ""       , CVAR_NONE      , Admin_Whitelist_URL_Changed_f,  "(TODO: UNUSED)"            )
+#endif // CORE_PTHREADS
 CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , sv_max_sameip_connections , "sv_max_same_ip_connections" , "4"       , CVAR_NONE, NULL,  "TODO: Unimplemented.  Maximum connections from same ip.  Keep in mind LAN games, so try to exclude local networks."            )
 CVAR_DEF( SV_Init     , SV        ,  DEP_NONE , sv_fileserver_port		  ,	"sv_fileserver_port" , "+10"       , CVAR_NONE, NULL,  "File server port."            )
 

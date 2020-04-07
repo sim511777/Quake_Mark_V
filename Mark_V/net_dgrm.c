@@ -1805,12 +1805,12 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 	}
 
 // LOCKED_SERVER
-
+#ifdef CORE_PTHREADS
 	if (Admin_Check_ServerLock(ipstring)) { // ipstring isn't needed, but if someone is prevented from joining log it
 		Datagram_Reject ("Server isn't accepting new players at the moment." NEWLINE, acceptsock, pclientaddr);
 		return;
 	}
-
+#endif // CORE_PTHREADS
 
 #if 0 // def BAN_TEST
 	ipstring = dfunc.AddrToString (pclientaddr);
@@ -2056,7 +2056,7 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 				if (dfunc.GetAddrFromName(this_master, &masteraddr) >= 0) {
 					const char *cursor2, *protocol_string = cursor2 = com_protocolname.string;
 					char this_protocol[256];
-					while ( (cursor2 = String_Get_Word (cursor2, ",", this_protocol, sizeof(this_protocol)))   )  {	
+					while ( (cursor2 = String_Get_Word (cursor2, ",", this_protocol, sizeof(this_protocol)))   )  {
 						//send a request for each Quake server protocol
 						int retcode = 0;
 						if (masteraddr.qsa_family == AF_INET6)
@@ -2066,9 +2066,9 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 						retcode = dfunc.Write (dfunc.controlSock, (byte*)str, strlen(str), &masteraddr);
 						// Every other write is ok.
 						//if (retcode == SOCKET_ERROR) {
-						//	Con_SafePrintLinef ("Master server [%s] may not be reachable for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);	
+						//	Con_SafePrintLinef ("Master server [%s] may not be reachable for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);
 						//}
-						//else Con_SafePrintLinef ("Master server [%s] WAS GOOD for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);	
+						//else Con_SafePrintLinef ("Master server [%s] WAS GOOD for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);
 					} // End while each protocol
 				} // end if
 

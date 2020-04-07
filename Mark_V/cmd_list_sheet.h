@@ -185,9 +185,12 @@ CMD_DEF (NET_Init    , DEP_HOST__  , "whitelist"                 , Admin_White_L
 #endif // INTERNAL_OR_FUTURE_COMMANDS
 
 CMD_DEF (NET_Init    , DEP_HOST__  , "kick"                      , Host_Kick_f				, "Kick a player")
+
+#ifdef CORE_PTHREADS
 CMD_DEF (NET_Init    , DEP_HOST__  , "mute"                      , Admin_Mute_f				, "Mute by player #")
 CMD_DEF (NET_Init    , DEP_HOST__  , "lockserver"			     , Admin_Lock_f				, "Prevent new connections")
 CMD_DEF (NET_Init    , DEP_HOST__  , "unlockserver"			     , Admin_UnLock_f				, "Re-enable new connections")
+#endif // CORE_PTHREADS
 
 CMD_DEF (NET_Init    , DEP_HOST__  , "test"                      , Test_f					, "Display information about the players connected to the server."			)
 CMD_DEF (NET_Init    , DEP_HOST__  , "test2"                     , Test2_f					, "Display information about the current server settings."			)

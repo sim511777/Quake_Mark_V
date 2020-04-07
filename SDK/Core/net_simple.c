@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "core_net_sys.h"
 #include "net_simple.h"
 
+#ifdef CORE_PTHREADS
+
 // Meh ...
 int Con_Queue_Printf (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
 int Con_Queue_PrintLinef (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
@@ -459,6 +461,6 @@ cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, e
 	return true;
 }
 
-
+#endif // CORE_PTHREADS
 
 

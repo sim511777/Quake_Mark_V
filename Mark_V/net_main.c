@@ -458,7 +458,7 @@ qsocket_t *NET_Connect (const char *host)
 			numdrivers = 1;
 			goto JustDoIt;
 		}
-		
+
 		if (strcasecmp (host, "lan") == 0) {
 			slistSilent = true;
 			NET_Slist_f (NULL);
@@ -473,7 +473,7 @@ qsocket_t *NET_Connect (const char *host)
 
 			host = hostcache[hostCacheCount - 1].cname;
 			Con_SafePrintLinef ("Connecting to LAN %s", host);
-			
+
 			// Otherwise ...
 		}
 
@@ -555,8 +555,9 @@ NET_CheckNewConnections
 qsocket_t *NET_CheckNewConnections (void)
 {
 	qsocket_t	*ret;
-
+#ifdef CORE_PTHREADS
 	Admin_Remote_Update (); // See if we have a finished remote update
+#endif // CORE_PTHREADS
 
 	SetNetTime();
 
@@ -627,9 +628,9 @@ int	NET_GetMessage (qsocket_t *sock)
 	ret = sfunc.QGetMessage(sock);
 
 #if 0  // Baker: Server doesn't use this for main communication any more.
-// Baker: We no longer get server messages from here except 
+// Baker: We no longer get server messages from here except
 // NET_SendToAll and Host_Shutdown which are infrequent at best
-// This is now done else where 
+// This is now done else where
 // see if this connection has timed out
 // And I'm not worried about the reverse (server isn't responding, you'd think 300 seconds of non-response the player would notice)
 	if (ret == 0 && !IS_LOOP_DRIVER(sock->driver))

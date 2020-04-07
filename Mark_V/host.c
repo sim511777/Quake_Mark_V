@@ -453,7 +453,9 @@ void SV_DropClient (cbool crash)
 
 // free the client (the body stays around)
 	host_client->active = false;
+#ifdef CORE_PTHREADS
 	Player_IPv4_List_Update ();
+#endif // CORE_PTHREADS
 
 	host_client->name[0] = 0;
 	host_client->old_frags = -999999;
@@ -751,6 +753,8 @@ void _Host_Frame (double time)
 // Not sure if the best place for this
 #ifdef CORE_PTHREADS
 		Admin_Remote_Update ();
+#endif // CORE_PTHREADS
+#ifdef CORE_PTHREADS
 		Con_Queue_PrintRun ();
 #endif // CORE_PTHREADS
 		SCR_UpdateScreen ();
@@ -847,7 +851,9 @@ void Host_Init (void)
 		W_LoadWadFile,
 		Mod_Init,
 		NET_Init,
+#ifdef CORE_PTHREADS
 		Admin_Init,
+#endif // CORE_PTHREADS
 		SV_Init,
 	// Baker: Dedicated server stops here
 		Key_Init,

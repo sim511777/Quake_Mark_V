@@ -578,7 +578,7 @@ void SCR_DrawFPS (void)
 		oldframecount = cl.r_framecount;
 	}
 
-	if (scr_viewsize.value >= 100 && (scr_showfps.value || scr_showpos.value || (sb_showscores && (cls.demorecording || cl_autodemo.value) ) || scr_showspeed.value)) {
+	if (cl.worldmodel && scr_viewsize.value >= 100 && (scr_showfps.value || scr_showpos.value || (sb_showscores && (cls.demorecording || cl_autodemo.value) ) || scr_showspeed.value)) {
 		char			st[64];
 		int				x, y = 12;
 		

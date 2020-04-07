@@ -741,8 +741,13 @@ void Host_Freezeall_f (lparse_t *line)
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
-		return;
+
+	if (pr_global_struct->deathmatch && !host_client->privileged) {
+		// Allow freezeall in deathmatch if just 1 player, allows debugging.
+		// Or sv_cheats -1 or 1.
+		if (svs.maxclients_internal > 1 && sv.disallow_minor_cheats) 
+			return;
+	}
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{

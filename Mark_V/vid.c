@@ -703,8 +703,8 @@ void	VID_Init (void)
 
 	VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODE_WINDOWED);
 
-	clwidth = vid_width.value; // Err?  Why vid.screen.width and vid.screen.height?
-	clheight = vid_height.value;
+	clwidth = vid.screen.width; // vid_width.value // Err?  Why vid.screen.width and vid.screen.height?
+	clheight = vid.screen.height;
 
 	vid.modenum_user_selected = vid.modenum_screen; // Default choice
 	VID_Cvars_Sync_To_Mode (&vid.modelist[vid.modenum_user_selected]);
@@ -956,6 +956,9 @@ void VID_BrightenScreen (void)
 	float f;
 	float current_contrast = CLAMP (VID_MIN_CONTRAST, vid_contrast.value, VID_MAX_CONTRAST);
 
+	if (vid.direct3d == 9)
+		return;
+
 	if (current_contrast <=1)
 		return; // Because it won't do anything
 
@@ -1129,10 +1132,10 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
 		*height = vid.screen.height;
 	#endif // GLQUAKE_RESIZABLE_WINDOW
 
-	#if 1 //def DIRECT3D9_WRAPPER // Shader gamma.
+	#ifdef DIRECT3D9_WRAPPER // Shader gamma.
 		{
 			static cbool old_shadergamma = 0; // If this is turned from on to off, we need to disable it.
-			cbool new_shadergamma = (vid_hardwaregamma.value == 0) && vid_shadergamma.value;
+			cbool new_shadergamma = (vid_hardwaregamma.value == 0); // && vid_shadergamma.value;
 
 			VID_Gamma_Contrast_Clamp_Cvars ();
 

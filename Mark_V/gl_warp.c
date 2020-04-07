@@ -289,7 +289,7 @@ void R_SetupView_UpdateWarpTextures (void)
 	glquake_scr_tileclear_updates = 0;
 }
 
-#if 1 // UNDERWATER WARP
+#if 1 // UNDERWATER WARP  R_WATERWARP
 void GL_Warp_CalcUnderwaterCoords (float x, float y)
 {
 	// ripped this from vkQuake at https://github.com/Novum/vkQuake/blob/master/Shaders/screen_warp.comp

@@ -168,6 +168,9 @@ extern fn_set_t qfunction_set;
 	#define GLQUAKE_TEXTURE_POINTER
 	#define GLQUAKE_VIDBUFFER_ACCESS
 	#define GLQUAKE_VIEW_BLENDS
+#ifndef DIRECT3D9_WRAPPER // dx9 - we don't have texture gamma integrated
+	#define GLQUAKE_TEXTUREGAMMA_SUPPORT
+#endif // DIRECT3D9_WRAPPER
 
 	#define GLQUAKE_WAD_TEXTURE_UPLOAD	// Baker: I could make wad.c use new WinQuake Zero method, maybe in future.
 
@@ -196,6 +199,8 @@ extern fn_set_t qfunction_set;
 #endif // PLATFORM_OSX
 
 #endif // !GLQUAKE
+
+
 
 #define SUPPORTS_HTTP_DOWNLOAD
 

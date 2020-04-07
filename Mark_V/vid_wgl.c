@@ -51,9 +51,7 @@ void VID_Local_Window_PreSetup (void)
     if (!RegisterClass (&wc) )
 		System_Error ("Couldn't register window class");
 
-#pragma message ("Baker: See if we can get multisample to work for Direct3D")
-
-	 // Baker: Multisample support
+	 // Baker: Multisample support.  In principal, at least.
 	if (sysplat.hwnd_dialog)
 	{
 		if (vid_multisample.value)
@@ -159,8 +157,7 @@ void VID_Local_Vsync (void)
 
 void VID_Local_Vsync_f (cvar_t *var)
 {
-
-	if (vid.direct3d == 8) { // dx8 - mode switch handled specially
+	if (vid.direct3d == 8) { // dx8 - vsync switch handled specially
 		if (host_post_initialized)
 			Con_Printf ("Direct3D: vid_vsync takes effect after mode change\n          vsync only works for fullscreen\n");
 	}
@@ -325,7 +322,7 @@ cbool VID_Local_SetMode (int modenum)
 // End resize window on the fly
 
 
-#if 1 // def DIRECT3D9_WRAPPER // dx9 - an alternate resize that may not be friendly to Windows 8 or Windows 10 but I don't know for sure.  At one point in time, Windows 8 was very stupid about changing window attributes without destroying the window, did SP1 change that?  Is Windows 10 affected?
+#ifdef DIRECT3D9_WRAPPER // dx9 - an alternate resize that may not be friendly to Windows 8 or Windows 10 but I don't know for sure.  At one point in time, Windows 8 was very stupid about changing window attributes without destroying the window, did SP1 change that?  Is Windows 10 affected?
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
 		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.

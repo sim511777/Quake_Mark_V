@@ -162,7 +162,7 @@ cbool R_CullBox (vec3_t emins, vec3_t emaxs);
 cbool R_CullModelForEntity (entity_t *e);
 void R_RotateForEntity (vec3_t origin, vec3_t angles);
 
-void R_SetupView_UpdateWarpTextures (void);
+void R_SetupView_UpdateWarpTextures (void); // R_WATERWARP
 
 void R_DrawWorld (void);
 void R_DrawAliasModel (entity_t *e);

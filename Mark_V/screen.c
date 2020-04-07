@@ -1064,15 +1064,16 @@ void SCR_ScreenShot_f (lparse_t *line)
 takeshot:
 // now write the file
 
+#ifdef DIRECT3D9_WRAPPER
 	if (vid.direct3d == 9 && (vid_hardwaregamma.value == 0 || (vid_contrast.value == 1 && vid_gamma.value == 1) /* no hardware gamma = ok */))
 	{
 		char *qpath_to_url (const char *relative_url); // What was the logic in not putting this in common.h?  Because I hate it?
 		char *file_url = (char *)qpath_to_url (basefilename);
 		File_URL_Edit_Force_Extension (file_url, ".png", CORE_STRINGS_VA_ROTATING_BUFFER_BUFSIZ_1024);
 
-#ifdef DIRECT3D9_WRAPPER
+
 		Direct3D9_ScreenShotPNG (file_url); // This doesn't return success or failure, so we will need to check ourselves.
-#endif // DIRECT3D9_WRAPPER
+
 		// We'll say that if the file exists, it worked.
 		if (File_Exists (file_url)) {
 			Recent_File_Set_QPath (basefilename);
@@ -1082,7 +1083,7 @@ takeshot:
 
 		return; 
 	}
-
+#endif // DIRECT3D9_WRAPPER
 
 	{
 		int width, height;

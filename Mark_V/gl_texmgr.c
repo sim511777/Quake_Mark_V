@@ -1870,9 +1870,6 @@ gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const cha
 	glt->owner = owner;
 	c_strlcpy (glt->name, name);
 
-	if (glt->name[0] == 0)
-		glt->name[0] = glt->name[0];
-
 	glt->width = width;
 	glt->height = height;
 	glt->flags = flags;

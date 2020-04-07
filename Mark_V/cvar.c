@@ -1218,7 +1218,7 @@ void Cvar_AddCvars (voidfunc_t initializer)
 		{
 		case DEP_D3D9:
 			if (DIRECT3D_WRAPPER_VERSION != 9)
-				continue; // d3d var in non-d3d
+				continue; // d3d9 var in non-d3d9
 			break;
 
 		case DEP_GL:

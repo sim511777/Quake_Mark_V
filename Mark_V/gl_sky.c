@@ -1031,6 +1031,7 @@ void Sky_DrawSky (void)
 		return;
 
 //#ifndef DIRECT3D8_WRAPPER // Baker: Direct3D no stencil at this time :(
+// Don't enable this since I don't think we are checking.
 // 	if (!frame.has_sky) // Investigate this
 //		return;
 //#endif // DIRECT3D8_WRAPPER

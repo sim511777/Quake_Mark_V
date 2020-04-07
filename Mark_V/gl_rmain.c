@@ -266,7 +266,7 @@ R_SetupGL
 =============
 */
 // We are never called by mirror drawing
-void R_SetupGL (void)
+static void R_RenderScene_SetupScene_SetupGL (void)
 {
 #if 0 // Baker:  For testing
 	vrect_t area =  {glx + r_refdef.vrect.x, gly + glheight - r_refdef.vrect.y - r_refdef.vrect.height, r_refdef.vrect.width, r_refdef.vrect.height};
@@ -275,7 +275,15 @@ void R_SetupGL (void)
 	//johnfitz -- rewrote this section
 	eglMatrixMode(GL_PROJECTION);
 		eglLoadIdentity ();
-		eglViewport (clx + r_refdef.vrect.x,
+
+		if (frame.do_glwarp)
+		{
+			// this will go down into sbar territory so refresh it
+			eglViewport (0, 0, vid.maxwarpwidth, vid.maxwarpheight);
+			Sbar_Changed ();
+		}
+		else
+			eglViewport (clx + r_refdef.vrect.x,
 					cly + clheight - r_refdef.vrect.y - r_refdef.vrect.height,
 					r_refdef.vrect.width,
 					r_refdef.vrect.height);
@@ -342,13 +350,13 @@ static void R_SetupView_R_Clear (void)
 R_SetupScene -- johnfitz -- this is the stuff that needs to be done once per eye in stereo mode
 ===============
 */
-void R_SetupScene (void)
+static void R_RenderScene_SetupScene (void)
 {
 	Stain_FrameSetup_LessenStains (false);
 	cl.r_framecount++;
 	R_PushDlights_World (); // temp
 	R_AnimateLight ();
-	R_SetupGL ();
+	R_RenderScene_SetupScene_SetupGL ();
 }
 
 /*
@@ -389,14 +397,22 @@ void R_SetupView (void)
 	//johnfitz -- calculate r_fovx and r_fovy here
 	r_fovx = r_refdef.fov_x;
 	r_fovy = r_refdef.fov_y;
+
+	
+	//r_dowarp = false; // UNDERWATER_WARP.  Our frame structure should have already been cleared so we don't need to reset.
+	
 	if (r_waterwarp.value)
 	{
 		int contents = cl.r_viewleaf->contents; // Baker was: Mod_PointInLeaf (r_origin, cl.worldmodel)->contents;
 		if (contents == CONTENTS_WATER || contents == CONTENTS_SLIME || contents == CONTENTS_LAVA)
 		{
-			//variance is a percentage of width, where width = 2 * tan(fov / 2) otherwise the effect is too dramatic at high FOV and too subtle at low FOV.  what a mess!
-			r_fovx = atan(tan(Degree_To_Radians(r_refdef.fov_x) / 2) * (0.97 + sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
-			r_fovy = atan(tan(Degree_To_Radians(r_refdef.fov_y) / 2) * (1.03 - sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
+			if (r_waterwarp.value >= 2)
+				frame.do_glwarp = true;
+			else {	
+				//variance is a percentage of width, where width = 2 * tan(fov / 2) otherwise the effect is too dramatic at high FOV and too subtle at low FOV.  what a mess!
+				r_fovx = atan(tan(Degree_To_Radians(r_refdef.fov_x) / 2) * (0.97 + sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
+				r_fovy = atan(tan(Degree_To_Radians(r_refdef.fov_y) / 2) * (1.03 - sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
+			}
 		}
 	}
 	//johnfitz
@@ -409,6 +425,7 @@ void R_SetupView (void)
 		if (vid.warp_stale == true)
 		{
 			TexMgr_R_SetupView_RecalcWarpImageSize ();
+			TexMgr_R_SetupView_InitUnderwaterWarpTexture ();
 			vid.warp_stale = false;
 		}
 
@@ -1249,7 +1266,7 @@ R_RenderScene
 
 void R_RenderScene (void)
 {
-	R_SetupScene (); //johnfitz -- this does everything that should be done once per call to RenderScene
+	R_RenderScene_SetupScene (); //johnfitz -- this does everything that should be done once per call to RenderScene
 
 	Fog_EnableGFog (); //johnfitz
 
@@ -1731,6 +1748,9 @@ void R_RenderView (void)
 		R_RenderScene ();
 	}
 	//johnfitz
+
+	if (frame.do_glwarp) // UNDERWATER_WARP
+		GL_WarpScreen ();
 
 	//johnfitz -- modified r_speeds output
 	time2 = System_DoubleTime ();

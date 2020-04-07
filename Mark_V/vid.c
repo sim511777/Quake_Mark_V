@@ -118,6 +118,13 @@ int VID_SetMode (int modenum)
 	vid.canalttab = true;
 	scr_disabled_for_loading = temp;
 
+#ifdef DIRECT3D9_WRAPPER
+	// ensure swap settings right
+	if (vid.screen.type == MODE_WINDOWED && vid_vsync.value) {
+		Cbuf_AddText ("vid_vsync 0; wait; vid_vsync 1 \\ Shouldn't need, but running vsync right now doesn't keep\n"); // Works!
+	}
+#endif // DIRECT3D9_WRAPPER
+
 	return true;
 }
 
@@ -696,7 +703,7 @@ void	VID_Init (void)
 
 	VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODE_WINDOWED);
 
-	clwidth = vid_width.value;
+	clwidth = vid_width.value; // Err?  Why vid.screen.width and vid.screen.height?
 	clheight = vid_height.value;
 
 	vid.modenum_user_selected = vid.modenum_screen; // Default choice
@@ -1091,7 +1098,7 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
 
 	#pragma message ("Make sure VID_Resize_Think does NOT do anything essential ever")
 	#ifdef GLQUAKE_RESIZABLE_WINDOW
-		if (!vid.Minimized && vid.ActiveApp)
+		if (!vid.Minimized && vid.ActiveApp && vid.screen.type == MODE_WINDOWED /* <--- that */) // Fixes D3D fullscreenstart
 			VID_Resize_Think (); // Optional resize window on-the-fly
 	#endif // ! GLQUAKE_RESIZABLE_WINDOW
 

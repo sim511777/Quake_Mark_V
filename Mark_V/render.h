@@ -380,6 +380,7 @@ typedef struct
 	cbool has_abovewater; 		// GL + WinQuake
 	cbool has_sky; 				// Baker: Could work for WinQuake but not relevant.
 	cbool has_mirror; 			// Baker: Would be real hard to make it work for WinQuake.
+	cbool do_glwarp;			// GL
 
 	cbool qmb;					// QMB
 

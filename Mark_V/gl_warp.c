@@ -289,4 +289,75 @@ void R_SetupView_UpdateWarpTextures (void)
 	glquake_scr_tileclear_updates = 0;
 }
 
+#if 1 // UNDERWATER WARP
+void GL_Warp_CalcUnderwaterCoords (float x, float y)
+{
+	// ripped this from vkQuake at https://github.com/Novum/vkQuake/blob/master/Shaders/screen_warp.comp
+	// our x and y coords are already incoming at 0..1 range so we don't need to rescale them.
+	// i did change the calculation of AMP from 1/300 to 1/100 because the effect was too small at 1/300
+	// i suspect this should be different for x and y and derived from the vrect dimensions (likewise cycle)
+	const float CYCLE = M_PI * 5.0f;
+	const float AMP = 1.0f / 100.0f; // original was 300, 100 looks better, tune it or cvarize it all you wish
 
+	const float texX = (x + (sin (y * CYCLE + cl.time) * AMP)) * (1.0f - AMP * 2.0f) + AMP;
+	const float texY = (y + (sin (x * CYCLE + cl.time) * AMP)) * (1.0f - AMP * 2.0f) + AMP;
+
+	eglTexCoord2f (texX, texY);
+	eglVertex2f (x, y);
+}
+
+extern gltexture_t *r_underwaterwarptexture;
+
+void GL_WarpScreen (void)
+{
+	int x, y;
+
+	// copy over the texture
+	GL_Bind (r_underwaterwarptexture);
+	eglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.maxwarpwidth, vid.maxwarpheight);
+
+	// switch vp, ortho, mvp, etc; this should be the same viewport rect as is set in the main glViewport call for the 3D scene; if you've changed it from
+	// the stock Fitz code, you should change this too to match.
+	eglViewport (clx + r_refdef.vrect.x,
+				cly + clheight - r_refdef.vrect.y - r_refdef.vrect.height,
+				r_refdef.vrect.width,
+				r_refdef.vrect.height);
+
+	eglMatrixMode (GL_PROJECTION);
+	eglLoadIdentity ();
+
+	// bottom-left-is-origin crap
+#ifdef DIRECT3D9_WRAPPER
+	eglOrtho (0, 1, 1, 0, -1, 1);
+#else
+	eglOrtho (0, 1, 0, 1, -1, 1);
+#endif
+
+	eglMatrixMode (GL_MODELVIEW);
+	eglLoadIdentity ();
+
+	eglDisable (GL_DEPTH_TEST);
+	eglDisable (GL_CULL_FACE);
+	eglDisable (GL_BLEND);
+	eglDisable (GL_ALPHA_TEST);
+	eglColor4f (1, 1, 1, 1);
+
+	// draw the warped view; tune or cvarize this all you wish; maybe you'll create an r_underwaterwarpquality cvar?
+	// yeah, it's a lot of verts - so what?  There's far far more pixels than vertexes so vertex count isn't that big a deal here.
+	for (x = 0; x < 32; x++)
+	{
+		eglBegin (GL_TRIANGLE_STRIP);
+
+		for (y = 0; y <= 32; y++)
+		{
+			GL_Warp_CalcUnderwaterCoords ((float) x / 32.0f, (float) y / 32.0f);
+			GL_Warp_CalcUnderwaterCoords ((float) (x + 1) / 32.0f, (float) y / 32.0f);
+		}
+
+		eglEnd();
+	}
+
+	// if viewsize is less than 100, we need to redraw the frame around the viewport
+	glquake_scr_tileclear_updates = 0;
+}
+#endif 

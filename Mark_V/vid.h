@@ -109,6 +109,9 @@ typedef struct
 	int				conwidth;
 	int				conheight;
 
+	int				maxwarpwidth;
+	int				maxwarpheight;
+
 #ifdef WINQUAKE_RENDERER_SUPPORT
 // These need to be set when screen changes
 	unsigned		rowbytes;		// may be > width if displayed in a window

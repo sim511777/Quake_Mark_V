@@ -335,7 +335,7 @@ cbool VID_Local_SetMode (int modenum)
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
 		Direct3D9_ResetMode (vid.modelist[modenum].width, vid.modelist[modenum].height, vid.desktop.bpp, (vid.modelist[modenum].type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
-		return reuseok; // Reuseok!
+		return true; // Reuseok!
 	}
 
 

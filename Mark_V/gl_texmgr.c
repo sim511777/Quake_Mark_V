@@ -749,6 +749,30 @@ void TexMgr_R_SetupView_RecalcWarpImageSize (void)
 }
 
 
+gltexture_t *r_underwaterwarptexture;
+
+void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void)
+{
+	extern byte *hunk_base;
+
+	// called at startup and whenever the video mode changes
+	for (vid.maxwarpwidth = 1; vid.maxwarpwidth < vid.screen.width; vid.maxwarpwidth <<= 1);
+	for (vid.maxwarpheight = 1; vid.maxwarpheight < vid.screen.height; vid.maxwarpheight <<= 1);
+
+	// take a power of 2 down from the screen res so that we can maintain perf if warping
+	vid.maxwarpwidth >>= 1;
+	vid.maxwarpheight >>= 1;
+
+	// note - OpenGL allows specifying NULL data to create an empty texture, but FitzQuake's texmgr doesn't.  So we need to do hunk
+	// shenanigans to work around it; if you  modify the texmgr to allow for this, you could just specify NULL data and get rid of
+	// this.  in order to minimise the code impact i didn't bother.  using SRC_INDEXED so that risk of overflowing the hunk is minimised.
+	r_underwaterwarptexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, "r_waterwarp2", vid.maxwarpwidth, vid.maxwarpheight, SRC_INDEXED, hunk_base, "", (unsigned) hunk_base, TEXPREF_NOPICMIP | TEXPREF_PERSIST | TEXPREF_LINEAR);
+
+	// the d3d wrapper will need to respecify this as a rendertarget texture so do it now rather than having to check and do it at runtime
+	GL_Bind (r_underwaterwarptexture);
+	eglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.maxwarpwidth, vid.maxwarpheight);
+}
+
 
 
 void TexMgr_GreyScale_f (cvar_t *var)
@@ -804,6 +828,7 @@ void TexMgr_Init (void)
 	//set safe size for warpimages
 	gl_warpimagesize = 0;
 	TexMgr_R_SetupView_RecalcWarpImageSize (); // This must be here.
+	TexMgr_R_SetupView_InitUnderwaterWarpTexture (); // This must be here  // UNDERWATER_WARP
 
 	vid.warp_stale = true; // <--- means warp needs recalculated.
 }

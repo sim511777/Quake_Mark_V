@@ -617,8 +617,10 @@ void context_t::ResetDevice (void)
 void context_t::SetVSync (int interval)
 {
 	// don't change if it doesn't need to change
+#if 1 // Baker test.  Disabling these didn't help windowed mode.
 	if (!interval && this->PresentParams.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE) return;
 	if (interval && this->PresentParams.PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE) return;
+#endif
 
 	if (interval)
 		this->PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;

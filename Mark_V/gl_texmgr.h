@@ -142,6 +142,7 @@ extern gltexture_t *playertextures[MAX_COLORMAP_SKINS_1024];
 cbool TexMgr_Clipboard_Set (gltexture_t *glt);
 const char *TexMgr_TextureModes_ListExport (void); // Baker
 void TexMgr_R_SetupView_RecalcWarpImageSize (void);
+void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void);
 
 
 

@@ -1492,19 +1492,19 @@ static byte *COM_LoadFile_Limited (const char *path, int usehunk, const char *me
 
 	buf = NULL;     // quiet compiler warning
 
-#ifdef GLQUAKE_SUPPORTS_QMB
-	if (usehunk == LOADFILE_STACK && String_Does_Match_Caseless (path, "progs/flame0.mdl")) {
-		extern const size_t qmb_flame0_mdl_size;
-		
-		
-		len = qmb_flame0_mdl_size;
-
-		buf = (byte *) Hunk_TempAlloc (len + 1);
-		memcpy (buf, qmb_flame0_mdl, len);
-
-		goto flame0_cheetz;
-	}
-#endif // GLQUAKE_SUPPORTS_QMB
+//#ifdef GLQUAKE_SUPPORTS_QMB
+//	if (usehunk == LOADFILE_STACK && String_Does_Match_Caseless (path, "progs/flame0.mdl")) {
+//		extern const size_t qmb_flame0_mdl_size;
+//		
+//		
+//		len = qmb_flame0_mdl_size;
+//
+//		buf = (byte *) Hunk_TempAlloc (len + 1);
+//		memcpy (buf, qmb_flame0_mdl, len);
+//
+//		goto flame0_cheetz;
+//	}
+//#endif // GLQUAKE_SUPPORTS_QMB
 
 
 // look for it in the filesystem or pack files
@@ -1556,7 +1556,9 @@ static byte *COM_LoadFile_Limited (const char *path, int usehunk, const char *me
 	Draw_EndDisc ();
 #endif // Baker
 
-flame0_cheetz:
+//flame0_cheetz:
+	if (com_filesrcpak == 2 && String_Does_Match_Caseless (path, "progs/flame.mdl"))
+		com_filesrcpak = 3; // Evile!
 	return buf;
 }
 

@@ -511,22 +511,22 @@ void CL_ParseServerInfo (void)
 	if (nummodels >= MAX_WINQUAKE_MODELS)
 		Con_DWarning ("%d models exceeds standard limit of %d.\n", nummodels, MAX_WINQUAKE_MODELS); //256
 
-#ifdef GLQUAKE_SUPPORTS_QMB // After the for loop
-// joe: load the extra "no-flamed-torch" model  NOTE: this is an ugly hack
-// Baker: Causing the extra flame0.mdl to be inserted.
-	if (qmb_is_available) {
-		if (nummodels == MAX_FITZQUAKE_MODELS)
-		{
-			Con_Printf ("Server sent too many model precaches -> replacing flame0.mdl with flame.mdl\n");
-			cl_modelindex[mi_flame0] = cl_modelindex[mi_flame1];
-		}
-		else
-		{
-			c_strlcpy (model_precache[nummodels], cl_modelnames[mi_flame0]);
-			cl_modelindex[mi_flame0] = nummodels++;
-		}
-	}
-#endif // GLQUAKE_SUPPORTS_QMB
+//#ifdef GLQUAKE_SUPPORTS_QMB // After the for loop
+//// joe: load the extra "no-flamed-torch" model  NOTE: this is an ugly hack
+//// Baker: Causing the extra flame0.mdl to be inserted.
+//	if (qmb_is_available) {
+//		if (nummodels == MAX_FITZQUAKE_MODELS)
+//		{
+//			Con_Printf ("Server sent too many model precaches -> replacing flame0.mdl with flame.mdl\n");
+//			cl_modelindex[mi_flame0] = cl_modelindex[mi_flame1];
+//		}
+//		else
+//		{
+//			c_strlcpy (model_precache[nummodels], cl_modelnames[mi_flame0]);
+//			cl_modelindex[mi_flame0] = nummodels++;
+//		}
+//	}
+//#endif // GLQUAKE_SUPPORTS_QMB
 
 
 

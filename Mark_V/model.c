@@ -447,6 +447,11 @@ qmodel_t *Mod_LoadModel (qmodel_t *mod, cbool crash)
 		return NULL;
 	}
 
+	// Baker: You are a horrible person.
+	if (com_filesrcpak == 3) {
+		mod->is_original_flame_mdl = true;
+	}
+
 //
 // allocate a new model
 //
@@ -572,7 +577,7 @@ static modhint_e GameHacks_IsSpecialQuakeAliasModel (const char *model_name)
 
 	if 	    (String_Does_Start_With_Caseless (model_name, "progs/player"))	return MOD_PLAYER_1;	// Why?
 	else if (String_Does_Match_Caseless (model_name, "progs/eyes.mdl")		)	return MOD_EYES_2;		// Why?
-	else if (String_Does_Match_Caseless (model_name, "progs/flame0.mdl")	)	return MOD_FLAME_3;
+//	else if (String_Does_Match_Caseless (model_name, "progs/flame0.mdl")	)	return MOD_FLAME_3;
 	else if (String_Does_Match_Caseless (model_name, "progs/flame.mdl")	)		return MOD_FLAME_3;
 	else if (String_Does_Match_Caseless (model_name, "progs/flame2.mdl")	)	return MOD_FLAME_3;
 	else if (String_Does_Match_Caseless (model_name, "progs/bolt.mdl")		)	return MOD_THUNDERBOLT_4;
@@ -615,7 +620,7 @@ void GameHacks_InitModelnames (void)
 	cl_modelnames[mi_eyes] 			= "progs/eyes.mdl";
 	cl_modelnames[mi_rocket] 		= "progs/missile.mdl";
 	cl_modelnames[mi_grenade] 		= "progs/grenade.mdl";
-	cl_modelnames[mi_flame0] 		= "progs/flame0.mdl";
+//	cl_modelnames[mi_flame0] 		= "progs/flame0.mdl";
 	cl_modelnames[mi_flame1] 		= "progs/flame.mdl";
 	cl_modelnames[mi_flame2] 		= "progs/flame2.mdl";
 	cl_modelnames[mi_explo1] 		= "progs/s_expl.spr";

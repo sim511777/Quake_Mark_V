@@ -75,6 +75,7 @@ typedef struct entity_s
 
 #ifdef GLQUAKE_SUPPORTS_QMB
 	int						modelindex;
+	cbool					is_fake_frame0;
 #endif // GLQUAKE_SUPPORTS_QMB
 
 	struct efrag_s			*efrag;			// linked list of efrags
@@ -214,7 +215,7 @@ void R_InitParticles (void);
 void R_ClearParticles (void);
 void R_ParseParticleEffect (void);
 void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void R_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+void R_AnyTrail (entity_t *ent, vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void R_EntityParticles (entity_t *ent);
 void R_BlobExplosion (vec3_t org);
 void R_ParticleExplosion (vec3_t org);
@@ -272,8 +273,8 @@ cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg);
 cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);
 Point3D QMB_GetDlightColor (dlighttype_e colornum, dlighttype_e def, cbool random);
 
-extern byte qmb_flame0_mdl[];
-extern const size_t qmb_flame0_mdl_size;
+//extern byte qmb_flame0_mdl[];
+//xtern const size_t qmb_flame0_mdl_size;
 
 #endif //  GLQUAKE_SUPPORTS_QMB
 

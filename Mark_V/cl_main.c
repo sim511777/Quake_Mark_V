@@ -733,7 +733,7 @@ static void CL_RelinkEntities (void)
 #ifdef GLQUAKE_SUPPORTS_QMB
 		if (frame.qmb) evaluated = QMB_Effects_Evaluate (i, ent, oldorg);
 #endif // GLQUAKE_SUPPORTS_QMB
-
+		
 		if (!evaluated)	evaluated = Clasic_Effects_Evaluate (i, ent, oldorg);  // What's this do, I forget.  Emits classic trails
 
 

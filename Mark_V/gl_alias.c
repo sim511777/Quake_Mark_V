@@ -66,7 +66,7 @@ GL_DrawAliasFrame -- johnfitz -- rewritten to support colored light, lerping, en
 #ifdef DIRECT3D_WRAPPER
 cbool direct3d_external_textures_workaround;
 #endif // DIRECT3D_WRAPPER
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata)
+void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool truncate_flame)
 {
 	float 	vertcolor[4];
     trivertx_t *verts1, *verts2;
@@ -123,6 +123,20 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata)
 		{
 			u = ((float *)commands)[0];
 			v = ((float *)commands)[1];
+
+			if (truncate_flame) {
+				verts1 = verts1;
+				if (verts1->v[2] > 100) {
+					commands += 2;			
+					if (lerping)
+					{
+						verts1++;
+						verts2++;
+					} else verts1++;
+					continue;
+				}
+			}
+
 			if (mtexenabled)
 			{
 				renderer.GL_MTexCoord2fFunc (renderer.TEXTURE0, u, v);
@@ -417,7 +431,7 @@ void R_DrawAliasModel (entity_t *e)
 	if (r_drawflat_cheatsafe)
 	{
 		eglDisable (GL_TEXTURE_2D);
-		GL_DrawAliasFrame (paliashdr, lerpdata);
+		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 		eglEnable (GL_TEXTURE_2D);
 		srand((int) (cl.ctime * 1000)); //restore randomness
 	}
@@ -426,7 +440,7 @@ void R_DrawAliasModel (entity_t *e)
 		GL_Bind (tx);
 		shading = false;
 		eglColor4f(1,1,1,entalpha);
-		GL_DrawAliasFrame (paliashdr, lerpdata);
+		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 		if (fb)
 		{
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -436,7 +450,7 @@ void R_DrawAliasModel (entity_t *e)
 			eglDepthMask(GL_FALSE);
 			eglColor3f(entalpha,entalpha,entalpha);
 			Fog_StartAdditive ();
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 			Fog_StopAdditive ();
 			eglDepthMask(GL_TRUE);
 			eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -448,7 +462,7 @@ void R_DrawAliasModel (entity_t *e)
 		eglDisable (GL_TEXTURE_2D);
 		shading = false;
 		eglColor3f(1,1,1);
-		GL_DrawAliasFrame (paliashdr, lerpdata);
+		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 		eglEnable (GL_TEXTURE_2D);
 	}
 	else if (overbright)
@@ -465,7 +479,7 @@ void R_DrawAliasModel (entity_t *e)
 			GL_Bind (fb);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 			eglEnable(GL_BLEND);
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 			eglDisable(GL_BLEND);
 			GL_DisableMultitexture();
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -479,7 +493,7 @@ void R_DrawAliasModel (entity_t *e)
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 2.0f);
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 1.0f);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		// second pass
@@ -493,7 +507,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata);
+				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -507,13 +521,13 @@ void R_DrawAliasModel (entity_t *e)
 		// first pass
 			GL_Bind(tx);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 		// second pass -- additive with black fog, to double the object colors but not the fog color
 			eglEnable(GL_BLEND);
 			eglBlendFunc (GL_ONE, GL_ONE);
 			eglDepthMask(GL_FALSE);
 			Fog_StartAdditive ();
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 			Fog_StopAdditive ();
 			eglDepthMask(GL_TRUE);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -530,7 +544,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata);
+				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -550,7 +564,7 @@ void R_DrawAliasModel (entity_t *e)
 			GL_Bind (fb);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 			eglEnable(GL_BLEND);
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 			eglDisable(GL_BLEND);
 			GL_DisableMultitexture();
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -560,7 +574,7 @@ void R_DrawAliasModel (entity_t *e)
 		// first pass
 			GL_Bind(tx);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			GL_DrawAliasFrame (paliashdr, lerpdata);
+			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 		// second pass
 			if (fb)
 			{
@@ -571,7 +585,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata);
+				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -669,7 +683,7 @@ void GL_DrawAliasShadow (entity_t *e)
 	eglDisable (GL_TEXTURE_2D);
 	shading = false;
 	eglColor4f(0,0,0, gl_shadows.value > 1 ? entalpha * 1 : entalpha * 0.5);
-	GL_DrawAliasFrame (paliashdr, lerpdata);
+	GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 	eglEnable (GL_TEXTURE_2D);
 	eglDisable (GL_BLEND);
 	eglDepthMask(GL_TRUE);
@@ -704,7 +718,7 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 
 	shading = false;
 	eglColor3f(1,1,1);
-	GL_DrawAliasFrame (paliashdr, lerpdata);
+	GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
 
 	eglPopMatrix ();
 }

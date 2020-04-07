@@ -1057,7 +1057,7 @@ void R_DrawParticles_ShowTris (void)
 
 #endif // GLQUAKE_DRAW_PARTICLES
 
-int Effects_Bit_Flag (int flags)
+model_flags_e Trail_Effects_Bit_Flag (model_flags_e flags)
 {
 	if (flags & EF_GIB) return EF_GIB;
 	if (flags & EF_ZOMGIB) return EF_ZOMGIB;
@@ -1084,7 +1084,7 @@ static vec3_t	_mathlib_temp_vec1;
 #define NEHSMOKE 987
 cbool Clasic_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 {
-	int effects = Effects_Bit_Flag (ent->model->modelflags);
+	model_flags_e effects = Trail_Effects_Bit_Flag (ent->model->modelflags);
 
 	if (!effects)
 		return false;
@@ -1094,30 +1094,23 @@ cbool Clasic_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 		effects = NEHSMOKE;
 #endif // SUPPORTS_NEHAHRA
 
-	//if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
-	//{
-	//	VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
-	//	ent->traildrawn = true;
-	//}
-	//else VectorCopy (ent->trail_origin, oldorg);
-
 	switch (effects)
 	{
 	default:			return false;
 
-	case EF_GIB:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, BLOOD_TRAIL_2);			return true;
-	case EF_ZOMGIB:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, SLIGHT_ZOM_BLOOD_TRAIL_4);	return true;
-	case EF_TRACER:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, TRACER1_SCRAG_TRAIL_3);		return true;
-	case EF_TRACER2:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, TRACER2_HELLKNIGHT_TRAIL_5);		return true;
-	case EF_TRACER3:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, VOOR_TRAIL_6);			return true;
-	case EF_GRENADE:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, GRENADE_TRAIL_1);		return true;
+	case EF_GIB:		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, BLOOD_TRAIL_2);							return true;
+	case EF_ZOMGIB:		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, SLIGHT_ZOM_BLOOD_TRAIL_4);				return true;
+	case EF_TRACER:		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, TRACER1_SCRAG_TRAIL_3);					return true;
+	case EF_TRACER2:	R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, TRACER2_HELLKNIGHT_TRAIL_5);				return true;
+	case EF_TRACER3:	R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, VOOR_TRAIL_6);							return true;
+	case EF_GRENADE:	R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, GRENADE_TRAIL_1);							return true;
 
-	case EF_ROCKET:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
+	case EF_ROCKET:		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
 						DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1 /*baker1*/,1 /*baker1*/);
 						return true;
 
 #ifdef SUPPORTS_NEHAHRA
-	case NEHSMOKE:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, NEHAHRA_SMOKE_9);
+	case NEHSMOKE:		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, NEHAHRA_SMOKE_9);
 						ent->smokepuff_time = cl.time + 0.14;
 						return true;
 #endif // SUPPORTS_NEHAHRA
@@ -1136,13 +1129,14 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 	// Apparently these are all based on the trails flag
 	if (!ent->model->modelflags) return false;
 	
-	//if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
-	//{
-	//	VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
-	//	ent->traildrawn = true;
-	//	return false; // Right?
-	//}
-	//else VectorCopy (ent->trail_origin, oldorg);
+	// IF we pass the buck, we must restore these to what classic Quake particle system expects VectorCopy (ent->origin, oldorg);
+	if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
+	{
+		VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
+		ent->traildrawn = true;
+		return false; // Right?
+	}
+	else VectorCopy (ent->trail_origin, oldorg);
 
 	if ( ! Flag_Check(ent->model->modelflags, EF_ROCKET) )
 		return false;	// Classic will emit it just fine.
@@ -1152,22 +1146,19 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 //		dlighttype_e	color_type;
 
 		if (!qmb_trail_lavaball.value) {
-			R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7); // Faked
+			R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7); // Faked
 			DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1 /*baker1*/,1 /*baker1*/);
 			return false;  // Unwanted
 		}
 
-		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7);
+		R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7);
 
 		dl = CL_AllocDlight (i);
 		VectorCopy (ent->origin, dl->origin);
 		dl->radius = 100 * (1 + CLAMP (0, QMB_ROCKET_LIGHT_LEVEL_1, 1) );
 		dl->die = cl.time + 0.1;
 
-		//dl->type = lt_rocket;
-
 		return true;
-				//return false;	// Classic will emit it just fine.  And apparently not an option.
 	}
 
 
@@ -1176,7 +1167,7 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 		return false;	// Rocket trail isn't on?
 
 	// Emit the trail
-	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
+	R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
 
 	// Maybe emit the light
 	if (QMB_ROCKET_LIGHT_LEVEL_1)
@@ -1350,7 +1341,7 @@ void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
 	}
 }
 
-void R_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
+void R_AnyTrail (entity_t *ent, vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
 {
 #ifdef GLQUAKE_SUPPORTS_QMB
 	if (frame.qmb) {
@@ -1374,7 +1365,7 @@ void R_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e ty
 use_classic:
 #endif // GLQUAKE_SUPPORTS_QMB
 
-
+	VectorCopy (ent->origin, *trail_origin);
 	Classic_AnyTrail (start, end, trail_origin, type);
 }
 

@@ -302,7 +302,7 @@ do {																\
 	count++;														\
 } while(0)
 
-const char *progs_flame0_mdl_name = "progs/flame0.mdl";
+//const char *progs_flame0_mdl_name = "progs/flame0.mdl";
 
 //cbool	qmb_initialized = false;
 
@@ -354,15 +354,15 @@ static unsigned *pt_persist_tex[ARRAY_COUNT(particle_textures)];
 const char *QMB_InitParticles_Error (void)
 {
 	int	i, count = 0;
-	qmodel_t *flame0_test = NULL;
+//	qmodel_t *flame0_test = NULL;
 	gltexture_t *load_texture = NULL;
 
 	if (particles) particles = core_free(particles); 
 
-	flame0_test = Mod_ForName (progs_flame0_mdl_name, false);
-	if (!flame0_test) {
-		return "progs/flame0.mdl not loaded";
-	}
+	//flame0_test = Mod_ForName (progs_flame0_mdl_name, false);
+	//if (!flame0_test) {
+	//	return "progs/flame0.mdl not loaded";
+	//}
 
 	// Discard old memory.	
 	{ int n; for (n = 0; n < ARRAY_COUNT (particle_textures); n ++) {
@@ -1280,7 +1280,7 @@ __inline static void AddColoredParticle (part_type_e type, vec3_t org, int count
 
 	assert (size > 0 && time > 0);
 
-	if (in_range_beyond (0, type, num_particletypes) )
+	if (!in_range_beyond (0, type, num_particletypes) )
 		System_Error ("AddColoredParticle: Invalid type (%d)", type);
 
 	pt = &particle_types[particle_type_index[type]];
@@ -1888,25 +1888,28 @@ function that toggles between classic and QMB particles - by joe
 
 cbool QMB_FlameModelSetState (entity_t *ent)
 {
-	if ((!frame.qmb || !qmb_flames.value) && String_Does_Match (ent->model->name, "progs/flame0.mdl"))
+	if ((!frame.qmb || !qmb_flames.value) && ent->baseline.modelindex == cl_modelindex[mi_flame1])
 	{
-		ent->model = cl.model_precache[cl_modelindex[mi_flame1]];
+		//ent->model = cl.model_precache[cl_modelindex[mi_flame1]];
+		ent->is_fake_frame0 = false;
 	}
 	else if (frame.qmb && qmb_flames.value)
 	{
 		vec3_t	liteorg;
 
 		VectorCopy (ent->origin, liteorg);
-		if (ent->baseline.modelindex == cl_modelindex[mi_flame0])
+		//if (ent->baseline.modelindex == cl_modelindex[mi_flame0])
+		//{
+		//	liteorg[2] += 5.5;
+		//	QMB_TorchFlame (liteorg, 7, 0.8);
+		//}
+		//else 
+		if (ent->baseline.modelindex == cl_modelindex[mi_flame1])
 		{
 			liteorg[2] += 5.5;
 			QMB_TorchFlame (liteorg, 7, 0.8);
-		}
-		else if (ent->baseline.modelindex == cl_modelindex[mi_flame1])
-		{
-			liteorg[2] += 5.5;
-			QMB_TorchFlame (liteorg, 7, 0.8);
-			ent->model = cl.model_precache[cl_modelindex[mi_flame0]];
+			//ent->model = cl.model_precache[cl_modelindex[mi_flame0]];
+			ent->is_fake_frame0 = ent->model->is_original_flame_mdl ? true : false;
 		}
 		else if (ent->baseline.modelindex == cl_modelindex[mi_flame2])
 		{

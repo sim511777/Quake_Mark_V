@@ -472,7 +472,7 @@ typedef	enum
 	mi_eyes,
 	mi_rocket,
 	mi_grenade,
-	mi_flame0,
+//	mi_flame0,		// Fare thee well
 	mi_flame1,
 	mi_flame2,
 	mi_explo1,
@@ -546,28 +546,34 @@ typedef enum {
 
 
 
+typedef enum {
+	EF_ROCKET			= 1,			// leave a trail
+	EF_GRENADE			= 2,			// leave a trail
+	EF_GIB				= 4,			// leave a trail
+	EF_ROTATE			= 8,			// rotate (bonus items)
+	EF_TRACER			= 16,			// green split trail
+	EF_ZOMGIB			= 32,			// small blood trail
+	EF_TRACER2			= 64,			// orange split trail + rotate
+	EF_TRACER3			= 128,			// purple trail
 
-#define	EF_ROCKET	1			// leave a trail
-#define	EF_GRENADE	2			// leave a trail
-#define	EF_GIB		4			// leave a trail
-#define	EF_ROTATE	8			// rotate (bonus items)
-#define	EF_TRACER	16			// green split trail
-#define	EF_ZOMGIB	32			// small blood trail
-#define	EF_TRACER2	64			// orange split trail + rotate
-#define	EF_TRACER3	128			// purple trail
-
-#define EF_ALPHA_MASKED_MDL 16384	// Alpha masked model texture, only for .mdl models.
-
+// Extended
 //johnfitz -- extra flags for rendering
-#define	MOD_NOLERP		256		// don't lerp when animating
-#define	MOD_NOSHADOW	512		// don't cast a shadow
-#define	MOD_FBRIGHTHACK	1024	// when fullbrights are disabled, use a hack to render this model brighter
-#define MOD_NOCOLORMAP	2048	// don't bother colormapping certain entities (wasteful) WinQuake does not use!
+	MOD_NOLERP			= 256,		// don't lerp when animating
+	MOD_NOSHADOW		= 512,		// don't cast a shadow
+	MOD_FBRIGHTHACK		= 1024,	// when fullbrights are disabled, use a hack to render this model brighter
+	MOD_NOCOLORMAP		= 2048,	// don't bother colormapping certain entities (wasteful) WinQuake does not use!
 
-//#define MOD_PLAYER		4096	// player  (technically isn't model index 1 always player in Quake and required by the demo format to be so?)
-#define MOD_EYES			8192	// eyes    (technically isn't model index 2 always eyes in Quake and required by the demo format to be so?)
-#define MOD_GIBS			32768	// gibs, heads, bubbles
+//#define MOD_PLAYER	= 4096,	// player  (technically isn't model index 1 always player in Quake and required by the demo format to be so?)
+	MOD_EYES			= 8192,	// eyes    (technically isn't model index 2 always eyes in Quake and required by the demo format to be so?)
+	MOD_GIBS			= 32768, // gibs, heads, bubbles
 //johnfitz
+
+	EF_ALPHA_MASKED_MDL = 16384,	// Alpha masked model texture, only for .mdl models.
+
+
+
+} model_flags_e;
+
 
 typedef struct
 {
@@ -576,18 +582,19 @@ typedef struct
 
 typedef struct qmodel_s
 {
-	char		name[MAX_QPATH_64];
-	cbool	needload;		// bmodels and sprites don't cache normally
+	char			name[MAX_QPATH_64];
+	cbool			needload;		// bmodels and sprites don't cache normally
 
 //#ifdef GLQUAKE_SUPPORTS_QMB
-	modhint_e	modhint;
+	modhint_e		modhint;
+	cbool			is_original_flame_mdl;
 //#endif	// GLQUAKE_SUPPORTS_QMB
 
-	modtype_t	type;
-	int			numframes;
-	synctype_t	synctype;
+	modtype_t		type;
+	int				numframes;
+	synctype_t		synctype;
 
-	int			modelflags;
+	model_flags_e	modelflags;
 
 //
 // volume occupied by the model graphics

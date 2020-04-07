@@ -62,7 +62,7 @@ int		stripcount;
 StripLength
 ================
 */
-int	StripLength (int starttri, int startv)
+static int StripLength (int starttri, int startv)
 {
 	int			m1, m2;
 	int			j;
@@ -131,7 +131,7 @@ done:
 FanLength
 ===========
 */
-int	FanLength (int starttri, int startv)
+static int FanLength (int starttri, int startv)
 {
 	int		m1, m2;
 	int		j;
@@ -202,7 +202,7 @@ Generate a list of trifans or strips
 for the model, which holds for all frames
 ================
 */
-void BuildTris (void)
+static void BuildTris (void)
 {
 	int		i, j, k;
 	int		startv;

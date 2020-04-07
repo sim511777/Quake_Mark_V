@@ -242,6 +242,17 @@ void context_t::FlushGeometry (void)
 	// glEnd builds indexes based on mode and number of vertexes in the batch, then updates pointers and counters
 	// flush submits the batch then resets pointers and counters
 
+	if (this->DeviceLost)
+	{
+		// reset everything in case one is 0 but the other is not
+		this->Geometry.NumVerts = 0;
+		this->Geometry.NumIndexes = 0;
+		this->Geometry.PrimVerts = 0;
+
+		// do nothing if a lost device
+		return;
+	}
+
 	switch (this->Geometry.Mode)
 	{
 	case GL_INVALID_VALUE:

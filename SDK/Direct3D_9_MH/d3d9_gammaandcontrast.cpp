@@ -119,6 +119,9 @@ BOOL context_t::SetupGammaAndContrast (float gamma, float contrast)
 	// not needed
 	if (gamma == 1.0f && contrast == 1.0f) return TRUE;
 
+	// this uses default pool resources so don't run it if we have a lost device
+	if (this->DeviceLost) return TRUE;
+
 	// check if the objects exist
 	// if we're returning FALSE it's because something failed or broke, so clean up all of our objects
 	if (!this->GAndCRT) {this->DestroyGammaAndContrast (); return FALSE;}

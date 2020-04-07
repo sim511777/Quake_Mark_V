@@ -74,8 +74,8 @@ void VID_Local_AddFullscreenModes (void)
         vmode_t test = { MODE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], BPP_32};
     
         cbool bpp_ok     = true;
-        cbool width_ok   = in_range (MIN_MODE_WIDTH, (int)[displayMode width], MAX_MODE_WIDTH);
-        cbool height_ok  = in_range (MIN_MODE_HEIGHT, (int)[displayMode height], MAX_MODE_HEIGHT);
+        cbool width_ok   = in_range (MIN_MODE_WIDTH_640, (int)[displayMode width], MAX_MODE_WIDTH_10000);
+        cbool height_ok  = in_range (MIN_MODE_HEIGHT_400, (int)[displayMode height], MAX_MODE_HEIGHT_10000);
         cbool qualified  = (bpp_ok && width_ok && height_ok);
 
         if (qualified && !VID_Mode_Exists(&test, NULL) )

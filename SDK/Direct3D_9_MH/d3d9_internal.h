@@ -65,10 +65,20 @@ typedef struct _D3DMATRIX
 
 
 // externs we need from the Quake engine
-#pragma message ("Baker: Deal with these ...")
+// Baker: gcc gives me awesome printf warnings using __attribute__
+//   ... like telling me when args mismatch or are omitted.
+// Under my new system, most Con_Printf like functions shouldn't provide a newline
+// and instead a Con_PrintLinef should be used.
+// Eliminates the human error of messages where the trailing \n was forgotten
+// Which I discovered in many places, didn't investigate to see how many were
+// in the original id Software source release.
 int System_Error (const char *fmt, ...);// __core_attribute__((__format__(__printf__,1,2), __noreturn__));
 int Con_PrintLinef (const char *fmt, ...); // __core_attribute__((__format__(__printf__,1,2)));
+int Con_SafePrintLinef (const char *fmt, ...); // __core_attribute__((__format__(__printf__,1,2)));
 char *va (const char *format, ...); // __core_attribute__((__format__(__printf__,1,2)));
+
+#define MIN_MODE_WIDTH_640			640
+#define MIN_MODE_HEIGHT_400			400
 
 
 // utility
@@ -205,6 +215,7 @@ public:
 
 	void Dirty (RECT *texrect);
 	void Clean (void);
+	void Mipmap (int dstlevel, int srclevel);
 
 	void Initialize (void);
 	void Create (class context_t *ctx, GLsizei width, GLsizei height, D3DFORMAT d3dformat);
@@ -442,20 +453,32 @@ void WINAPI Direct3D9_glMultiTexCoord2fv (GLenum target, GLfloat *st);
 void WINAPI Direct3D9_glClientActiveTexture (GLenum texture);
 void WINAPI Direct3D9_glTexStorage2D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 
+struct modedesc_t
+{
+	int Width;
+	int Height;
+	BOOL Windowed;
+	BOOL VSync;
+	D3DFORMAT dsFmt;
+};
+
 class context_t
 {
 public:
 	context_t (HDC hdc);
+	void Release (void);
 
 	IDirect3DDevice9 *Device;
-	D3DPRESENT_PARAMETERS PresentParams;
 	BOOL DeviceLost;
-	D3DDISPLAYMODE CurrentMode;
+	char GLExtensions[1024]; // never go above this because Q1 itself writes them into a buffer this size
+	D3DADAPTER_IDENTIFIER9 AdapterID;
+
+	D3DPRESENT_PARAMETERS *SetupPresentParams (modedesc_t *mode);
+	D3DPRESENT_PARAMETERS *SetupPresentParams (int width, int height, BOOL windowed, BOOL vsync);
 
 	HWND Window;
 
-	void SetupPresentParams (int width, int height, int bpp, BOOL windowed);
-	D3DFORMAT GetAdapterModeFormat (int width, int height, int bpp);
+	modedesc_t DisplayMode;
 
 	geometry_t Geometry;
 	state_t State;
@@ -557,8 +580,8 @@ public:
 	void PreReset (void);
 	void ResetDevice (void);
 	
-	void ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-	void ResizeWindow (int width, int height, int bpp); // Windowed resize on fly
+	// Baker: The extra information is for window positioning and to restrict resize precisely in WM_GETMINMAX
+	void ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height);
 
 	void PostReset (void);
 	void Sync (void);
@@ -577,9 +600,13 @@ class globals_t
 public:
 	globals_t (void);
 	void CreateDirect3D (void);
+	void D3DModeToDEVMODE (LPDEVMODE lpDevMode, D3DDISPLAYMODE *mode);
+	void GetModeList (void);
+
+	D3DDISPLAYMODE ModeList[666];
+	UINT NumModeList;
 
 	D3DDISPLAYMODE DesktopMode;
-	int RequestBPP;
 	BOOL RequestStencil;
 	IDirect3D9 *Object;
 	D3DCAPS9 DeviceCaps;

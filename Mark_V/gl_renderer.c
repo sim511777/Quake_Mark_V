@@ -201,7 +201,8 @@ void VID_Renderer_Set_Direct3D8 (void)
 	eSetPixelFormat         = Direct3D8_SetPixelFormat;
 
 	eChangeDisplaySettings  = Direct3D8_ChangeDisplaySettings;
-#endif
+	eEnumDisplaySettings    = EnumDisplaySettings; // The real winapi one.
+#endif // _WIN32
 
 }
 
@@ -296,6 +297,7 @@ void VID_Renderer_Set_Direct3D9 (void)
 	eSetPixelFormat         = Direct3D9_SetPixelFormat;
 	eSwapBuffers			= Direct3D9_SwapBuffers;
 	eChangeDisplaySettings  = Direct3D9_ChangeDisplaySettings;
+	eEnumDisplaySettings    = Direct3D9_EnumDisplaySettings; // The DX9 one.
 #endif // WIN32
 
 }
@@ -538,6 +540,7 @@ void VID_Renderer_Set_OpenGL (void)
 	eSetPixelFormat         = SetPixelFormat;
 	eSwapBuffers			= SwapBuffers;
 	eChangeDisplaySettings  = ChangeDisplaySettings;
+	eEnumDisplaySettings    = EnumDisplaySettings; // The real winapi one.
 #endif // PLATFORM_GUI_WINDOWS
 }
 
@@ -547,9 +550,9 @@ void VID_Renderer_Set_OpenGL (void)
 void VID_Renderer_Setup (void)
 {
 	
-#if defined(DIRECT3D8_WRAPPER)
+#if defined(DIRECT3D8_WRAPPER) // DX8 Wrapper build
 	VID_Renderer_Set_Direct3D8 ();
-#elif defined(DIRECT3D9_WRAPPER)
+#elif defined(DIRECT3D9_WRAPPER)  // DX9 Wrapper build
 	VID_Renderer_Set_Direct3D9 ();
 #else
 	VID_Renderer_Set_OpenGL ();

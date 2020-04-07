@@ -1081,7 +1081,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\DirectMark5.exe"
+				OutputFile="c:\quake\dx9_mark_v.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthread-static-msvc2010/lib"

@@ -36,29 +36,81 @@ static context_t *d3d_Context = NULL;
 BOOL WINAPI Direct3D9_wglSwapIntervalEXT (int interval);
 int WINAPI Direct3D9_wglGetSwapIntervalEXT (void);
 
-LONG WINAPI Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags)
+LONG WINAPI /*Baker added WINAPI*/ Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags)
 {
+	// we're only interested in CDS_TEST here because Quake uses that for enumerating video modes
 	if (dwflags & CDS_TEST)
 	{
-		// if we're testing we want to do it for real
-		return ChangeDisplaySettingsA (lpDevMode, dwflags);
-	}
-	else if (!lpDevMode)
-	{
-		// this signals a return to the desktop display mode
+		// ensure that we have a mode list
+		d3d_Globals.CreateDirect3D ();
+		d3d_Globals.GetModeList ();
 
-		// always signal success
-		return DISP_CHANGE_SUCCESSFUL;
-	}
-	else
-	{
-		// this code path is only used for fullscreen modes that are not the same as the desktop mode
-		d3d_Globals.RequestBPP = lpDevMode->dmBitsPerPel;
+		// check the mode list for a match
+		for (UINT i = 0; i < d3d_Globals.NumModeList; i++)
+		{
+			// build a DEVMODE from this mode
+			DEVMODE dm;
+			d3d_Globals.D3DModeToDEVMODE (&dm, &d3d_Globals.ModeList[i]);
 
-		// always signal success
-		return DISP_CHANGE_SUCCESSFUL;
+			// see do they match
+			if ((lpDevMode->dmFields & DM_BITSPERPEL) && dm.dmBitsPerPel != lpDevMode->dmBitsPerPel) continue;
+			if ((lpDevMode->dmFields & DM_PELSWIDTH) && dm.dmPelsWidth != lpDevMode->dmPelsWidth) continue;
+			if ((lpDevMode->dmFields & DM_PELSHEIGHT) && dm.dmPelsHeight != lpDevMode->dmPelsHeight) continue;
+			if ((lpDevMode->dmFields & DM_DISPLAYFREQUENCY) && dm.dmDisplayFrequency != lpDevMode->dmDisplayFrequency) continue;
+
+			// this is a valid mode
+			return DISP_CHANGE_SUCCESSFUL;
+		}
+
+		// not in the list
+		return DISP_CHANGE_FAILED;
 	}
+
+	// always signal success; d3d doesn't use CDS but instead does it automatically as part of it's device create/reset
+	return DISP_CHANGE_SUCCESSFUL;
 }
+
+
+BOOL WINAPI /* Baker added WINAPI */ Direct3D9_EnumDisplaySettings (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode)
+{
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/dd162611%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+
+	/*
+	When you call EnumDisplaySettings with iModeNum set to zero, the operating system initializes and caches information about the
+	display device. When you call EnumDisplaySettings with iModeNum set to a nonzero value, the function returns the information that
+	was cached the last time the function was called with iModeNum set to zero.
+
+	ENUM_CURRENT_SETTINGS	Retrieve the current settings for the display device.
+	ENUM_REGISTRY_SETTINGS	Retrieve the settings for the display device that are currently stored in the registry.
+	*/
+
+	// need the d3d object up so that we can get at the info
+	d3d_Globals.CreateDirect3D ();
+
+	switch (iModeNum)
+	{
+	case 0:
+		d3d_Globals.GetModeList ();
+	default:
+		if (iModeNum >= d3d_Globals.NumModeList)
+			return FALSE;
+
+		d3d_Globals.D3DModeToDEVMODE (lpDevMode, &d3d_Globals.ModeList[iModeNum]);
+		return TRUE;
+
+	case ENUM_CURRENT_SETTINGS:
+		d3d_Globals.D3DModeToDEVMODE (lpDevMode, &d3d_Globals.DesktopMode);
+		return TRUE;
+
+	case ENUM_REGISTRY_SETTINGS:
+		// no equivalent
+		return EnumDisplaySettingsA (lpszDeviceName, iModeNum, lpDevMode);
+	}
+
+	// never hit
+	return EnumDisplaySettingsA (lpszDeviceName, iModeNum, lpDevMode);
+}
+
 
 void WINAPI Direct3D9_glActiveTexture (GLenum texture)
 {
@@ -117,21 +169,11 @@ void WINAPI Direct3D9_glTexStorage2D (GLenum target, GLsizei levels, GLenum inte
 	d3d_Context->CreateTexture (d3d_Context->TMU[d3d_Context->State.CurrentTMU].boundtexture, width, height, d3dformat);
 }
 
-void Direct3D9_ResetDevice (void)
+void Direct3D9_ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height)
 {
-	d3d_Context->ResetDevice ();
+	if (d3d_Context) d3d_Context->ResetMode (width, height, windowed, client_left, client_top, desktop_width, desktop_height, is_resize, pborder_width, pborder_height);
 }
 
-void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style)
-{
-	d3d_Context->ResetMode (width, height, bpp, windowed, window_style, window_ex_style);
-}
-
- // Windowed resize on fly
-void Direct3D9_ResizeWindow (int width, int height, int bpp)
-{
-	d3d_Context->ResizeWindow (width, height, bpp);
-}
 
 void Direct3D9_ScreenShotBMP (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_BMP);}
 void Direct3D9_ScreenShotJPG (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_JPG);}
@@ -152,10 +194,10 @@ BOOL Direct3D9_SetupGammaAndContrast (float gamma, float contrast)
 	return d3d_Context->SetupGammaAndContrast (gamma, contrast);
 }
 
-BOOL WINAPI Direct3D9_SwapBuffers (HDC unused)
+BOOL WINAPI /* Baker added WINAPI*/Direct3D9_SwapBuffers (HDC unused)
 {
 	d3d_Context->EndScene ();
-	return TRUE; // ALWAYS
+	return TRUE; // Baker: Let's just always return true for simplicity.
 }
 
 HGLRC WINAPI Direct3D9_wglCreateContext (HDC hdc)
@@ -166,15 +208,8 @@ HGLRC WINAPI Direct3D9_wglCreateContext (HDC hdc)
 
 BOOL WINAPI Direct3D9_wglDeleteContext (HGLRC hglrc)
 {
-	context_t *ctx = (context_t *) hglrc;
-
-	// release our d3d objects
-	ctx->DestroyGammaAndContrast ();
-	ctx->DestroyVertexShader ();
-	ctx->ReleaseTextures ();
-
-	// release device and object
-	SAFE_RELEASE (ctx->Device);
+	// what if GL tries to delete a NULL context???
+	if (hglrc) ((context_t *) hglrc)->Release ();
 	SAFE_RELEASE (d3d_Globals.Object);
 
 	// success
@@ -234,9 +269,9 @@ PROC WINAPI Direct3D9_wglGetProcAddress (LPCSTR s)
 
 int WINAPI Direct3D9_wglGetSwapIntervalEXT (void)
 {
-	if (d3d_Context->PresentParams.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
-		return 0;
-	else return 1;
+	if (d3d_Context->DisplayMode.VSync)
+		return 1;
+	else return 0;
 }
 
 BOOL WINAPI Direct3D9_wglMakeCurrent (HDC hdc, HGLRC hglrc)
@@ -626,10 +661,8 @@ void APIENTRY d3d9mh_glGetIntegerv (GLenum pname, GLint *params)
 		break;
 
 	case GL_STENCIL_BITS:
-		if (d3d_Context->PresentParams.AutoDepthStencilFormat == D3DFMT_D24S8)
+		if (d3d_Context->DisplayMode.dsFmt == D3DFMT_D24S8)
 			params[0] = 8;
-		else if (d3d_Context->PresentParams.AutoDepthStencilFormat == D3DFMT_D24X4S4)
-			params[0] = 4;
 		else params[0] = 0;
 
 		break;
@@ -642,34 +675,21 @@ void APIENTRY d3d9mh_glGetIntegerv (GLenum pname, GLint *params)
 
 const GLubyte *APIENTRY d3d9mh_glGetString (GLenum name)
 {
-	static D3DADAPTER_IDENTIFIER9 d3d_AdapterID;
 	static char *emptystring = "";
 
 	// we advertise ourselves as version 1.1 so that as few assumptions about capability as possible are made
 	static char *GL_VersionString = "1.1";
 
-	// these are the extensions we want to export
-	// note: we advertise GL_EXT_texture_filter_anisotropic but we also do a double-check with the D3D caps when setting it for real
-	static char *GL_ExtensionString =
-		"GL_ARB_multitexture "\
-		"GL_ARB_texture_env_add "\
-		"GL_ARB_texture_env_combine "\
-		"GL_ARB_texture_storage "\
-		"GL_EXT_swap_control "\
-		"GL_EXT_texture_filter_anisotropic ";
-
-	d3d_Globals.Object->GetAdapterIdentifier (0, 0, &d3d_AdapterID);
-
 	switch (name)
 	{
 	case GL_VENDOR:
-		return (const GLubyte *) d3d_AdapterID.Description;
+		return (const GLubyte *) d3d_Context->AdapterID.Description;
 	case GL_RENDERER:
-		return (const GLubyte *) d3d_AdapterID.Driver;
+		return (const GLubyte *) d3d_Context->AdapterID.Driver;
 	case GL_VERSION:
 		return (const GLubyte *) GL_VersionString;
 	case GL_EXTENSIONS:
-		return (const GLubyte *) GL_ExtensionString;
+		return (const GLubyte *) d3d_Context->GLExtensions;
 	default:
 		return (const GLubyte *) emptystring;
 	}
@@ -798,7 +818,7 @@ void APIENTRY d3d9mh_glScissor (GLint x, GLint y, GLsizei width, GLsizei height)
 	// bottom-left adjust the scissor rect
 	RECT sr;
 
-	Adjust_BottomLeftToTopLeft (&sr, x, y, width, height, d3d_Context->CurrentMode.Height);
+	Adjust_BottomLeftToTopLeft (&sr, x, y, width, height, d3d_Context->DisplayMode.Height);
 	d3d_Context->Device->SetScissorRect (&sr);
 }
 
@@ -854,39 +874,52 @@ void APIENTRY d3d9mh_glTexEnvi (GLenum target, GLenum pname, GLint param)
 
 void APIENTRY d3d9mh_glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
-	D3DFORMAT d3dformat = D3DFMT_X8R8G8B8;
-
-	if (type != GL_UNSIGNED_BYTE) System_Error ("glTexImage2D: Unrecognised pixel format");
-
-	// ensure that it's valid to create textures
-	if (target != GL_TEXTURE_2D) return;
-
-	// validate format
-	switch (internalformat)
-	{
-	case 1:
-	case GL_LUMINANCE:
-		d3dformat = D3DFMT_L8;
-		break;
-
-	case 3:
-	case GL_RGB:
-		d3dformat = D3DFMT_X8R8G8B8;
-		break;
-
-	case 4:
-	case GL_RGBA:
-		d3dformat = D3DFMT_A8R8G8B8;
-		break;
-
-	default:
-		System_Error ("invalid texture internal format");
-	}
-
-	d3d_texture_t *tex = d3d_Context->TMU[d3d_Context->State.CurrentTMU].boundtexture;
-
 	if (level == 0)
 	{
+		// OpenGL texture specification is insane, on the following grounds:
+		// - miplevels can be specified in any order,
+		// - miplevels don't have to match sizes or formats during specification
+		// - textures are allowed to be incompletely specified,
+		// - and none of this can be validated until draw time.
+		// to avoid all of the headaches that comes with emulating this, we step in and take over much of the specification
+		// ourselves; in the wrapper:
+		// - incomplete textures are not allowed (and are, in fact, impossible),
+		// - every texture is created with a full mipchain (we use sampler states to specify unmipped textures),
+		// - only specification of mip level 0 actually does anything; specification of other miplevels is ignored,
+		// - we do our own mipmapping in the wrapper.
+		D3DFORMAT d3dformat = D3DFMT_X8R8G8B8;
+
+		if (type != GL_UNSIGNED_BYTE) System_Error ("glTexImage2D: Unrecognised pixel format");
+
+		// ensure that it's valid to create textures
+		if (target != GL_TEXTURE_2D) return;
+
+		// validate format
+		switch (internalformat)
+		{
+		case 1:
+		case GL_LUMINANCE:
+			d3dformat = D3DFMT_L8;
+			break;
+
+		case 3:
+		case GL_RGB:
+			d3dformat = D3DFMT_X8R8G8B8;
+			break;
+
+		case 4:
+		case GL_RGBA:
+			d3dformat = D3DFMT_A8R8G8B8;
+			break;
+
+		default:
+			System_Error ("invalid texture internal format");
+		}
+
+		d3d_texture_t *tex = d3d_Context->TMU[d3d_Context->State.CurrentTMU].boundtexture;
+
+		if (!tex->TexImage) tex->Initialize ();
+
 		// create the texture if level 0 is seen; Open GL allows specification of texture levels in any order, as well as
 		// incomplete specification, but D3D doesn't.  to fully mimic the OpenGL behaviour in D3D we would copy all of the
 		// pixel data and params off to system memory, then only actually create a texture the first time it is used for
@@ -894,17 +927,16 @@ void APIENTRY d3d9mh_glTexImage2D (GLenum target, GLint level, GLint internalfor
 		// texture from that.  note that modern OpenGL - with glTexStorage and particularly DSA - has the same constraint
 		// as D3D so the older OpenGL behaviour should be viewed as insanity rather than flexibility.
 		d3d_Context->CreateTexture (tex, width, height, d3dformat);
-	}
-	else if (!tex->TexImage)
-		System_Error ("glTexImage2D called for level > 0 before level 0");
 
-	// GL allows specifying NULL pixels to create the texture but not fill it yet
-	if (pixels)
-	{
-		// the texture has already been created so no need to do any more
-		tex->Fill (level, 0, 0, width, height, format, pixels, 0);
+		// GL allows specifying NULL pixels to create the texture but not fill it yet
+		if (pixels)
+		{
+			tex->Fill (0, 0, 0, width, height, format, pixels, 0);
+			tex->Mipmap (1, 0);
+		}
 	}
 }
+
 
 void APIENTRY d3d9mh_glTexParameterf (GLenum target, GLenum pname, GLfloat param)
 {
@@ -1036,7 +1068,7 @@ void APIENTRY d3d9mh_glVertexPointer (GLint size, GLenum type, GLsizei stride, c
 void APIENTRY d3d9mh_glViewport (GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	// translate from OpenGL bottom-left to D3D top-left
-	y = d3d_Context->CurrentMode.Height - (height + y);
+	y = d3d_Context->DisplayMode.Height - (height + y);
 
 	d3d_Context->State.Viewport.X = x;
 	d3d_Context->State.Viewport.Y = y;

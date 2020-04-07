@@ -337,7 +337,9 @@ static void R_SetupView_R_Clear (void)
 		if (gl_clear.value != - 1 || (sv.active && sv_player->v.movetype == MOVETYPE_NOCLIP))
 			clearbits |= GL_COLOR_BUFFER_BIT; //intel video workarounds from Baker
 //	if (renderer.gl_stencilbits) // Clear buffer upon any function needing to use it.  Per frame is irrelevant.
-//		clearbits |= GL_STENCIL_BUFFER_BIT;
+#if 1 // We should probably always do this
+	clearbits |= GL_STENCIL_BUFFER_BIT;
+#endif // We should probably always do this
 	eglClear (clearbits);
 
 
@@ -1175,7 +1177,8 @@ void R_DrawShadows (void)
 	if (!gl_shadows.value || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe)
 		return;
 
-	if (renderer.gl_stencilbits && vid.direct3d != 9 /*temp disable hack*/ )
+	//if (renderer.gl_stencilbits && vid.direct3d != 9 /*temp disable hack*/ )
+	if (renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_AND)
 	{
 		eglClear(GL_STENCIL_BUFFER_BIT);
 		eglStencilFunc(GL_EQUAL, 0, ~0); // Stencil Sky Fix - 2015 April 13 Per Spike
@@ -1200,8 +1203,9 @@ void R_DrawShadows (void)
 
 		GL_DrawAliasShadow (currententity);
 	}
-
-	if (renderer.gl_stencilbits  && vid.direct3d != 9 /*temp disable hack*/)
+	
+	//if (renderer.gl_stencilbits && vid.direct3d != 9 /*temp disable hack*/)
+	if (renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_AND)
 	{
 		eglDisable(GL_STENCIL_TEST);
 	}
@@ -1345,7 +1349,8 @@ void R_Mirror_RenderScene_Partial (void)
 //	Fog_EnableGFog (); //johnfitz
 //	Sky_FrameSetup (); // Baker
 	
-if (vid.direct3d != 9 /*temp disable hack*/) // we affect next line
+//	if (1 && vid.direct3d != 9 /*temp disable hack*/) // we affect next line
+if (1 DIRECT3D9_STENCIL_DISABLE_BLOCK_AND) // The effect of this is that it will block Direct3D 9 from drawing the stencil sky
 	Sky_Stencil_Draw (); // Baker, R_RenderScene has this later in the draw.
 	R_DrawWorld ();	// This uploads changed lightmaps.
 

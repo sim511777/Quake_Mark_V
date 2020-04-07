@@ -19,6 +19,7 @@ Copyright (C) 2013-2014 Baker
 
 	#if defined(CORE_GL) && defined (PLATFORM_WINDOWS)
 		LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
+		LONG (WINAPI *eEnumDisplaySettings) (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode);
 
 		HGLRC (WINAPI *ewglCreateContext) (HDC);
 		BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
@@ -127,8 +128,8 @@ cbool Vid_Display_Properties_Get (reply int *left, reply int *top, reply int *wi
 {
 	DEVMODE	devmode;
 
-	if (!EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
-		log_fatal (SPRINTSFUNC "EnumDisplaySettings failed", __func__);
+	if (!eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
+		log_fatal (SPRINTSFUNC "eEnumDisplaySettings failed", __func__);
 
 	NOT_MISSING_ASSIGN(left, 0); // Better be zero!
 	NOT_MISSING_ASSIGN(top, 0); // Better be zero!
@@ -148,14 +149,14 @@ int Vid_Display_Modes_Properties_Get (int n, reply int *width, reply int *height
 
 	int modes_count = 0;	// Hardware modes start at 0
 
-	while ( EnumDisplaySettings (NULL /*device name*/, modes_count, &devmode)  )
+	while ( eEnumDisplaySettings (NULL /*device name*/, modes_count, &devmode)  )
 		modes_count ++;
 
 	if (n == -1)				ret = modes_count;		// -1 wants count
 	else if (n >= modes_count)	ret = 0; 				// Hit last return 0
 	else {						ret = 1;				// continue
-		if (!EnumDisplaySettings (NULL, n, &devmode))
-			return log_fatal ("EnumDisplaySettings failed on %d", n); // End
+		if (!eEnumDisplaySettings (NULL, n, &devmode))
+			return log_fatal ("eEnumDisplaySettings failed on %d", n); // End
 
 		NOT_MISSING_ASSIGN(width, devmode.dmPelsWidth);
 		NOT_MISSING_ASSIGN(height, devmode.dmPelsHeight);

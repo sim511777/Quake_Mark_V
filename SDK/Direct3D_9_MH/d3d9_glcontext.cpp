@@ -34,6 +34,7 @@ For more information, please refer to <http://unlicense.org/>
 
 globals_t d3d_Globals;
 
+#pragma warning(disable:4996) // Baker: strcat
 
 // d3dx crap - because Microsoft played musical chairs with d3dx versioning we can't just statically link and expect everything to work on different PCs,
 // so instead we check d3dx dll versions and dynamically load from the best one we can find
@@ -109,7 +110,7 @@ void R_LoadD3DX (void)
 
 globals_t::globals_t (void)
 {
-	this->RequestBPP = -1;
+	this->NumModeList = 0;
 	this->RequestStencil = FALSE;
 	this->Object = NULL;
 }
@@ -135,6 +136,63 @@ void globals_t::CreateDirect3D (void)
 }
 
 
+void globals_t::D3DModeToDEVMODE (LPDEVMODE lpDevMode, D3DDISPLAYMODE *mode)
+{
+	lpDevMode->dmPelsWidth = mode->Width;
+	lpDevMode->dmPelsHeight = mode->Height;
+	lpDevMode->dmDisplayFrequency = mode->RefreshRate;
+	lpDevMode->dmDisplayFlags = 0;
+
+	switch (mode->Format)
+	{
+	case D3DFMT_R8G8B8:   lpDevMode->dmBitsPerPel = 32; break;
+	case D3DFMT_X8R8G8B8: lpDevMode->dmBitsPerPel = 32; break;
+	case D3DFMT_A8R8G8B8: lpDevMode->dmBitsPerPel = 32; break;
+	case D3DFMT_A8B8G8R8: lpDevMode->dmBitsPerPel = 32; break;
+	case D3DFMT_X8B8G8R8: lpDevMode->dmBitsPerPel = 32; break;
+	case D3DFMT_R5G6B5:   lpDevMode->dmBitsPerPel = 16; break;
+	case D3DFMT_X1R5G5B5: lpDevMode->dmBitsPerPel = 16; break;
+	case D3DFMT_A1R5G5B5: lpDevMode->dmBitsPerPel = 16; break;
+	case D3DFMT_A4R4G4B4: lpDevMode->dmBitsPerPel = 16; break;
+	case D3DFMT_A8R3G3B2: lpDevMode->dmBitsPerPel = 16; break;
+	case D3DFMT_X4R4G4B4: lpDevMode->dmBitsPerPel = 16; break;
+	default: lpDevMode->dmBitsPerPel = 0; break;
+	}
+}
+
+
+void globals_t::GetModeList (void)
+{
+	this->NumModeList = 0;
+
+	// get and validate the number of modes for this format; we expect that this will succeed first time
+	UINT modecount = this->Object->GetAdapterModeCount (D3DADAPTER_DEFAULT, this->DesktopMode.Format);
+
+	if (!modecount) return;
+
+	// check each mode in turn to find a match
+	for (UINT m = 0; m < modecount; m++)
+	{
+		// get this mode
+		if (FAILED (this->Object->EnumAdapterModes (D3DADAPTER_DEFAULT, this->DesktopMode.Format, m, &this->ModeList[this->NumModeList]))) continue;
+
+		// ensure that the texture formats we want to create exist
+		if (!D3D_CheckTextureFormat (D3DFMT_L8, this->DesktopMode.Format)) continue;
+		if (!D3D_CheckTextureFormat (D3DFMT_X8R8G8B8, this->DesktopMode.Format)) continue;
+		if (!D3D_CheckTextureFormat (D3DFMT_A8R8G8B8, this->DesktopMode.Format)) continue;
+
+		// don't take lower
+		if (this->ModeList[this->NumModeList].Width < MIN_MODE_WIDTH_640) continue;
+		if (this->ModeList[this->NumModeList].Height < MIN_MODE_HEIGHT_400) continue;
+
+		// check for weird rotated screen modes on laptops
+		if (this->ModeList[this->NumModeList].Height > this->ModeList[this->NumModeList].Width) continue;
+
+		this->NumModeList++;
+	}
+}
+
+
 void context_t::InitializeStates (void)
 {
 	// clear
@@ -144,134 +202,60 @@ void context_t::InitializeStates (void)
 }
 
 
-/*
-========================
-D3D_GetAdapterModeFormat
-
-returns a usable adapter mode for the given width, height and bpp
-========================
-*/
-D3DFORMAT context_t::GetAdapterModeFormat (int width, int height, int bpp)
+D3DPRESENT_PARAMETERS *context_t::SetupPresentParams (modedesc_t *mode)
 {
-	int i;
-
-	// fill these in depending on bpp
-	D3DFORMAT d3d_Formats[4];
-
-	// these are the orders in which we prefer our formats
-	if (bpp == -1)
-	{
-		// unspecified bpp uses the desktop mode format
-		d3d_Formats[0] = d3d_Globals.DesktopMode.Format;
-		d3d_Formats[1] = D3DFMT_UNKNOWN;
-	}
-	else if (bpp == 16)
-	{
-		d3d_Formats[0] = D3DFMT_R5G6B5;
-		d3d_Formats[1] = D3DFMT_X1R5G5B5;
-		d3d_Formats[2] = D3DFMT_A1R5G5B5;
-		d3d_Formats[3] = D3DFMT_UNKNOWN;
-	}
-	else
-	{
-		d3d_Formats[0] = D3DFMT_X8R8G8B8;
-		d3d_Formats[1] = D3DFMT_A8R8G8B8;
-		d3d_Formats[2] = D3DFMT_UNKNOWN;
-	}
-
-	for (i = 0; ; i++)
-	{
-		UINT modecount;
-		UINT m;
-
-		// no more modes
-		if (d3d_Formats[i] == D3DFMT_UNKNOWN) break;
-
-		// get and validate the number of modes for this format; we expect that this will succeed first time
-		modecount = d3d_Globals.Object->GetAdapterModeCount (D3DADAPTER_DEFAULT, d3d_Globals.DesktopMode.Format);
-
-		if (!modecount) continue;
-
-		// check each mode in turn to find a match
-		for (m = 0; m < modecount; m++)
-		{
-			// get this mode
-			D3DDISPLAYMODE mode;
-			HRESULT hr = d3d_Globals.Object->EnumAdapterModes (D3DADAPTER_DEFAULT, d3d_Globals.DesktopMode.Format, m, &mode);
-
-			// should never happen
-			if (FAILED (hr)) continue;
-
-			// d3d8 doesn't specify a format when enumerating so we need to restrict this to the correct format
-			if (mode.Format != d3d_Formats[i]);
-
-			// ensure that the texture formats we want to create exist
-			if (!D3D_CheckTextureFormat (D3DFMT_L8, d3d_Formats[i])) continue;
-			if (!D3D_CheckTextureFormat (D3DFMT_X8R8G8B8, d3d_Formats[i])) continue;
-			if (!D3D_CheckTextureFormat (D3DFMT_A8R8G8B8, d3d_Formats[i])) continue;
-
-			// check it against the requested mode
-			if (mode.Width == width && mode.Height == height)
-			{
-				// copy it out and return the mode we got
-				memcpy (&this->CurrentMode, &mode, sizeof (D3DDISPLAYMODE));
-				return mode.Format;
-			}
-		}
-	}
-
-	// didn't find a format
-	return D3DFMT_UNKNOWN;
+	return this->SetupPresentParams (mode->Width, mode->Height, mode->Windowed, mode->VSync);
 }
 
 
-void context_t::SetupPresentParams (int width, int height, int bpp, BOOL windowed)
+D3DPRESENT_PARAMETERS *context_t::SetupPresentParams (int width, int height, BOOL windowed, BOOL vsync)
 {
-	// clear present params to NULL
-	memset (&this->PresentParams, 0, sizeof (D3DPRESENT_PARAMETERS));
+	static D3DPRESENT_PARAMETERS PresentParams;
 
-	// popup windows are fullscreen always
+	// clear present params to NULL
+	memset (&PresentParams, 0, sizeof (D3DPRESENT_PARAMETERS));
+
+	// fill in what's different between fullscreen and windowed modes
 	if (windowed)
 	{
-		// defaults for windowed mode - also need to store out clientrect.right and clientrect.bottom
-		// (d3d_BPP is only used for fullscreen modes and is retrieved from our CDS override)
-		this->CurrentMode.Format = d3d_Globals.DesktopMode.Format;
-		this->CurrentMode.Width = width;
-		this->CurrentMode.Height = height;
-		this->CurrentMode.RefreshRate = 0;
+		PresentParams.BackBufferFormat = D3DFMT_UNKNOWN;
+		PresentParams.FullScreen_RefreshRateInHz = 0;
+		PresentParams.Windowed = TRUE;
 	}
 	else
 	{
-		// also fills in this->CurrentMode
-		D3DFORMAT fmt = this->GetAdapterModeFormat (width, height, d3d_Globals.RequestBPP);
-
-		// ensure that we got a good format
-		if (fmt == D3DFMT_UNKNOWN)
-			System_Error ("failed to get fullscreen mode");
+		PresentParams.BackBufferFormat = d3d_Globals.DesktopMode.Format;
+		PresentParams.FullScreen_RefreshRateInHz = d3d_Globals.DesktopMode.RefreshRate;
+		PresentParams.Windowed = FALSE;
 	}
 
-	// create with no vsync by default and we'll switch the mode when the cvars come online
-	this->PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-
-	// fill in mode-dependent stuff
-	this->PresentParams.BackBufferFormat = this->CurrentMode.Format;
-	this->PresentParams.FullScreen_RefreshRateInHz = this->CurrentMode.RefreshRate;
-	this->PresentParams.Windowed = windowed;
-
 	// request 1 backbuffer
-	this->PresentParams.BackBufferCount = 1;
-	this->PresentParams.BackBufferWidth = width;
-	this->PresentParams.BackBufferHeight = height;
+	PresentParams.BackBufferCount = 1;
+	PresentParams.BackBufferWidth = this->DisplayMode.Width = width;
+	PresentParams.BackBufferHeight = this->DisplayMode.Height = height;
 
-	this->PresentParams.EnableAutoDepthStencil = TRUE;
+	PresentParams.hDeviceWindow = this->Window;
+
+	PresentParams.EnableAutoDepthStencil = TRUE;
 
 	if (d3d_Globals.RequestStencil)
-		this->PresentParams.AutoDepthStencilFormat = D3DFMT_D24S8;
-	else this->PresentParams.AutoDepthStencilFormat = D3DFMT_D24X8;
+		PresentParams.AutoDepthStencilFormat = D3DFMT_D24S8;
+	else PresentParams.AutoDepthStencilFormat = D3DFMT_D24X8;
 
-	this->PresentParams.MultiSampleType = D3DMULTISAMPLE_NONE;
-	this->PresentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	this->PresentParams.hDeviceWindow = this->Window;
+	this->DisplayMode.dsFmt = PresentParams.AutoDepthStencilFormat;
+
+	if (vsync)
+		PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	else PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+	PresentParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	PresentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+
+	// store these out so that we don't need to touch the D3DPRESENT_PARAMETERS struct
+	this->DisplayMode.Windowed = windowed;
+	this->DisplayMode.VSync = vsync;
+
+	return &PresentParams;
 }
 
 
@@ -296,9 +280,12 @@ context_t::context_t (HDC hdc)
 	// see are we fullscreen
 	winstyle = GetWindowLong (this->Window, GWL_STYLE);
 
-	// setup our present parameters (popup windows are fullscreen always)
-	this->SetupPresentParams (clientrect.right, clientrect.bottom, d3d_Globals.RequestBPP, !(winstyle & WS_POPUP));
+	// the window is always created in a windowed mode and may then be switched to fullscreen after
+	// this is conformant with DXGI requirements on Vista+ and a lot of other annoying crap just goes away
+	// create with no vsync by default and we'll switch the mode when the cvars come online
+	D3DPRESENT_PARAMETERS *PresentParams = this->SetupPresentParams (clientrect.right, clientrect.bottom, TRUE, FALSE);
 
+	// --------------------------------------------------------------------------------------------------------
 	// here we use D3DCREATE_FPU_PRESERVE to maintain the resolution of Quake's timers (this is a serious problem)
 	// and D3DCREATE_DISABLE_DRIVER_MANAGEMENT to protect us from rogue drivers (call it honest paranoia).  first
 	// we attempt to create a hardware vp device.
@@ -315,7 +302,7 @@ context_t::context_t (HDC hdc)
 		D3DDEVTYPE_HAL,
 		this->Window,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_DISABLE_DRIVER_MANAGEMENT,
-		&this->PresentParams,
+		PresentParams,
 		&this->Device
 	)))
 	{
@@ -336,7 +323,7 @@ context_t::context_t (HDC hdc)
 			D3DDEVTYPE_HAL,
 			this->Window,
 			D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_DISABLE_DRIVER_MANAGEMENT,
-			&this->PresentParams,
+			PresentParams,
 			&this->Device
 		))) System_Error ("failed to create Direct3D device");
 
@@ -344,6 +331,47 @@ context_t::context_t (HDC hdc)
 	}
 
 	if (this->Device == NULL) System_Error ("created NULL Direct3D device");
+
+	// build extensions string
+	this->GLExtensions[0] = 0;
+
+	// D3D always has these
+	strcat (this->GLExtensions, "GL_EXT_swap_control ");
+	strcat (this->GLExtensions, "GL_ARB_texture_storage ");
+
+	// conditional NPO2 support is equivalent to GL_ARB_texture_rectangle which we don't want to support because in GL it uses unnormalized texcoords.
+	if (!(d3d_Globals.DeviceCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) && !(d3d_Globals.DeviceCaps.TextureCaps & D3DPTEXTURECAPS_POW2))
+	{
+		// full unconditional non-power-of-two support
+		strcat (this->GLExtensions, "GL_ARB_texture_non_power_of_two ");
+	}
+
+	// multitexture
+	if (d3d_Globals.DeviceCaps.MaxSimultaneousTextures > 1 && d3d_Globals.DeviceCaps.MaxTextureBlendStages > 1)
+		strcat (this->GLExtensions, "GL_ARB_multitexture ");
+
+	// anisotropic filtering
+	if (d3d_Globals.DeviceCaps.MaxAnisotropy > 1)
+		strcat (this->GLExtensions, "GL_EXT_texture_filter_anisotropic ");
+
+	// combine and add - because d3d caps are MUCH more granular than a single monolithic GL extension, we just
+	// expose these 2 extensions on Ps 2.0 or better hardware
+	if (D3DSHADER_VERSION_MAJOR (d3d_Globals.DeviceCaps.PixelShaderVersion) > 2)
+	{
+		strcat (this->GLExtensions, "GL_ARB_texture_env_add ");
+		strcat (this->GLExtensions, "GL_ARB_texture_env_combine ");
+	}
+
+	// get adapter ID for glGetString (renderer/vendor) stuff
+	d3d_Globals.Object->GetAdapterIdentifier (0, 0, &this->AdapterID);
+
+	// check if a FS mode
+	if (winstyle & WS_POPUP)
+	{
+		// and reset; there's no need for a full release/recreate because no objects have been created yet
+		this->DisplayMode.Windowed = FALSE;
+		this->Device->Reset (this->SetupPresentParams (&this->DisplayMode));
+	}
 
 	this->DeviceLost = FALSE;
 	this->ClientActiveTexture = 0;
@@ -397,105 +425,132 @@ void context_t::PostReset (void)
 	this->InitGeometry ();
 }
 
-void context_t::ResizeWindow (int width, int height, int bpp)
+// Baker: Added this functon to center the window on the desktop.
+// The desktop size is probably in the wrapper somewhere, but I wasn't sure
+// which one was persistent.
+
+static void WIN_AdjustRectToCenterScreen (RECT *in_windowrect, int desktop_width, int desktop_height)
 {
-	// reset present params
-	this->SetupPresentParams (width, height, bpp, true /*we have to be windowed to be calling Resize*/ );
-	this->ResetDevice ();
+	int nwidth  = in_windowrect->right - in_windowrect->left;	// But the window positioning is apparently affected by DPI
+	int nheight = in_windowrect->bottom - in_windowrect->top;
 
-	// repaint all windows
-	InvalidateRect (NULL, NULL, TRUE); // Really?
-
-//	Sleep (10); // Really?
+	in_windowrect->left = 0 + (desktop_width - nwidth) / 2;
+	in_windowrect->top =  0 + (desktop_height - nheight) / 2;
+	in_windowrect->right = in_windowrect->left + nwidth;
+	in_windowrect->bottom = in_windowrect->top + nheight;
 }
 
-void context_t::ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style)
+// Baker: Ok here are scenarios ...
+// 1) New windowed mode -- center window on the desktop.  We receive desktop width/height.  We respond back with the border size we calculated so WM_GETMINMAXINFO can accurately restrict resizing.
+// 2) Resize in-progress -- we only receive a client window area x, y -- which is the top left of the canvas, not the window.  We need to subtract out the border size to calculate the corect Window X, Y position
+//    It could be improved or streamlined more, but due to time constraints need to roll with this for now ...
+// 3) Full window.  No changes.
+
+void context_t::ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height)
 {
-	RECT winrect;
-#if 0  // Baker ... let the engine tell us the window decoration, keep things flexible.
-//	int winstyle;
-	int winexstyle;
-#endif 
+	BOOL wasWindowed = this->DisplayMode.Windowed;
 
-	// reset present params
-	this->SetupPresentParams (width, height, bpp, windowed);
+	// reset window styles
+	if (!windowed && wasWindowed)
+	{
+		SetWindowLong (this->Window, GWL_STYLE, WS_POPUP); // Fullscreen goes to 0,0
+		SetWindowPos (this->Window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+	}
 
+	// set up the new mode
+	this->DisplayMode.Width = width;
+	this->DisplayMode.Height = height;
+	this->DisplayMode.Windowed = windowed;
+
+	// reset present params and reset the device
 	this->ResetDevice ();
 
-	winrect.left = 0;
-	winrect.right = width;
-	winrect.top = 0;
-	winrect.bottom = height;
-
-//WS_OVERLAPPEDWINDOW
-#if 0 // Baker: Let the engine decide on window decoration, keep things flexible
-	winexstyle = 0;
-
-#ifdef D3D_RESIZABLE_WINDOW
-	winstyle = windowed ? WS_OVERLAPPEDWINDOW /* <--- this bastard just hides what it is*/ : WS_POPUP;
-
-	//#define WS_OVERLAPPEDWINDOW (WS_OVERLAPPED     | \	// Want
-	//                             WS_CAPTION        | \	// Want
-	//                             WS_SYSMENU        | \	// Want
-	//                             WS_THICKFRAME     | \	// MSDN: "Same as the WS_SIZEBOX style"
-	//                             WS_MINIMIZEBOX    | \	// Want
-	//                             WS_MAXIMIZEBOX)			// Do not want.
-
-#else
-	winstyle = windowed ? WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : WS_POPUP;
-#endif
-#endif
-
-	// reset stuff
-	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_EXSTYLE, window_ex_style);
-	SetWindowLong (this->PresentParams.hDeviceWindow, GWL_STYLE, window_style);
-	AdjustWindowRectEx (&winrect, window_style, FALSE, window_ex_style);
-
-	// repaint all windows
-	InvalidateRect (NULL, NULL, TRUE);
-
-	// resize the window; also reposition it as we don't know if it's going to go down below the taskbar area
-	// or not, so we just err on the side of caution here.
-	SetWindowPos (
-		this->PresentParams.hDeviceWindow,
-#if 0 // Baker modification
-		// See if we can make it non-topmost.  Problem: If window starts as fullscreen on engine start, it will always stay topmost 
-		// even if we change to windowed mode.
-		// I think this is not noticed in DirectFitz 9 because it starts out windowed.
-
-		// FAIL
-		windowed ? HWND_NOTOPMOST : NULL,   // <---------------------- this does NOT work, even though in theory it should
-											// However, if we do it separately further below, it does work.
-#else
-		NULL,
-#endif
-		windowed ? (d3d_Globals.DesktopMode.Width - (winrect.right - winrect.left)) / 2 : 0,	// Baker: Review this centering calculation.
-		windowed ? (d3d_Globals.DesktopMode.Height - (winrect.bottom - winrect.top)) / 2 : 0,	// Baker: Review this centering calculation.
-		winrect.right - winrect.left,
-		winrect.bottom - winrect.top,
-		SWP_NOOWNERZORDER | SWP_NOREPOSITION | SWP_NOZORDER | SWP_SHOWWINDOW
-	);
-
-	// ensure
-	SetForegroundWindow (this->PresentParams.hDeviceWindow);
-
-#if 1 // Baker modification: See if we can make it non-topmost.  Problem: If window starts as fullscreen on engine start, it will always stay topmost even if we change to windowed mode.
-	// THIS WORKS!
-#ifndef _DEBUG // Baker: Hopefully this will allow me to debug better	
 	if (windowed)
-#endif // _DEBUG
-		SetWindowPos (this->PresentParams.hDeviceWindow, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	{
+		RECT winrect;
 
+		// MH:  NOTE - DON'T send the styles from the engine, this isn't OpenGL.
+		// Baker: I made WinQuake have a resizable window and copied those window
+		//        borders styles to the engine ... so I bent the engine towards this to solve ;-)
 
-#endif //
+#if 1 // D3D_RESIZABLE_WINDOW
+		LONG winstyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_VISIBLE;
+#else
+		LONG winstyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_BORDER | WS_MINIMIZEBOX;
+#endif
+		// Baker: I made this always happen.
+		if (1) // (!wasWindowed)
+		{
+			SetWindowLong (this->Window, GWL_STYLE, winstyle);
+			SetWindowPos (this->Window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);			
+		}
+		// Remove window topmost.  Seems to be required to be separate call.
+		SetWindowPos (this->Window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 
-	// because a lot of things are now bouncing around the system we take a breather
-//	Sleep (10);  // Neither seems to help nor hurt anything in any circustance I've encountered so far ...
+		SetRect (&winrect, 0, 0, width, height);
+		RECT client_rect = winrect; // Copy it off so we know border left, top, right, bottom
+
+		AdjustWindowRectEx (&winrect, winstyle, FALSE, 0); // Add the borders to the rect
+
+		int border_left = -winrect.left;	// Left border amount calculation
+		int border_top = -winrect.top;		// Top border amount calculation
+
+		int border_width = (winrect.right - winrect.left) - client_rect.right;
+		int border_height = (winrect.bottom - winrect.top) - client_rect.bottom;
+		
+		// Baker: positioning
+		// A) Mode change window = center on desktop
+		// B) Resize = Use top left.  We only receive client canvas top left ...
+		//		so we must subtract out border left and border top
+		
+		#define RECT_WIDTH(_rect)	(_rect.right - _rect.left)
+		#define RECT_HEIGHT(_rect)  (_rect.bottom - _rect.top)
+		switch (is_resize) {
+		
+		default:		// Resize.  We want the left and the top.
+						// We are provided the client left and the client top
+						winrect.left += client_left, winrect.right += client_left;
+						winrect.top += client_top, winrect.bottom += client_top;
+
+						// If resize, we need to tell the engine the border width and height so that 
+						// WM_GETMINMAXINFO can add the border size in.
+
+						*pborder_width  = (winrect.right - winrect.left) - client_rect.right;
+						*pborder_height = (winrect.bottom - winrect.top) - client_rect.bottom;
+						
+						break;
+
+		// Not resize --- that means setmode
+		case false:		WIN_AdjustRectToCenterScreen (&winrect, desktop_width, desktop_height);
+		
+		}
+		
+		// Baker: Just for clarity
+		int x = winrect.left, y = winrect.top;
+		int w = RECT_WIDTH(winrect), h = RECT_HEIGHT(winrect);
+
+		
+		#if 0 // Baker: Debug purposes if needed
+			Con_SafePrintLinef ("Winrect RB %d, %d --> %d x %d --> %d, %d", winrect.left, winrect.top, winrect.right, winrect.bottom, w, h);
+			Con_SafePrintLinef ("CL Rect  %d %d %d %d %d %d", client_rect.left, client_rect.top, client_rect.right, client_rect.bottom, RECT_WIDTH(client_rect), RECT_HEIGHT(client_rect) );
+			Con_SafePrintLinef ("Width %d Height %d --> w %d, h %d", width, height, w, h);					
+			Con_SafePrintLinef ("Border width %d x Height %d --> w %d, h %d", border_width, border_height, w - border_width, border_height - h);
+			Con_SafePrintLinef ("Border left size %d x Border top size %d", border_left, border_top);//, w - border_width, border_height - h);
+		#endif // 0
+
+		// Baker:  Now use the calculations for positioning.
+		MoveWindow (this->Window, x, y, w, h, TRUE /* please paint the borders */);
+		
+		// Originally ... MoveWindow (this->Window, 0, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, FALSE);
+	}
 }
 
 
 void context_t::BeginScene (void)
 {
+	// do nothing if a lost device
+	if (this->DeviceLost) return;
+
 	// check for a beginscene
 	if (!this->State.SceneBegun)
 	{
@@ -520,7 +575,7 @@ void context_t::BeginScene (void)
 
 void context_t::EndScene (void)
 {
-	// if we lost the device (e.g. on a mode switch, alt-tab, etc) we must try to recover it
+	// if we had lost the device (e.g. on a mode switch, alt-tab, etc) we must try to recover it
 	if (this->DeviceLost)
 	{
 		// here we get the current status of the device
@@ -542,14 +597,16 @@ void context_t::EndScene (void)
 		case D3DERR_DEVICENOTRESET:
 			// device is ready to be reset
 			this->PreReset ();
-			this->Device->Reset (&this->PresentParams);
+			if (FAILED (this->Device->Reset (this->SetupPresentParams (&this->DisplayMode))))
+				System_Error ("device reset failed");
 			break;
 
 		default:
 			break;
 		}
 
-		// yield the CPU a little
+		// yield the CPU a little; i do this because a lost device typically happens when the window is minimized or alt-tabbed
+		// away from, so there is no work for d3d to be doing anyway
 		Sleep (10);
 
 		// don't bother this frame
@@ -565,7 +622,7 @@ void context_t::EndScene (void)
 		/*
 		if (this->State.DrawCount)
 		{
-			Con_Printf ("%d draw call\n", this->State.DrawCount);
+			Con_PrintLinef ("%d draw call\n", this->State.DrawCount);
 			this->State.DrawCount = 0;
 		}
 		*/
@@ -603,7 +660,7 @@ void context_t::ResetDevice (void)
 		Sleep (1);
 
 	// reset device
-	if (FAILED (this->Device->Reset (&this->PresentParams)))
+	if (FAILED (this->Device->Reset (this->SetupPresentParams (&this->DisplayMode))))
 		System_Error ("context_t::ResetDevice : failed");
 
 	while (this->Device->TestCooperativeLevel () != D3D_OK)
@@ -616,18 +673,11 @@ void context_t::ResetDevice (void)
 
 void context_t::SetVSync (int interval)
 {
-	// don't change if it doesn't need to change
-#if 1 // Baker test.  Disabling these didn't help windowed mode.
-	if (!interval && this->PresentParams.PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE) return;
-	if (interval && this->PresentParams.PresentationInterval != D3DPRESENT_INTERVAL_IMMEDIATE) return;
-#endif
-
-	if (interval)
-		this->PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-	else this->PresentParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-
+	// doing it this way because interval can be values other than 0 or 1
+	this->DisplayMode.VSync = interval ? TRUE : FALSE;
 	this->ResetDevice ();
 }
+
 
 void context_t::Sync (void)
 {
@@ -645,5 +695,24 @@ void context_t::Sync (void)
 }
 
 
-#endif
+void context_t::Release (void)
+{
+	// release our d3d objects
+	this->DestroyGammaAndContrast ();
+	this->DestroyVertexShader ();
+	this->ReleaseTextures ();
+
+	if (this->Device)
+	{
+		// switch to windowed before destroying the device; this is for conformance with DXGI requirements on Vista+
+		this->DisplayMode.Windowed = TRUE;
+		this->Device->Reset (this->SetupPresentParams (&this->DisplayMode));
+	}
+
+	// now destroy the device
+	SAFE_RELEASE (this->Device);
+}
+
+
+#endif // DIRECT3D9_WRAPPER
 

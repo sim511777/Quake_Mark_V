@@ -80,7 +80,7 @@ cbool Input_Local_Joystick_Read (void);
 
 #ifdef CORE_SDL
 	#define INPUT_RELATIVE
-	#pragma message ("INPUT_RELATIVE defined")
+	//#pragma message ("INPUT_RELATIVE defined")
 #endif // CORE_SDL
 
 #ifdef INPUT_RELATIVE

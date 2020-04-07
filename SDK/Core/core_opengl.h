@@ -30,12 +30,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #ifdef PLATFORM_WINDOWS
-//	#include <windows.h> // APIENTRY
-	#include "core_windows.h" // If it fucks up, then bail
+	#include "core_windows.h"
 
 	#ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Need "gl_constants.h"
 		#include "gl_constants.h"
-	#endif // DIRECT3DX_WRAPPER
+	#endif // DIRECT3DX_WRAPPER // dx8 + dx9 - Need "gl_constants.h"
 
 	#ifndef DIRECT3DX_WRAPPER
 		#include <GL/gl.h>
@@ -50,6 +49,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#ifdef PLATFORM_GUI_WINDOWS
 		#if defined(CORE_GL) && defined (PLATFORM_WINDOWS)
 			extern LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
+			extern LONG (WINAPI *eEnumDisplaySettings) (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode);
+
 			extern HGLRC (WINAPI *ewglCreateContext) (HDC);
 			extern BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
 			extern HGLRC (WINAPI *ewglGetCurrentContext) (VOID);

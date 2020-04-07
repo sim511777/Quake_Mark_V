@@ -435,6 +435,10 @@ void context_t::EnableDisable (GLenum cap, BOOL enable)
 
 	switch (cap)
 	{
+	case GL_STENCIL_TEST:
+		rs = D3DRS_STENCILENABLE;
+		break;
+
 	case GL_SCISSOR_TEST:
 		rs = D3DRS_SCISSORTESTENABLE;
 		break;
@@ -474,12 +478,6 @@ void context_t::EnableDisable (GLenum cap, BOOL enable)
 		rs = D3DRS_ZENABLE;
 		if (enable) enable = D3DZB_TRUE; else enable = D3DZB_FALSE;
 		break;
-
-#if 1
-	case GL_STENCIL_TEST:
-		rs = D3DRS_STENCILENABLE;
-		break;
-#endif
 
 		// we're not setting state yet here...
 	case GL_POLYGON_OFFSET_FILL: this->State.PolygonOffset.FillEnabled = enable; return;

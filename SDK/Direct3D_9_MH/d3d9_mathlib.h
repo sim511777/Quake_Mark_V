@@ -30,7 +30,7 @@ For more information, please refer to <http://unlicense.org/>
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-#pragma warning(disable : 4244)     // MIPS
+#pragma warning(disable : 4244)     // MIPS ... Baker added
 
 #define DEG2RAD(a) (((a) * M_PI) / 180.0)
 #define RAD2DEG(a) (((a) * 180.0) / M_PI)

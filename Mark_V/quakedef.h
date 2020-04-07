@@ -27,6 +27,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __QUAKEDEF_H__
 #define __QUAKEDEF_H__
 
+// COMMENT THESE OUT TO ENABLE DIRECT3D9 STENCIL SHADOWS / SKY DRAWS
+#define DIRECT3D9_STENCIL_DISABLE_BLOCK_OR	|| vid.direct3d == 9
+#define DIRECT3D9_STENCIL_DISABLE_BLOCK_AND && vid.direct3d != 9
+
+
 // quakedef.h -- primary header for client
 #include <core.h>
 
@@ -38,8 +43,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.25
-#define	ENGINE_BUILD			1025			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_VERSION			1.26
+#define	ENGINE_BUILD			1026			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -90,7 +95,9 @@ extern fn_set_t qfunction_set;
 	#define QUAKE_SLEEP_TIME_MILLISECONDS 50 // Baker: Software renderer without asm can eat up cpu
 #endif
 
+
 #ifdef DIRECT3D9_WRAPPER // dx9 - engine name (DirectX 9)
+
 	#define TEMP_BASE_NAME "DirectX 9 " ENGINE_FAMILY_NAME
 	#define ENGINE_SHOT_PREFIX "mark_v_"
 #elif DIRECT3D8_WRAPPER // dx8 - engine name (DirectX 8)

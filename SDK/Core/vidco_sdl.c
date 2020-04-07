@@ -81,7 +81,7 @@ cbool Vid_Display_Properties_Get (reply int *left, reply int *top, reply int *wi
 	float diag, vert, horz;
 
     if (SDL_GetDesktopDisplayMode(0, &mode) != 0)
-        log_fatal ("Vid_Display_Properties_Get: EnumDisplaySettings failed");
+        log_fatal (SPRINTSFUNC "Failed", __func__);
 
 	// Evolving.
 	//SDL_GetDisplayDPI (0, &diag, &horz, &vert);

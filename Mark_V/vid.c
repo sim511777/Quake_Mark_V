@@ -131,13 +131,14 @@ int VID_SetMode (int modenum)
     vid.canalttab = true;
     scr_disabled_for_loading = temp;
 
-#ifdef DIRECT3D9_WRAPPER
-    // ensure swap settings right
-    if (vid.screen.type == MODE_WINDOWED && vid_vsync.value)
-    {
-        Cbuf_AddTextLine ("vid_vsync 0; wait; vid_vsync 1 \\ Shouldn't need, but running vsync right now doesn't keep"); // Works!
-    }
-#endif // DIRECT3D9_WRAPPER
+// MH knocked this out!
+//#ifdef DIRECT3D9_WRAPPER
+//    // ensure swap settings right
+//    if (vid.screen.type == MODE_WINDOWED && vid_vsync.value)
+//    {
+//        Cbuf_AddTextLine ("vid_vsync 0; wait; vid_vsync 1 \\ Shouldn't need, but running vsync right now doesn't keep"); // Works!
+//    }
+//#endif // DIRECT3D9_WRAPPER
 
     return true;
 }

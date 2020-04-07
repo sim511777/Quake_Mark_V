@@ -81,7 +81,8 @@ extern DWORD gSndBufSize;
 // Window setup/video
 
 #define DW_BORDERLESS	(WS_POPUP) // Window covers entire screen; no caption, borders etc
-#define DW_BORDERED		(WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define DW_BORDERED		(WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX)
+                       // OLD: WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 
 #define RECT_WIDTH(_rect)	(_rect.right - _rect.left)
 #define RECT_HEIGHT(_rect)  (_rect.bottom - _rect.top)

@@ -245,7 +245,8 @@ void Sky_FrameSetup (void)
 
 	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for 
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
-	if (!renderer.gl_stencilbits  || vid.direct3d == 9 /*temp disable hack*/) 
+	//if (!renderer.gl_stencilbits || vid.direct3d == 9 /*temp disable hack*/) 
+	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR) 
 	{
 		Sky_DrawSky (); //johnfitz
 		return;
@@ -323,7 +324,9 @@ void Sky_Stencil_Draw (void)
 	if (!level.sky /*|| !frame.has_sky*/)
 		return;
 
-	if (!renderer.gl_stencilbits || vid.direct3d ==9 /*temp disable hack*/) {
+	//if (!renderer.gl_stencilbits || vid.direct3d = =9 /*temp disable hack*/) 
+	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR ) 
+	{
 		return;
 	}
 
@@ -1034,12 +1037,12 @@ void Sky_DrawSky (void)
 	if (!level.sky)
 		return;
 
-//#ifndef DIRECT3D8_WRAPPER // Baker: Direct3D no stencil at this time :(
+//#ifndef DIRECT3D8_WRAPPER // Baker: DX8 no stencil
 // Don't enable this since I don't think we are checking.
 // But would be nice to check, wouldn't it?
 // 	if (!frame.has_sky)
 //		return;
-//#endif // DIRECT3D8_WRAPPER
+//#endif // DIRECT3D8_WRAPPER // No DX8 stencil
 
 	//in these special render modes, the sky faces are handled in the normal world/brush renderer
 	if (r_drawflat_cheatsafe || r_lightmap_cheatsafe )

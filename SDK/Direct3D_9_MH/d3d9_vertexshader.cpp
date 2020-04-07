@@ -234,7 +234,7 @@ void context_t::DestroyVertexShader (void)
 
 void context_t::ActivateVertexShader (void)
 {
-	// this happens at BeginScene time so no geometry has been batched up yet
+	// Baker--> MH removed this comment--> this happens at BeginScene time so no geometry has been batched up yet
 	this->Device->SetVertexShader (this->MainVS);
 	this->Device->SetVertexDeclaration (this->MainVD);
 }

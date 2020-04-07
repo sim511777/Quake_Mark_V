@@ -130,7 +130,7 @@ void VID_Local_AddFullscreenModes (void)
 
 	// Baker: Run through every display mode and get information
 
-	while ( (stat = EnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
+	while ( (stat = eEnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
 		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
@@ -174,7 +174,7 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 		VID_WinQuake_AdjustBuffers (&vid.screen);
 		eglClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 	}
-#endif // DIRECT3D8_WRAPPER
+#endif // DIRECT3D8_WRAPPER - not resizable
 }
 // End resize window on the fly
 
@@ -244,7 +244,7 @@ cbool VID_Local_SetMode (int modenum)
 #ifndef DIRECT3D8_WRAPPER // dx8 - Not for DirectX 8 (-resizable) - Keep in mind we are in a windows source file.
 	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
 		WindowStyle = WindowStyle | WS_SIZEBOX;
-#endif // DIRECT3DX_WRAPPER // Temp!
+#endif // DIRECT3D8_WRAPPER // DX8 no resize
 
 // End resize window on the fly
 
@@ -313,7 +313,7 @@ cbool VID_Local_SetMode (int modenum)
 	Direct3D8_SetVsync (vid_vsync.value); // Baker
 	Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
 	Direct3D8_SetBPP (vid.desktop.bpp);
-#endif // DIRECT3DX_WRAPPER
+#endif // DIRECT3D8_WRAPPER - dx8 extra restart information
 
 	if (wglHRC && (reuseok = ewglMakeCurrent (sysplat.draw_context, wglHRC)) == 0)
 	{

@@ -167,8 +167,8 @@ void VID_Local_AddFullscreenModes (void)
 		if (SDL_GetDisplayMode(0, i, &mode) == 0)
 		{
             vmode_t test	= { MODE_FULLSCREEN, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format)};
-            cbool width_ok	= in_range (MIN_MODE_WIDTH,  test.width, MAX_MODE_WIDTH );
-            cbool height_ok	= in_range (MIN_MODE_HEIGHT, test.height, MAX_MODE_HEIGHT);
+            cbool width_ok	= in_range (MIN_MODE_WIDTH_640,  test.width, MAX_MODE_WIDTH_10000 );
+            cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, test.height, MAX_MODE_HEIGHT_10000);
             cbool bpp_ok	= (test.bpp == vid.desktop.bpp);
             cbool qualified	= (bpp_ok && width_ok && height_ok);
 
@@ -211,7 +211,7 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 		VID_WinQuake_AdjustBuffers (&vid.screen);
 		eglClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 	}
-#endif // DIRECT3D8_WRAPPER
+#endif // DIRECT3D8_WRAPPER (oldwater)
 }
 // End resize window on the fly
 

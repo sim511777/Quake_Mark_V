@@ -373,6 +373,48 @@ void d3d_texture_t::Fill (int level, GLint xoffset, GLint yoffset, int width, in
 }
 
 
+void d3d_texture_t::Mipmap (int dstlevel, int srclevel)
+{
+	IDirect3DSurface9 *dst = NULL;
+	IDirect3DSurface9 *src = NULL;
+
+	if (SUCCEEDED (this->TexImage->GetSurfaceLevel (dstlevel, &dst)))
+	{
+		if (SUCCEEDED (this->TexImage->GetSurfaceLevel (srclevel, &src)))
+		{
+			D3DSURFACE_DESC dstdesc;
+
+			if (SUCCEEDED (dst->GetDesc (&dstdesc)))
+			{
+				D3DSURFACE_DESC srcdesc;
+
+				if (SUCCEEDED (src->GetDesc (&srcdesc)))
+				{
+					// using gamma correction
+					DWORD filter = D3DX_FILTER_SRGB_IN | D3DX_FILTER_SRGB_OUT;
+
+					// drop back to box filtering if possible so that we'll (hopefully) get a faster load
+					// this handles NPO2 downsizing correctly via the round-down rule, whereas the in-engine mipmapping code doesn't
+					if (dstdesc.Width * 2 != srcdesc.Width || dstdesc.Height * 2 != srcdesc.Height)
+						filter |= D3DX_FILTER_LINEAR;
+					else filter |= D3DX_FILTER_BOX;
+
+					// do it this way because it will filter, resample, etc properly for us
+					QD3DXLoadSurfaceFromSurface (dst, NULL, NULL, src, NULL, NULL, filter, 0);
+
+					// call recursively; GetSurfaceLevel will fail and this will begin to drop out when we run out of miplevels
+					this->Mipmap (dstlevel + 1, dstlevel);
+				}
+			}
+
+			SAFE_RELEASE (src);
+		}
+
+		SAFE_RELEASE (dst);
+	}
+}
+
+
 void d3d_texture_t::CheckRenderTarget (class context_t *ctx)
 {
 	// check if the destination texture was created correctly; if not destroy it and recreate it.
@@ -408,6 +450,9 @@ void context_t::CopyFrameBufferToTexture (d3d_texture_t *tex, GLint level, GLint
 	D3DSURFACE_DESC dstdesc;
 
 	this->FlushGeometry ();
+
+	// this uses default pool resources so don't run it if we have a lost device
+	if (this->DeviceLost) return;
 
 	if (SUCCEEDED (this->Device->GetRenderTarget (0, &srcsurf)))
 	{
@@ -519,10 +564,7 @@ void context_t::CreateTexture (d3d_texture_t *tex, GLsizei width, GLsizei height
 void d3d_texture_t::DestroyRT (void)
 {
 	// the only default pool textures should be render targets which are updated each frame so we don't need to worry about restoring image data
-	if (this->TexImage &&
-		this->CreateParms.Width > 0 &&
-		this->CreateParms.Height > 0 &&
-		this->CreateParms.Pool == D3DPOOL_DEFAULT)
+	if (this->TexImage && this->CreateParms.Width > 0 && this->CreateParms.Height > 0 && this->CreateParms.Pool == D3DPOOL_DEFAULT)
 	{
 		SAFE_RELEASE (this->TexImage);
 		this->TexImage = NULL;

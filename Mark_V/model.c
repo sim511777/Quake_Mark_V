@@ -790,7 +790,7 @@ void Mod_Load_Brush_Model_Texture (qmodel_t* ownermod, int bsp_texnum, texture_t
 #ifdef DIRECT3D8_WRAPPER // dx8 - no oldwater
 				// no warp updates
 				tx->update_warp = false;
-#else // NOT DIRECT3D8_WRAPPER ...
+#else // NOT DIRECT3D8_WRAPPER ... (oldwater)
 		{
 			extern byte *hunk_base;
 
@@ -806,7 +806,7 @@ void Mod_Load_Brush_Model_Texture (qmodel_t* ownermod, int bsp_texnum, texture_t
 			);
 			tx->update_warp = true;
 		}
-#endif // ! DIRECT3D8_WRAPPER
+#endif // ! DIRECT3D8_WRAPPER (oldwater)
 		// Warp texture we already cleared the hunk
 		break;
 

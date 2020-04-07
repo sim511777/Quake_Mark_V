@@ -355,9 +355,10 @@ BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESC
 
 // our fake CDS replacement
 LONG WINAPI Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags);
+BOOL WINAPI Direct3D9_EnumDisplaySettings (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode);
 
-void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-void Direct3D9_ResizeWindow (int width, int height, int bpp);
+void Direct3D9_ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height); // MH wants it this way, which is fine now as I made the winow resizable in the WinQuake build too!
+
 BOOL WINAPI Direct3D9_SwapBuffers (HDC unused); // Baker
 
 void Direct3D9_ScreenShotPNG (const char *filename);

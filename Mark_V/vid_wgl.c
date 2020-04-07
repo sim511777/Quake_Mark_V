@@ -169,7 +169,7 @@ void VID_Local_AddFullscreenModes (void)
 
 	// Baker: Run through every display mode and get information
 
-	while ( (stat = EnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
+	while ( (stat = eEnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
 #ifdef SUPPORTS_REFRESHRATE
 		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel, devmode.dmDisplayFrequency };
@@ -177,8 +177,8 @@ void VID_Local_AddFullscreenModes (void)
 		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 #endif // ! SUPPORTS_REFRESHRATE
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
-		cbool width_ok	= in_range (MIN_MODE_WIDTH, devmode.dmPelsWidth, MAX_MODE_WIDTH);
-		cbool height_ok	= in_range (MIN_MODE_HEIGHT, devmode.dmPelsHeight, MAX_MODE_HEIGHT);
+		cbool width_ok	= in_range (MIN_MODE_WIDTH_640, devmode.dmPelsWidth, MAX_MODE_WIDTH_10000);
+		cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, devmode.dmPelsHeight, MAX_MODE_HEIGHT_10000);
 		cbool qualified	= (bpp_ok && width_ok && height_ok);
 
 #ifdef SUPPORTS_REFRESHRATE
@@ -214,14 +214,17 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
 
 #ifndef DIRECT3D8_WRAPPER // dx8 - Not for Direct3D 8! (-resizable)  Keep in mind we are in a windows source file! vid_wgl.c
-	if (1 /*COM_CheckParm ("-resizable")*/)
+	// Added MH extra conditions.
+	if (1 /*COM_CheckParm ("-resizable")*/ && (vid.screen.width != vid.client_window.width || vid.screen.height != vid.client_window.height))
 	{
 		vid.screen.width = vid.client_window.width;
 		vid.screen.height = vid.client_window.height;
 		vid.consize_stale = true; // This triggers a cascade of recalculations in SCR_UpdateScreen
 		vid.warp_stale = true; // Means warp needs recalculated.
+
+		// Since the WINAPI is blocking the way we do Quake, a Quake frame cannot occur until after resize. 
 #ifdef DIRECT3D9_WRAPPER 
-		Direct3D9_ResizeWindow (vid.screen.width, vid.screen.height, vid.desktop.bpp); //, true /*windowed*/);
+		Direct3D9_ResetMode (vid.screen.width, vid.screen.height, true /*windowed*/, vid.client_window.left, vid.client_window.top, -1 /*width*/, -1 /*height*/, true, &vid.border_width, &vid.border_height);
 #endif // DIRECT3D9_WRAPPER
 		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.
 
@@ -297,7 +300,7 @@ cbool VID_Local_SetMode (int modenum)
 #ifndef DIRECT3D8_WRAPPER // dx8 - Not for DirectX 8 (-resizable) - Keep in mind we are in a windows source file.
 	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
 		WindowStyle = WindowStyle | WS_SIZEBOX;
-#endif // DIRECT3DX_WRAPPER // Temp!
+#endif // DIRECT3D8_WRAPPER // DX8 - no resize
 
 // End resize window on the fly
 
@@ -306,18 +309,18 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
 		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.
-		if (p->type == MODE_WINDOWED)
-			eChangeDisplaySettings (NULL, 0);
+//		if (p->type == MODE_WINDOWED)
+//			eChangeDisplaySettings (NULL, 0);
 
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
-		Direct3D9_ResetMode (p->width, p->height, vid.desktop.bpp, (p->type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
+		Direct3D9_ResetMode (p->width, p->height, /* kild vid.desktop.bpp,*/ (p->type == MODE_WINDOWED), -1, -1, vid.desktop.width, vid.desktop.height, false, &vid.border_width, &vid.border_height); //, WindowStyle, ExWindowStyle);
+
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
 		return true; // Reuseok!
 	}
 
 
 #endif // DIRECT3D9_WRAPPER
-
 
 	if (restart)
 		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
@@ -369,7 +372,7 @@ cbool VID_Local_SetMode (int modenum)
 	Direct3D8_SetVsync (vid_vsync.value); // Baker
 	Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
 	Direct3D8_SetBPP (vid.desktop.bpp);
-#endif // DIRECT3DX_WRAPPER
+#endif // DIRECT3D8_WRAPPER - extra information on restart
 
 	if (wglHRC && (reuseok = ewglMakeCurrent (sysplat.draw_context, wglHRC)) == 0)
 	{

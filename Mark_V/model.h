@@ -428,9 +428,9 @@ typedef struct
 	int					poseverts;
 	int					posedata;	// numposes*poseverts trivert_t
 	int					commands;	// gl command list with embedded s/t
-#ifdef DIRECT3DX_WRAPPER // dx8 only - We don't have npot in dx9 at the moment (TEMP DX9)
+#ifdef DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
 	int					commands_d3d8_no_external_skins;	// gl command list with embedded s/t
-#endif // DIRECT3DX_WRAPPER
+#endif // DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
 	struct gltexture_s	*gltextures[MAX_SKINS][4]; //johnfitz
 	struct gltexture_s	*fbtextures[MAX_SKINS][4]; //johnfitz
 	int					texels[MAX_SKINS];	// only for player skins

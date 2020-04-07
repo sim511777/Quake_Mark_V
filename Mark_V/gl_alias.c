@@ -65,9 +65,10 @@ cbool shading = true; //johnfitz -- if false, disable vertex shading for various
 GL_DrawAliasFrame -- johnfitz -- rewritten to support colored light, lerping, entalpha, multitexture, and r_drawflat
 =============
 */
-#ifdef DIRECT3DX_WRAPPER // dx8 only - We don't have npot in dx9 at the moment (TEMP DX9)
+
+#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 cbool direct3d8_external_textures_workaround;
-#endif // DIRECT3DX_WRAPPER
+#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool truncate_flame)
 {
 	float 	vertcolor[4];
@@ -97,11 +98,11 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool trunca
 		blend = iblend = 0; // avoid bogus compiler warning
 	}
 
-#ifdef DIRECT3DX_WRAPPER // dx8 only - We don't have npot in dx9 at the moment (TEMP DX9)
+#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 	if (!direct3d8_external_textures_workaround)
 		commands = (int *)((byte *)paliashdr + paliashdr->commands_d3d8_no_external_skins);
 	else
-#endif // DIRECT3DX_WRAPPER // Temp!
+#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 		commands = (int *)((byte *)paliashdr + paliashdr->commands);
 
 	vertcolor[3] = entalpha; //never changes, so there's no need to put this inside the loop
@@ -399,14 +400,14 @@ void R_DrawAliasModel (entity_t *e)
 	if (tx->flags & TEXPREF_ALPHA) // EF_ALPHA_MASKED_MDL
 		eglEnable (GL_ALPHA_TEST);
 
-#ifdef DIRECT3DX_WRAPPER // dx8 only - We don't have npot in dx9 at the moment (TEMP DX9)
+#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 // Baker: The Direct3D wrapper doesn't have texture matrix support
 // so I am doing a workaround in the event external textures
 // are used for an alias model (aka a Quake .mdl)
 	if (tx->source_format != SRC_RGBA)
 		direct3d8_external_textures_workaround = false;
 	else direct3d8_external_textures_workaround = true;
-#else
+#else // ^^^ DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 #pragma message ("Baker: Direct3D wrapper can't handle texture matrix")
 	if (tx->source_format != SRC_RGBA)
 	{
@@ -427,7 +428,7 @@ void R_DrawAliasModel (entity_t *e)
 		}
 		eglMatrixMode (GL_MODELVIEW);
 	}
-#endif // !DIRECT3DX_WRAPPER // Temp
+#endif // !DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
 
 
 
@@ -612,7 +613,7 @@ cleanup:
 	eglColor3f(1,1,1);
 	eglPopMatrix ();
 
-#ifndef DIRECT3DX_WRAPPER // Temp!
+#ifndef DIRECT3D8_WRAPPER  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 	if (tx && tx->source_format != SRC_RGBA)
 	{
 		if (fb)
@@ -627,7 +628,7 @@ cleanup:
 		eglMatrixMode (GL_MODELVIEW);
 	} 
 	else 
-#endif // !DIRECT3DX_WRAPPER
+#endif  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 		GL_DisableMultitexture ();
 }
 

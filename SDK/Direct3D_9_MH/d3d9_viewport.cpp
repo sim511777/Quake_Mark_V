@@ -51,8 +51,8 @@ void context_t::ResetViewport (void)
 {
 	this->State.Viewport.X = 0;
 	this->State.Viewport.Y = 0;
-	this->State.Viewport.Width = this->CurrentMode.Width;
-	this->State.Viewport.Height = this->CurrentMode.Height;
+	this->State.Viewport.Width = this->DisplayMode.Width;
+	this->State.Viewport.Height = this->DisplayMode.Height;
 	this->State.Viewport.MinZ = 0;
 	this->State.Viewport.MaxZ = 1;
 

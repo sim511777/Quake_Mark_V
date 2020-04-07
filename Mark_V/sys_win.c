@@ -187,7 +187,7 @@ int System_Error (const char *fmt, ...)
 			Input_Shutdown ();
 			System_Process_Messages_Sleep_100 ();
 		}
-#endif // DIRECT3DX_WRAPPER ... TopMost.
+#endif // DIRECT3DX_WRAPPER ... TopMost interferes with msgbox
 
 		switch (in_sys_error0)
 		{
@@ -544,9 +544,9 @@ vmode_t WIN_Vid_GetDesktopProperties (void)
 	DEVMODE	devmode;
 	vmode_t desktop = {0};
 
-	if (!EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
+	if (!eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
 	{
-		System_Error ("VID_UpdateDesktopProperties: EnumDisplaySettings failed");
+		System_Error ("VID_UpdateDesktopProperties: eEnumDisplaySettings failed");
 		return desktop;
 	}
 

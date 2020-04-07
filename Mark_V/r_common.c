@@ -321,7 +321,7 @@ void R_SetupAliasFrame (aliashdr_t *paliashdr, int frame, lerpdata_t *lerpdata)
 	}
 
 	//set up values
-	if (r_lerpmodels.value && !((e->model->flags & MOD_NOLERP) && r_lerpmodels.value != 2))
+	if (r_lerpmodels.value && !((e->model->modelflags & MOD_NOLERP) && r_lerpmodels.value != 2))
 	{
 		if (e->lerpflags & LERP_FINISH && numposes == 1)
 			lerpdata->blend = CLAMP (0, (cl.ctime - e->lerpstart) / (e->lerpfinish - e->lerpstart), 1);

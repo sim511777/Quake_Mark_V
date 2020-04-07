@@ -53,7 +53,7 @@ byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
 
 typedef struct entity_s
 {
-	cbool				forcelink;		// model changed
+	cbool					forcelink;		// model changed
 	glmatrix				gl_matrix;
 //	vec3_t					modelorg;
 	int						update_type;
@@ -72,6 +72,11 @@ typedef struct entity_s
 #else
 	byte					*colormap;
 #endif // GLQUAKE vs. WinQuake
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+	int						modelindex;
+#endif // GLQUAKE_SUPPORTS_QMB
+
 	struct efrag_s			*efrag;			// linked list of efrags
 	int						frame;
 	float					syncbase;		// for client-side animations
@@ -93,7 +98,7 @@ typedef struct entity_s
 	// nehahra support
 	float					smokepuff_time;
 	vec3_t					trail_origin;
-	cbool				traildrawn;
+	cbool					traildrawn;
 
 #endif // SUPPORTS_NEHAHRA
 
@@ -179,28 +184,103 @@ typedef enum trail_type_s
 	ROCKET_TRAIL_0,
 	GRENADE_TRAIL_1,
 	BLOOD_TRAIL_2,
-	TRACER1_TRAIL_3,
-	SLIGHT_BLOOD_TRAIL_4,
-	TRACER2_TRAIL_5,
+	TRACER1_SCRAG_TRAIL_3,
+	SLIGHT_ZOM_BLOOD_TRAIL_4,
+	TRACER2_HELLKNIGHT_TRAIL_5,
 	VOOR_TRAIL_6,
+#ifdef GLQUAKE_SUPPORTS_QMB
 	LAVA_TRAIL_7,
 	BUBBLE_TRAIL_8,
+#endif // GLQUAKE_SUPPORTS_QMB
 	NEHAHRA_SMOKE_9
-} trail_type_t;
+} trail_type_e;
 
+
+/*  No ... these are static ....
+void Classic_InitParticles (void); // void R_InitParticles
+void Classic_ClearParticles (void); // R_ClearParticles
+void Classic_ParseParticleEffect (void); // R_ParseParticleEffect 
+void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count); // R_RunParticleEffect 
+void Classic_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type); // R_AnyTrail 
+void Classic_EntityParticles (entity_t *ent); // R_EntityParticles 
+void Classic_BlobExplosion (vec3_t org); // R_BlobExplosion 
+void Classic_ParticleExplosion (vec3_t org); // R_ParticleExplosion 
+void Classic_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // R_ParticleExplosion2 
+void Classic_LavaSplash (vec3_t org); // R_LavaSplash 
+void Classic_TeleportSplash (vec3_t org); // R_TeleportSplash 
+*/
+
+void R_InitParticles (void); 
+void R_ClearParticles (void);
 void R_ParseParticleEffect (void);
 void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t type);
+void R_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void R_EntityParticles (entity_t *ent);
 void R_BlobExplosion (vec3_t org);
 void R_ParticleExplosion (vec3_t org);
-void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
+void R_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
 void R_LavaSplash (vec3_t org);
 void R_TeleportSplash (vec3_t org);
 
+
+
+
+// by joe: the last 2 are own creations, they handle color mapped explosions
+typedef enum 
+{
+	lt_invalid = -1, // In case GCC gets stupid and tries to make unsigned
+	lt_default = 0,
+	lt_muzzleflash,
+	lt_explosion,
+	lt_rocket,
+	lt_red,
+	lt_blue,
+	lt_redblue,
+	NUM_DLIGHTTYPES_7,
+	lt_explosion2,
+	lt_explosion3
+} dlighttype_e;
+
+
+extern cbool qmb_is_available;
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+extern	float			ExploColor[3];	// joe: for color mapped explosions
+const char *QMB_InitParticles_Error (void);   // Returns pointer to reason
+void QMB_ClearParticles (void);
+void QMB_DrawParticles (void);
+void QMB_RunParticles (void);
+
+
+void QMB_ParseParticleEffect (void);
+void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
+void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+void QMB_EntityParticles (entity_t *ent);
+void QMB_BlobExplosion (vec3_t org);
+void QMB_ParticleExplosion (vec3_t org);
+void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+void QMB_LavaSplash (vec3_t org);
+void QMB_TeleportSplash (vec3_t org);
+void QMB_LightningBeam (vec3_t start, vec3_t end);
+
+cbool QMB_FlameModelSetState (entity_t *ent);
+void QMB_StaticBubble (entity_t *ent);
+void QMB_ShamblerCharge (vec3_t org);
+void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end);
+
+cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg);
+cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);
+Point3D QMB_GetDlightColor (dlighttype_e colornum, dlighttype_e def, cbool random);
+
+extern byte qmb_flame0_mdl[];
+extern const size_t qmb_flame0_mdl_size;
+
+#endif //  GLQUAKE_SUPPORTS_QMB
+
+
 void R_PushDlights (entity_t *ent);
 
-void Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);
+cbool Clasic_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);
 void DLight_Add (int keyx, vec3_t originx, float radiusx, float minlightx, double dietimex, float redx, float greenx, float bluex);
 
 void Stains_WipeStains_NewMap (void);
@@ -296,6 +376,8 @@ typedef struct
 	cbool has_sky; 				// Baker: Could work for WinQuake but not relevant.
 	cbool has_mirror; 			// Baker: Would be real hard to make it work for WinQuake.
 
+	cbool qmb;					// QMB
+
 // Baker: Direct3D wrapper doesn't have stencil, so will have to have the mirror some other way.
 // Baker: Will have to draw the sky the traditional way
 	float skyfog;
@@ -343,10 +425,10 @@ void R_StoreEfrags (efrag_t **ppefrag);
 
 // r_part.c
 //cmd void R_ReadPointFile_f (void);
-void R_InitParticles (void);
+//void R_InitParticles (void);  moved up
 void CL_RunParticles (void);
 void R_DrawParticles (void);
-void R_ClearParticles (void);
+//void R_ClearParticles (void); // moved up
 
 // r_light.c
 extern int d_lightstylevalue[256]; // 8.8 fraction of base light value

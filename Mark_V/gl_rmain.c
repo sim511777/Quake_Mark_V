@@ -335,6 +335,7 @@ void R_Clear (void)
 
 }
 
+
 /*
 ===============
 R_SetupScene -- johnfitz -- this is the stuff that needs to be done once per eye in stereo mode
@@ -445,6 +446,7 @@ void R_SetupView (void)
 //
 //==============================================================================
 
+
 /*
 =============
 R_DrawEntitiesOnList
@@ -466,6 +468,10 @@ void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
 		//if alphapass is false, draw only nonalpha entities this time
 		if ((ENTALPHA_DECODE(currententity->alpha) < 1 && !alphapass) ||
 			(ENTALPHA_DECODE(currententity->alpha) == 1 && alphapass))
+			continue;
+
+		// Checks if a flame model and if QMB replaces we do not draw here
+		if (qmb_is_available /* this must happen even if qmb is off */ && QMB_FlameModelSetState(currententity))
 			continue;
 
 		//johnfitz -- chasecam
@@ -1530,7 +1536,7 @@ void R_RenderView (void)
 		eglFinish ();
 
 	// Baker: Reset frame information
-	memset (&frame, 0, sizeof(frame));  // Mirror-in-scene will join this.
+	memset (&frame, 0, sizeof(frame));  frame.qmb = qmb_is_available && qmb_active.value;  // Mirror-in-scene will join this.
 
 	R_SetupView (); //johnfitz -- this does everything that should be done once per frame
 

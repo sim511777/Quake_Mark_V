@@ -647,8 +647,12 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 #endif // SUPPORTS_CUTSCENE_PROTECTION
 
 	//johnfitz -- save initial value for "reset" command
-	if (!var->default_string)
+#if 0 // Baker ... ???  We were setting the default constantly.  Good job.
+	if (!var->default_string) {
+		// if ( !Flag_Check (var->flags, CVAR_REGISTERED) )
 		var->default_string = Z_Strdup (var->string);
+	}
+
 	//johnfitz -- during initialization, update default too
 	else if (!host_initialized)
 	{
@@ -658,6 +662,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 		var->default_string = Z_Strdup (var->string);
 	}
 	//johnfitz
+#endif
 
 	if (!(var->flags & CVAR_COURTESY))
 	{
@@ -900,9 +905,16 @@ void Cvar_Register (cvar_t *variable)
 
 // copy the value off, because future sets will Z_Free it
 	c_strlcpy (value, variable->string);
-	variable->string = NULL;
-	variable->default_string = NULL;
+	
+//	variable->default_string = NULL;  // No keep!  Nov
 
+// Don't unregister cvars or do we?
+#if 1 // Baker Nov 24
+	variable->default_string = NULL;
+	variable->default_string = Z_Strdup (variable->string);
+	// Don't update it during initialization.  A true reset would reset need to re-run the quake.rc which should do the autoexec.cfg
+#endif
+	variable->string = NULL;
 //	if (!(variable->flags & CVAR_CALLBACK))
 //		variable->callback = NULL;
 
@@ -958,8 +970,16 @@ cbool	Cvar_Command (cbool src_server, cvar_t *var, lparse_t *line)
 			Con_Printf ("\"%s\" is \"%g\" (altered!)\n", var->name, var->value);
 			Con_Printf ("user preference is \"%s\"\n", var->string);
 		}
-		else
-			Con_Printf ("\"%s\" is \"%s\"\n", var->name, var->string);
+		else {
+			Con_Printf ("\"%s\" is \"%s\" ", var->name, var->string);
+			if (String_Does_Match(var->string, var->default_string) )
+				Con_Printf ("[default value]\n");
+			else
+				Con_Printf ("[default: \"%s\"]\n", var->default_string);
+			if (con_verbose.value) {
+				Con_Printf ("info: %s\n", var->description);
+			}
+		}
 		return true;
 	}
 

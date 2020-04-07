@@ -1492,6 +1492,21 @@ static byte *COM_LoadFile_Limited (const char *path, int usehunk, const char *me
 
 	buf = NULL;     // quiet compiler warning
 
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (usehunk == LOADFILE_STACK && String_Does_Match_Caseless (path, "progs/flame0.mdl")) {
+		extern const size_t qmb_flame0_mdl_size;
+		
+		
+		len = qmb_flame0_mdl_size;
+
+		buf = (byte *) Hunk_TempAlloc (len + 1);
+		memcpy (buf, qmb_flame0_mdl, len);
+
+		goto flame0_cheetz;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
 // look for it in the filesystem or pack files
 	len = COM_OpenFile_Limited (path, &h, media_owner_path);
 	if (h == -1)
@@ -1541,6 +1556,7 @@ static byte *COM_LoadFile_Limited (const char *path, int usehunk, const char *me
 	Draw_EndDisc ();
 #endif // Baker
 
+flame0_cheetz:
 	return buf;
 }
 
@@ -1804,6 +1820,12 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{
+		char folder_url[MAX_OSPATH];
+		
+		FS_FullPath_From_Basedir (folder_url, com_argv[i+1]);
+		if (!File_Exists (folder_url) || !File_Is_Folder(folder_url))
+			System_Error ("Folder %s does not exist", folder_url);
+
 		if (!strstr(com_argv[i+1], ".."))
 		{
 			com_modified = true;

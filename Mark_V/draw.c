@@ -826,6 +826,13 @@ void Draw_SetCanvas (canvastype newcanvas)
 		canvas.width = 320, canvas.height = 200;
 		canvas.scale_x = 1, canvas.scale_y = 1;
 		break;
+
+	case CANVAS_TOPLEFT: //used by devstats
+		canvas.x = 0, canvas.y = 0;
+		canvas.width = 320, canvas.height = 200;
+		canvas.scale_x = 1, canvas.scale_y = 1;
+		break;
+
 	default:
 		System_Error ("Draw_SetCanvas: bad canvas type");
 	}

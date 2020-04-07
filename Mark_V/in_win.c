@@ -345,7 +345,7 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
-		if (1) {
+		if (in_keymap.value /* off = no*/) {
 			// Looking for 96.
 			int key = ((int) lparam >> 16) & 255;
 //			Con_Printf ("lparam %d key %d\n", lparam, key);

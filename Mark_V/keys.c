@@ -1777,7 +1777,8 @@ void Key_SetDest (keydest_e newdest)
 
 	if (key_dest == key_game || newdest == key_game) {
 		// A switch to or away from using scancodes
-		WIN_ResetDeadKeys ();
+		if (in_keymap.value)
+			WIN_ResetDeadKeys ();
 
 	}
 

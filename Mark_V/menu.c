@@ -2439,10 +2439,10 @@ void M_Preferences_Draw (void)
 							scr_sbaralpha.value < 1		? "Translucent (GL)": 
 							scr_sbarcentered.value		?   "Centered":  "Quake Default";
 	const char *_effects	= 
-#ifdef HAVE_QMB // def GLQUAKE_RENDERER_SUPPORT
-		qmb_particles.value ?	"QMB (GL)" :
-#endif // GLQUAKE_RENDERER_SUPPORT
-							 !r_lerpmodels.value ?  "Off (Jerky)" : "On";
+#ifdef GLQUAKE_SUPPORTS_QMB // def GLQUAKE_RENDERER_SUPPORT
+		qmb_active.value ?	"JoeQuake (QMB)" :
+#endif // GLQUAKE_SUPPORTS_QMB
+							 !r_lerpmodels.value ?  "Normal + Jerky" : "Normal";
 							  
 
 
@@ -2460,7 +2460,7 @@ void M_Preferences_Draw (void)
 		"Show amount of time into level",
 		"Adjust status bar for resolution",
 		"Only default is uncentered in deathmatch",
-		"FitzQuake added stairs/monster smoothing", //, QMB is GL only",
+		"Original had jerky stairs/monsters", //, QMB is GL only",
 		"Set FitzQuake 0.85 default settings",
 		"Set Mark V revised settings",
 	};
@@ -2496,7 +2496,7 @@ server aim "sv_aim" Quake Default | Off
 	i += 8;
 	M_Print     (col1, i+=8, "   Autoscale");	M_Print (col2, i, _scaling);
 	M_Print     (col1, i+=8, "  Status Bar");	M_Print (col2, i, _statusbar);
-	M_Print     (col1, i+=8, "   Smoothing");	M_Print (col2, i, _effects);
+	M_Print     (col1, i+=8, "     Effects");	M_Print (col2, i, _effects);
 //	i += 8;
 	i += 8;
 	M_Print     (14*8, i+=8, "Set To FitzQuake");
@@ -2761,48 +2761,48 @@ void M_Preferences_Key (int k)
 		break;
 
 	case 12:	// Effects
-#ifdef HAVE_QMB // GLQUAKE_RENDERER_SUPPORT
-		newval = (qmb_particles.value) ? 2 : (!r_lerpmodels.value) ? 0 : 1;
-#else
+#ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
+		newval = (qmb_active.value) ? 2 : (!r_lerpmodels.value) ? 0 : 1;
+#else // ! GLQUAKE_SUPPORTS_QMB
 
 		newval = (!r_lerpmodels.value) ? 0 : 1;
-#endif // GLQUAKE_RENDERER_SUPPORT
+#endif // Not GLQUAKE_SUPPORTS_QMB
 			
 		newval += dir;
-#ifdef HAVE_QMB // GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
 		if (newval == -1) newval = 2;
 		if (newval ==  3) newval = 0;
-#else
+#else // not GLQUAKE_SUPPORTS_QMB
 		if (newval == -1) newval = 1;
 		if (newval ==  2) newval = 0;
-#endif
+#endif // GLQUAKE_SUPPORTS_QMB
 
 		switch (newval) {
 		case 1:	// We are original
 			Cvar_ResetQuick (&v_smoothstairs);
 			Cvar_ResetQuick (&r_lerpmodels);
 			Cvar_ResetQuick (&r_lerpmove);
-#ifdef HAVE_QMB // GLQUAKE_RENDERER_SUPPORT
-			Cvar_ResetQuick (&qmb_particles);
-#endif // GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
+			Cvar_ResetQuick (&qmb_active);
+#endif // GLQUAKE_SUPPORTS_QMB
 			break;
 
 		case 2: // We are QMB
 			Cvar_ResetQuick (&v_smoothstairs);
 			Cvar_ResetQuick (&r_lerpmodels);
 			Cvar_ResetQuick (&r_lerpmove);
-#ifdef HAVE_QMB // GLQUAKE_RENDERER_SUPPORT
-			Cvar_SetValueQuick (&qmb_particles, 1);
-#endif // GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
+			Cvar_SetValueQuick (&qmb_active, 1);
+#endif // GLQUAKE_SUPPORTS_QMB
 			break;
 
 		case 0: // Jerky retro
 			Cvar_SetValueQuick (&v_smoothstairs, 0);
 			Cvar_SetValueQuick (&r_lerpmodels, 0);
 			Cvar_SetValueQuick (&r_lerpmove, 0);
-#ifdef HAVE_QMB // GLQUAKE_RENDERER_SUPPORT
-			Cvar_ResetQuick (&qmb_particles);
-#endif // GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
+			Cvar_ResetQuick (&qmb_active);
+#endif // GLQUAKE_SUPPORTS_QMB
 			break;
 		default:	System_Error ("Menu range");
 		}
@@ -2837,9 +2837,9 @@ void M_Preferences_Key (int k)
 		Cvar_ResetQuick (&v_smoothstairs);
 		Cvar_ResetQuick (&r_lerpmodels);
 		Cvar_ResetQuick (&r_lerpmove);
-#ifdef HAVE_QMB //GLQUAKE_RENDERER_SUPPORT
-		Cvar_ResetQuick (&qmb_particles);
-#endif // GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB //GLQUAKE_RENDERER_SUPPORT
+		Cvar_ResetQuick (&qmb_active);
+#endif // GLQUAKE_SUPPORTS_QMB
 		Cvar_ResetQuick (&scr_sbaralpha);
 		Cvar_SetValueQuick (&scr_sbarcentered, 0.0);
 		Cvar_ResetQuick (&scr_viewsize);
@@ -2876,9 +2876,9 @@ void M_Preferences_Key (int k)
 		Cvar_ResetQuick (&r_lerpmodels);
 		Cvar_ResetQuick (&r_lerpmove);
 		Cvar_ResetQuick (&v_smoothstairs);
-#ifdef HAVE_QMB //GLQUAKE_RENDERER_SUPPORT
-		Cvar_ResetQuick (&qmb_particles);
-#endif // !GLQUAKE_RENDERER_SUPPORT
+#ifdef GLQUAKE_SUPPORTS_QMB //GLQUAKE_RENDERER_SUPPORT
+		Cvar_ResetQuick (&qmb_active);
+#endif // GLQUAKE_SUPPORTS_QMB
 		Cvar_ResetQuick (&scr_sbaralpha);
 		Cvar_ResetQuick (&scr_sbarcentered);  // Default is 1!!!
 		Cvar_ResetQuick (&scr_viewsize);

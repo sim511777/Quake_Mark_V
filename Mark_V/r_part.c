@@ -43,6 +43,7 @@ int			r_numparticles;
 gltexture_t *particletexture, *particletexture1, *particletexture2, *particletexture3, *particletexture4; //johnfitz
 float texturescalefactor; //johnfitz -- compensate for apparent size of different particle textures
 
+cbool qmb_is_available = false;
 
 /*
 ===============
@@ -150,16 +151,14 @@ void R_SetParticleTexture_f (cvar_t *var)
 
 /*
 ===============
-R_InitParticles
+Classic_InitParticles
 ===============
 */
-void R_InitParticles (void)
+void Classic_InitParticles (void)
 {
 	int		i;
 
-	i = COM_CheckParm ("-particles");
-
-	if (i  && i+1 < com_argc)
+	if ((i = COM_CheckParm ("-particles"))  && i + 1 < com_argc)
 	{
 		r_numparticles = (int)(atoi(com_argv[i+1]));
 		if (r_numparticles < ABSOLUTE_MIN_PARTICLES)
@@ -244,10 +243,10 @@ void R_EntityParticles (entity_t *ent)
 
 /*
 ===============
-R_ClearParticles
+Classic_ClearParticles
 ===============
 */
-void R_ClearParticles (void)
+void Classic_ClearParticles (void)
 {
 	int		i;
 
@@ -323,28 +322,28 @@ void R_ParseParticleEffect (void)
 	vec3_t		org, dir;
 	int			i, count, msgcount, color;
 
-	for (i=0 ; i<3 ; i++)
+	for (i=0 ; i < 3 ; i++)
 		org[i] = MSG_ReadCoord ();
-	for (i=0 ; i<3 ; i++)
+	for (i=0 ; i < 3 ; i++)
 		dir[i] = MSG_ReadChar () * (1.0/16);
 	msgcount = MSG_ReadByte ();
 	color = MSG_ReadByte ();
 
-if (msgcount == 255)
-	count = 1024;
-else
-	count = msgcount;
+	if (msgcount == NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255)
+		count = 1024;
+	else
+		count = msgcount;
 
 	R_RunParticleEffect (org, dir, color, count);
 }
 
 /*
 ===============
-R_ParticleExplosion
+Classic_ParticleExplosion
 
 ===============
 */
-void R_ParticleExplosion (vec3_t org)
+void Classic_ParticleExplosion (vec3_t org)
 {
 	int			i, j;
 	particle_t	*p;
@@ -374,11 +373,11 @@ void R_ParticleExplosion (vec3_t org)
 
 /*
 ===============
-R_ParticleExplosion2
+Classic_ParticleExplosion
 
 ===============
 */
-void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength)
+void Classic_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
 {
 	int			i, j;
 	particle_t	*p;
@@ -412,7 +411,7 @@ R_BlobExplosion
 
 ===============
 */
-void R_BlobExplosion (vec3_t org)
+void Classic_BlobExplosion (vec3_t org)
 {
 	int			i, j;
 	particle_t	*p;
@@ -421,6 +420,7 @@ void R_BlobExplosion (vec3_t org)
 	{
 		if (!free_particles)
 			return;
+
 		p = free_particles;
 		free_particles = p->next;
 		p->next = active_particles;
@@ -450,10 +450,9 @@ void R_BlobExplosion (vec3_t org)
 /*
 ===============
 R_RunParticleEffect
-
 ===============
 */
-void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
+void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
 {
 	int			i, j;
 	particle_t	*p;
@@ -462,6 +461,7 @@ void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
 	{
 		if (!free_particles)
 			return;
+
 		p = free_particles;
 		free_particles = p->next;
 		p->next = active_particles;
@@ -513,10 +513,9 @@ void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
 /*
 ===============
 R_LavaSplash
-
 ===============
 */
-void R_LavaSplash (vec3_t org)
+void Classic_LavaSplash (vec3_t org)
 {
 	int			i, j, k;
 	particle_t	*p;
@@ -559,10 +558,9 @@ void R_LavaSplash (vec3_t org)
 /*
 ===============
 R_TeleportSplash
-
 ===============
 */
-void R_TeleportSplash (vec3_t org)
+void Classic_TeleportSplash (vec3_t org)
 {
 	int			i, j, k;
 	particle_t	*p;
@@ -577,6 +575,7 @@ void R_TeleportSplash (vec3_t org)
 			{
 				if (!free_particles)
 					return;
+
 				p = free_particles;
 				free_particles = p->next;
 				p->next = active_particles;
@@ -604,12 +603,12 @@ void R_TeleportSplash (vec3_t org)
 
 /*
 ===============
-R_RocketTrail
+R_AnyTrail
 
 FIXME -- rename function and use #defined types instead of numbers
 ===============
 */
-void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t type)
+void Classic_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
 {
 	vec3_t		vec;
 	float		len;
@@ -644,7 +643,10 @@ void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t
 
 		switch (type)
 		{
-			case ROCKET_TRAIL_0: // 0 rocket trail
+			case ROCKET_TRAIL_0:
+#ifdef GLQUAKE_SUPPORTS_QMB
+			case LAVA_TRAIL_7 /*QMB Fake*/: // 0 rocket trail
+#endif //GLQUAKE_SUPPORTS_QMB
 				p->ramp = (rand()&3);
 				p->color = ramp3[(int)p->ramp];
 				p->type = pt_fire;
@@ -667,12 +669,12 @@ void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t
 					p->org[j] = start[j] + ((rand()%6)-3);
 				break;
 
-			case TRACER1_TRAIL_3: // 3
-			case TRACER2_TRAIL_5: // 5 tracer
+			case TRACER1_SCRAG_TRAIL_3: // 3
+			case TRACER2_HELLKNIGHT_TRAIL_5: // 5 tracer
 				p->die = cl.time + 0.5;
 				p->type = pt_static;
 				// 3 is tracer1_trail
-				p->color = (type == TRACER1_TRAIL_3) ? 52 + ((tracercount & 4) << 1) : 230 + ((tracercount & 4) << 1); // << 1 means x2
+				p->color = (type == TRACER1_SCRAG_TRAIL_3) ? 52 + ((tracercount & 4) << 1) : 230 + ((tracercount & 4) << 1); // << 1 means x2
 				tracercount++;
 
 				VectorCopy (start, p->org);
@@ -688,7 +690,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t
 				}
 				break;
 
-			case SLIGHT_BLOOD_TRAIL_4: // 4 slight blood
+			case SLIGHT_ZOM_BLOOD_TRAIL_4: // 4 slight blood
 				p->type = pt_grav;
 				p->color = 67 + (rand()&3);
 				for (j=0 ; j<3 ; j++)
@@ -717,15 +719,25 @@ CL_RunParticles -- johnfitz -- all the particle behavior, separated from R_DrawP
 WinQuake: R_DrawParticles (it draws them here too)
 ===============
 */
+void Classic_RunParticles (void);
 
 void CL_RunParticles (void)
+{
+	Classic_RunParticles ();
+#ifdef GLQUAKE_SUPPORTS_QMB
+	QMB_RunParticles ();
+#endif // GLQUAKE_SUPPORTS_QMB
+}
+
+void Classic_RunParticles (void)
 {
 	particle_t		*p, *kill;
 	int				i;
 	float  time1, time2, time3, dvel, grav;
 	float			frametime = fabs(cl.time - cl.oldtime);
 
-//	if (!active_particles)		return; // JoeQuake suggests.
+	if (!active_particles)
+		return; // JoeQuake suggests.
 
 	time3 = frametime * 15;
 	time2 = frametime * 10;
@@ -828,8 +840,8 @@ void CL_RunParticles (void)
 R_DrawParticles
 ===============
 */
-void R_DrawParticles (void)
-{
+void Classic_DrawParticles (void)
+{ // WinQuake
 	particle_t		*p;
 
 	VectorScale (vright, xscaleshrink, r_pright);
@@ -847,16 +859,16 @@ void R_DrawParticles (void)
 R_DrawParticles
 ===============
 */
-void R_DrawParticles (void)
-{
+void Classic_DrawParticles (void)
+{ // GLQuake
 	particle_t		*p;
 	float			scale;
 	vec3_t			up, right, p_up, p_right, p_upright; //johnfitz -- p_ vectors
 	byte			color[4], *c; //johnfitz -- particle transparency
 //	float			alpha; //johnfitz -- particle transparency
 
-	if (!gl_particles.value)
-		return;
+	if (!gl_particles.value) 	return;
+	if (!active_particles)		return;	// JoeQuake suggests
 
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
@@ -1058,50 +1070,180 @@ int Effects_Bit_Flag (int flags)
 }
 
 
+static float	_mathlib_temp_float1, _mathlib_temp_float2;
+static vec3_t	_mathlib_temp_vec1;
+
+#define VectorL2Compare(v, w, m)				\
+	(_mathlib_temp_float1 = (m) * (m),			\
+	_mathlib_temp_vec1[0] = (v)[0] - (w)[0], _mathlib_temp_vec1[1] = (v)[1] - (w)[1], _mathlib_temp_vec1[2] = (v)[2] - (w)[2],\
+	_mathlib_temp_vec1[0] * _mathlib_temp_vec1[0] +		\
+	_mathlib_temp_vec1[1] * _mathlib_temp_vec1[1] +		\
+	_mathlib_temp_vec1[2] * _mathlib_temp_vec1[2] < _mathlib_temp_float1)
+
 
 #define NEHSMOKE 987
-void Effects_Evaluate (int i, entity_t* ent, vec3_t oldorg)
+cbool Clasic_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 {
-	int effects = Effects_Bit_Flag (ent->model->flags);
+	int effects = Effects_Bit_Flag (ent->model->modelflags);
 
 	if (!effects)
-		return;
+		return false;
 
 #ifdef SUPPORTS_NEHAHRA
 	if (nehahra_active && effects == EF_GRENADE && cl.time >= ent->smokepuff_time)
 		effects = NEHSMOKE;
 #endif // SUPPORTS_NEHAHRA
 
-//	if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
-//	{
-//		VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
-//		ent->traildrawn = true;
-//	}
-//	else VectorCopy (ent->trail_origin, oldorg);
+	//if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
+	//{
+	//	VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
+	//	ent->traildrawn = true;
+	//}
+	//else VectorCopy (ent->trail_origin, oldorg);
 
 	switch (effects)
 	{
-	default:			return;
+	default:			return false;
 
-	case EF_GIB:		R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, BLOOD_TRAIL_2);			return;
-	case EF_ZOMGIB:		R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, SLIGHT_BLOOD_TRAIL_4);	return;
-	case EF_TRACER:		R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, TRACER1_TRAIL_3);		return;
-	case EF_TRACER2:	R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, TRACER2_TRAIL_5);		return;
-	case EF_TRACER3:	R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, VOOR_TRAIL_6);			return;
-	case EF_GRENADE:	R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, GRENADE_TRAIL_1);		return;
+	case EF_GIB:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, BLOOD_TRAIL_2);			return true;
+	case EF_ZOMGIB:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, SLIGHT_ZOM_BLOOD_TRAIL_4);	return true;
+	case EF_TRACER:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, TRACER1_SCRAG_TRAIL_3);		return true;
+	case EF_TRACER2:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, TRACER2_HELLKNIGHT_TRAIL_5);		return true;
+	case EF_TRACER3:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, VOOR_TRAIL_6);			return true;
+	case EF_GRENADE:	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, GRENADE_TRAIL_1);		return true;
 
-	case EF_ROCKET:		R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
-						DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1,1);
-						return;
+	case EF_ROCKET:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
+						DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1 /*baker1*/,1 /*baker1*/);
+						return true;
 
 #ifdef SUPPORTS_NEHAHRA
-	case NEHSMOKE:		R_RocketTrail (oldorg, ent->origin, &ent->trail_origin, NEHAHRA_SMOKE_9);
+	case NEHSMOKE:		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, NEHAHRA_SMOKE_9);
 						ent->smokepuff_time = cl.time + 0.14;
-						return;
+						return true;
 #endif // SUPPORTS_NEHAHRA
 	}
-
+	
+	return false; // I am unreachable?  Right?
 }
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+
+#define QMB_ROCKET_LIGHT_LEVEL_1 1
+
+// Return true if we emiited an effect
+cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
+{
+	// Apparently these are all based on the trails flag
+	if (!ent->model->modelflags) return false;
+	
+	//if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
+	//{
+	//	VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
+	//	ent->traildrawn = true;
+	//	return false; // Right?
+	//}
+	//else VectorCopy (ent->trail_origin, oldorg);
+
+	if ( ! Flag_Check(ent->model->modelflags, EF_ROCKET) )
+		return false;	// Classic will emit it just fine.
+
+	if (ent->model->modhint == MOD_LAVABALL_6) {
+		dlight_t		*dl;
+//		dlighttype_e	color_type;
+
+		if (!qmb_trail_lavaball.value) {
+			R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7); // Faked
+			DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1 /*baker1*/,1 /*baker1*/);
+			return false;  // Unwanted
+		}
+
+		R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7);
+
+		dl = CL_AllocDlight (i);
+		VectorCopy (ent->origin, dl->origin);
+		dl->radius = 100 * (1 + CLAMP (0, QMB_ROCKET_LIGHT_LEVEL_1, 1) );
+		dl->die = cl.time + 0.1;
+
+		//dl->type = lt_rocket;
+
+		return true;
+				//return false;	// Classic will emit it just fine.  And apparently not an option.
+	}
+
+
+
+	if (!qmb_trail_rocket.value)
+		return false;	// Rocket trail isn't on?
+
+	// Emit the trail
+	R_AnyTrail (oldorg, ent->origin, &ent->trail_origin, ROCKET_TRAIL_0);
+
+	// Maybe emit the light
+	if (QMB_ROCKET_LIGHT_LEVEL_1)
+	{
+		//dlight_t		*dl;
+		//dlighttype_e	color_type;
+		Point3D cv3 = QMB_GetDlightColor (qmb_rocketlightcolor.value, lt_rocket, false);
+
+		DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ cv3.x, cv3.y, cv3.z);
+#if 0
+		dl = CL_AllocDlight (i);
+		VectorCopy (ent->origin, dl->origin);
+		dl->radius = 55 * ((1 + CLAMP (0, QMB_ROCKET_LIGHT_LEVEL_1, 1)));
+		dl->die = cl.time + 0.1;
+#ifdef GLQUAKE_SUPPORTS_QMB
+		dl->color = 
+#endif
+#endif
+	}
+
+	// Emit the rocket red exhaust		
+	if (qmb_trail_rocket.value)
+	{
+		vec3_t	back;
+		float	scale;
+
+		VectorSubtract (oldorg, ent->origin, back);
+		scale = 8.0 / VectorLength(back);
+		VectorMA (ent->origin, scale, back, back);
+		QMB_MissileFire (back, oldorg, ent->origin);
+	}
+	return true;
+}
+
+
+
+cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg)
+{
+// Do we relink entities if paused?  What if connected to a server *and* paused.
+// I hate that scenario.
+	if (ent->modelindex == cl_modelindex[mi_bubble] && qmb_bubbles.value) {
+		// Apparently this isn't optional as there is no way to turn this off.  If QMB is on, this happens.
+		if (!cl.paused && cl.oldtime != cl.time)	// Apparently doing this while paused or otherwise stopped inserts lots of bubbles.
+			QMB_StaticBubble (ent);					// Do we relink entities if paused?  What if connected to a server *and* paused.
+		return true; // Software removal of bubble
+	}
+	
+	if (qmb_lightning.value && ent->modelindex == cl_modelindex[mi_shambler]) {
+		// So why is it ok to do this when paused?
+#define SHAMBLER_ATTACK_FRAME_65 65
+#define SHAMBLER_ATTACK_FRAME_68 68
+		if (in_range (SHAMBLER_ATTACK_FRAME_65, ent->frame, SHAMBLER_ATTACK_FRAME_68)) {
+			vec3_t	liteorg; VectorCopy (ent->origin, liteorg); liteorg[2] += 32;
+			QMB_ShamblerCharge (liteorg);
+			return false;  // We still want the Shambler to render.
+		}
+	}
+	
+	if (qmb_trail_spikes.value && ent->model->modhint == MOD_SPIKE_7) {
+		// So why is it ok to do this when paused?
+		// What stops regular particles and dlights from repeating a metric shitton of times?
+		QMB_AnyTrail (oldorg, ent->origin, &ent->trail_origin, BUBBLE_TRAIL_8);
+		return false;  // We still want the spike to render
+	}
+	return false; // Didn't do anything
+}
+#endif // GLQUAKE_SUPPORTS_QMB
 
 void DLight_Add (int keyx, vec3_t originx, float radiusx, float minlightx, double dietimex, float redx, float greenx, float bluex)
 {
@@ -1113,10 +1255,184 @@ void DLight_Add (int keyx, vec3_t originx, float radiusx, float minlightx, doubl
 	dl->minlight = minlightx;
 	dl->die = dietimex;
 #ifdef GLQUAKE_COLORED_LIGHTS
-	dl->color[0] = redx;
-	dl->color[1] = greenx;
-	dl->color[2] = bluex;
+	dl->color.vec3[0] = redx;
+	dl->color.vec3[1] = greenx;
+	dl->color.vec3[2] = bluex;
 #endif // GLQUAKE_COLORED_LIGHTS
+}
+
+// Control ... 
+
+
+
+
+
+void R_DrawParticles (void)
+{
+// cvar
+	Classic_DrawParticles ();
+#ifdef GLQUAKE_SUPPORTS_QMB
+	QMB_DrawParticles ();
+#endif // GLQUAKE_SUPPORTS_QMB
+}
+
+void R_InitParticles (void)
+{
+	const char *errmsg;
+
+	Classic_InitParticles ();
+#ifdef GLQUAKE_SUPPORTS_QMB
+	qmb_is_available = (  (errmsg = QMB_InitParticles_Error ()) == NULL);
+	if (!qmb_is_available) {
+		Con_Printf ("QMB unavailable: %s\n", errmsg);
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+}
+
+void R_ClearParticles (void)
+{
+	Classic_ClearParticles ();
+#ifdef GLQUAKE_SUPPORTS_QMB
+	QMB_ClearParticles ();
+#endif // GLQUAKE_SUPPORTS_QMB
+}
+
+// Uh?  No we're good
+void R_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && qmb_explosions.value) { // If we aren't using QMB, do the classic style
+		QMB_ColorMappedExplosion (org, colorStart, colorLength);		
+		return;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+	
+	Classic_ColorMappedExplosion (org, colorStart, colorLength);		
+}
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+	#define RunParticleEffect(var, org, dir, color, count)		\
+		if (frame.qmb && qmb_##var.value)						\
+			QMB_RunParticleEffect (org, dir, color, count);		\
+		else													\
+			Classic_RunParticleEffect (org, dir, color, count);
+#else
+	#define RunParticleEffect(var, org, dir, color, count)		\
+			Classic_RunParticleEffect (org, dir, color, count);
+#endif
+
+void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
+{
+//	if (cl_ent_disable_blood.integer && (color == 73 || color == 225))
+//		color = 20;		// Switch to spark
+
+	if (color == COLOR_UNKNOWN_BLOOD_73 || color == COLOR_EXPLOSION_225)
+	{
+		RunParticleEffect(blood, org, dir, color, count);
+		return;
+	}
+// 75 + 1024 is the explosion box, I think.  Ends up as gunshot, WTF?
+
+	if (count == 1024) {
+		R_ParticleExplosion (org); // Seriously?  Can this even happen in software?
+		return; // K?
+	}
+
+	switch (count)
+	{
+	case 10:
+	case 20:
+	case 30:
+		RunParticleEffect(spikes, org, dir, color, count);
+		break;
+	default:
+		RunParticleEffect(gunshots, org, dir, color, count);
+	}
+}
+
+void R_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb) {
+		switch (type) {
+		case ROCKET_TRAIL_0:				if (!qmb_trail_rocket.value) goto use_classic; else break;
+		case GRENADE_TRAIL_1:				if (!qmb_trail_grenade.value) goto use_classic; else break;
+		case BLOOD_TRAIL_2:					if (!qmb_trail_normal_gib.value) goto use_classic; else break;
+		case TRACER1_SCRAG_TRAIL_3:			if (!qmb_trail_scrag.value) goto use_classic; else break;
+		case SLIGHT_ZOM_BLOOD_TRAIL_4:		if (!qmb_trail_zombie_gib.value) goto use_classic; else break;
+		case TRACER2_HELLKNIGHT_TRAIL_5:	if (!qmb_trail_hellknight.value) goto use_classic; else break;
+		case VOOR_TRAIL_6:					if (!qmb_trail_vore.value) goto use_classic; else break;
+		case LAVA_TRAIL_7:					if (!qmb_trail_lavaball.value) goto use_classic; else break;
+		case BUBBLE_TRAIL_8:				break; // No choice, but we are called from a dedicated QMB path, so QMB must be on.
+		default:							break; // Something else.  Probably NEHAHRA_SMOKE_9
+		}
+		
+		QMB_AnyTrail (start, end, trail_origin, type);
+		return; 
+	}
+
+use_classic:
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
+	Classic_AnyTrail (start, end, trail_origin, type);
+}
+
+
+
+
+void R_ParticleExplosion (vec3_t org)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && qmb_explosions.value) {
+		QMB_ParticleExplosion (org);
+		return;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
+	Classic_ParticleExplosion (org);
+}
+
+
+void R_BlobExplosion (vec3_t org)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && qmb_trail_rocket.value) {
+		QMB_BlobExplosion (org);
+		return;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+	
+	Classic_BlobExplosion (org);
+}
+
+
+void R_LavaSplash (vec3_t org)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && qmb_lavasplash.value) {
+		QMB_LavaSplash (org);
+		return;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
+	Classic_LavaSplash (org); // Classic
+}
+
+
+void R_TeleportSplash (vec3_t org)
+{
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && qmb_telesplash.value) {
+		QMB_TeleportSplash (org);
+		return;
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+	Classic_TeleportSplash (org); // Classic
 }
 
 

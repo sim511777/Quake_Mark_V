@@ -410,19 +410,12 @@ vmode_t VID_Cvars_To_Mode (void)
 
 
 
-
-cbool VID_Read_Early_Cvars (void)
+cbool VID_Read_Early_Non_Mode_Cvars (void)
 {
+// Main difference is that we don't have to bail like we do with video mode.
+// These must all be read.
 
-	// Any of these found and we bail
-	char *video_override_commandline_params[] = {"-window", "-width", "-height", "-current", NULL } ;
 	const cvar_t* cvarslist[] = {
-		&vid_fullscreen,
-		&vid_width,
-		&vid_height,
-#ifdef GLQUAKE_RENDERER_SUPPORT
-		&vid_multisample,  // Baker: multisample support
-#endif // GLQUAKE_RENDERER_SUPPORT
 #ifdef GLQUAKE_SUPPORTS_VSYNC
 		&vid_vsync, // Baker: Important to read here for Direct3D
 #endif // GLQUAKE_SUPPORTS_VSYNC
@@ -436,6 +429,28 @@ cbool VID_Read_Early_Cvars (void)
 		&vid_sw_stretch,
 #endif // WINQUAKE_RENDERER_SUPPORT
 		&hd_folder,
+	NULL};
+	cbool found_in_config, found_in_autoexec;
+
+	found_in_config = Read_Early_Cvars_For_File (CONFIG_CFG, cvarslist);
+	found_in_autoexec = Read_Early_Cvars_For_File (AUTOEXEC_CFG, cvarslist);
+
+	return (found_in_config || found_in_autoexec);
+}
+
+
+cbool VID_Read_Early_Cvars (void)
+{
+
+	// Any of these found and we bail
+	char *video_override_commandline_params[] = {"-window", "-width", "-height", "-current", NULL } ;
+	const cvar_t *cvarslist[] = {
+		&vid_fullscreen,
+		&vid_width,
+		&vid_height,
+#ifdef GLQUAKE_RENDERER_SUPPORT
+		&vid_multisample,  // Baker: multisample support
+#endif // GLQUAKE_RENDERER_SUPPORT
 	NULL};
 	cbool found_in_config, found_in_autoexec;
 	int i;
@@ -622,6 +637,7 @@ void	VID_Init (void)
 	// Now, if we have -window or anything we don't bother to read the cvars early
 	// But we will still read them later.
 
+	VID_Read_Early_Non_Mode_Cvars ();
 	videos_cvars_read = VID_Read_Early_Cvars ();
 
 	// The horror!!!  

@@ -1,4 +1,4 @@
-#if 0
+
 
 /*
 Copyright (C) 2002-2003, Dr Labman, A. Nourai
@@ -22,17 +22,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // gl_rpart.c
 
 #include "quakedef.h"
+#ifdef GLQUAKE_SUPPORTS_QMB
 #include <assert.h>
 
-#if 1
-typedef enum 
-{
-//	ROCKET_TRAIL, GRENADE_TRAIL, BLOOD_TRAIL, BIG_BLOOD_TRAIL, TRACER1_TRAIL,
-//	TRACER2_TRAIL, VOOR_TRAIL, LAVA_TRAIL, BUBBLE_TRAIL, NEHAHRA_SMOKE
-	ROCKET_TRAIL, GRENADE_TRAIL, BLOOD_TRAIL, TRACER1_TRAIL, SLIGHT_BLOOD_TRAIL,
-	TRACER2_TRAIL, VOOR_TRAIL, LAVA_TRAIL, BUBBLE_TRAIL, NEHAHRA_SMOKE
+#include "mark_v_qmb.h"
 
-} trail_type_e;
+// mi_player and friends moved to client.h
+modelindex_e	cl_modelindex[modelindex_max];
+char			*cl_modelnames[modelindex_max];
+
+typedef	byte color_vec4b_t[4];
+
+#define	DEFAULT_NUM_PARTICLES		4096
+#define	ABSOLUTE_MIN_PARTICLES		256
+#define	ABSOLUTE_MAX_PARTICLES		32768
+
+
+
+
+// included by r_part_qmb.c
 
 float	_mathlib_temp_float1, _mathlib_temp_float2;
 #define VectorSupCompare(v, w, m)								\
@@ -41,150 +49,93 @@ float	_mathlib_temp_float1, _mathlib_temp_float2;
 	(v)[1] - (w)[1] > -_mathlib_temp_float1 && (v)[1] - (w)[1] < _mathlib_temp_float1 &&	\
 	(v)[2] - (w)[2] > -_mathlib_temp_float1 && (v)[2] - (w)[2] < _mathlib_temp_float1)
 
-#define TruePointContents(p) SV_HullPointContents(&cl.worldmodel->hulls[0], 0, p)
-#define ISUNDERWATER(x) ((x) == CONTENTS_WATER || (x) == CONTENTS_SLIME || (x) == CONTENTS_LAVA)
+
+
+
 
 
 typedef	enum
 {
-	mi_player,
-// q3
-	mi_q3torso, 
-	mi_q3head,
-//q3
-	mi_eyes,
-	mi_rocket,
-	mi_grenade,
-	mi_flame0,
-	mi_flame1,
-	mi_flame2,
-	mi_explo1,
-	mi_explo2,
-	mi_bubble,
-	mi_fish,		// Monsters begin here
-	mi_dog,
-	mi_soldier,
-	mi_enforcer,
-	mi_knight,
-	mi_hknight,
-	mi_scrag,
-	mi_ogre,
-	mi_fiend,
-	mi_vore,
-	mi_shambler,
-	mi_h_dog,		// Dead body models begin here
-	mi_h_soldier,
-	mi_h_enforcer,
-	mi_h_knight,
-	mi_h_hknight,
-	mi_h_scrag,
-	mi_h_ogre,
-	mi_h_fiend,
-	mi_h_vore,
-	mi_h_shambler,
-	mi_h_zombie,
-	mi_h_player,
-	mi_gib1,
-	mi_gib2,
-	mi_gib3,
-	NUM_MODELINDEX
-} modelindex_e;
-
-modelindex_e	cl_modelindex[NUM_MODELINDEX];
-int				*cl_modelnames[NUM_MODELINDEX];
-
-
-#endif
-
-
-#define	DEFAULT_NUM_PARTICLES		4096
-#define	ABSOLUTE_MIN_PARTICLES		256
-#define	ABSOLUTE_MAX_PARTICLES		32768
-
-typedef	byte	col_t[4];
-
-typedef	enum 
-{
-	p_spark, 
-	p_smoke, 
-	p_fire, 
-	p_bubble, 
-	p_lavasplash, 
-	p_gunblast, 
-	p_chunk, 
+	p_spark,
+	p_smoke,
+	p_fire,
+	p_bubble,
+	p_lavasplash,
+	p_gunblast,
+	p_chunk,
 	p_shockwave,
-	p_explosion, 
-	p_sparkray, 
-	p_staticbubble, 
-	p_trailpart, 
-	p_dpsmoke, 
-	p_dpfire, 
+	p_explosion,
+	p_sparkray,
+	p_staticbubble,
+	p_trailpart,
+	p_dpsmoke,
+	p_dpfire,
 	p_teleflare,
-	p_blood1, 
-	p_blood2, 
-	p_blood3, 
-	p_flame, 
-	p_lavatrail, 
-	p_bubble2, 
-	p_streak, 
+	p_blood1,
+	p_blood2,
+	p_blood3,
+	p_flame,
+	p_lavatrail,
+	p_bubble2,
+	p_streak,
 	p_streaktrail,
-	p_streakwave, 
-	p_lightningbeam, 
-	p_glow, 
-	p_missilefire, 
-	p_q3blood, 
+	p_streakwave,
+	p_lightningbeam,
+	p_glow,
+	p_missilefire,
+	p_q3blood,
 	p_q3smoke,
-	num_particletypes
-} part_type_t;
+	num_particletypes, //part_type_max, // PART_TYPE_LIMIT,
+} part_type_e;
 
-typedef	enum 
+typedef	enum
 {
-	pm_static, 
-	pm_normal, 
-	pm_bounce, 
-	pm_die, 
-	pm_nophysics, 
-	pm_float, 
-	pm_streak, 
+	pm_static,
+	pm_normal,
+	pm_bounce,
+	pm_die,
+	pm_nophysics,
+	pm_float,
+	pm_streak,
 	pm_streakwave
-} part_move_t;
+} part_move_e;
 
-typedef	enum 
+typedef	enum
 {
-	ptex_none, 
-	ptex_smoke, 
-	ptex_bubble, 
-	ptex_generic, 
-	ptex_dpsmoke, 
+	ptex_none,
+	ptex_smoke,
+	ptex_bubble,
+	ptex_generic,
+	ptex_dpsmoke,
 	ptex_lava,
-	ptex_blueflare, 
-	ptex_blood1, 
-	ptex_blood2, 
-	ptex_blood3, 
-	ptex_lightning, 
+	ptex_blueflare,
+	ptex_blood1,
+	ptex_blood2,
+	ptex_blood3,
+	ptex_lightning,
 	ptex_explosion,
-	ptex_q3blood, 
+	ptex_q3blood,
 	ptex_q3smoke,
-	num_particletextures
-} part_tex_t;
+	num_particletextures, // part_tex_max,
+} part_tex_e;
 
-typedef	enum 
+typedef	enum
 {
-	pd_spark, 
-	pd_sparkray, 
-	pd_billboard, 
-	pd_billboard_vel, 
-	pd_hide, 
+	pd_spark,
+	pd_sparkray,
+	pd_billboard,
+	pd_billboard_vel,
+	pd_hide,
 	pd_beam
-} part_draw_t;
+} part_draw_e;
 
-#define	NUM_PARTICLETEXTURES	6
+
 
 typedef struct qmb_particle_s
 {
 	struct qmb_particle_s *next;
 	vec3_t				org, endorg;
-	col_t				color;
+	color_vec4b_t		color;
 	float				growth;
 	vec3_t				vel;
 	float				rotangle;
@@ -197,28 +148,29 @@ typedef struct qmb_particle_s
 	byte				bounces;
 } qmb_particle_t;
 
-typedef	struct particle_tree_s 
+typedef	struct particle_tree_s
 {
 	qmb_particle_t		*start;
-	part_type_t			id;
-	part_draw_t			drawtype;
+	part_type_e			id;
+	part_draw_e			drawtype;
 	int					SrcBlend;
 	int					DstBlend;
-	part_tex_t			texture;
+	part_tex_e			texture_numbp;
 	float				startalpha;
 	float				grav;
 	float				accel;
-	part_move_t			move;
+	part_move_e			move;
 	float				custom;
 } particle_type_t;
 
+#define ISUNDERWATER(x) ((x) == CONTENTS_WATER || (x) == CONTENTS_SLIME || (x) == CONTENTS_LAVA)
 
-#define	MAX_PTEX_COMPONENTS	8
+#define	MAX_PTEX_COMPONENTS_8	8
 typedef struct particle_texture_s 
 {
 	gltexture_t			*glt;
 	int					components;
-	float				coords[MAX_PTEX_COMPONENTS][4];
+	float				coords[MAX_PTEX_COMPONENTS_8][4];
 } particle_texture_t;
 
 
@@ -227,8 +179,11 @@ static	float	cost[7] = {1.000000, 0.623490, -0.222521, -0.900969, -0.900969, -0.
 
 static	qmb_particle_t		*particles, *free_particles;
 static	particle_type_t		particle_types[num_particletypes];
+//static	const int			particle_types_count = ARRAY_COUNT(particle_types);
+
 static	int					particle_type_index[num_particletypes];
 static	particle_texture_t	particle_textures[num_particletextures];
+//static	const int			particle_textures_count = ARRAY_COUNT (particle_textures);
 
 static	int					r_numparticles;
 static	vec3_t				zerodir = {22, 22, 22};
@@ -236,15 +191,25 @@ static	int					particle_count = 0;
 static	float				particle_time;
 static	vec3_t				trail_stop;
 
-cbool		qmb_initialized = false;
 
 
-void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, col_t color);
 
-#if 0
+
+
+void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, color_vec4b_t color);
+cbool QMB_InitParticles (void);
+void QMB_ClearParticles (void);
+void QMB_ParseParticleEffect (void);
+void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
+void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+void QMB_EntityParticles (entity_t *ent);
+void QMB_BlobExplosion (vec3_t org);
+void QMB_ParticleExplosion (vec3_t org);
+void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+void QMB_LavaSplash (vec3_t org);
+void QMB_TeleportSplash (vec3_t org);
 #define TruePointContents(p) SV_HullPointContents(&cl.worldmodel->hulls[0], 0, p)
 #define ISUNDERWATER(x) ((x) == CONTENTS_WATER || (x) == CONTENTS_SLIME || (x) == CONTENTS_LAVA)
-#endif
 
 static cbool TraceLineN (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal)
 {
@@ -261,13 +226,15 @@ static cbool TraceLineN (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal)
 	return true;
 }
 
+
 #define ColorSetRGB(v, x, y, z)			((v)[0] = (x), (v)[1] = (y), (v)[2] = (z))
 #define ColorSetRGBA(v, x, y, z, w)		((v)[0] = (x), (v)[1] = (y), (v)[2] = (z), (v)[3] = (w))
 #define ColorTripleSetRGB(v, x)			((v)[0] = (x), (v)[1] = (v)[0], (v)[2] = (v)[0])
-static byte *ColorForParticle (part_type_t type)
+
+static byte *ColorForParticle (part_type_e type)
 {
 	int		lambda;
-	static	col_t	color;	// col_t is unsigned char
+	static	color_vec4b_t	color;	// color_vec4b_t is unsigned char
 
 	switch (type)
 	{
@@ -308,9 +275,10 @@ static byte *ColorForParticle (part_type_t type)
 	return color;
 }
 
-#define ADD_PARTICLE_TEXTURE(_ptex, _texnum, _texindex, _components, _s1, _t1, _s2, _t2)\
+
+#define ADD_PARTICLE_TEXTURE(_ptex, _glt, _texindex, _components, _s1, _t1, _s2, _t2)\
 do {																		\
-	particle_textures[_ptex].glt = _texnum;								\
+	particle_textures[_ptex].glt = _glt;								\
 	particle_textures[_ptex].components = _components;						\
 	particle_textures[_ptex].coords[_texindex][0] = (_s1 + 1) / 256.0;		\
 	particle_textures[_ptex].coords[_texindex][1] = (_t1 + 1) / 256.0;		\
@@ -324,7 +292,7 @@ do {																\
 	particle_types[count].drawtype = (_drawtype);					\
 	particle_types[count].SrcBlend = (_SrcBlend);					\
 	particle_types[count].DstBlend = (_DstBlend);					\
-	particle_types[count].texture = (_texture);						\
+	particle_types[count].texture_numbp = (_texture);				\
 	particle_types[count].startalpha = (_startalpha);				\
 	particle_types[count].grav = 9.8 * (_grav);						\
 	particle_types[count].accel = (_accel);							\
@@ -334,73 +302,122 @@ do {																\
 	count++;														\
 } while(0)
 
-#define ImageWork_Start(x,y)
-#define eglEnable(x)
-#define mglFinishedStates()
-#define ImageWork_Finish()
-#define mglPopStates()
-#define mglPushStates()
+const char *progs_flame0_mdl_name = "progs/flame0.mdl";
 
-void QMB_InitParticles (void)
+//cbool	qmb_initialized = false;
+
+#define mglFinishedStates()		// Keep!  We should have a state manager someday.
+#define mglPopStates()			// Keep!  We should have a state manager someday.
+#define mglPushStates()			// Keep!  We should have a state manager someday.
+
+gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, const char *description, cbool require_size_256) 
+{
+	int width = 0, height = 0;  unsigned *rgba_data = NULL; size_t rgba_data_length;
+	switch (ordinal) {
+	case 0:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_particlefont_png, sizeof(qmb_particlefont_png), &width, &height); break;
+	case 1:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_zing_png, sizeof(qmb_zing_png), &width, &height); break;
+	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height); break;
+	default: break;
+	}
+	if (!rgba_data)
+		System_Error ("QMB Couldn't load: \"%s\" from memory %d", qpath, ordinal); // Failure shouldn't be possible
+	rgba_data_length = width * height * RGBA_4;
+
+	if (require_size_256 && (width !=256 || height != 256) ) {
+		Con_SafePrintf ("QMB texture: \"%s\" size invalid %d x %d (256 x 256 required)", qpath, width, height);
+		//rgba_data = core_free (rgba_data); // DUH!  Can't free.  It's too late.
+		return NULL;
+	}
+	
+	(*punsigned) = rgba_data; //c_memdup (rgba_data, rgba_data_length); // Store!
+	return TexMgr_LoadImage (NULL, -1, description, width, height, SRC_RGBA,  (*punsigned), "", (src_offset_t)(*punsigned), TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP);
+// Image_Load_PNG_Memory_Alloc
+}
+
+
+static unsigned *pt_persist_tex[ARRAY_COUNT(particle_textures)];
+
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+//////// SYNC
+
+const char *QMB_InitParticles_Error (void)
 {
 	int	i, count = 0;
-	gltexture_t *particletexture = NULL;
+	qmodel_t *flame0_test = NULL;
+	gltexture_t *load_texture = NULL;
 
-	ImageWork_Start ("QMB", "particles");
-	
-//	 Baker: this needs size enforced
-#if 0
-	if (!(particletexture = GL_LoadExternalTextureImage("gfx/particles/particlefont", "qmb:particlefont", /*256, 256,*/ TEX_ALPHA_TEST | TEX_COMPLAIN, NULL /*PATH LIMIT ME*/)))
-#endif
-//TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, current_filename, fwidth, fheight, SRC_RGBA, data, current_filename,
-//											  0, TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_PAD | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
-		goto qmb_bail;
+	if (particles) particles = core_free(particles); 
 
-	//                  (_ptex,             _texnum, _texindex, _components, 
-	//                                                             _s1, _t1, _s2, _t2
+	flame0_test = Mod_ForName (progs_flame0_mdl_name, false);
+	if (!flame0_test) {
+		return "progs/flame0.mdl not loaded";
+	}
 
-	ADD_PARTICLE_TEXTURE(ptex_none,			0,				 0, 1,   0,   0,   0,   0);
-	ADD_PARTICLE_TEXTURE(ptex_blood1,		particletexture, 0, 1,   0,   0,  64,  64);
-	ADD_PARTICLE_TEXTURE(ptex_blood2,		particletexture, 0, 1,  64,   0, 128,  64);
-	ADD_PARTICLE_TEXTURE(ptex_lava,			particletexture, 0, 1, 128,   0, 192,  64);
-	ADD_PARTICLE_TEXTURE(ptex_blueflare,	particletexture, 0, 1, 192,   0, 256,  64);
-	ADD_PARTICLE_TEXTURE(ptex_generic,		particletexture, 0, 1,   0,  96,  96, 192);
-	ADD_PARTICLE_TEXTURE(ptex_smoke,		particletexture, 0, 1,  96,  96, 192, 192);
-	ADD_PARTICLE_TEXTURE(ptex_blood3,		particletexture, 0, 1, 192,  96, 256, 160);
-	ADD_PARTICLE_TEXTURE(ptex_bubble,		particletexture, 0, 1, 192, 160, 224, 192);
+	// Discard old memory.	
+	{ int n; for (n = 0; n < ARRAY_COUNT (particle_textures); n ++) {
+		if (pt_persist_tex[n]) pt_persist_tex[n] = core_free (pt_persist_tex[n]);
+		if (particle_textures[n].glt) System_Error ("Unfreed particle texture #%d", n);	// Make sure the texture has been freed already.
+	}}
 
-	for (i=0 ; i<8 ; i++)
-		ADD_PARTICLE_TEXTURE(ptex_dpsmoke,  particletexture, i, 8, i * 32, 64, (i + 1) * 32, 96);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[0], 0, "gfx/particles/particlefont", "qmb:particlefont", true /*force 256 */);
+	if (!load_texture)
+		return "gfx/particles/particlefont not loaded (256 x 256 required size)";
 
-	// load the rest of the images
+	ADD_PARTICLE_TEXTURE(ptex_none,			0,			  0, 1,   0,   0,   0,   0);		// Chops up the particle font.
+	ADD_PARTICLE_TEXTURE(ptex_blood1,		load_texture, 0, 1,   0,   0,  64,  64);
+	ADD_PARTICLE_TEXTURE(ptex_blood2,		load_texture, 0, 1,  64,   0, 128,  64);
+	ADD_PARTICLE_TEXTURE(ptex_lava,			load_texture, 0, 1, 128,   0, 192,  64);
+	ADD_PARTICLE_TEXTURE(ptex_blueflare,	load_texture, 0, 1, 192,   0, 256,  64);
+	ADD_PARTICLE_TEXTURE(ptex_generic,		load_texture, 0, 1,   0,  96,  96, 192);
+	ADD_PARTICLE_TEXTURE(ptex_smoke,		load_texture, 0, 1,  96,  96, 192, 192);
+	ADD_PARTICLE_TEXTURE(ptex_blood3,		load_texture, 0, 1, 192,  96, 256, 160);
+	ADD_PARTICLE_TEXTURE(ptex_bubble,		load_texture, 0, 1, 192, 160, 224, 192);
+
+	for (i = 0; i < 8; i++)
+		ADD_PARTICLE_TEXTURE(ptex_dpsmoke,  load_texture, i, 8, i * 32, 64, (i + 1) * 32, 96);
+	// Processing 
+
 #if 0
 	if (!(particletexture = GL_LoadExternalTextureImage("gfx/particles/q3blood", "qmb:q3blood", TEX_ALPHA_TEST | TEX_COMPLAIN, NULL)))		goto qmb_bail;
 	ADD_PARTICLE_TEXTURE(ptex_q3blood,		particletexture, 0, 1,   0,   0, 256, 256);
 
 	if (!(particletexture = GL_LoadExternalTextureImage("gfx/particles/q3smoke", "qmb:q3smoke", TEX_ALPHA_TEST | TEX_COMPLAIN, NULL)))		goto qmb_bail;
 	ADD_PARTICLE_TEXTURE(ptex_q3smoke,		particletexture, 0, 1,   0,   0, 256, 256);
-
-	if (!(particletexture = GL_LoadExternalTextureImage("gfx/particles/zing1", "qmb:lightning", TEX_ALPHA_TEST | TEX_COMPLAIN, NULL)))		goto qmb_bail;
-	ADD_PARTICLE_TEXTURE(ptex_lightning,	particletexture, 0, 1,   0,   0, 256, 256);
-
-	if (!(particletexture = GL_LoadExternalTextureImage("gfx/particles/explosion", "qmb:explosion", TEX_ALPHA_TEST | TEX_COMPLAIN, NULL)))	goto qmb_bail;
-	ADD_PARTICLE_TEXTURE(ptex_explosion,	particletexture, 0, 1,   0,   0, 256, 256);
 #endif
+
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[1], 1, "gfx/particles/zing1", "qmb:lightning", false /*force 256 */);
+	if (!load_texture) 
+		return "gfx/particles/zing1 not loaded";
+	
+	ADD_PARTICLE_TEXTURE(ptex_lightning, load_texture, 0, 1,   0,   0, 256, 256);
+
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[2], 2, "gfx/particles/explosion", "qmb:explosion", false /*force 256 */);
+	if (!load_texture) 
+		return "gfx/particles/explosion not loaded";
+	ADD_PARTICLE_TEXTURE(ptex_explosion, load_texture, 0, 1,   0,   0, 256, 256);
+	
+
 	if ((i = COM_CheckParm("-particles")) && i + 1 < com_argc)
 	{
 		r_numparticles = (int)(atoi(com_argv[i+1]));
 		r_numparticles = CLAMP (ABSOLUTE_MIN_PARTICLES, r_numparticles, ABSOLUTE_MAX_PARTICLES);
 	}
-	else
-	{
-		r_numparticles = DEFAULT_NUM_PARTICLES;
-	}
-
-	ImageWork_Finish ();
+	else r_numparticles = DEFAULT_NUM_PARTICLES;
 
 	// This is just texture coordinates ...
 
-	particles = Hunk_AllocName (r_numparticles * sizeof(qmb_particle_t), "qmb:particles");
+	particles = calloc (r_numparticles, sizeof(qmb_particle_t)); //, "qmb:particles");
 
 	//				  _id,			    _drawtype,		_SrcBlend,		_DstBlend,				_texture, _startalpha, _grav, _accel, _move, _custom)
 	ADD_PARTICLE_TYPE(p_spark,			pd_spark,		GL_SRC_ALPHA,	GL_ONE,					ptex_none,		255, -32,     0, pm_bounce,		 1.3	);
@@ -435,23 +452,21 @@ void QMB_InitParticles (void)
 	ADD_PARTICLE_TYPE(p_lightningbeam,	pd_beam,		GL_SRC_ALPHA,	GL_ONE,					ptex_lightning, 255,   0,     0, pm_die,		 0		);
 	ADD_PARTICLE_TYPE(p_glow,			pd_billboard,	GL_SRC_ALPHA,	GL_ONE,					ptex_generic,	204,   0,     0, pm_die,		 0		);
 	ADD_PARTICLE_TYPE(p_explosion,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE_MINUS_SRC_ALPHA, ptex_explosion, 255,   0,     0, pm_static,		-1		);
-	ADD_PARTICLE_TYPE(p_q3blood,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE_MINUS_SRC_ALPHA, ptex_q3blood,	255,-1.5,     0, pm_normal,		 0		);
-	ADD_PARTICLE_TYPE(p_q3smoke,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE,					ptex_q3smoke,	140,   3,     0, pm_normal,		 0		);
+//	ADD_PARTICLE_TYPE(p_q3blood,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE_MINUS_SRC_ALPHA, ptex_q3blood,	255,-1.5,     0, pm_normal,		 0		);
+//	ADD_PARTICLE_TYPE(p_q3smoke,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE,					ptex_q3smoke,	140,   3,     0, pm_normal,		 0		);
 
 	
-	qmb_initialized = true;
-	return;
+	//qmb_initialized = true;
+	return NULL /*success*/;
 
-qmb_bail:
-
-	ImageWork_Finish ();
 }
+
 
 void QMB_ClearParticles (void)
 {
 	int	i;
 
-	if (!qmb_initialized)
+	if (!qmb_is_available) // If QMB is possible
 		return;
 
 	memset (particles, 0, r_numparticles * sizeof(qmb_particle_t));
@@ -459,12 +474,12 @@ void QMB_ClearParticles (void)
 	free_particles						= &particles[0];
 	particle_count						= 0;
 	
-	for (i=0 ; i+1 < r_numparticles ; i++)
+	for (i = 0; i + 1 < r_numparticles; i++)
 		particles[i].next				= &particles[i + 1];
 
 	particles[r_numparticles-1].next	= NULL;
 
-	for (i=0 ; i < num_particletypes ; i++)
+	for (i = 0; i < num_particletypes; i++)  // VERIFY ME
 		particle_types[i].start			= NULL;
 }
 
@@ -485,7 +500,7 @@ static void QMB_UpdateParticles (void)
 	frametime							= fabs(cl.ctime - cl.oldtime);
 	grav								= sv_gravity.value / 800.0;
 
-	for (i=0 ; i<num_particletypes ; i++)
+	for (i=0 ; i < num_particletypes; i++)
 	{
 		pt = &particle_types[i];
 
@@ -634,7 +649,7 @@ static void QMB_UpdateParticles (void)
 }
 
 #define DRAW_PARTICLE_BILLBOARD(_ptex, _p, _coord)					\
-	mglPushStates (); eglPushMatrix ();												\
+	mglPushStates (); eglPushMatrix ();								\
 	eglTranslatef (_p->org[0], _p->org[1], _p->org[2]);				\
 	eglScalef (_p->size, _p->size, _p->size);						\
 	if (_p->rotspeed)												\
@@ -687,7 +702,7 @@ void QMB_RunParticles (void)
 
 	particle_time = cl.time;
 
-	if (!cl.paused)
+//	if (!cl.paused) // We already checked that, thanks!
 		QMB_UpdateParticles ();
 
 }
@@ -712,12 +727,19 @@ void QMB_DrawParticles (void)
 	mglPopStates ();
 
 	eglDepthMask (GL_FALSE);
+//eglEnable (GL_ALPHA_TEST); // Hurts badly
+//eglAlphaFunc (GL_GREATER, 0.666);
+//eglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+//eglColor4f(1,1,1,1);
+
 	eglEnable (GL_BLEND);
 	eglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	eglShadeModel (GL_SMOOTH);	// Baker: Really?
 
-	for (i=0 ; i<num_particletypes ; i++)
+	for (i = 0; i < num_particletypes; i++)
 	{
+//		int particle_textures_count = ARRAY_COUNT(particle_textures);
+//		assert (in_range (0, i, ARRAY_COUNT(particle_textures) - 1));
 		pt = &particle_types[i];
 		if (!pt->start || pt->drawtype == pd_hide)
 			continue;
@@ -727,7 +749,8 @@ void QMB_DrawParticles (void)
 		switch (pt->drawtype)
 		{
 		case pd_beam:
-			ptex = &particle_textures[pt->texture];
+//			assert (in_range (0, pt->texture_numbp, ARRAY_COUNT(particle_textures) - 1));
+			ptex = &particle_textures[pt->texture_numbp];
 
 			eglEnable (GL_TEXTURE_2D);
 			GL_Bind (ptex->glt);
@@ -811,7 +834,8 @@ void QMB_DrawParticles (void)
 			break;
 
 		case pd_billboard:
-			ptex = &particle_textures[pt->texture];
+//			assert (in_range (0, pt->texture_numbp, ARRAY_COUNT(particle_textures) - 1));
+			ptex = &particle_textures[pt->texture_numbp];
 			eglEnable (GL_TEXTURE_2D);
 			GL_Bind (ptex->glt);
 
@@ -823,7 +847,7 @@ void QMB_DrawParticles (void)
 				if (particle_time < p->start || particle_time >= p->die)
 					continue;
 
-				for (j=0 ; j<numplayers ; j++)
+				for (j = 0 ; j < numplayers ; j++)
 				{
 					if (pt->custom != -1 &&
 					    p->org[0] - player_origin[j][0] > -16 && p->org[0] - player_origin[j][0] < 16 &&
@@ -846,7 +870,8 @@ void QMB_DrawParticles (void)
 			break;
 
 		case pd_billboard_vel:
-			ptex = &particle_textures[pt->texture];
+			assert (in_range (0, pt->texture_numbp, ARRAY_COUNT(particle_textures) - 1));
+			ptex = &particle_textures[pt->texture_numbp];
 			eglEnable (GL_TEXTURE_2D);
 			GL_Bind (ptex->glt);
 
@@ -896,19 +921,19 @@ void QMB_DrawParticles (void)
 	_p->die = _p->start + _time;											\
 	_p->growth = 0;															\
 	_p->rotspeed = 0;														\
-	_p->texindex = (rand() % particle_textures[_pt->texture].components);	\
+	_p->texindex = (rand() % particle_textures[_pt->texture_numbp].components);	\
 	_p->bounces = 0;														\
 	VectorCopy(_color, _p->color);
 
-__inline static void AddParticle (part_type_t type, vec3_t org, int count, float size, float time, col_t col, vec3_t dir)
+__inline static void AddParticle (part_type_e type, vec3_t org, int count, float size, float time, color_vec4b_t col, vec3_t dir)
 {
 	byte		*color;
-	int		i, j;
+	int			i, j;
 	float		tempSize;
 	qmb_particle_t	*p;
 	particle_type_t	*pt;
 
-	if (!qmb_initialized)
+	if (!qmb_is_available)
 		System_Error ("QMB particle added without initialization");
 
 	assert (size > 0 && time > 0);
@@ -1047,7 +1072,7 @@ __inline static void AddParticle (part_type_t type, vec3_t org, int count, float
 	}
 }
 
-__inline static void AddParticleTrail (part_type_t type, vec3_t start, vec3_t end, float size, float time, col_t col)
+__inline static void AddParticleTrail (part_type_e type, vec3_t start, vec3_t end, float size, float time, color_vec4b_t col)
 {
 	byte		*color;
 	int		i, j, num_particles;
@@ -1056,7 +1081,7 @@ __inline static void AddParticleTrail (part_type_t type, vec3_t start, vec3_t en
 	qmb_particle_t	*p;
 	particle_type_t	*pt;
 
-	if (!qmb_initialized)
+	if (!qmb_is_available)
 		System_Error ("QMB particle added without initialization");
 
 	assert (size > 0 && time > 0);
@@ -1073,10 +1098,10 @@ __inline static void AddParticleTrail (part_type_t type, vec3_t start, vec3_t en
 
 	switch (type)
 	{
-	case p_q3blood:
-	case p_q3smoke:
-		count = length / 25;
-		break;
+//	case p_q3blood:
+//	case p_q3smoke:
+//		count = length / 25;
+//		break;
 
 	case p_trailpart:
 	case p_lavatrail:
@@ -1128,7 +1153,7 @@ __inline static void AddParticleTrail (part_type_t type, vec3_t start, vec3_t en
 			break;
 
 		case p_blood3:
-		case p_q3blood:
+//		case p_q3blood:
 			VectorCopy (point, p->org);
 			for (j=0 ; j<3 ; j++)
 				p->org[j] += ((rand() & 15) - 8) / 8.0;
@@ -1155,13 +1180,13 @@ __inline static void AddParticleTrail (part_type_t type, vec3_t start, vec3_t en
 			p->rotspeed = (rand() & 63) + 96;
 			break;
 
-		case p_q3smoke:
-			VectorCopy (point, p->org);
-			for (j=0 ; j<3 ; j++)
-				p->org[j] += ((rand() & 7) - 4) / 8.0;
-			VectorClear (p->vel);
-			p->growth = 12;
-			break;
+		//case p_q3smoke:
+		//	VectorCopy (point, p->org);
+		//	for (j=0 ; j<3 ; j++)
+		//		p->org[j] += ((rand() & 7) - 4) / 8.0;
+		//	VectorClear (p->vel);
+		//	p->growth = 12;
+		//	break;
 
 		case p_dpsmoke:
 			VectorCopy (point, p->org);
@@ -1232,7 +1257,7 @@ void QMB_ParticleExplosion (vec3_t org)
 	}
 }
 
-void d8to24col (col_t colourv, int colour)
+void d8to24col (color_vec4b_t colourv, int colour)
 {
 	byte	*colourByte;
 
@@ -1242,20 +1267,20 @@ void d8to24col (col_t colourv, int colour)
 	colourv[2] = colourByte[2];
 }
 
-__inline static void AddColoredParticle (part_type_t type, vec3_t org, int count, float size, float time, int colorStart, int colorLength, vec3_t dir)
+__inline static void AddColoredParticle (part_type_e type, vec3_t org, int count, float size, float time, int colorStart, int colorLength, vec3_t dir)
 {
-	col_t		color;
+	color_vec4b_t		color;
 	int		i, j, colorMod = 0;
 	float		tempSize;
 	qmb_particle_t	*p;
 	particle_type_t	*pt;
 
-	if (!qmb_initialized)
+	if (!qmb_is_available)
 		System_Error ("QMB particle added without initialization");
 
 	assert (size > 0 && time > 0);
 
-	if (type < 0 || type >= num_particletypes)
+	if (in_range_beyond (0, type, num_particletypes) )
 		System_Error ("AddColoredParticle: Invalid type (%d)", type);
 
 	pt = &particle_types[particle_type_index[type]];
@@ -1317,16 +1342,16 @@ void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
 	}
 }
 
-void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
+void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int col, int count)
 {
-	col_t	color;
+	color_vec4b_t	color;
 	vec3_t	neworg, newdir;
 	int	i, j, particlecount;
 
-	if (qmb_disableblood.value && (col == 73 || col == 225))
-		col = 20;		// Switch to spark
+	if (qmb_disableblood.value && (col == COLOR_UNKNOWN_BLOOD_73 || col == COLOR_EXPLOSION_225))
+		col = COLOR_SPARK_20;		// Switch to spark
 
-	if (col == 73)
+	if (col == COLOR_UNKNOWN_BLOOD_73)
 	{
 		int	bloodcount;
 
@@ -1339,7 +1364,7 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 		}
 		return;
 	}
-	else if (col == 225)
+	else if (col == COLOR_EXPLOSION_225)
 	{
 		int	scale;
 
@@ -1353,7 +1378,7 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 		}
 		return;
 	}
-	else if (col == 20 && count == 30)
+	else if (col == COLOR_WIZSPIKE_20 && count == WIZSPIKE_COUNT_30)
 	{
 		ColorSetRGB (color, 51, 255, 51);
 //		color[0] = color[2] = 51;
@@ -1362,7 +1387,7 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 		AddParticle (p_spark, org, 12, 75, 0.4, color, zerodir);
 		return;
 	}
-	else if (col == 226 && count == 20)
+	else if (col == COLOR_KNIGHTSPIKE_226 && count == KNIGHTSPIKE_COUNT_20)
 	{
 		ColorSetRGB (color, 230, 204, 26);
 		AddParticle (p_chunk, org, 1, 1, 0.75, color, zerodir);
@@ -1372,16 +1397,10 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 
 	switch (count)
 	{
-	case 9:
-	case 10:
-//	if (COM_CheckParm ("-rogue"))		com_gametype = gametype_rogue;
-//	if (COM_CheckParm ("-hipnotic"))	com_gametype = gametype_hipnotic;
-//	if (COM_CheckParm ("-quoth"))		com_gametype = gametype_quoth;
-//
-//#ifdef SUPPORTS_NEHAHRA
-//	if (COM_CheckParm("-nehahra"))		com_gametype = gametype_nehahra;
+	case NAIL_SPIKE_COUNT_9:
+	case VENTILLIATION_WIND_COUNT_10:
 
-		if (com_gametype == gametype_nehahra && count == 10)	// ventillation's wind
+		if (com_gametype == gametype_nehahra && count == VENTILLIATION_WIND_COUNT_10)	// ventillation's wind
 		{
 			for (i=0 ; i<count ; i++)
 			{
@@ -1400,11 +1419,11 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 		}
 		break;
 
-	case 20:
+	case SUPER_SPIKE_AND_BULLETS_COUNT_20:
 		AddParticle (p_spark, org, 12, 85, 0.6, NULL, zerodir);
 		break;
 
-	case 21:	// gunshot
+	case GUNSHOT_COUNT_21:	// gunshot
 		particlecount = count >> 1;
 		AddParticle (p_gunblast, org, 15, 5, 0.15, NULL, zerodir);
 		for (i=0 ; i<particlecount ; i++)
@@ -1473,26 +1492,26 @@ void QMB_RunParticleEffect (vec3_t org, vec3_t dir, int col, int count)
 	}
 }
 
-void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t type)
+void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
 {
-	col_t		color;
+	color_vec4b_t		color;
 	static	int	make_blood_rare = 0, make_smoke_rare = 0;
 
 	if (!cl.worldmodel)		// Baker: if connected to a server with "nomap" doing a TruePointContents
 		return;				//        will crash us.  Client isn't receiving ents, but is getting particles. == CRASH ... so bail if cl.worldmodel is NULL
 
-	if (qmb_disableblood.value && (type == BLOOD_TRAIL || type == SLIGHT_BLOOD_TRAIL))
-		type = GRENADE_TRAIL ;
+	if (qmb_disableblood.value && (type == BLOOD_TRAIL_2 || type == SLIGHT_ZOM_BLOOD_TRAIL_4))
+		type = GRENADE_TRAIL_1;
 
 	switch (type)
 	{
-	case GRENADE_TRAIL:
+	case GRENADE_TRAIL_1:
 		if (ISUNDERWATER(TruePointContents(start)))
 			AddParticleTrail (p_bubble, start, end, 1.8, 1.5, NULL);
-		if (qmb_grenadetrail.value == 3)
-			AddParticleTrail (p_q3smoke, start, end, 5, 0.75, NULL);
-		else if (qmb_grenadetrail.value == 2)
-		{
+//		if (qmb_grenadetrail.value == 3)
+//			AddParticleTrail (p_q3smoke, start, end, 5, 0.75, NULL);
+//		else 
+		if (qmb_trail_grenade.value == 2) {
 			AddParticleTrail (p_dpfire, start, end, 3, 0.26, NULL);
 			AddParticleTrail (p_dpsmoke, start, end, 3, 0.825, NULL);
 		}
@@ -1500,27 +1519,27 @@ void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type
 			AddParticleTrail (p_smoke, start, end, 1.45, 0.825, NULL);
 		break;
 
-	case BLOOD_TRAIL:
-	case SLIGHT_BLOOD_TRAIL:
+	case BLOOD_TRAIL_2:
+	case SLIGHT_ZOM_BLOOD_TRAIL_4:
 //		if (cl_disable_bloodgore.value)
 //		{
 //			// Do nothing?
 //		}
 //		else
-		if (qmb_blood.value == 2)	// joe: should be replaced/fixed
-			AddParticleTrail (p_q3blood, start, end, 8, 2, NULL);
-		else
-			AddParticleTrail (p_blood3, start, end, type == BLOOD_TRAIL ? 1.35 : 2.4, 2, NULL);
+//		if (qmb_blood.value == 2)	// joe: should be replaced/fixed
+//			AddParticleTrail (p_q3blood, start, end, 8, 2, NULL);
+//		else
+			AddParticleTrail (p_blood3, start, end, type == BLOOD_TRAIL_2 ? 1.35 : 2.4, 2, NULL);
 		break;
 
-	case TRACER1_TRAIL:
+	case TRACER1_SCRAG_TRAIL_3:
 		ColorSetRGB (color, 0, 124, 0);
 //		color[0] = color[2] = 0;
 //		color[1] = 124;
 		AddParticleTrail (p_trailpart, start, end, 3.75, 0.5, color);
 		break;
 
-	case TRACER2_TRAIL:
+	case TRACER2_HELLKNIGHT_TRAIL_5:
 		ColorSetRGB (color, 255, 77, 0);
 //		color[0] = 255;
 //		color[1] = 77;
@@ -1528,7 +1547,7 @@ void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type
 		AddParticleTrail (p_trailpart, start, end, 3.75, 0.5, color);
 		break;
 
-	case VOOR_TRAIL: 
+	case VOOR_TRAIL_6: 
 		ColorSetRGB (color, 77, 0, 255);
 //		color[0] = 77;
 //		color[1] = 0;
@@ -1536,26 +1555,26 @@ void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type
 		AddParticleTrail (p_trailpart, start, end, 3.75, 0.5, color);
 		break;
 
-	case LAVA_TRAIL:
+	case LAVA_TRAIL_7:
 		AddParticleTrail (p_lavatrail, start, end, 5, 1, NULL);
 		break;
 
-	case BUBBLE_TRAIL:
+	case BUBBLE_TRAIL_8:
 		if (ISUNDERWATER(TruePointContents(start)))
 			AddParticleTrail (p_bubble2, start, end, 1.5, 0.825, NULL);
 		break;
 
-	case NEHAHRA_SMOKE:
+	case NEHAHRA_SMOKE_9:
 		AddParticleTrail (p_smoke, start, end, 0.8, 0.825, NULL);
 		break;
 
-	case ROCKET_TRAIL:
+	case ROCKET_TRAIL_0:
 	default:
 		if (ISUNDERWATER(TruePointContents(start)))
 			AddParticleTrail (p_bubble, start, end, 1.8, 1.5, NULL);
-		if (qmb_rockettrail.value == 3)
-			AddParticleTrail (p_q3smoke, start, end, 5, 1.2, NULL);
-		else if (qmb_rockettrail.value == 2)
+//		if (qmb_rockettrail.value == 3)
+//			AddParticleTrail (p_q3smoke, start, end, 5, 1.2, NULL);
+		else if (qmb_trail_rocket.value == 2)
 		{
 			AddParticleTrail (p_dpfire, start, end, 3, 0.26, NULL);
 			AddParticleTrail (p_dpsmoke, start, end, 3, 0.825, NULL);
@@ -1571,7 +1590,7 @@ void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type
 void QMB_BlobExplosion (vec3_t org)
 {
 	float	theta;
-	col_t	color;
+	color_vec4b_t	color;
 	vec3_t	neworg, vel;
 
 	ColorSetRGB (color, 60, 100, 240);
@@ -1591,10 +1610,10 @@ void QMB_BlobExplosion (vec3_t org)
 	{
 		ColorSetRGB (color, 60 + (rand() & 15), 65 + (rand() & 15), 200 + (rand() & 15));
 
-		vel[0] = cosf(theta) * 125;
-		vel[1] = sinf(theta) * 125;
-		neworg[0] = org[0] + cosf(theta) * 6;
-		neworg[1] = org[1] + sinf(theta) * 6;
+		vel[0] = cos(theta) * 125;
+		vel[1] = sin(theta) * 125;
+		neworg[0] = org[0] + cos(theta) * 6;
+		neworg[1] = org[1] + sin(theta) * 6;
 		neworg[2] = org[2] + 0 - 10;
 		AddParticle (p_shockwave, neworg, 1, 4, 0.8, color, vel);
 		neworg[2] = org[2] + 0 + 10;
@@ -1602,8 +1621,8 @@ void QMB_BlobExplosion (vec3_t org)
 
 		vel[0] *= 1.15;
 		vel[1] *= 1.15;
-		neworg[0] = org[0] + cosf(theta) * 13;
-		neworg[1] = org[1] + sinf(theta) * 13;
+		neworg[0] = org[0] + cos(theta) * 13;
+		neworg[1] = org[1] + sin(theta) * 13;
 		neworg[2] = org[2] + 0;
 		AddParticle (p_shockwave, neworg, 1, 6, 1.0, color, vel);
 	}
@@ -1640,7 +1659,7 @@ void QMB_TeleportSplash (vec3_t org)
 {
 	int	i, j, k;
 	vec3_t	neworg, angle;
-	col_t	color;
+	color_vec4b_t	color;
 
 	for (i = -12 ; i <= 12 ; i += 6)
 	{
@@ -1696,7 +1715,7 @@ void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end)
 	AddParticleTrail (p_trailpart, start, end, 2.5, 0.1, ColorForParticle(p_missilefire));
 }
 
-void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, col_t color)
+void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, color_vec4b_t color)
 {
 	AddParticle (p_streaktrail, start, 1, size, time, color, end);
 }
@@ -1704,7 +1723,7 @@ void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, col_t 
 void QMB_ShamblerCharge (vec3_t org)
 {
 	vec3_t	pos, vec, dir;
-	col_t	col = {60, 100, 240, 0};
+	color_vec4b_t	col = {60, 100, 240, 0};
 	float	time, len;
 	int	i;
 
@@ -1729,18 +1748,48 @@ void QMB_ShamblerCharge (vec3_t org)
 }
 
 
+void QMB_LightningSplash (vec3_t org)
+{
+	int		i, j;
+	vec3_t	neworg, angle;
+	color_vec4b_t	color = {200, 100, 100};
+
+	VectorClear (angle);
+
+	for (i = 0 ; i < 5 ; i++)
+	{
+		angle[2] = 0;
+		for (j = 0 ; j < 5 ; j++)
+		{
+			AngleVectors (angle, NULL, NULL, neworg);
+			VectorMA (org, 20, neworg, neworg);
+			AddParticle (p_spark, org, 2, 85, 0.05, NULL, zerodir);
+			AddParticle (p_spark, org, 2, 100, 0.1, color, neworg);
+			angle[2] += 360 / 5;
+		}
+		angle[0] += 180 / 5;
+	}
+} 
+
+
 void QMB_LightningBeam (vec3_t start, vec3_t end)
 {
 	float	frametime = fabs(cl.ctime - cl.oldtime);
-	col_t	color = {120, 140, 255, 0};
+	color_vec4b_t	color = {120, 140, 255, 0};
+	vec3_t	neworg;
 
-	if (frametime)
-		AddParticle (p_lightningbeam, start, 1, 100, frametime * 2, color, end);
+	if (frametime) {
+		AddParticle (p_lightningbeam, start, 1, 80 /*100*/, frametime * 2, color, end);
+		if (qmb_sparks.value && TraceLineN(start, end, neworg, NULL)) {
+			QMB_LightningSplash (neworg);
+		}
+	}
+		
 }
 
 void QMB_GenSparks (vec3_t org, byte col[3], float count, float size, float life)
 {
-	col_t	color;
+	color_vec4b_t	color;
 	vec3_t	dir;
 	int	i, j;
 
@@ -1761,7 +1810,7 @@ void QMB_Lightning_Splash (vec3_t org)
 {
 	int	i, j;
 	vec3_t	neworg, angle;
-	col_t	color;
+	color_vec4b_t	color;
 
 	ColorSetRGB (color, 40, 40, 128);
 	VectorClear (angle);
@@ -1782,7 +1831,7 @@ void QMB_Lightning_Splash (vec3_t org)
 
 int	particle_mode = 0;	// 0: classic (default), 1: QMB, 2: mixed
 
-void CheckParticles (void)
+/*void CheckParticles (void)
 {
 	// No on ecalls this?
 	// Explain this.  Is this determining which set of values?
@@ -1798,25 +1847,25 @@ void CheckParticles (void)
 		particle_mode = 1;
 	else
 		particle_mode = 2;
-}
+} */
 
-void R_SetParticles (int val)
-{
-	particle_mode = val;
-
-	Cvar_SetValueQuick (&qmb_explosions, particle_mode);
-	Cvar_SetValueQuick (&qmb_trails, particle_mode);
-	Cvar_SetValueQuick (&qmb_spikes, particle_mode);
-	Cvar_SetValueQuick (&qmb_gunshots, particle_mode);
-	Cvar_SetValueQuick (&qmb_blood, particle_mode);
-	Cvar_SetValueQuick (&qmb_telesplash, particle_mode);
-	Cvar_SetValueQuick (&qmb_blobexplosions, particle_mode);
-	Cvar_SetValueQuick (&qmb_lavasplash, particle_mode);
-	Cvar_SetValueQuick (&qmb_inferno, particle_mode);
-	Cvar_SetValueQuick (&qmb_flames, particle_mode);
-	Cvar_SetValueQuick (&qmb_lightning, particle_mode);
-	Cvar_SetValueQuick (&qmb_spiketrails, particle_mode);
-}
+//void R_SetParticles (int val)
+//{
+//	particle_mode = val;
+//
+//	Cvar_SetValueQuick (&qmb_explosions, particle_mode);
+//	Cvar_SetValueQuick (&qmb_trails, particle_mode);
+//	Cvar_SetValueQuick (&qmb_spikes, particle_mode);
+//	Cvar_SetValueQuick (&qmb_gunshots, particle_mode);
+//	Cvar_SetValueQuick (&qmb_blood, particle_mode);
+//	Cvar_SetValueQuick (&qmb_telesplash, particle_mode);
+//	Cvar_SetValueQuick (&qmb_blobexplosions, particle_mode);
+//	Cvar_SetValueQuick (&qmb_lavasplash, particle_mode);
+//	Cvar_SetValueQuick (&qmb_inferno, particle_mode);
+//	Cvar_SetValueQuick (&qmb_flames, particle_mode);
+//	Cvar_SetValueQuick (&qmb_lightning, particle_mode);
+//	Cvar_SetValueQuick (&qmb_spiketrails, particle_mode);
+//}
 
 /*
 ===============
@@ -1825,46 +1874,41 @@ R_ToggleParticles_f
 function that toggles between classic and QMB particles - by joe
 ===============
 */
-void R_ToggleParticles_f (void)
+//void R_ToggleParticles_f (void)
+//{
+//	// toggleparticles command
+//	if (cmd_source != src_command)
+//		return;
+//
+//	R_SetParticles (!particle_mode);
+//
+//	Con_Printf ("Using %s particles\n", !particle_mode ? "Classic" : "QMB");
+//}
+
+
+cbool QMB_FlameModelSetState (entity_t *ent)
 {
-	// toggleparticles command
-	if (cmd_source != src_command)
-		return;
-
-	R_SetParticles (!particle_mode);
-
-	Con_Printf ("Using %s particles\n", !particle_mode ? "Classic" : "QMB");
-}
-
-
-cbool SetFlameModelState (entity_t *CurModel)
-{
-#ifdef _DEBUGG
-	if (in_scene_setup == false)
-		Con_Printf ("Scene violation: SetFlameModelState we need things finalized before entering the scene, not figuring them out while drawing.\n");
-#endif
-
-	if (!qmb_flames.value && String_Does_Match (CurModel->model->name, "progs/flame0.mdl"))
+	if ((!frame.qmb || !qmb_flames.value) && String_Does_Match (ent->model->name, "progs/flame0.mdl"))
 	{
-		CurModel->model = cl.model_precache[cl_modelindex[mi_flame1]];
+		ent->model = cl.model_precache[cl_modelindex[mi_flame1]];
 	}
-	else if (qmb_flames.value)
+	else if (frame.qmb && qmb_flames.value)
 	{
 		vec3_t	liteorg;
 
-		VectorCopy (CurModel->origin, liteorg);
-		if (CurModel->baseline.modelindex == cl_modelindex[mi_flame0])
+		VectorCopy (ent->origin, liteorg);
+		if (ent->baseline.modelindex == cl_modelindex[mi_flame0])
 		{
 			liteorg[2] += 5.5;
 			QMB_TorchFlame (liteorg, 7, 0.8);
 		}
-		else if (CurModel->baseline.modelindex == cl_modelindex[mi_flame1])
+		else if (ent->baseline.modelindex == cl_modelindex[mi_flame1])
 		{
 			liteorg[2] += 5.5;
 			QMB_TorchFlame (liteorg, 7, 0.8);
-			CurModel->model = cl.model_precache[cl_modelindex[mi_flame0]];
+			ent->model = cl.model_precache[cl_modelindex[mi_flame0]];
 		}
-		else if (CurModel->baseline.modelindex == cl_modelindex[mi_flame2])
+		else if (ent->baseline.modelindex == cl_modelindex[mi_flame2])
 		{
 			liteorg[2] -= 1;
 			QMB_TorchFlame (liteorg, 12, 1);
@@ -1873,4 +1917,45 @@ cbool SetFlameModelState (entity_t *CurModel)
 	}
 	return false;
 }
+
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+#define F2F(_f) ((_f) / (256.0/4)) // No clean cut method but by divide by 256 works for us internally.
+float dlightcolor[NUM_DLIGHTTYPES_7][3] = {
+	{F2F(100), F2F(90), F2F(80)},		// dimlight or brightlight		// 0
+	{F2F(100), F2F(50), F2F(10)},		// muzzleflash					// 1
+	{F2F(100), F2F(50), F2F(10)},		// explosion					// 2
+	{F2F(90), F2F(60), F2F(7)},		// rocket						// 3
+	{F2F(128), F2F(0), F2F(0)},		// red							// 4
+	{F2F(0), F2F(0), F2F(128)},		// blue							// 5
+	{F2F(128), F2F(0), F2F(128)},		// red + blue					// 6
+//	{F2F(0,	F2F(128, F2F(0}			// green
+};
+#endif // GLQUAKE_SUPPORTS_QMB
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+Point3D QMB_GetDlightColor (dlighttype_e colornum, dlighttype_e def, cbool random)
+{
+	Point3D owt = {0};
+	// 1 = red, 2 = blue, 3 = redblue, 4 = random
+#define COLORS_POSSIBLE (NUM_DLIGHTTYPES_7 - 4)
+	dlighttype_e colors[COLORS_POSSIBLE] = {lt_red, lt_blue, lt_redblue/*, lt_green*/};
+	dlighttype_e mine = -1; // 
+	
+	switch (colornum) {
+	case 1:	mine = lt_red;		goto ready;
+	case 2: mine = lt_blue;		goto ready;
+	case 3: mine = lt_redblue;	goto ready;
+	default: mine = random ? colors[ rand() % (NUM_DLIGHTTYPES_7 - 4)] : def; goto ready;  // explosions are random
+	}
+ready:
+	owt.x = dlightcolor[mine][0]; // Byte to float
+	owt.y = dlightcolor[mine][1]; // Byte to float
+	owt.z = dlightcolor[mine][2]; // Byte to float
+	return owt;
+	//return def; // which is either lt_rocket or lt_explosion
+}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
 #endif

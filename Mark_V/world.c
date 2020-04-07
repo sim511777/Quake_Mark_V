@@ -591,6 +591,7 @@ SV_HullPointContents
 
 ==================
 */
+#if 1
 int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 {
 
@@ -618,6 +619,33 @@ int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 
 	return num;
 }
+
+#else // joequake version
+#define PlaneDiff(point, plane) (				\
+	(((plane)->type < 3) ? (point)[(plane)->type] - (plane)->dist : DotProduct((point), (plane)->normal) - (plane)->dist)	\
+)
+
+int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
+{
+	float		d;
+	mclipnode_t	*node; //johnfitz -- was dclipnode_t
+	mplane_t	*plane;
+
+	while (num >= 0)
+	{
+		if (num < hull->firstclipnode || num > hull->lastclipnode)
+			Host_Error ("SV_HullPointContents: bad node number");
+
+		node = hull->clipnodes + num;
+		plane = hull->planes + node->planenum;
+
+		d = PlaneDiff(p, plane);
+		num = (d < 0) ? node->children[1] : node->children[0];
+	}
+
+	return num;
+}
+#endif
 
 
 /*

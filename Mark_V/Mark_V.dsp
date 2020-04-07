@@ -4017,6 +4017,10 @@ SOURCE=.\r_part.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\r_part_qmb.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\recent_file.c
 # End Source File
 # Begin Source File
@@ -4633,6 +4637,10 @@ SOURCE=.\progdefs.q1
 # Begin Source File
 
 SOURCE=.\progdefs.q2
+# End Source File
+# Begin Source File
+
+SOURCE=.\r_part_qmb.h
 # End Source File
 # Begin Source File
 

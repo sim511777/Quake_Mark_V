@@ -199,7 +199,7 @@ void R_SetupAliasLighting (entity_t	*e)
 			VectorSubtract (currententity->origin, cl.dlights[i].origin, dist);
 			add = cl.dlights[i].radius - VectorLength(dist);
 			if (add > 0)
-				VectorMA (lightcolor, add, cl.dlights[i].color, lightcolor);
+				VectorMA (lightcolor, add, cl.dlights[i].color.vec3, lightcolor);
 		}
 	}
 
@@ -237,7 +237,7 @@ void R_SetupAliasLighting (entity_t	*e)
 
 	//hack up the brightness when fullbrights but no overbrights (256)
 	if (gl_fullbrights.value && !gl_overbright_models.value)
-		if (e->model->flags & MOD_FBRIGHTHACK)
+		if (e->model->modelflags & MOD_FBRIGHTHACK)
 		{
 			lightcolor[0] = 256.0f;
 			lightcolor[1] = 256.0f;
@@ -638,7 +638,7 @@ void GL_DrawAliasShadow (entity_t *e)
 //	if (R_CullModelForEntity(e))  // Baker: Just because entity is culled doesn't mean shadow is!
 //		return;
 
-	if (e == &cl.viewent_gun || e->model->flags & MOD_NOSHADOW)
+	if (e == &cl.viewent_gun || e->model->modelflags & MOD_NOSHADOW)
 		return;
 
 	entalpha = ENTALPHA_DECODE(e->alpha);
@@ -668,7 +668,7 @@ void GL_DrawAliasShadow (entity_t *e)
 	GL_DisableMultitexture ();
 	eglDisable (GL_TEXTURE_2D);
 	shading = false;
-	eglColor4f(0,0,0, gl_shadows.value > 0 ? entalpha * 0.5 : entalpha * 1);
+	eglColor4f(0,0,0, gl_shadows.value > 1 ? entalpha * 1 : entalpha * 0.5);
 	GL_DrawAliasFrame (paliashdr, lerpdata);
 	eglEnable (GL_TEXTURE_2D);
 	eglDisable (GL_BLEND);

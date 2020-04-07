@@ -260,7 +260,7 @@ Cmd_Exec_f
 cbool exec_silent;
 void Cmd_Exec_f (lparse_t *line)
 {
-	char	*f;
+	char	*file_text;
 	int		mark;
 
 	if (line->count  != 2)
@@ -271,8 +271,8 @@ void Cmd_Exec_f (lparse_t *line)
 
 	mark = Hunk_LowMark ();
 
-	f = (char *)COM_LoadHunkFile (line->args[1]);
-	if (!f)
+	file_text = (char *)COM_LoadHunkFile (line->args[1]);
+	if (!file_text)
 	{
 		if (!exec_silent)
 			Con_Printf ("couldn't exec %s\n", line->args[1] );
@@ -330,13 +330,15 @@ void Cmd_Exec_f (lparse_t *line)
 	}
 
 
-	if (!strcasecmp (line->args[1], CONFIG_CFG))
+	if (String_Does_Match_Caseless (line->args[1], CONFIG_CFG))
 	{
 		const char *check_string = va("// %s", ENGINE_FAMILY_NAME);
-		int len = strlen(check_string);
+		cbool is_our = String_Does_Start_With (file_text, check_string);
+		//int len = strlen(check_string);
+		
 //		cbool is_ok = false;
 		// Baker: Make sure it is a Mark V config
-		if (strncmp (f, check_string, len))
+		if (!is_our)
 		{
 			// Not good
 			const char *retryname = va("%s/%s/%s", Folder_Caches_URL (), File_URL_SkipPath (game_startup_dir), CONFIG_CFG);
@@ -348,8 +350,8 @@ void Cmd_Exec_f (lparse_t *line)
 			{
 				Hunk_FreeToLowMark (mark);
 				mark = Hunk_LowMark ();
-				f = Hunk_Alloc (bytesread + 1);
-				memcpy (f, data, bytesread);
+				file_text = Hunk_Alloc (bytesread + 1);
+				memcpy (file_text, data, bytesread);
 				free (data);
 			}
 			else
@@ -377,7 +379,7 @@ decent keys and always run on
 		exec_silent = false;
 	}
 
-	Cbuf_InsertText (f);
+	Cbuf_InsertText (file_text);
 	Hunk_FreeToLowMark (mark);
 
 

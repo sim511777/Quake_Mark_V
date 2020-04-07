@@ -75,7 +75,7 @@ void CL_ParseBeam (qmodel_t *m)
 	Stain_AddStain(end, 13, 22); // Intense blackening, medium radius (beam LG)
 
 // override any beam with the same entity
-	for (i = 0, b = cl.beams ; i< MAX_FITZQUAKE_BEAMS ; i++, b++)
+	for (i = 0, b = cl.beams; i < MAX_FITZQUAKE_BEAMS; i++, b++)
 	{
 		if (b->entity == ent)
 		{
@@ -89,7 +89,7 @@ void CL_ParseBeam (qmodel_t *m)
 	}
 
 // find a free beam
-	for (i = 0, b = cl.beams ; i< MAX_FITZQUAKE_BEAMS ; i++, b++)
+	for (i = 0, b = cl.beams; i < MAX_FITZQUAKE_BEAMS; i++, b++)
 	{
 		if (!b->model || b->endtime < cl.time)
 		{
@@ -111,12 +111,13 @@ void CL_ParseBeam (qmodel_t *m)
 	//johnfitz
 }
 
+#define QMB_EXPLOSION_LIGHT_LEVEL_1 1
 
-#define	SetCommonExploStuff						\
-	dl = CL_AllocDlight (0);					\
-	VectorCopy (pos, dl->origin);				\
-	dl->radius = 150 + 200; 					\
-	dl->die = cl.time + 0.5;					\
+#define	SetCommonExploStuff												\
+	dl = CL_AllocDlight (0);											\
+	VectorCopy (pos, dl->origin);										\
+	dl->radius = 150 + 200 * CLAMP (0, QMB_EXPLOSION_LIGHT_LEVEL_1, 1);	\
+	dl->die = cl.time + 0.5;											\
 	dl->decay = 300
 
 /*
@@ -131,6 +132,9 @@ void CL_ParseTEnt (void)
 	dlight_t	*dl;
 	int		rnd;
 	int		colorStart, colorLength;
+#ifdef GLQUAKE_SUPPORTS_QMB
+	byte		*colorByte;
+#endif // GLQUAKE_SUPPORTS_QMB
 
 	type = MSG_ReadByte ();
 
@@ -223,17 +227,24 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_ParticleExplosion (pos);
+		R_ParticleExplosion (pos); // I guess we hit this twice for QMB??
+		
+
+		if (frame.qmb && qmb_explosiontype.value == 3)
+			R_RunParticleEffect (pos, vec3_origin, COLOR_EXPLOSION_225, 50); // I am QMB, explosion type 3
+		else
+			R_ParticleExplosion (pos); // Classic or QMB except 3
+
 		SetCommonExploStuff;
-/*
-		
-		dl = CL_AllocDlight (0);
-		VectorCopy (pos, dl->origin);
-		dl->radius = 350;
-		dl->die = cl.time + 0.5;
-		dl->decay = 300;
-*/
-		
+#ifdef GLQUAKE_RENDERER_SUPPORT	
+		if (frame.qmb) {
+			//dl->color = QMB_GetDlightColor (qmb_explosionlightcolor.value, lt_explosion, true /*random!*/);
+			dl->color = QMB_GetDlightColor (qmb_explosionlightcolor.value, lt_explosion, false /*random!*/);
+			dl->radius /= 2; // Why????
+		}
+		else
+			dl->color.vec3[0] = dl->color.vec3[1] = dl->color.vec3[2] = 1; //johnfitz -- lit support via lordhavoc
+#endif // GLQUAKE_RENDERER_SUPPORT	
 
 		Stain_AddStain(pos, 5, 50); // Fair darkening, large radius
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
@@ -297,13 +308,21 @@ void CL_ParseTEnt (void)
 
 		colorStart = MSG_ReadByte ();
 		colorLength = MSG_ReadByte ();
-		R_ColorMappedExplosion (pos, colorStart, colorLength);  // R_ParticleExplosion2
-		SetCommonExploStuff;
-		/* dl = CL_AllocDlight (0);
-		VectorCopy (pos, dl->origin);
-		dl->radius = 350;
-		dl->die = cl.time + 0.5;
-		dl->decay = 300; */
+
+		if (frame.qmb && qmb_explosiontype.value == 3)
+			R_RunParticleEffect (pos, vec3_origin, NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255, 50);
+		else
+			R_ColorMappedExplosion (pos, colorStart, colorLength); // R_ParticleExplosion2
+
+		// If we are using QMB then check if we are using explosions, otherwise we are.
+		if (!frame.qmb || !qmb_explosions.value) {
+			SetCommonExploStuff;
+			/*dl = CL_AllocDlight (0);
+			VectorCopy (pos, dl->origin);
+			dl->radius = 350;
+			dl->die = cl.time + 0.5;
+			dl->decay = 300;*/
+		}	
 
 		Stain_AddStain(pos, 5, 50); // Intense darkening, intense radius
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
@@ -327,9 +346,9 @@ void CL_ParseTEnt (void)
 		dl->decay = 300;*/
 
 #ifdef GLQUAKE_COLORED_LIGHTS
-        dl->color[0] = MSG_ReadCoord () / 2.0;
-		dl->color[1] = MSG_ReadCoord () / 2.0;
-		dl->color[2] = MSG_ReadCoord () / 2.0;
+        dl->color.vec3[0] = MSG_ReadCoord () / 2.0;
+		dl->color.vec3[1] = MSG_ReadCoord () / 2.0;
+		dl->color.vec3[2] = MSG_ReadCoord () / 2.0;
 #else
 		// Ignore the colors
 		MSG_ReadCoord ();
@@ -391,9 +410,12 @@ void CL_UpdateTEnts (void)
 	float		forward;
 	int			beamnum;
 
+#ifdef GLQUAKE_SUPPORTS_QMB
 	vec3_t		beamstart, beamend;
-	int			j;
 	cbool		sparks = false;
+	int			j;
+#endif  // GLQUAKE_SUPPORTS_QMB
+
 	cl.num_temp_entities = 0;
 
 	srand ((int) (cl.ctime * 1000)); //johnfitz -- freeze beams when paused
@@ -478,13 +500,30 @@ void CL_UpdateTEnts (void)
 	// add new entities for the lightning
 		VectorCopy (b->start, org);
 
+#ifdef GLQUAKE_SUPPORTS_QMB
 		VectorCopy (b->start, beamstart);
+#endif // !GLQUAKE_SUPPORTS_QMB
 
 		d = VectorNormalize(dist);
 
 		// Baker: Apparently for every 30 units we do a new beam segment
 		for ( ; d > 0 ; d -= 30)
 		{
+#ifdef GLQUAKE_SUPPORTS_QMB
+			
+			if (frame.qmb && qmb_lightning.value)
+			{
+				VectorAdd(org, dist, beamend);
+//				for (j=0 ; j<3 ; j++)
+//					beamend[j] += (b->entity != cl.viewentity_player) ? (rand() % 40) - 20 : (rand() % 16) - 8;
+				for (j = 0 ; j < 3 ; j++)
+					beamend[j] += (rand() % 10) - 5;
+
+				QMB_LightningBeam (beamstart, beamend);
+				VectorCopy (beamend, beamstart);
+			}
+			else
+#endif // GLQUAKE_SUPPORTS_QMB
 			{
 				ent = CL_NewTempEntity ();
 				if (!ent)
@@ -496,6 +535,8 @@ void CL_UpdateTEnts (void)
 				ent->angles[1] = yaw;
 				ent->angles[2] = rand()%360;
 			}
+
+			// SPARKS GO HERE
 
 			// Baker: VectorMA replaces for loop
 			VectorMA (org, 30, dist, org);

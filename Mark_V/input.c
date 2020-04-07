@@ -452,7 +452,7 @@ void Input_Init (void)
 #pragma message ("Baker: Implement m_filter on Windows")
 
 	// This doesn't work because the config.cfg will be read and just override it.
-	// Now we do it earlier -- see video startup
+	// Now we do it earlier -- see video startup --- no we had to bail on that, now we use command line parm
 	//if (COM_CheckParm ("-nomouse"))
 	//	Cvar_SetValueQuick (&in_nomouse, 1);
 

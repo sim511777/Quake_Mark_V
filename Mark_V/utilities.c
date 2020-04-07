@@ -1021,7 +1021,7 @@ void Install_Command_f (lparse_t *line)
 
 					if (String_Does_Match_Caseless(cur->name, "autoexec.cfg"))
 					{
-						// Allow but warn
+						// Allow but warn. :(
 						Con_Printf ("Warning:  This mod has an autoexec.cfg!\n");
 					}
 

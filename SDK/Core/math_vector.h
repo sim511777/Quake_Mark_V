@@ -43,18 +43,18 @@ typedef vec_t vec3_t[3];
 
 
 #define M_PI_DIV_180 (M_PI / 180.0)
-#define Degree_To_Radians(a) (a * M_PI) / 180.0F
-
+#define Degree_To_Radians(a) ((a) * M_PI) / 180.0F
+#define Degree_To_RadiansEx(a) ( (a) * M_PI_DIV_180 )
 
 
 
 
 void PerpendicularVector( vec3_t dst, const vec3_t src );
 void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
-#define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
-#define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
+#define DotProduct(x,y) ((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+#define VectorSubtract(a,b,c) {(c)[0]=(a)[0]-(b)[0];(c)[1]=(a)[1]-(b)[1];(c)[2]=(a)[2]-(b)[2];}
+#define VectorAdd(a,b,c) {(c)[0]=(a)[0]+(b)[0];(c)[1]=(a)[1]+(b)[1];(c)[2]=(a)[2]+(b)[2];}
+#define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
 #define VectorClear(a)		((a)[0] = (a)[1] = (a)[2] = 0)
 #define VectorNegate(a, b)	((b)[0] = -(a)[0], (b)[1] = -(a)[1], (b)[2] = -(a)[2])
 
@@ -103,7 +103,7 @@ void VectorExtendLimits (vec3_t newvalue, vec3_t minlimit, vec3_t maxlimit);
 int ParseFloats(const char *s, float *f, int *f_size);
 cbool PointInCube(vec3_t point, vec3_t cube_mins, vec3_t cube_maxs);
 
-
+void vectoangles (const vec3_t vec, vec3_t ang);
 
 #endif	// ! __MATH_VECTOR_H__
 

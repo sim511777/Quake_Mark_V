@@ -35,9 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
 #define ENGINE_VERSION			1.00
-#define	ENGINE_BUILD			1003
-//#define AUTODEMO_BUILD			0
-//#define AUTODEMO_BUILD		1	// Autodemo build.
+#define	ENGINE_BUILD			1005
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -55,7 +53,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	SETMUSIC_CFG			"setmusic.cfg"			// setmusic.cfg name, executed on any gamedir change and startup.
 #define	SETMUSIC_CFG_FULL		"music/" SETMUSIC_CFG	// setmusic.cfg name, executed on any gamedir change and startup.
 #define ENGINE_URL				"http://quakeone.com/markv/"
-
 
 #define MEM_DEFAULT_MEMORY		(256 * 1024 * 1024)		//  256 MB
 #define MEM_DEFAULT_DEDICATED	( 64 * 1024 * 1024)		//   64 MB  ... No textures, so shouldn't require a whole ton.  But better to be safe at 64 than risky at 32.
@@ -164,7 +161,7 @@ extern fn_set_t qfunction_set;
 
 	#define GLQUAKE_HARDWARE_GAMMA
 	#define GLQUAKE_SUPPORTS_VSYNC				// Baker: This is not restricted to GL, per se.
-//	#define GLQUAKE_SUPPORTS_QMB				
+	#define GLQUAKE_SUPPORTS_QMB				
 #endif
 
 #ifndef GLQUAKE
@@ -213,6 +210,7 @@ extern fn_set_t qfunction_set;
 //#define SUPPORTS_WINDOWS_MENUS			// Baker: Older Mark V had this.  Was interesting idea.
 
 extern cbool in_load_game;
+
 
 #ifdef __GNUC__
 // Baker:  I have not been able to make the following work with CodeBlocks/MinGW32:

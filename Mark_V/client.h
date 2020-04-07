@@ -87,7 +87,7 @@ typedef struct
 	float	minlight;			// don't add when contributing less
 	int		key;
 #ifdef GLQUAKE_COLORED_LIGHTS // Baker: I haven't added colored lights
-	vec3_t	color;				// johnfitz -- lit support via lordhavoc
+	Point3D	color;				// johnfitz -- lit support via lordhavoc
 #endif // GLQUAKE_COLORED_LIGHTS
 } dlight_t;
 
@@ -232,16 +232,16 @@ typedef struct
 // pitch drifting vars
 	float		idealpitch;
 	float		pitchvel;
-	cbool	nodrift;
+	cbool		nodrift;
 	float		driftmove;
 	double		laststop;
 
 	float		viewheight;
-	float		crouch;			// local amount for smoothing stepups
+	float		crouch;			// local amount for smoothing stepups.  Unused?
 
-	cbool	paused;			// send over by server
-	cbool	onground;
-	cbool	inwater;
+	cbool		paused;			// send over by server
+	cbool		onground;
+	cbool		inwater;
 
 	int			intermission;	// don't change view angle, full screen, etc
 	int			completed_time;	// latched at intermission start
@@ -358,6 +358,8 @@ extern	int				cl_max_edicts; //johnfitz -- only changes when new map loads
 // cl_main.c
 //
 dlight_t *CL_AllocDlight (int key);
+
+
 void CL_DecayLights (void);
 
 void CL_Init (void);

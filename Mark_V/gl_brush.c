@@ -1059,9 +1059,9 @@ static void R_AddDynamicLights (msurface_t *surf)
 
 		//johnfitz -- lit support via lordhavoc
 		bl = blocklights;
-		cred = cl.dlights[lnum].color[0] * 256.0f;
-		cgreen = cl.dlights[lnum].color[1] * 256.0f;
-		cblue = cl.dlights[lnum].color[2] * 256.0f;
+		cred = cl.dlights[lnum].color.vec3[0] * 256.0f;
+		cgreen = cl.dlights[lnum].color.vec3[1] * 256.0f;
+		cblue = cl.dlights[lnum].color.vec3[2] * 256.0f;
 		//johnfitz
 		for (t = 0 ; t < surf->tmax ; t++)
 		{

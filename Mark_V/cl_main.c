@@ -97,17 +97,8 @@ void CL_Disconnect (void)
 // stop sounds (especially looping!)
 	S_StopAllSounds (true);
 	CDAudio_Stop();
-//make sure every pathway gets here
-//#ifdef HTTP_DOWNLOAD
-//	// We have to shut down webdownloading first
-//
-//	if( cls.download.web )
-//	{
-//		cls.download.disconnect = true;
-//		return;
-//	}
-//
-//#endif
+
+// HTTP Depot download shutdown in CL_Disconnect_f instead of here.
 
 #ifdef SUPPORTS_NEHAHRA
 	if (nehahra_active)
@@ -284,7 +275,7 @@ void CL_SignonReply (void)
 
 	case 4:
 		SCR_EndLoadingPlaque ();		// allow normal screen updates
-		if (cl_autodemo.value && !cls.demoplayback && !cls.demorecording && host_maxfps.value == 72)
+		if (cl_autodemo.value && !cls.demoplayback && !cls.demorecording && (cl_autodemo.value >= 2 || host_maxfps.value == 72))
 		{
 			// Baker: host_maxfps > 72 will lead to really big demos.
 			Cmd_ExecuteString ("record " AUTO_DEMO_NAME "\n", src_command);
@@ -381,7 +372,8 @@ dlight_t *CL_AllocDlight (int key)
 				memset (dl, 0, sizeof(*dl));
 				dl->key = key;
 #ifdef GLQUAKE_COLORED_LIGHTS
-				dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+// Why did we comment this out?  I don't think we had a reason?
+				dl->color.vec3[0] = dl->color.vec3[1] = dl->color.vec3[2] = 1; //johnfitz -- lit support via lordhavoc
 #endif // GLQUAKE_COLORED_LIGHTS
 				return dl;
 			}
@@ -398,7 +390,7 @@ dlight_t *CL_AllocDlight (int key)
 			memset (dl, 0, sizeof(*dl));
 			dl->key = key;
 #ifdef GLQUAKE_COLORED_LIGHTS
-			dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+			dl->color.vec3[0] = dl->color.vec3[1] = dl->color.vec3[2] = 1; //johnfitz -- lit support via lordhavoc
 #endif // GLQUAKE_COLORED_LIGHTS
 			return dl;
 		}
@@ -408,7 +400,7 @@ dlight_t *CL_AllocDlight (int key)
 	memset (dl, 0, sizeof(*dl));
 	dl->key = key;
 #ifdef GLQUAKE_COLORED_LIGHTS
-	dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+	dl->color.vec3[0] = dl->color.vec3[1] = dl->color.vec3[2] = 1; //johnfitz -- lit support via lordhavoc
 #endif // GLQUAKE_COLORED_LIGHTS
 	return dl;
 }
@@ -514,19 +506,40 @@ static float CL_LerpPoint (void)
 	return frac;
 }
 
+
+vec3_t	player_origin[MAX_SCOREBOARD_16];
+int	numplayers;
+
 /*
 ===============
 CL_RelinkEntities
 ===============
 */
+
+static float	_mathlib_temp_float1, _mathlib_temp_float2;
+static vec3_t	_mathlib_temp_vec1;
+
+#define VectorL2Compare(v, w, m)				\
+	(_mathlib_temp_float1 = (m) * (m),			\
+	_mathlib_temp_vec1[0] = (v)[0] - (w)[0], _mathlib_temp_vec1[1] = (v)[1] - (w)[1], _mathlib_temp_vec1[2] = (v)[2] - (w)[2],\
+	_mathlib_temp_vec1[0] * _mathlib_temp_vec1[0] +		\
+	_mathlib_temp_vec1[1] * _mathlib_temp_vec1[1] +		\
+	_mathlib_temp_vec1[2] * _mathlib_temp_vec1[2] < _mathlib_temp_float1)
+
+
 static void CL_RelinkEntities (void)
 {
-	entity_t	*ent;
-	int			i, j;
-	float		frac, f, d;
-	vec3_t		delta;
-	float		bobjrotate;
-	vec3_t		oldorg;
+	entity_t		*ent;
+	int				i, j;
+	float			frac, f, d;
+	vec3_t			delta;
+	float			bobjrotate;
+	vec3_t			oldorg;
+	
+#ifdef GLQUAKE_SUPPORTS_QMB
+	dlight_t		*dl;
+	dlighttype_e	color_type;
+#endif // GLQUAKE_SUPPORTS_QMB
 
 // determine partial update time
 	frac = CL_LerpPoint ();
@@ -566,8 +579,10 @@ static void CL_RelinkEntities (void)
 	bobjrotate = anglemod (100 * cl.ctime);
 
 // start on the entity after the world
-	for (i = 1, ent = cl_entities + 1 ; i < cl.num_entities ; i++, ent++)
+	for (i = 1, numplayers = 0, ent = cl_entities + 1 ; i < cl.num_entities ; i++, ent++)
 	{
+		cbool evaluated = false;
+
 		if (!ent->model)
 		{
 			// empty slot
@@ -578,6 +593,8 @@ static void CL_RelinkEntities (void)
 
 			continue;
 		}
+
+		
 
 // if the object wasn't included in the last packet, remove it
 		if (ent->msgtime != cl.mtime[0])
@@ -632,24 +649,47 @@ static void CL_RelinkEntities (void)
 				ent->angles[j] = ent->msg_angles[1][j] + f*d;
 			}
 
+		}  // End interpolation, etc.
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+		{
+			int			client_no		= ent - cl_entities;
+			cbool		isPlayer		= (client_no >= 1 && client_no<=cl.maxclients);
+
+			if (isPlayer)	// gamehack
+			{
+				VectorCopy (ent->origin, player_origin[numplayers]);
+				numplayers++;
+			}
 		}
 
-// rotate binary objects locally
-		if (ent->model->flags & EF_ROTATE)
-			ent->angles[1] = bobjrotate;
+		// Explosion boxes override
+		if (frame.qmb && isin2(ent->modelindex, cl_modelindex[mi_explo1], cl_modelindex[mi_explo2]) /*isin*/  ) {
+			if (qmb_explosions.value && isin2(qmb_explosiontype.value, 2 /* this*/, 3))
+				continue;  // software removal of sprites
+		}
+#endif // GLQUAKE_SUPPORTS_QMB
 
+// rotate binary objects locally
+		if (ent->model->modelflags & EF_ROTATE) {
+			ent->angles[1] = bobjrotate;
+			if (cl_item_bobbing.value)
+				ent->origin[2] += sin(bobjrotate / 90 * M_PI) * 5 + 5;
+		}
+
+		// EF_BRIGHTFIELD is not used by original progs
 		if (ent->effects & EF_BRIGHTFIELD)
 			R_EntityParticles (ent);
 
-		if (ent->effects & EF_BRIGHTLIGHT)
-		{
+		// EF_BRIGHTLIGHT is not used by original progs
+		if (ent->effects & EF_BRIGHTLIGHT) {
 			vec3_t org = {ent->origin[0], ent->origin[1], ent->origin[2] + 16};
-			DLight_Add (i, org, 400 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1,1);
+			DLight_Add (i, org, 400 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1 /*baker1*/,1);
 		}
 
-		if (ent->effects & EF_DIMLIGHT)
-		{
-			DLight_Add (i, ent->origin, 200 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1,1);
+		// EF_DIMLIGHT is for powerup glows and enforcer's laser
+		if (ent->effects & EF_DIMLIGHT) {
+			DLight_Add (i, ent->origin, 200 + (rand() & 31), 0, cl.time + 0.001, /*rgb: */ 1,1,1 /*baker1*/);		
 		}
 
 		if (ent->effects & EF_MUZZLEFLASH)
@@ -663,35 +703,62 @@ static void CL_RelinkEntities (void)
 			VectorMA (muzzle_flash_origin, 18, fv, muzzle_flash_origin);
 
 			// Light Add: key......origin ........radius ............minlight .......die ..... color
-			DLight_Add (i, muzzle_flash_origin, 200 + (rand() & 31), 32, cl.time + 0.1, /*rgb: */ 1,1,1);
+			DLight_Add (i, muzzle_flash_origin, 200 + (rand() & 31), 32, cl.time + 0.1, /*rgb: */ 1 /*baker1*/,1,1);
 
 			//johnfitz -- assume muzzle flash accompanied by muzzle flare, which looks bad when lerped
 			if (r_lerpmodels.value != 2)
 			{
 			if (ent == &cl_entities[cl.viewentity_player])
-				cl.viewent_gun.lerpflags |= LERP_RESETANIM|LERP_RESETANIM2; //no lerping for two frames
+				cl.viewent_gun.lerpflags |= LERP_RESETANIM | LERP_RESETANIM2; //no lerping for two frames
 			else
-				ent->lerpflags |= LERP_RESETANIM|LERP_RESETANIM2; //no lerping for two frames
+				ent->lerpflags |= LERP_RESETANIM | LERP_RESETANIM2; //no lerping for two frames
 			}
 			//johnfitz
 		}
 
-		Effects_Evaluate (i, ent, oldorg);
 
-		ent->forcelink = false;
+		//if (ent->model->modelflags)
+		//{
+		//	if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
+		//	{
+		//		VectorCopy (ent->origin, oldorg);	//not present last frame or too far away
+		//		ent->traildrawn = true;
+		//	}
+		//	else
+		//	{
+		//		VectorCopy (ent->trail_origin, oldorg);
+		//	}
+		//}
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+		if (frame.qmb) evaluated = QMB_Effects_Evaluate (i, ent, oldorg);
+#endif // GLQUAKE_SUPPORTS_QMB
+
+		if (!evaluated)	evaluated = Clasic_Effects_Evaluate (i, ent, oldorg);  // What's this do, I forget.  Emits classic trails
+
+
+
+		// Here, we are insert effects from nothing.
+		// A spikes make bubbles, shambler charge effect.  Bubble inserted, what happens to the sprite?
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+		if (frame.qmb)   
+			if (QMB_MaybeInsertEffect (ent, oldorg)) // Bubble, Shambler, Spikes.
+				continue; // We inserted an effect.  Bubble or something.
+#endif // GLQUAKE_SUPPORTS_QMB
+
+		// This should be after all the effects right?
+		// In JoeQuake things after this ... chase active skip, no draw, 
+		ent->forcelink = false; 
+
+		if (ent->effects & EF_NODRAW) // Baker: Seriously.  This late in the process?  Yes.  Could be carrying effects!
+			continue;
 
 		if (i == cl.viewentity_player) {
-//#ifdef GLQUAKE_COLORMAP_TEXTURES // Baker: We manually build the skins for GLQuake
-//			if (ent->coloredskin == NULL || R_SkinTextureChanged (ent))
-//				ent->coloredskin = R_TranslateNewModelSkinColormap (ent);
-//#endif // GLQUAKE_COLORMAP_TEXTURES
-
+			// If we are the player and chase_active 0, skip us
 			if (!chase_active.value)
 				continue;
 		}
-
-		if (ent->effects & EF_NODRAW)
-			continue;
 
 		if (cl.numvisedicts < MAX_MARK_V_VISEDICTS)
 		{
@@ -1064,7 +1131,10 @@ void CL_Init (void)
 	SZ_Alloc (&cls.message, 1024);
 
 	CL_InitInput ();
-	CL_InitTEnts ();
+#ifdef GLQUAKE_SUPPORTS_QMB
+	GameHacks_InitModelnames (); // QMB
+#endif // GLQUAKE_SUPPORTS_QMB
+	CL_InitTEnts (); // Technically should occur at game dir change time. 
 
 	Cmd_AddCommands (CL_Init);
 }

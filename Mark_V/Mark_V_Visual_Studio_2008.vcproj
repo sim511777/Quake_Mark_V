@@ -2207,6 +2207,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mark_v_qmb.h"
+				>
+			</File>
+			<File
 				RelativePath="menu.c"
 				>
 				<FileConfiguration
@@ -3543,6 +3547,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\r_part_qmb.h"
+				>
 			</File>
 			<File
 				RelativePath="recent_file.c"

@@ -101,7 +101,7 @@ void Rcon_f (lparse_t *line)
 
 	// Baker: A server shouldn't be sending rcon commands
 	if (cmd_from_server) {
-		Con_Warning ("Server has attempted to get to us to send an rcon command.  Highly inappropriate.  Rejected.\n"); 
+		Con_Warning ("Server has attempted to get to us to send an rcon command.  Highly inappropriate.  Rejected.\n");
 		return;
 	}
 
@@ -128,7 +128,7 @@ void Rcon_f (lparse_t *line)
 	if (!*rcon_server.string)
 	{
 		// JPG 3.50 - use current server
-		if (cls.state == ca_connected) 
+		if (cls.state == ca_connected)
 		{
 			// Baker: This is dangerous and has to go.  You are giving just any server the rcon password.
 			// Someone can setup an evil server and intercept this.
@@ -175,7 +175,7 @@ void Rcon_f (lparse_t *line)
 
 JustDoIt:
 	testSocket = dfunc.Open_Socket(0);
-	if (testSocket == -1)
+	if (testSocket == INVALID_SOCKET /*  -1*/)
 	{
 		Con_Printf ("Could not open socket\n");
 		return;
@@ -207,7 +207,7 @@ static void Rcon_Poll (void* unused)
 
 	len = dfunc.Read (testSocket, net_message.data, net_message.maxsize, &clientaddr);
 
-	if (len < sizeof(int))
+	if (len < (int)sizeof(int))
 	{
 		testPollCount--;
 		if (testPollCount)
@@ -265,7 +265,7 @@ cbool Datagram_Reject (const char *message, sys_socket_t acceptsock, struct qsoc
 
 extern cvar_t pq_password;			// JPG 3.00 - password protection
 extern unsigned long qsmackAddr;	// JPG 3.02 - allow qsmack bots to connect to server
-#ifdef SUPPORTS_PQ_RCON_FAILURE_BLACKOUT // Baker change 
+#ifdef SUPPORTS_PQ_RCON_FAILURE_BLACKOUT // Baker change
 typedef struct
 {
 	char	ip_address[22];
@@ -280,7 +280,7 @@ int rcon_cursor;
 cbool Rcon_Blackout (const char* address, float nowtime)
 {
 	int i;
-	
+
 	for (i = 0; i < num_rcon_ips_fails; i ++)
 	{
 		if (rcon_ips_fails[i].ip_address[0] == 0)
@@ -305,8 +305,8 @@ void Rcon_Fails_Log (const char* address, float nowtime)
 {
 	cbool found = false;
 	float oldest_time = nowtime;
-	int i, empty = -1, oldest = -1; 
-	
+	int i, empty = -1, oldest = -1;
+
 	// Find either this ip address or empty slot.
 	for (i = 0; i < num_rcon_ips_fails; i ++)
 	{
@@ -742,16 +742,16 @@ qsocket_t *Datagram_GetAnyMessage(void)
 			continue;
 		sock = dfunc.listeningSock; // was dfunc.Listen(true) until R4
 		if (sock == INVALID_SOCKET)
-			continue; // set breakpoint here.  Yes this happens. 
+			continue; // set breakpoint here.  Yes this happens.
 
 		while(1)
 		{
 			length = dfunc.Read(sock, (byte *)&packetBuffer, NET_MARK_V_DATAGRAMSIZE, &addr);
-			
+
 			if (length < 0) {
 				// Connection reset by peer or some other issue.
 				for (s = net_activeSockets; s; s = s->next) {
-					int i; 
+					int i;
 					if (s->driver == net_driverlevel && dfunc.AddrCompare(&addr, &s->addr) == 0) {
 						// Found the connection.
 						if (s->disconnected)
@@ -768,14 +768,14 @@ qsocket_t *Datagram_GetAnyMessage(void)
 							}
 							// Keep searching for client with that socket.
 						}
-						break; 
+						break;
 					}
 					// Keep searching for socket
 				}
 				// Whatever happened with this one, move on to the next
 				break;
 			}
-			
+
 			if (!length)
 			{
 				//no more packets, move on to the next.
@@ -836,7 +836,7 @@ qsocket_t *Datagram_GetAnyMessage(void)
 		// I changed the timeout to 20 seconds.  But I'm not sure that any length would
 		// would suffice for, say, DarkPlaces with 4 GB of replacement content on a map change
 		// Could take 2 minutes or so in some sluggish instances.  Whatever.
-		if (net_connecttimeout.value && net_time - s->lastMessageTime > net_connecttimeout.value) {	
+		if (net_connecttimeout.value && net_time - s->lastMessageTime > net_connecttimeout.value) {
 			int i; for (i = 0; i < svs.maxclients_internal; i++) {  // Because the cap can change at any time now.
 				if (svs.clients[i].netconnection == s) {
 					host_client = &svs.clients[i];
@@ -1499,7 +1499,7 @@ void Datagram_Listen (cbool state)
 
 
 // ServerControlPacket is called when
-// packet is marked with NETFLAG_CTL 
+// packet is marked with NETFLAG_CTL
 // We are not reading anything from the network here, it's already been read
 // Return value means nothing.
 // Only called by Datagram_GetAnyMessage --> Datagram_ProcessPacket --> us
@@ -1514,7 +1514,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 
 
 	control = BigLong(*((int *)data));
-		
+
 	if (control == -1)
 	{
 		// Server heartbeat stuff goes here
@@ -1524,7 +1524,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 //	System_Alert ("\"%s\"", word);
 //	cursor=cursor;
 //}
-		int i;		
+		int i;
 
 		if (!sv_public.value)
 			return;
@@ -1532,21 +1532,21 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 		// Server heartbeat stuff goes here
 		data[length] = 0;
 		cursor = String_Get_Word ((char *)data + 4, " ", firstword, sizeof(firstword));
-		
+
 
 		if (String_Does_Match_Caseless (firstword, "getinfo") || String_Does_Match_Caseless (firstword, "getstatus"))
 		{
 			cbool full_reply = String_Does_Match_Caseless (firstword, "getstatus");
 			#define SL "\\"
 			char cookie[128];
-			
+
 			const char *gamedir = gamedir_shortname();  // Gamedir name
 			unsigned int numclients = 0, numbots = 0;
-			
+
 			cursor = String_Get_Word (cursor, " ", firstword, sizeof(firstword)); // Hit it again
 			c_strlcpy (cookie, cursor ? firstword : ""); // Copy the word in there otherwise it is blank
 
-			// Count players and bots for the reply		
+			// Count players and bots for the reply
 			for (i = 0; i < svs.maxclients_internal; i++) {  // Because the cap can change at any time now.
 				if (svs.clients[i].active) {
 					numclients++;
@@ -1566,7 +1566,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 
 			//the master server needs this. This tells the master which game we should be listed as.
 			if (firstword[0])			{ MSG_WriteStringf (&net_message, fmt_string,  "gamename",      firstword			); net_message.cursize--; }
-			if (1 /* gameid I guess*/)	{ MSG_WriteStringf (&net_message, fmt_string,  "protocol",		"3"					); net_message.cursize--; } // Spike comment was: this is stupid	  
+			if (1 /* gameid I guess*/)	{ MSG_WriteStringf (&net_message, fmt_string,  "protocol",		"3"					); net_message.cursize--; } // Spike comment was: this is stupid
 			if (1 /* version */ )		{ MSG_WriteStringf (&net_message, fmt_string,  "ver",			"Mark V 0.99.99"	); net_message.cursize--; }
 			if (1)						{ MSG_WriteStringf (&net_message, fmt_integer, "nqprotocol", 	sv.protocol			);	net_message.cursize--; }
 			if (gamedir[0])				{ MSG_WriteStringf (&net_message, fmt_string,  "modname", 		gamedir				);	net_message.cursize--; }
@@ -1589,11 +1589,11 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 						total /= NUM_PING_TIMES;
 						total *= 1000;	//put it in ms
 
-						MSG_WriteStringf (&net_message, "\n%d %d %d_%d \"%s\"", 
-									svs.clients[i].old_frags, 
-									(int)total, 
-									svs.clients[i].colors & 15, 
-									svs.clients[i].colors / 16 /* >>4 */, 
+						MSG_WriteStringf (&net_message, "\n%d %d %d_%d \"%s\"",
+									svs.clients[i].old_frags,
+									(int)total,
+									svs.clients[i].colors & 15,
+									svs.clients[i].colors / 16 /* >>4 */,
 									svs.clients[i].name
 						);
 						net_message.cursize--;
@@ -1753,7 +1753,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 #ifdef SUPPORTS_PQ_RCON_FAILURE_BLACKOUT // Baker change
 		if (Rcon_Blackout (rcon_client_ip, realtime))
 			MSG_WriteString(&rcon_message, "rcon ignored: too many failures, wait several minutes and try again");
-		else 
+		else
 #endif // Baker change + SUPPORTS_PQ_RCON_FAILURE_BLACKOUT
 
 		if (!*rcon_password.string)
@@ -1922,7 +1922,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 //			Con_DPrintf ("A ProQuake client connected reporting as version %d\n", cl_proquake_version);
 		}
 
-		
+
 		*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
 		dfunc.Write (acceptsock, net_message.data, net_message.cursize, pclientaddr);
 		SZ_Clear(&net_message);
@@ -1950,7 +1950,7 @@ qsocket_t *Datagram_CheckNewConnections (void)
 
 			struct qsockaddr addr;
 			heartbeat_time = System_DoubleTime() + 300; // Add 5 minutes
-			
+
 			while (  (cursor = String_Get_Word (cursor, ",", this_master, sizeof(this_master)))  ) {
 				for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++) {
 					if (net_landrivers[net_landriverlevel].initialized && dfunc.listeningSock != INVALID_SOCKET) {
@@ -2400,7 +2400,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		sock->proquake_connection	= len >  9 ? MSG_ReadByte() : 0;    // ProQuake = 1
 		sock->proquake_version		= len > 10 ? MSG_ReadByte() : 0;	// ProQuake server version, like 3.20 or 3.50 (times 10 so 32 or 35)
 		sock->proquake_flags		= len > 11 ? MSG_ReadByte() : 0;	// Would be for cheat-free server connection
-		
+
 		if (sock->proquake_connection)
 			sock->proquake_connection = sock->proquake_version; // I want to know the version
 
@@ -2408,7 +2408,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		// However, we are not supporting cheat-free therefore we will not be reading it.
 		// And cheat-free is nigh impossible since I stopped signing ProQuake clients/server @ version 4.00 in 2008
 		Con_DPrintf ("Client port on the server is %s\n", dfunc.AddrToString(&sock->addr, false));
-		
+
 		if (sock->proquake_connection)
 			Con_DPrintf ("Server is ProQuake ? %i\n", sock->proquake_connection);
 	}

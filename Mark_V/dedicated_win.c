@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // dedicated_win.c
 
 #include "quakedef.h"
+#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
 #include "winquake.h"
 #include "dedicated_win.h"
 
@@ -501,3 +502,4 @@ void ConProc_Error (const char *text)
 
 
 
+#endif // PLATFORM_WINDOWS

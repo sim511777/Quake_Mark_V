@@ -568,7 +568,7 @@ unsigned *System_Clipboard_Get_Image_RGBA_Alloc (int *outwidth, int *outheight)
 int System_MessageBox (const char *_title, const char *fmt, ...)
 {	
 	const char *title = _title ? _title : "Alert";
-	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt)
+	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
     // Objective C hates NSString NULLs with stringWithUTF8String    
     NSString* myMessage =[NSString stringWithUTF8String:text];

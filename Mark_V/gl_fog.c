@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // Build level define
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -642,3 +644,4 @@ void Fog_Init (void)
 }
 
 
+#endif // GLQUAKE // Build level define

@@ -182,12 +182,12 @@ void Input_Local_SendKeyEvents (void)
                 
             case eFDHIDEventTypeGamePadButton:
                 if (allowJoy && pEvent->mButton <= (K_AUX32 - K_AUX1))
-                    Key_Event (K_AUX1 + pEvent->mButton, pEvent->mBoolVal);
+                    Key_Event (K_AUX1 + pEvent->mButton, pEvent->mBoolVal, 0 /*never special at this time*/);
                 break;
                 
             case eFDHIDEventTypeKeyboard:
                 if (pEvent->mButton < K_PAUSE /*Baker: which is 255 */ )
-                    Key_Event (pEvent->mButton, pEvent->mBoolVal);
+                    Key_Event (pEvent->mButton, pEvent->mBoolVal, 0 /*never special at this time*/);
                 break;
                 
             case eFDHIDEventTypeMouseAxis:
@@ -211,8 +211,8 @@ void Input_Local_SendKeyEvents (void)
                     {
                         const int wheelEvent = (pEvent->mIntVal > 0) ? K_MOUSEWHEELUP : K_MOUSEWHEELDOWN;
                         
-                        Key_Event (wheelEvent, true);
-                        Key_Event (wheelEvent, false);
+                        Key_Event (wheelEvent, true,  0 /*never special at this time*/);
+                        Key_Event (wheelEvent, false,  0 /*never special at this time*/);
                     }
                     break;
                 }
@@ -231,10 +231,10 @@ void Input_Local_SendKeyEvents (void)
                         if ([sysplat.gVidWindow inDragMove])
                         {
                             [sysplat.gVidWindow dragMoveEnded];
-                            Con_Printf ("Drag move ended\n");
+         //                   Con_Printf ("Drag move ended\n");
                         }
                     }
-                } else Key_Event (K_MOUSE1 + pEvent->mButton, pEvent->mBoolVal);
+                } else Key_Event (K_MOUSE1 + pEvent->mButton, pEvent->mBoolVal,  0 /*never special at this time*/);
                 break;
         }
     }

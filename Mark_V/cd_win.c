@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // rights reserved.
 
 #include "quakedef.h"
+#ifdef PLATFORM_WINDOWS // Header level define, must be here
+
 #ifdef WANTED_MP3_MUSIC // Baker change
 #pragma message ("Note: MP3 Music disabled; I've never had any luck with DX8 and MinGW + CodeBlocks / GCC --- Baker :(")
 #endif
@@ -688,3 +690,4 @@ void CDAudio_Shutdown(void)
 		Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
 }
 
+#endif // PLATFORM_WINDOWS - Header level define

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __INTERFACE_H__
 
 
-typedef void* sys_handle_t;
+//typedef void* sys_handle_t;  // Clang says multiple def
 
 ///////////////////////////////////////////////////////////////////////////////
 //  URL QUERY

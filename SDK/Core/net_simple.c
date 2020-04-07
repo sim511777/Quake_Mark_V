@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "core.h"
+#include "core_net_sys.h"
 #include "net_simple.h"
 
 #ifdef _WIN32

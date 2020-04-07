@@ -78,7 +78,7 @@ void Lists_Update_ModList (void)
 	if (dir_p == NULL)
 		return;
 
-	if (&list_info[list_type_game].plist)
+	if (/*&  Clang caught this*/ list_info[list_type_game].plist) // Nice catch Clang!
 	{
 		List_Free (&list_info[list_type_game].plist);
 		if (list_info[list_type_game].plist) System_Error ("Not freed?");

@@ -92,6 +92,19 @@ COMPILE_TIME_ASSERT(sockaddr, offsetof(struct sockaddr, sa_family) == SA_FAM_OFF
 
 #endif	/* end of unix stuff */
 
+#ifdef PLATFORM_OSX // Baker -- IPV6
+	// IPv6 stuff
+
+	#include "sys/socket.h"
+	#include "netinet/in.h"
+
+	struct in_addr6 {
+		unsigned char s6_addrx[16];             /* IPv6 address */
+	};// foobarz1;
+
+	typedef struct in_addr6 in_addr6_t; // IP v6 Mac
+
+#endif // PLATFORM_OSX IPV6
 
 /* amiga includes and compatibility macros */
 #if defined(PLATFORM_AMIGA) /* Amiga bsdsocket.library */

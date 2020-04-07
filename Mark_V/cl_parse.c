@@ -313,12 +313,15 @@ cbool CL_Download_Attempt (const char *file_to_download)
 	char download_finalname_url[MAX_OSPATH];
 	cbool is_success;
 	int errorcode = -1; //
-	int svr_pq_version = NET_QSocketIsProQuakeServer (cls.netcon);
-	cbool is_proquake_server_35 = !in_range (30, svr_pq_version, 34); // Download if we are connected to Quakespasm, DarkPlaces, ProQuake.  Don't download if Mark V or Quakespasm Spiked.
+	int svr_pq_version;
+	cbool is_proquake_server_35; // Download if we are connected to Quakespasm, DarkPlaces, ProQuake.  Don't download if Mark V or Quakespasm Spiked.
 
 	// Don't download while playing back a demo or if we are the server.
 	if (cls.demoplayback || sv.active || !pq_download_http.value || !pq_download_http_url.string[0])
 		return false;
+
+	svr_pq_version = NET_QSocketIsProQuakeServer (cls.netcon);
+	is_proquake_server_35 = !in_range (30, svr_pq_version, 34);
 
 	// Only download if the server is ProQuake version 3.5 or greater
  	if (!is_proquake_server_35)

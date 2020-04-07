@@ -1,3 +1,5 @@
+#ifdef CORE_SDL
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -427,3 +429,4 @@ int main (int argc, char *argv[])
     return 0;
 }
 
+#endif // CORE_SDL

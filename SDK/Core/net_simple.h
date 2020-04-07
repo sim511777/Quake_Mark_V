@@ -24,12 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __NET_SIMPLE_H__
 
 
-// I think we need to go for a 1 thread, non-blocking maxclients style server.
-#ifdef _WIN32
-#include <winsock.h>
-typedef SOCKET sys_socket_t; // Windows
-#endif
-
 
 #define IPV4_STRING_MAX_22 22 // 192.192.192.192:22222 = 15 + 1 + 5 = 21 + null = 22
 typedef cbool (*whitelist_fn_t) (const char *);
@@ -69,8 +63,6 @@ cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *base
 cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, error_fn_t error_fn, print_fn_t print_fn, print_fn_t dprint_fn);
 
 void Net_Simple_Server_Force_Shutdown (sys_socket_t notify_socket);
-
-typedef u_long	in_addr_t;	/* uint32_t */
 
 #endif // __NET_SIMPLE_H__
 

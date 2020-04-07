@@ -367,7 +367,7 @@ int MSG_ReadBytePQ (void)
 {
  	// Baker I wish I knew the reason for the 272:  256 + 16.  Subtract the first read by 17?  Why?
 	// I suppose we'll have to watch it in real time. :(
-	return MSG_ReadByte() * 16 + MSG_ReadByte() - 272; 
+	return MSG_ReadByte() * 16 + MSG_ReadByte() - 272;
 }
 
 // JPG - added this
@@ -1495,8 +1495,8 @@ static byte *COM_LoadFile_Limited (const char *path, int usehunk, const char *me
 //#ifdef GLQUAKE_SUPPORTS_QMB
 //	if (usehunk == LOADFILE_STACK && String_Does_Match_Caseless (path, "progs/flame0.mdl")) {
 //		extern const size_t qmb_flame0_mdl_size;
-//		
-//		
+//
+//
 //		len = qmb_flame0_mdl_size;
 //
 //		buf = (byte *) Hunk_TempAlloc (len + 1);
@@ -1628,6 +1628,9 @@ pack_t *COM_LoadPackFile (const char *packfile)
 	dpackfile_t             info[MAX_FILES_IN_PACK];
 	unsigned short          crc;
 
+	if (!File_Exists(packfile)) // Fail faster?  Added Nov 2016, shouldn't make any difference except place to set a breakpoint
+		return NULL;
+
 	if (System_FileOpenRead (packfile, &packhandle) == -1)
 		return NULL;
 	System_FileRead (packhandle, (void *)&header, sizeof(header));
@@ -1720,7 +1723,7 @@ void COM_AddGameDirectory (const char *relative_dir, cbool hd_only)
 
 	// Baker: I'm not found of this next line really but it works ...
 	if (!hd_only) {
-		c_strlcpy (com_gamedir, dir);
+		c_strlcpy (com_gamedir, dir); // Remember: com_gamedir is full directory.
 		com_hdfolder_count = 0;
 	}
 	else com_hdfolder_count ++; // Add 1
@@ -1750,6 +1753,7 @@ void COM_AddGameDirectory (const char *relative_dir, cbool hd_only)
 		search->next = com_searchpaths;
 		com_searchpaths = search;
 	}
+	//	System_Alert ("Last pak file %s", pakfile);
 }
 
 
@@ -1790,7 +1794,7 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 		if ((com_basedir[j-1] == '\\') || (com_basedir[j-1] == '/'))
 			com_basedir[j-1] = 0;
 	}
-	
+
 	com_gametype = gametype_standard;
 
 	if (COM_CheckParm ("-rogue"))		com_gametype = gametype_rogue;
@@ -1818,12 +1822,12 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 	case gametype_nehahra:			COM_AddGameDirectory ("nehahra", false /*real*/);	break;  // Nehahra must manually be added
 	case gametype_standard:			com_modified = false;				break;
 	}
-		
+
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{
 		char folder_url[MAX_OSPATH];
-		
+
 		FS_FullPath_From_Basedir (folder_url, com_argv[i+1]);
 		if (!File_Exists (folder_url) || !File_Is_Folder(folder_url))
 			System_Error ("Folder %s does not exist", folder_url);
@@ -2025,16 +2029,16 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 		List_Free (list);
 
 	search = com_searchpaths;
-	
+
 
 	if (isin3( directives, SPECIAL_GAMEDIR_ONLY_IF_COUNT, SPECIAL_GAMEDIR_PREFERENCE, SPECIAL_GAMEDIR_ONLY) && com_hdfolder_count) {
 		// Advance past all HD folders.
 		int	i; for (i = 0; i < com_hdfolder_count; i ++) {
 			search = search->next; // Skip the HD folder.
 		}
-		
+
 	}
-	
+
 	for (/*nada*/ ; search ; search = search->next)
 	{
 		if (search->filename[0]) //directory
@@ -2046,7 +2050,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 				DIR		*dir_p;
 				struct dirent	*dir_t;
 				c_snprintf2 (curname_url, "%s%s", search->filename, slash_subfolder);
-					
+
 				dir_p = opendir(curname_url);
 				if (dir_p)
 				{
@@ -2054,9 +2058,9 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 					while ((dir_t = readdir(dir_p)) != NULL)
 					{
 						if (isdemo && String_Does_End_With_Caseless(dir_t->d_name, ".dz"))
-						{ 
+						{
 							// keep going
-						}	
+						}
 						else if (!String_Does_End_With_Caseless(dir_t->d_name, dot_extension))
 							continue;
 
@@ -2121,9 +2125,9 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 				const char *current_filename = pak->files[i].name;
 
 				if (isdemo && String_Does_End_With_Caseless(current_filename, ".dz"))
-				{ 
+				{
 					// accepted
-				}	
+				}
 				else if (!String_Does_End_With_Caseless(current_filename, dot_extension))
 					continue;
 
@@ -2412,9 +2416,9 @@ void COM_DeQuake_String (char *s_edit)
 	static char dequake[256];
 
 	// If buffer isn't initialized, do so.
-	if (!dequake['A'])	
+	if (!dequake['A'])
 	{
-		int				i;	
+		int				i;
 
 		// 32 to 128 is itself, Convert everything over 128 to be 0-127 range.  Exceptions noted ...
 		//Tab				// Newline			// Carriage return	// Line feed becomes a space
@@ -2423,17 +2427,17 @@ void COM_DeQuake_String (char *s_edit)
 		for (i =   1 ;	i <  31 ;	i++)		dequake[i] = '#';	// Ensure no control characters.  But see below for 10, 13, etc.
 		for (i = 127 ;	i < 159 ;	i++)		dequake[i] = '#';	// Ensure no control characters.  But see below for 10, 13, etc.
 		for (i = 255 ;	i < 256 ;	i++)		dequake[i] = '#';	// Ensure no control characters.  But see below for 10, 13, etc.
-		
+
 		for (i =  18 ;	i <  28 ;	i++)		dequake[i] = '0' + i - 18;			// Qnumbers
 		for (i = 146 ;	i < 156 ;	i++)		dequake[i] = '0' + i - (128 + 18);	// More Qnumbers
 		for (i = 160 ;	i < 255 ;	i++)		dequake[i] = dequake[i & 127];		// These should translate ok
-		
+
 		// Final touches
-		dequake[9] = '#';	dequake[10] = 10;	dequake[13] = 13;	dequake[12] = '#';	
+		dequake[9] = '#';	dequake[10] = 10;	dequake[13] = 13;	dequake[12] = '#';
 		dequake[1] =		dequake[5] =		dequake[14] =		dequake[15] =		dequake[28] = '.';
 		dequake[16] = '[';	dequake[17] = ']';	dequake[29] = '<';	dequake[30] = '-';	dequake[31] = '>';
 		dequake[127] = '#';
-		dequake[128] = '(';	dequake[129] = '=';	dequake[130] = ')';	dequake[131] = '*';	dequake[141] = '>';	
+		dequake[128] = '(';	dequake[129] = '=';	dequake[130] = ')';	dequake[131] = '*';	dequake[141] = '>';
 		dequake[255] = '#';
 	}
 
@@ -2443,7 +2447,7 @@ void COM_DeQuake_String (char *s_edit)
 		c_strlcpy (before, s_edit);
 		for ( ; *s_edit; s_edit++ ) {
 			int ch = (byte)(*s_edit);
-//			int new_ch = dequake[ch]; 
+//			int new_ch = dequake[ch];
 //			if (ch >= 128 || ch < 0)
 //				ch = ch;
 //			if (new_ch < 32 || new_ch >= 127)
@@ -2457,12 +2461,12 @@ void COM_DeQuake_String (char *s_edit)
 }
 
 // DeQuakes a name and turns carriage returns and linefeeds into spaces
-void COM_DeQuake_Name (char *s_edit) 
+void COM_DeQuake_Name (char *s_edit)
 {
 	COM_DeQuake_String (s_edit);
-	
+
 	for (; *s_edit; s_edit++)
-		if (*s_edit == 10 || *s_edit == 13)	
+		if (*s_edit == 10 || *s_edit == 13)
 			*s_edit = ' ';	// Special case: strip wannabe linefeeds from name
 }
 
@@ -2483,10 +2487,10 @@ char * FS_ReadLine (FILE *f, char *buf, size_t bufsiz, fs_read_flags_e fs_read_f
 		ch = fgetc(f);
 		if (ch == EOF && !readcount)
 			return NULL;
-			
+
 		if (ch == EOF || ch == '\n' )
 			break;
-		
+
 		buf[readcount++] = ch;
 	}
 
@@ -2503,7 +2507,7 @@ char * FS_ReadLine (FILE *f, char *buf, size_t bufsiz, fs_read_flags_e fs_read_f
 	if ( fs_read_flags & FS_WHITESPACE_TO_SPACE )
 		String_Edit_Whitespace_To_Space (buf);
 
-	if ( fs_read_flags & FS_TRIM )  
+	if ( fs_read_flags & FS_TRIM )
 		String_Edit_Trim (buf);
 
 	return buf;
@@ -2512,7 +2516,7 @@ char * FS_ReadLine (FILE *f, char *buf, size_t bufsiz, fs_read_flags_e fs_read_f
 char * FS_ReadLine_Text_1024 (FILE *f)
 {
 	static char readbuf[SYSTEM_STRING_SIZE_1024];
-	
+
 	return FS_ReadLine (f, readbuf, sizeof(readbuf), FS_TEXT_TYPICAL);
 }
 
@@ -2602,7 +2606,7 @@ static clist_t *IPv4_List_From_Any_ (const char *unknown, cbool fromfile)
 		if (IPv4_String_Validated (newip, sizeof(newip), cur->name))
 			List_Add (&new_list, newip);  // Note: List_Add does not allow duplicates and forces to lowercase
 	}
-	
+
 	if (fromfile)
 		FS_File_Lines_List_Free (&textlines);
 	else List_Free (&textlines); // These are both calling List_Free, but whatever ...
@@ -2642,7 +2646,7 @@ pthread_mutex_t q_thread_events_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void Q_Thread_Event_Add (int event, int code, void *id, void *data)
 {
-	event_x_t eventa = {event, code, id, data, 0 /* zero pad*/}; // Download download_finished id 
+	event_x_t eventa = {event, code, id, data, 0 /* zero pad*/}; // Download download_finished id
 
 	Con_Queue_Printf ("Event recorded event:%i code:%i id:%p data:%p \n", event, code, id, data); // Thread-safe, blocking.
 	List_Add_Raw_Unsorted (&q_thread_events, &eventa, sizeof(eventa));
@@ -2675,9 +2679,9 @@ void Q_Thread_Events_Run (void)
 void Q_Thread_Events (const char *fmt, ...)
 {
 	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
-	
+
 	// Enure exclusive access to the list.
-	pthread_mutex_lock (&q_thread_events_lock);   
+	pthread_mutex_lock (&q_thread_events_lock);
 // Do something
 	pthread_mutex_unlock (&q_thread_events_lock);
 }
@@ -2689,9 +2693,9 @@ pthread_mutex_t queue_printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 int Con_Queue_Printf (const char *fmt, ...)
 {
 	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
-	
+
 	// Enure exclusive access to the list.
-	pthread_mutex_lock (&queue_printf_mutex);   
+	pthread_mutex_lock (&queue_printf_mutex);
 	List_Add_Unsorted (&con_queue_prints, text);
 	pthread_mutex_unlock (&queue_printf_mutex);
 	return 0;
@@ -2700,12 +2704,12 @@ int Con_Queue_Printf (const char *fmt, ...)
 void Con_Queue_PrintRun (const char *url)
 {
 	clist_t *cur;
-	// Enure exclusive access to the list.	
-	pthread_mutex_lock (&queue_printf_mutex);  
+	// Enure exclusive access to the list.
+	pthread_mutex_lock (&queue_printf_mutex);
 
 	for (cur = con_queue_prints ; cur; cur = cur->next)
 		Con_SafePrintf (cur->name);  // Don't tie up time -- SafePrint doesn't SCR_Update like Con_Printf
-	
+
 	List_Free (&con_queue_prints);
 
 	pthread_mutex_unlock (&queue_printf_mutex);
@@ -2726,7 +2730,7 @@ clist_t *file_read_list_urls; // MAX_QPATH_64 * num
 pthread_t read_list_thread;
 volatile cbool read_list_cancel;
 
-   
+
 void *ReadList_Reader (void *pclist)
 {
 	clist_t *cur = NULL;
@@ -2761,9 +2765,9 @@ void ReadList_Ensure_Shutdown (void)
 	pthread_join (read_list_thread, NULL);
 }
 
-   
+
 void ReadList_NewGame (void)
-{	
+{
 	pthread_attr_t attr;
 	searchpath_t *search;
 
@@ -2788,11 +2792,11 @@ void ReadList_NewGame (void)
 			new_files = File_List_Alloc (tmp_path, ".dem");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 			c_snprintf (tmp_path, "%s", search->filename);
 			// Ok, this will return healthbox bsps and such, it's ok to touch those.
-			new_files = File_List_Alloc (tmp_path, ".bsp");  List_Concat_Unsorted (&file_read_list_urls, new_files); 
+			new_files = File_List_Alloc (tmp_path, ".bsp");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 		}
 
 	read_list_cancel = false;
-		
+
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	pthread_create(&read_list_thread, &attr, ReadList_Reader, NULL);

@@ -774,10 +774,10 @@ void Key_Message (int key)
 
 	if (key < 32 || key > 127)
 		return;	// non printable
-	
-	if (chat_bufferlen == sizeof(chat_buffer) - (chat_team ? 6 : 1)) // 6 vs 1 = so same amount of text onscreen in "say" versus "say_team"
+
+	if (chat_bufferlen == (int)sizeof(chat_buffer) - (chat_team ? 6 : 1)) // 6 vs 1 = so same amount of text onscreen in "say" versus "say_team"
 		return; // all full
-	
+
 	if ( (key == 'v' || key == 'V') && keydown[K_CTRL])
 	{
 		int pastesizeof = sizeof(chat_buffer);
@@ -894,7 +894,7 @@ const char *Key_ListExport (void)
 
 
 
-#ifdef SUPPORTS_KEYBIND_FLUSH	
+#ifdef SUPPORTS_KEYBIND_FLUSH
 const char *Key_GetBinding (int keynum)
 {
 	if (keynum == (KEYMAP_COUNT_512 - 1))
@@ -915,7 +915,7 @@ Key_SetBinding
 */
 void Key_SetBinding (int keynum, const char *binding)
 {
-#ifdef SUPPORTS_KEYBIND_FLUSH	
+#ifdef SUPPORTS_KEYBIND_FLUSH
 	char **ptarget;
 #endif // !SUPPORTS_KEYBIND_FLUSH
 
@@ -925,7 +925,7 @@ void Key_SetBinding (int keynum, const char *binding)
 
 #ifdef SUPPORTS_KEYBIND_FLUSH
 	// If the bind is from a player, stomp on the server bind (clear it)
-	if (!cmd_from_server && keybindings[keynum].server) { 
+	if (!cmd_from_server && keybindings[keynum].server) {
 		// User stomp.  Free the server bind.
 		Z_Free (  keybindings[keynum].server  );
 		keybindings[keynum].server = NULL;
@@ -941,7 +941,7 @@ void Key_SetBinding (int keynum, const char *binding)
 	}
 
 	// Only create copy if string is non-zero length
-	if (binding[0]) 
+	if (binding[0])
 		(*ptarget) = Z_Strdup(binding);  // allocate memory for new binding
 #else
 // free old bindings
@@ -999,7 +999,7 @@ void Key_Unbind_f (lparse_t *line)
 	}
 // SUPPORTS_KEYBIND_FLUSH -- Key_SetBinding is smart and figures out what to do just fine!
 // No changes needed!
-	Key_SetBinding (b, ""); 
+	Key_SetBinding (b, "");
 }
 
 void Key_Unbindall_f (lparse_t *line)
@@ -1008,7 +1008,7 @@ void Key_Unbindall_f (lparse_t *line)
 
 	if (cmd_from_server) {
 		// pq_bindprotect not required to be set.  This is a presumed hostile
-		// action.  Historically, a server admin who wanted to be a jerk 
+		// action.  Historically, a server admin who wanted to be a jerk
 		// would use a menu that exists in some mods to be a jerk to a player.
 		Con_Warning ("Server sent unbindall command.  Ignoring.\n");
 		return;
@@ -1017,7 +1017,7 @@ void Key_Unbindall_f (lparse_t *line)
 	{
 #if !defined(SUPPORTS_KEYBIND_FLUSH)
 		if (keybindings[i])
-#endif // !SUPPORTS_KEYBIND_FLUSH		
+#endif // !SUPPORTS_KEYBIND_FLUSH
 		// We no longer think about it, Key_SetBinding does the thinking.
 		Key_SetBinding (i, "");
 	}
@@ -1037,7 +1037,7 @@ void Key_Bindlist_f (void)
 	{
 		const char *binding = Key_GetBinding (k);
 		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: \"%s\")",  keybindings[k].real) : "";
-		
+
 		if (binding && *binding) {
 			Con_SafePrintf ("   %-12s \"%s\" %s\n", Key_KeynumToString(k, key_local_name), binding, permanent);
 			count++;
@@ -1078,10 +1078,10 @@ void Key_Bind_f (lparse_t *line)
 	}
 
 	if (c == 2) {
-		
+
 		const char *binding = Key_GetBinding (b);
 		const char *permanent = (keybindings[b].server && keybindings[b].real) ? va ("(User: \"%s\")",  keybindings[b].real) : "";
-		
+
 		if (binding)
 			Con_Printf ("\"%s\" = \"%s\" %s\n", line->args[1], binding, permanent);
 		else
@@ -1131,6 +1131,10 @@ void Key_WriteBindings (FILE *f)
 	}
 }
 
+#ifndef PLATFORM_OSX // Not Crusty Mac
+static 
+#endif // Not Crusty Mac
+	int Key_Event (int key, cbool down, int special);
 
 #ifdef PLATFORM_OSX
 
@@ -1260,8 +1264,7 @@ cbool ignore_c_up = false;
 cbool ignore_m_up = false;
 cbool ignore_v_up = false;
 
-static int Key_Event (int key, cbool down, int special);
-
+#ifndef PLATFORM_OSX // Not Crusty Mac
 void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, int unicode, int shift)
 {
 	keydest_e desto;
@@ -1277,7 +1280,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 
 
 		// Quake uses the lower case as the bind names.
-		scancode = tolower(scancode); 
+		scancode = tolower(scancode);
 	}
 
 	if (!in_keymap.value) {
@@ -1286,23 +1289,23 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 			return;
 		Key_Event (scancode, down, 0);  // Emulate the "old way"
 		return;
-	}	
+	}
 
 	// ALT-M mute, CTRL-C are just out luck on a drastically different non-US keyboard.
 	// Most European keyboards are QWERTY, QWERTZ or AWERTY and all seem to have those keys in same place.
-	
+
 
 	sendkey = 0;
 
 	//
 	// SCAN CODE:  PHYSICAL KEY PRESS.  ALL OF THEM PASS THROUGH HERE
 //	Con_Printf ("Scancode: %c %d  ascii %c %d\n\n", CLAMP(32, scancode, 127), scancode, CLAMP(32, ascii, 127), ascii);
-	if (scancode) {		
+	if (scancode) {
 		// Run Key_Event but tell it to screen out menu/mm/console if in_keymap set.
-		desto = Key_Event (scancode, down, (int) in_keymap.value); 
+		desto = Key_Event (scancode, down, (int) in_keymap.value);
 		if (!desto) return; 	// Console processed everything, so get out.
 		if (!down)  return;		// Keyups only go to game.
-		
+
 		// We are considering passing our scancode to the menu/console.  If it's ascii, don't!
 		if (in_range (32, scancode, 126))
 			return;
@@ -1316,18 +1319,18 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 	//
 	if (!scancode) {
 		// Control key come from scancode only.  Get out.
-		if (!in_range (32, ascii, 126)) 
+		if (!in_range (32, ascii, 126))
 			return;
 
 		// Quake exception.  Under normal cirumstances, this must bring up the menu.
 
 		if (ascii == '`' /* backquote */)
-			return;  
+			return;
 
 		if (ascii == '~' /* tilde */)
-			return; 
+			return;
 
-		
+
 
 
 		// Unacceptable destination.  We only send to console/menu.
@@ -1345,7 +1348,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 		sendkey = ascii;
 		desto = key_dest;
 	}
-	
+
 	// Route it.
 	switch (desto) {
 	case key_message:	Key_Message (sendkey);  break;
@@ -1356,7 +1359,9 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 }
 
 
-static int Key_Event (int key, cbool down, int special)
+static 
+#endif // !PLATFORM_OSX crusty Mac
+int Key_Event (int key, cbool down, int special)
 {
 	const char	*kb;
 	char		cmd[1024];
@@ -1451,8 +1456,6 @@ static int Key_Event (int key, cbool down, int special)
 
 
 	keydown[key] = down;
-	if (keydown[K_SHIFT])
-		down = down;
 
 #ifdef PLATFORM_OSX
 	if (down && (key_dest != key_game || console1.forcedup) && repeatkeys[key])
@@ -1614,7 +1617,11 @@ static int Key_Event (int key, cbool down, int special)
 				c_snprintf2 (cmd, "-%s %i\n", kb + 1, key);
 				Cbuf_AddText (cmd);
 			}
+#ifdef PLATFORM_OSX // Crusty Mac
+			if (keyshift[key] != key)
+#else
 			if (!in_keymap.value && keyshift[key] != key) // International keyboard. Are we still doing this?  I didn't know we were?
+#endif
 			{
 #ifdef SUPPORTS_KEYBIND_FLUSH
 				kb = Key_GetBinding(keyshift[key]); // International keyboard. Are we still doing this?  I didn't know we were?
@@ -1696,7 +1703,11 @@ static int Key_Event (int key, cbool down, int special)
 		return 0;		// other systems only care about key down events
 
 	// USA keymap
+#ifdef PLATFORM_OSX // Crusty Mac
+	if (keydown[K_SHIFT])
+#else
 	if (!special && !in_keymap.value && keydown[K_SHIFT]) // in_keymap 0 only, right?
+#endif // ! PLATFORM_OSX Crusty Mac
 		key = keyshift[key];
 
 	// Let CTRL + (key) combos through to the console/menu, even if we are instructed to filter.
@@ -1712,8 +1723,8 @@ static int Key_Event (int key, cbool down, int special)
 
 	case key_menu:
 		// If we are binding a key, we should send the scancode.
-		
-		if (special && !m_keys_bind_grab) return key_menu; 
+
+		if (special && !m_keys_bind_grab) return key_menu;
 		M_Keydown (key);
 		break;
 
@@ -1753,7 +1764,11 @@ void Key_Release_Keys (cvar_t* var)
 	for (i = 0 ; i < KEYMAP_COUNT_512 ; i++)
 	{
 		if (keydown[i])
+#ifdef PLATFORM_OSX // Crusty Mac
+			Key_Event (i, false, 0 /* not special*/ );
+#else
 			Key_Event_Ex (NO_WINDOW_NULL, i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+#endif // ! PLATFORM_OSX Crusty Mac
 	}
 }
 
@@ -1765,7 +1780,12 @@ void Key_Release_Keys (cvar_t* var)
 void Key_Release_Mouse_Buttons (void)
 {
 	int i; for (i = 0 ; i < INPUT_NUM_MOUSE_BUTTONS ; i ++) {
-		if (keydown[K_MOUSE1 + i])  Key_Event_Ex (NO_WINDOW_NULL, K_MOUSE1 + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+		if (keydown[K_MOUSE1 + i])
+#ifdef PLATFORM_OSX // Crusty Mac
+			Key_Event (i, false, 0 /* not special*/ );
+#else
+			Key_Event_Ex (NO_WINDOW_NULL, K_MOUSE1 + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+#endif // !PLATFORM_OSX Crusty Mac
 	}
 }
 
@@ -1775,12 +1795,14 @@ void Key_SetDest (keydest_e newdest)
 	if (key_dest == newdest)
 		return; // No change
 
+#ifdef PLATFORM_WINDOWS
 	if (key_dest == key_game || newdest == key_game) {
 		// A switch to or away from using scancodes
 		if (in_keymap.value) // 1005
 			WIN_ResetDeadKeys ();
 
 	}
+#endif // PLATFORM_WINDOWS
 
 
 	if (key_dest == key_console || console1.forcedup)

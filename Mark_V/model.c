@@ -981,7 +981,7 @@ void External_Textures_Change_f  (cvar_t* var)
 		}
 	}
 
-	// Handles the alias models
+	// Handles the alias models.  Is supposed to handle sprites.
 	Cache_Flush (NULL);
 
 	Draw_NewGame ();	// Clears scrap
@@ -1994,8 +1994,10 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 				level.teleporter = true, out->flags |= SURF_DRAWTELE;  // *tele ... so that r_wateralpha doesn't affect teleporters.
 			else level.water = true, out->flags |= SURF_DRAWWATER;
 #ifdef GLQUAKE_RENDERER_SUPPORT
-			Mod_PolyForUnlitSurface (out);
-			GL_SubdivideSurface (out);
+			if (!isDedicated) { // Baker: Duh -- GL/DX8 dedicated server.
+				Mod_PolyForUnlitSurface (out);
+				GL_SubdivideSurface (out);
+			}
 #endif // GLQUAKE_RENDERER_SUPPORT
 #ifdef WINQUAKE_RENDERER_SUPPORT
 			for (i = 0;  i < 2; i++)

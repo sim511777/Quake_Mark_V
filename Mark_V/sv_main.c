@@ -1308,10 +1308,10 @@ void SV_Autosave_Think (void)
 		char autosave1[MAX_OSPATH];
 		char autosave0[MAX_OSPATH];
 		int checkit;
-
-		FS_FullPath_From_QPath (autosave2, "a2.sav");
-		FS_FullPath_From_QPath (autosave1, "a1.sav");
-		FS_FullPath_From_QPath (autosave0, "a0.sav");
+#define AUTOSAVE_BASENAME "auto_save_"
+		FS_FullPath_From_QPath (autosave2, AUTOSAVE_BASENAME "2.sav");
+		FS_FullPath_From_QPath (autosave1, AUTOSAVE_BASENAME "1.sav");
+		FS_FullPath_From_QPath (autosave0, AUTOSAVE_BASENAME "0.sav");
 
 		if (File_Exists (autosave2))
 			checkit = File_Delete (autosave2);

@@ -48,7 +48,7 @@ void MSG_WriteShort (sizebuf_t *sb, int c);
 void MSG_WriteLong (sizebuf_t *sb, int c);
 void MSG_WriteFloat (sizebuf_t *sb, float f);
 void MSG_WriteString (sizebuf_t *sb, const char *s);
-void MSG_WriteStringf (sizebuf_t *sb, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));  // Baker
+void MSG_WriteStringf (sizebuf_t *sb, const char *fmt, ...); //__core_attribute__((__format__(__printf__,2,3)));  // Baker
 void MSG_WriteCoord (sizebuf_t *sb, float f);
 void MSG_WriteAngle (sizebuf_t *sb, float f);
 void MSG_WriteAngle16 (sizebuf_t *sb, float f); //johnfitz

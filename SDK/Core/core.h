@@ -70,14 +70,17 @@ zlib1.dll
 		#ifdef PLATFORM_OSX
 			#import <Cocoa/Cocoa.h> // core_mac.h sort of
 			#import <ApplicationServices/ApplicationServices.h>
+#ifndef PLATFORM_OSX // Crusty Mac
 			#import "VidWindow.h"
+#endif // Crusty Mac
 		#endif
 
 		#ifdef PLATFORM_IOS
 			#import <GLKit/GLKit.h>
 			#import <UIKit/UIKit.h>
-
+#ifndef PLATFORM_OSX // Crusty Mac
 			#import "VidUIWindow.h"
+#endif  // Crusty Mac
 		#endif
 
 	#endif
@@ -122,9 +125,14 @@ zlib1.dll
 	#include <fcntl.h>
 #endif // ! PLATFORM_WINDOWS
 
+#ifdef PLATFORM_OSX
+	#include <pthread.h> // TODO: Project level include
+	#define CORE_PTHREADS // Baker: OOF!
+#else
 #ifdef CORE_PTHREADS
 #include "pthreads_core.h"
 #endif // PTHREADS
+#endif
 
 #ifdef PLATFORM_ANDROID
 	#include <android/log.h>
@@ -177,7 +185,7 @@ extern keyvalue_t key_scancodes_table [108];
 #define K_MOUSE_5_MASK_16	16
 
 // Make a 2 value table.
-// Quake name	Core Name	 // 
+// Quake name	Core Name	 //
 // K_INS		= K_INSERT	 // Do this to get the constants the same value assured.
 							 // Remember the Quake constants names don't matter at all
 							// Because K_INS isn't the same as the bind name "INS"
@@ -186,138 +194,142 @@ extern keyvalue_t key_scancodes_table [108];
 // And Core keyvalue_t, fuck that.  Should be what it says, key and value.
 // Multiple table stuff, figure out some other name for it.
 
-typedef enum {
-	__UNUSED_K			= -1,   // Ensure MinGW makes us an int type and not an unsigned type
-	K_INVALID_0			= 0,
-	K_BACKSPACE         = 8,
-	K_TAB               = 9,
-	K_ENTER             = 13,	// Are we not able to detect the keypad enter?  Yes?  No?  Some operating systems yes/some no?  Grrr.
-	K_ESCAPE            = 27,	// Remember that scan code is different from keymap.  It may keymap as enter, but it should scan code as kp_enter
-	K_SPACE             = 32,	// Anyways ...
-	K_APOSTROPHE        = 39,
-	K_COMMA             = 44,
-	K_MINUS             = 45,
-	K_PERIOD            = 46,
-	K_SLASH             = 47,
-	K_SEMICOLON         = 59,
-
-	K_EQUALS            = 61,
-	K_LEFTBRACKET       = 91,
-	K_BACKSLASH         = 92,
-	K_RIGHTBRACKET      = 93,
-	K_GRAVE             = 96,
-
-	K_LCTRL             = 128,
-	K_RCTRL             = 129,
-	K_LALT              = 130,
-	K_RALT              = 131,
-	K_LSHIFT            = 132,
-	K_RSHIFT            = 133,
-	K_LWIN              = 134,
-	K_RWIN              = 135,
-	K_MENU              = 136,
-	K_CAPSLOCK          = 137,
-	K_NUMLOCK           = 138,
-	K_SCROLLLOCK        = 139,
-	K_PAUSE             = 140,
-
-	// RESERVED: K_BREAK           = 141, ?  Or sysreq or who knows.
-
-	K_PRINTSCREEN       = 142,
-	K_INSERT            = 143,
-	K_DELETE            = 144,
-	K_LEFTARROW         = 145,
-	K_RIGHTARROW        = 146,
-	K_UPARROW           = 147,
-	K_DOWNARROW         = 148,
-	K_PAGEUP            = 149,
-	K_PAGEDOWN          = 150,
-	K_HOME              = 151,
-	K_END               = 152,
-	K_F1                = 153,
-	K_F2                = 154,
-	K_F3                = 155,
-	K_F4                = 156,
-	K_F5                = 157,
-	K_F6                = 158,
-	K_F7                = 159,
-	K_F8                = 160,
-	K_F9                = 161,
-	K_F10               = 162,
-	K_F11               = 163,
-	K_F12               = 164,
-
-	K_NUMPAD_0          = 177,		// BEGIN: These may do a keyboard emission ... (Numlock on presumably)
-	K_NUMPAD_1          = 178,
-	K_NUMPAD_2          = 179,
-	K_NUMPAD_3          = 180,
-	K_NUMPAD_4          = 181,
-	K_NUMPAD_5          = 182,
-	K_NUMPAD_6          = 183,
-	K_NUMPAD_7          = 184,
-	K_NUMPAD_8          = 185,
-	K_NUMPAD_9          = 186,
-	K_NUMPAD_MULTIPLY   = 187,
-	K_NUMPAD_PLUS       = 188,
-	K_NUMPAD_SEPARATOR  = 189,
-	K_NUMPAD_MINUS      = 190,
-	K_NUMPAD_PERIOD     = 191,
-	K_NUMPAD_DIVIDE     = 192,		// END: These may do a keyboard emission 
-	K_NUMPAD_ENTER      = 193,
-
-// Plenty of extra space from 194 to 255 for future oddball keys
-
-	K_MOUSE1            = 256,
-	K_MOUSE2            = 257,
-	K_MOUSE3            = 258,
-	K_MOUSE4            = 259,
-	K_MOUSE5            = 260,
-// RESERVED: Possible Extra mouse buttons
-	K_MOUSEWHEELUP      = 264,
-	K_MOUSEWHEELDOWN    = 265,
-// Future, right and up wheel?  A Mac touch pad simulates thoses.  Not sure, a Mac touch pad jumbles the ideas of dragging with scrolling.
-// And we probably wouldn't treat that as a button --- there's no pressed or released state of a gesture.
-
-//	K_MOUSEWHEELLEFT    = 266,
-//	K_MOUSEWHEELRIGHT   = 267,
-	K_JOY1              = 268,
-	K_JOY2              = 269,
-	K_JOY3              = 270,
-	K_JOY4              = 271,
-	K_AUX1              = 272,
-	K_AUX2              = 273,
-	K_AUX3              = 274,
-	K_AUX4              = 275,
-	K_AUX5              = 276,
-	K_AUX6              = 277,
-	K_AUX7              = 278,
-	K_AUX8              = 279,
-	K_AUX9              = 280,
-	K_AUX10             = 281,
-	K_AUX11             = 282,
-	K_AUX12             = 283,
-	K_AUX13             = 284,
-	K_AUX14             = 285,
-	K_AUX15             = 286,
-	K_AUX16             = 287,
-	K_AUX17             = 288,
-	K_AUX18             = 289,
-	K_AUX19             = 290,
-	K_AUX20             = 291,
-	K_AUX21             = 292,
-	K_AUX22             = 293,
-	K_AUX23             = 294,
-	K_AUX24             = 295,
-	K_AUX25             = 296,
-	K_AUX26             = 297,
-	K_AUX27             = 298,
-	K_AUX28             = 299,
-	K_AUX29             = 300,
-	K_AUX30             = 301,
-	K_AUX31             = 302,
-	K_AUX32				= 303,
-// Reserve a block starting at 384 for custom stuff?
-} key_scancode_e;
+#ifdef PLATFORM_OSX // Crusty Mac
+	typedef int key_scancode_e;
+#else
+	typedef enum {
+		__UNUSED_K			= -1,   // Ensure MinGW makes us an int type and not an unsigned type
+		K_INVALID_0			= 0,
+		K_BACKSPACE         = 8,
+		K_TAB               = 9,
+		K_ENTER             = 13,	// Are we not able to detect the keypad enter?  Yes?  No?  Some operating systems yes/some no?  Grrr.
+		K_ESCAPE            = 27,	// Remember that scan code is different from keymap.  It may keymap as enter, but it should scan code as kp_enter
+		K_SPACE             = 32,	// Anyways ...
+		K_APOSTROPHE        = 39,
+		K_COMMA             = 44,
+		K_MINUS             = 45,
+		K_PERIOD            = 46,
+		K_SLASH             = 47,
+		K_SEMICOLON         = 59,
+	
+		K_EQUALS            = 61,
+		K_LEFTBRACKET       = 91,
+		K_BACKSLASH         = 92,
+		K_RIGHTBRACKET      = 93,
+		K_GRAVE             = 96,
+	
+		K_LCTRL             = 128,
+		K_RCTRL             = 129,
+		K_LALT              = 130,
+		K_RALT              = 131,
+		K_LSHIFT            = 132,
+		K_RSHIFT            = 133,
+		K_LWIN              = 134,
+		K_RWIN              = 135,
+		K_MENU              = 136,
+		K_CAPSLOCK          = 137,
+		K_NUMLOCK           = 138,
+		K_SCROLLLOCK        = 139,
+		K_PAUSE             = 140,
+	
+		// RESERVED: K_BREAK           = 141, ?  Or sysreq or who knows.
+	
+		K_PRINTSCREEN       = 142,
+		K_INSERT            = 143,
+		K_DELETE            = 144,
+		K_LEFTARROW         = 145,
+		K_RIGHTARROW        = 146,
+		K_UPARROW           = 147,
+		K_DOWNARROW         = 148,
+		K_PAGEUP            = 149,
+		K_PAGEDOWN          = 150,
+		K_HOME              = 151,
+		K_END               = 152,
+		K_F1                = 153,
+		K_F2                = 154,
+		K_F3                = 155,
+		K_F4                = 156,
+		K_F5                = 157,
+		K_F6                = 158,
+		K_F7                = 159,
+		K_F8                = 160,
+		K_F9                = 161,
+		K_F10               = 162,
+		K_F11               = 163,
+		K_F12               = 164,
+	
+		K_NUMPAD_0          = 177,		// BEGIN: These may do a keyboard emission ... (Numlock on presumably)
+		K_NUMPAD_1          = 178,
+		K_NUMPAD_2          = 179,
+		K_NUMPAD_3          = 180,
+		K_NUMPAD_4          = 181,
+		K_NUMPAD_5          = 182,
+		K_NUMPAD_6          = 183,
+		K_NUMPAD_7          = 184,
+		K_NUMPAD_8          = 185,
+		K_NUMPAD_9          = 186,
+		K_NUMPAD_MULTIPLY   = 187,
+		K_NUMPAD_PLUS       = 188,
+		K_NUMPAD_SEPARATOR  = 189,
+		K_NUMPAD_MINUS      = 190,
+		K_NUMPAD_PERIOD     = 191,
+		K_NUMPAD_DIVIDE     = 192,		// END: These may do a keyboard emission
+		K_NUMPAD_ENTER      = 193,
+	
+	// Plenty of extra space from 194 to 255 for future oddball keys
+	
+		K_MOUSE1            = 256,
+		K_MOUSE2            = 257,
+		K_MOUSE3            = 258,
+		K_MOUSE4            = 259,
+		K_MOUSE5            = 260,
+	// RESERVED: Possible Extra mouse buttons
+		K_MOUSEWHEELUP      = 264,
+		K_MOUSEWHEELDOWN    = 265,
+	// Future, right and up wheel?  A Mac touch pad simulates thoses.  Not sure, a Mac touch pad jumbles the ideas of dragging with scrolling.
+	// And we probably wouldn't treat that as a button --- there's no pressed or released state of a gesture.
+	
+	//	K_MOUSEWHEELLEFT    = 266,
+	//	K_MOUSEWHEELRIGHT   = 267,
+		K_JOY1              = 268,
+		K_JOY2              = 269,
+		K_JOY3              = 270,
+		K_JOY4              = 271,
+		K_AUX1              = 272,
+		K_AUX2              = 273,
+		K_AUX3              = 274,
+		K_AUX4              = 275,
+		K_AUX5              = 276,
+		K_AUX6              = 277,
+		K_AUX7              = 278,
+		K_AUX8              = 279,
+		K_AUX9              = 280,
+		K_AUX10             = 281,
+		K_AUX11             = 282,
+		K_AUX12             = 283,
+		K_AUX13             = 284,
+		K_AUX14             = 285,
+		K_AUX15             = 286,
+		K_AUX16             = 287,
+		K_AUX17             = 288,
+		K_AUX18             = 289,
+		K_AUX19             = 290,
+		K_AUX20             = 291,
+		K_AUX21             = 292,
+		K_AUX22             = 293,
+		K_AUX23             = 294,
+		K_AUX24             = 295,
+		K_AUX25             = 296,
+		K_AUX26             = 297,
+		K_AUX27             = 298,
+		K_AUX28             = 299,
+		K_AUX29             = 300,
+		K_AUX30             = 301,
+		K_AUX31             = 302,
+		K_AUX32				= 303,
+	// Reserve a block starting at 384 for custom stuff?
+	} key_scancode_e;
+#endif  // ! Crusty Mac
 
 typedef double ticktime_t;
 
@@ -373,7 +385,7 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t handle );
 ///////////////////////////////////////////////////////////////////////////////
 
 int System_MessageBox (const char *title, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
-int System_Alert (const char *fmt, ...); __core_attribute__((__format__(__printf__,1,2))) ;
+int System_Alert (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 //  SYSTEM OS: PROCESSES

@@ -27,7 +27,7 @@ void Dedicated_Local_Print (const char *fmt, ...) __core_attribute__((__format__
 
 // Kill this?
 #if !defined(_WIN32) || defined(CORE_SDL)
-void Dedicated_Local_Print (const char *text)
+void Dedicated_Local_Print (const char *fmt, ...)
 {
 
 }

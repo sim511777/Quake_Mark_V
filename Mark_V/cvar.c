@@ -52,7 +52,7 @@ void _Help_f (lparse_t *line)
 	case 2:
 		// That's us!
 		break;
-		
+
 	default:
 		// Your holding it wrong.
 		Con_Printf ("Usage: %s <text> - describe help for command or console variable.", line->args[0]);
@@ -105,12 +105,12 @@ void Cvar_Find_f (lparse_t *line)
 	const int	col_b_8  = 8;
 	int			col_c_length = (console1.buffer_columns - 1) - ( col_a_20 + 1) - (col_b_8 + 1);
 
-	col_c_length = CLAMP(0, col_c_length, sizeof(dashes3) - 1);
+	col_c_length = CLAMP(0, col_c_length, (int) (sizeof(dashes3) - 1)  ) ;
 
 	String_Edit_Repeat (dashes1, sizeof(dashes1), "\x1E", col_a_20);		dashes1[0] = '\x1D';	dashes1[col_a_20 - 1]		= '\x1F';
 	String_Edit_Repeat (dashes2, sizeof(dashes2), "\x1E", col_b_8);			dashes2[0] = '\x1D';	dashes1[col_b_8 - 1]		= '\x1F';
 	String_Edit_Repeat (dashes3, sizeof(dashes3), "\x1E", col_c_length);	dashes3[0] = '\x1D';	dashes1[col_c_length - 1]	= '\x1F';
-	
+
 	// printf("%.*s\n", str_len, str);
 
 	// console1.buffer_columns
@@ -126,8 +126,8 @@ void Cvar_Find_f (lparse_t *line)
 	//Con_SafePrintf ("\nFind \"%s\"\n\n", partial);
 
 	Con_SafePrintf ("%c\n%-*.*s %-*.*s %-*.*s\n", 2 /*bronzy*/,
-		col_a_20, col_a_20, "Name", 
-		col_b_8, col_b_8, "Value", 
+		col_a_20, col_a_20, "Name",
+		col_b_8, col_b_8, "Value",
 		col_c_length, col_c_length, "Help");
 
 	//Con_SafePrintf ("%Name            Value    Help\n");//, 2 /*bronzy cheat*/ );
@@ -136,15 +136,15 @@ void Cvar_Find_f (lparse_t *line)
 	if (1) { // Commands
 		extern cmd_function_t	*cmd_functions;
 		cmd_function_t	*cmd;
-		
+
 		for (cmd = cmd_functions ; cmd ; cmd = cmd->next)
 		{
 			if (partial &&  !strcasestr(cmd->name, partial) && !strcasestr(cmd->description, partial))
 				continue;
 
-			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n", 
-				col_a_20, col_a_20, cmd->name, 
-				col_b_8, col_b_8, "command", 
+			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n",
+				col_a_20, col_a_20, cmd->name,
+				col_b_8, col_b_8, "command",
 				col_c_length, col_c_length, cmd->description);
 
 			count++;
@@ -160,9 +160,9 @@ void Cvar_Find_f (lparse_t *line)
 			if (partial && !strcasestr(cvar->name, partial) && !strcasestr(cvar->description, partial))
 				continue;
 
-			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n", 
-				col_a_20, col_a_20, cvar->name, 
-				col_b_8, col_b_8, cvar->string, 
+			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n",
+				col_a_20, col_a_20, cvar->name,
+				col_b_8, col_b_8, cvar->string,
 				col_c_length, col_c_length, cvar->description);
 			count ++;
 		}
@@ -248,7 +248,7 @@ void Cvar_Inc_f (lparse_t *line)
 
 // Baker: Added
 #define COUNT_10 10
-static float saved_values[COUNT_10]; 
+static float saved_values[COUNT_10];
 
 void Cvar_ValSave_f (lparse_t *line)
 {
@@ -258,7 +258,7 @@ void Cvar_ValSave_f (lparse_t *line)
 	int slotnum;
 	switch (line->count) {
 	default:
-	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d> : Save a cvar value to slot\n", line->args[0], COUNT_10);  
+	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d> : Save a cvar value to slot\n", line->args[0], COUNT_10);
 			for (slotnum = 0; slotnum < COUNT_10; slotnum ++)
 				Con_Printf ("Slot %2d: %g\n", slotnum, saved_values[slotnum]  );
 			break;
@@ -286,7 +286,7 @@ void Cvar_ValLoad_f (lparse_t *line)
 	int slotnum;
 	switch (line->count) {
 	default:
-	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d>  : Set cvar value from slot value\n", line->args[0], COUNT_10);  
+	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d>  : Set cvar value from slot value\n", line->args[0], COUNT_10);
 			for (slotnum = 0; slotnum < COUNT_10; slotnum ++)
 				Con_Printf ("Slot %2d: %g\n", slotnum, saved_values[slotnum]  );
 			break;
@@ -460,7 +460,7 @@ Cvar_Init -- johnfitz
 
 void Cvar_Init (void)
 {
-	Cmd_AddCommands (Cvar_Init); 
+	Cmd_AddCommands (Cvar_Init);
 }
 
 //==============================================================================
@@ -905,7 +905,7 @@ void Cvar_Register (cvar_t *variable)
 
 // copy the value off, because future sets will Z_Free it
 	c_strlcpy (value, variable->string);
-	
+
 //	variable->default_string = NULL;  // No keep!  Nov
 
 // Don't unregister cvars or do we?
@@ -953,7 +953,7 @@ Handles variable inspection and changing from the console
 cbool	Cvar_Command (cbool src_server, cvar_t *var, lparse_t *line)
 #endif // SUPPORTS_CUTSCENE_PROTECTION
 {
-#if 0 
+#if 0
 	cvar_t			*v;
 
 // check variables
@@ -1141,12 +1141,12 @@ extern void GL_Fullbrights_f (cvar_t *var);
 extern void GL_Overbright_f (cvar_t *var);
 extern void Host_Callback_Notify (cvar_t *var);
 extern void Host_Changelevel_Required_Msg (cvar_t *var);
-extern void Max_Edicts_f (cvar_t *var); 
+extern void Max_Edicts_f (cvar_t *var);
 extern void Mod_Flags_Refresh_f (cvar_t *var);
-extern void R_PolyBlendChanged_f (cvar_t *var);  
+extern void R_PolyBlendChanged_f (cvar_t *var);
 extern void R_SetClearColor_f (cvar_t *var);
 //extern void R_VisChanged (cvar_t *var);
-extern void R_SetParticleTexture_f (cvar_t *var); 
+extern void R_SetParticleTexture_f (cvar_t *var);
 //extern void R_VisChanged (cvar_t *var);
 extern void SCR_Conwidth_f (cvar_t *var);
 extern void R_SetClearColor_f (cvar_t *var);

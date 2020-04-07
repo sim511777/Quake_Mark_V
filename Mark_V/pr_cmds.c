@@ -283,8 +283,18 @@ static void PF_setmodel (void)
 	if (mod)
 	//johnfitz -- correct physics cullboxes for bmodels
 	{
-		if (mod->type == mod_brush)
+		//const char *modelname = PR_GetString(m);
+		if (mod->type == mod_brush && sv.use_old_setmodel) {
+			// Is this necessary.  Don't know.  I think it is.
+			// I think the Malice d8 banbody up the yellow elevator
+			// won't show with just the alias model piece.
+			// But I can't quite remember and I know this is in
+			// The original WinQuake which isn't using clipmins
+			SetMinMaxSize (e, mod->mins, mod->maxs, true);
+		}
+		else if (mod->type == mod_brush) {
 			SetMinMaxSize (e, mod->clipmins, mod->clipmaxs, true);
+		}
 		else if (mod->type == mod_alias && sv.use_old_setmodel) { // Baker
 			// Allegedly this should allow Q-Rally to play right.
 			// Haven't tested it.

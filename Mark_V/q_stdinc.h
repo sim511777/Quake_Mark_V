@@ -204,11 +204,6 @@ typedef int	ssize_t;
 /* argument format attributes for function
  * pointers are supported for gcc >= 3.1
  */
-#if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 0))
-#define	__core_attribute__	__core_attribute__
-#else
-#define	__core_attribute__(x)
-#endif
 
 #if defined(_MSC_VER) && !defined(__cplusplus)
 #define inline __inline

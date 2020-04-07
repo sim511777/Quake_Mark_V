@@ -578,55 +578,58 @@ void SCR_DrawFPS (void)
 		oldframecount = cl.r_framecount;
 	}
 
-	if (cl.worldmodel && scr_viewsize.value >= 100 && (scr_showfps.value || scr_showpos.value || (sb_showscores && (cls.demorecording || cl_autodemo.value) ) || scr_showspeed.value)) {
-		char			st[64];
-		int				x, y = 12;
-		
-		if (sb_showscores && (cls.demorecording || cl_autodemo.value) ) {
-			Draw_SetCanvas (CANVAS_TOPLEFT);
-			if ( cls.demorecording) {
-				const char *demo_short_name = File_URL_SkipPath (cls.demo_url);
-				c_snprintf2 (st, "%c %s", 139, demo_short_name);
-			} else {
-				c_strlcpy (st, "No demo recording");
+	if (cl.worldmodel && scr_viewsize.value >= 100) {
+		cbool display_demo = sb_showscores && (cls.demorecording || cl_autodemo.value);
+		if (scr_showfps.value || scr_showpos.value || display_demo || scr_showspeed.value) {
+			char			st[64];
+			int				x, y = 12;
+			
+			if (sb_showscores && (cls.demorecording || cl_autodemo.value) ) {
+				Draw_SetCanvas (CANVAS_TOPLEFT);
+				if ( cls.demorecording) {
+					const char *demo_short_name = File_URL_SkipPath (cls.demo_url);
+					c_snprintf2 (st, "%c %s", 139, demo_short_name);
+				} else {
+					c_strlcpy (st, "No demo recording");
+				}
+				x = 8; // 320 - 8 - (strlen(st) * 8);
+				Draw_StringEx (x, y, st);  // y += 8;
 			}
-			x = 8; // 320 - 8 - (strlen(st) * 8);
-			Draw_StringEx (x, y, st);  // y += 8;
-		}
 
-		Draw_SetCanvas (CANVAS_TOPRIGHT);
-		
-		if (scr_showpos.value) {
-			c_snprintf3 (st, "@ %3.0f %3.0f %3.0f", 
-				cl_entities[cl.viewentity_player].origin[0], 
-				cl_entities[cl.viewentity_player].origin[1], 
-				cl_entities[cl.viewentity_player].origin[2]);
-			x = 320 - 8 - (strlen(st) * 8);
-			Draw_String (x, y, st);  y += 8;
-		}
+			Draw_SetCanvas (CANVAS_TOPRIGHT);
+			
+			if (scr_showpos.value) {
+				c_snprintf3 (st, "@ %3.0f %3.0f %3.0f", 
+					cl_entities[cl.viewentity_player].origin[0], 
+					cl_entities[cl.viewentity_player].origin[1], 
+					cl_entities[cl.viewentity_player].origin[2]);
+				x = 320 - 8 - (strlen(st) * 8);
+				Draw_String (x, y, st);  y += 8;
+			}
 
-		if (scr_showspeed.value) {
-			vec3_t	vel			= {cl.velocity[0], cl.velocity[1], 0};
-			float	speed		= VectorLength (vel);
-			float	vspeed		= cl.velocity[2];
+			if (scr_showspeed.value) {
+				vec3_t	vel			= {cl.velocity[0], cl.velocity[1], 0};
+				float	speed		= VectorLength (vel);
+				float	vspeed		= cl.velocity[2];
 
-			c_snprintf (st, "speed: %4.0f", speed);
-			x = 320 - 8 - (strlen(st) * 8);
-			Draw_String (x, y, st);  y += 8;
-		}
+				c_snprintf (st, "speed: %4.0f", speed);
+				x = 320 - 8 - (strlen(st) * 8);
+				Draw_String (x, y, st);  y += 8;
+			}
 
 
-		if (scr_showfps.value) {
-			c_snprintf (st, "%4.0f", lastfps);
-			x = 320 - 8 - (strlen(st) * 8);
-			Draw_String (x, y, st);  y += 8;
-		}
+			if (scr_showfps.value) {
+				c_snprintf (st, "%4.0f", lastfps);
+				x = 320 - 8 - (strlen(st) * 8);
+				Draw_String (x, y, st);  y += 8;
+			}
 
 
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		glquake_scr_tileclear_updates = 0;
+			glquake_scr_tileclear_updates = 0;
 #endif // GLQUAKE_RENDERER_SUPPORT
+		}
 	}
 
 }

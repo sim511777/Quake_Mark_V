@@ -85,8 +85,9 @@ keyvalue_t key_scancodes_table [108] = {
 	{ "KP_MINUS",       K_NUMPAD_MINUS      },
 	{ "KP_PERIOD",      K_NUMPAD_PERIOD     },
 	{ "KP_DIVIDE",      K_NUMPAD_DIVIDE     },
+#if 0 // Disallow, I think - Build 1010
 	{ "KP_ENTER",		K_NUMPAD_ENTER		},	// Emission!!!!
-
+#endif
 	{ "MOUSE1",         K_MOUSE1            },
 	{ "MOUSE2",         K_MOUSE2            },
 	{ "MOUSE3",         K_MOUSE3            },
@@ -316,7 +317,11 @@ void Input_Mouse_Button_Event (int mstate)
 			cbool button_released = !(mstate & button_bit) &&  (inps.mouse_old_button_state & button_bit);
 
 			if (button_pressed || button_released) {
+#ifdef PLATFORM_OSX // Crusty Mac
+				Key_Event (K_MOUSE1 + i, button_pressed ? true : false, 0 /*not special*/);
+#else // Crusty Mac ^^
 				Key_Event_Ex (NO_WINDOW_NULL, K_MOUSE1 + i, button_pressed ? true : false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+#endif
 			}
 				
 		}

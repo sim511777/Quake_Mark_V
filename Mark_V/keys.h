@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __KEYS_H__
 #define __KEYS_H__
 
+#ifdef PLATFORM_OSX // Crusty Mac
+	#include "keys_mac_old.h"
+#endif // Crusty Mac
 
 #ifdef QUAKE_GAME
 
@@ -92,7 +95,11 @@ void Key_Release_Mouse_Buttons (void);
 //#define K_ALT_MASK_4		4
 //#define K_COMMAND_MASK_8	8
 
-void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, int unicode, int shift); // Shift is bits
+#ifdef PLATFORM_OSX // Crusty Mac
+	int Key_Event (int key, cbool down, int special);
+#else // Crusty Mac ^^
+	void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, int unicode, int shift); // Shift is bits
+#endif
 	
 
 

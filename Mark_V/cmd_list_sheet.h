@@ -138,7 +138,7 @@ CMD_DEF (CL_Init     , DEP_CLIENT  , "setpos"                    , CL_Setpos_f		
 CMD_DEF (CL_Init     , DEP_CLIENT  , "tracepos"                  , CL_Tracepos_f			, "Display impact point of trace along VPN."			) //johnfitz
 CMD_DEF (CL_Init     , DEP_CLIENT  , "viewpos"                   , CL_Viewpos_f				, "Show current position and angles."			) //johnfitz
 CMD_DEF (CL_Init     , DEP_CLIENT  , "r_pos"                     , CL_RPos_Legacy_f			, "Use scr_showpos instead."			) //johnfitz
-CMD_DEF (CL_Init     , DEP_CLIENT  , "hdfolder"                  , HD_Folder_f				, "High definition content replacement folder.  Example: \"hd_folder hires\" would look for content replacement in c:\\quake\\hires\\ on Windows, if Quake were installed at c:\\Quake\\."			) //johnfitz
+CMD_DEF (CL_Init     , DEP_CLIENT  , "hdfolder"                  , HD_Folder_f				, "High definition content replacement folder.  Example: \"hdfolder hires\" would look for content replacement in c:\\quake\\hires\\ on Windows, if Quake were installed at c:\\Quake\\."			) //johnfitz
 
 CMD_DEF (M_Init      , DEP_CLIENT  , "menu_keys"                 , M_Menu_Keys_f			, "Display the key configuration menu."			)
 CMD_DEF (M_Init      , DEP_CLIENT  , "menu_load"                 , M_Menu_Load_f			, "Display the load menu for saved games."			)
@@ -177,10 +177,12 @@ CMD_DEF (Cmd_Init    , DEP_HOST__  , "wait"                      , Cmd_Wait_f			
 CMD_DEF (NET_Init    , DEP_HOST__  , "net_stats"                 , NET_Stats_f				, "Display network statistics."			)
 
 // new
+#ifdef INTERNAL_OR_FUTURE_COMMANDS // Don't confuse users with broken stuff.
 CMD_DEF (NET_Init    , DEP_HOST__  , "ban"						 , NET_Ban_f				, "Ban by player #")
 CMD_DEF (NET_Init    , DEP_HOST__  , "banip"                     , Admin_Ban_Ip_f			, "Ban by ip"   )
 CMD_DEF (NET_Init    , DEP_HOST__  , "banlist"                   , Admin_Ban_List_f		    , "List adverse actions" )
 CMD_DEF (NET_Init    , DEP_HOST__  , "whitelist"                 , Admin_White_List_f		, "List adverse actions" )
+#endif // INTERNAL_OR_FUTURE_COMMANDS
 
 CMD_DEF (NET_Init    , DEP_HOST__  , "kick"                      , Host_Kick_f				, "Kick a player")
 CMD_DEF (NET_Init    , DEP_HOST__  , "mute"                      , Admin_Mute_f				, "Mute by player #")
@@ -277,7 +279,7 @@ CMD_DEF (Entity_Inspector_Init, DEP_CLIENT  , "tool_inspector"   , Tool_Inspecto
 CMD_DEF (TexturePointer_Init, DEP_CLIENT  , "tool_texturepointer", Texture_Pointer_f		, "Toggle use of graphical texture pointer.  Looking at map surfaces displays texture name."			)
 #endif // GLQUAKE_RENDERER_SUPPORT
 
-CMD_DEF (COM_InitFilesystem, DEP_CLIENT  , "exists"             , COM_Exists_f				, "Internal command."			)
+
 CMD_DEF (COM_InitFilesystem, DEP_CLIENT  , "path"               , COM_Path_f				, "Display information about the current path locations used by the game."			)
 
 
@@ -289,19 +291,24 @@ CMD_DEF (Sky_Init   , DEP_CLIENT  , "sky"                       , Sky_SkyCommand
 CMD_DEF (CDAudio_Init,DEP_CLIENT  , "cd"                        , CD_f						, "Control the playback of music from the CD."			) // Needs to be available
 CMD_DEF (CDAudio_Init,DEP_CL_MP3  , "setmusic"                  , Set_Music_f				, "Internal experimentation command."			) // Needs to be available
 
-#ifndef SERVER_ONLY
+// Doesn't hurt anybody
+CMD_DEF (Utilities_Init, DEP_HOST__  , "dir"                    , Dir_Command_f				, "Displays entire file tree of the current game directory."			)
+CMD_DEF (Utilities_Init, DEP_HOST__  , "install"                , Install_Command_f				, "Install a single player release by gamedir name from the internet."			)
+CMD_DEF (Utilities_Init, DEP_HOST__  , "uninstall"              , UnInstall_Command_f				, "Uninstall a single player release by gamedir."			)
+#ifdef INTERNAL_OR_FUTURE_COMMANDS // Don't confuse users with broken stuff.
+	#ifndef SERVER_ONLY
+CMD_DEF (COM_InitFilesystem, DEP_CLIENT  , "exists"             , COM_Exists_f				, "Internal command."			)
 CMD_DEF (Utilities_Init, DEP_HOST__  , "pak"                    , Pak_Command_f				, "Internal experimentation command."			)
 CMD_DEF (Utilities_Init, DEP_HOST__  , "zip"                    , Zip_Command_f				, "Internal experimentation command."			)
-CMD_DEF (Utilities_Init, DEP_HOST__  , "dir"                    , Dir_Command_f				, "Internal experimentation command."			)
-CMD_DEF (Utilities_Init, DEP_HOST__  , "install"                , Install_Command_f				, "Install a single player release by gamedir name from the internet."			)
+
 CMD_DEF (Utilities_Init, DEP_HOST__  , "servefiles"             , ServeFile_Command_f				, "Internal experimentation command."			)
 CMD_DEF (Utilities_Init, DEP_HOST__  , "shutdown"               , ServeFile_Shutdown_Command_f				, "Internal experimentation command."			)
 CMD_DEF (Utilities_Init, DEP_HOST__  , "getfile"                , GetFile_Command_f				, "Internal experimentation command."			)
-CMD_DEF (Utilities_Init, DEP_HOST__  , "uninstall"              , UnInstall_Command_f				, "Uninstall a single player release by gamedir."			)
+
 //CMD_DEF (Utilities_Init, DEP_HOST__  , "opend"                    , OpenD_Command_f				, ""			)
 //CMD_DEF (Utilities_Init, DEP_HOST__  , "saved"                    , SaveD_Command_f				, ""			)
-#endif // ! SERVER_ONLY
-
+	#endif // ! SERVER_ONLY
+#endif  // INTERNAL_OR_FUTURE_COMMANDS
 
 
 

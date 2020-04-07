@@ -74,8 +74,8 @@ void VID_Local_AddFullscreenModes (void)
         vmode_t test = { MODE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], 32};
     
         cbool bpp_ok     = true;
-        cbool width_ok   = INBOUNDS (MIN_MODE_WIDTH, (int)[displayMode width], MAX_MODE_WIDTH);
-        cbool height_ok  = INBOUNDS (MIN_MODE_HEIGHT, (int)[displayMode height], MAX_MODE_HEIGHT);
+        cbool width_ok   = in_range (MIN_MODE_WIDTH, (int)[displayMode width], MAX_MODE_WIDTH);
+        cbool height_ok  = in_range (MIN_MODE_HEIGHT, (int)[displayMode height], MAX_MODE_HEIGHT);
         cbool qualified  = (bpp_ok && width_ok && height_ok);
 
         if (qualified && !VID_Mode_Exists(&test, NULL) )
@@ -400,10 +400,41 @@ cbool VID_Local_SetMode (int modenum)
 #if 1	
 	// Find best integral factor, set both the x and the y
 
-	for (vid.stretch_x = 1; vid.modelist[modenum].width  / vid.stretch_x > WINQUAKE_MAX_WIDTH ; vid.stretch_x ++);
-	for (vid.stretch_y = 1; vid.modelist[modenum].height / vid.stretch_y > WINQUAKE_MAX_HEIGHT; vid.stretch_y ++);
+	for (vid.stretch_x = 1; vid.modelist[modenum].width  / vid.stretch_x > WINQUAKE_MAX_WIDTH_3000 ; vid.stretch_x ++);
+	for (vid.stretch_y = 1; vid.modelist[modenum].height / vid.stretch_y > WINQUAKE_MAX_HEIGHT_1080; vid.stretch_y ++);
 
+#if 1 // Too much of hassle for right now.
 	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y);
+
+#else
+	vid.stretch_old_cvar_val = (int)vid_sw_stretch.value; // This isn't the actual stretch, but the cvar value attempted.
+	// Ok we need to validate this.
+	// Let's say I want 4.  I can't have 4 in 640x480.  /320  /240  highx = (int)(vid.modelist[modenum].width / 320);
+
+	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y); // Take the larger of the 2.  Lowest it can be.
+	{
+		int high_x   = (int)(vid.modelist[modenum].width  / 320);
+		int high_y   = (int)(vid.modelist[modenum].height / 240);
+		int high_any = c_min (high_x, high_y);
+
+		//int stretch_try = vid.stretch_old_cvar_val;
+		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
+		
+		switch (stretch_try) {
+		case 0:	stretch_try = 1; break;
+		case 2:	stretch_try = 9999; break;
+		case 1:	stretch_try = (int)(high_any / 2.0 + 0.5); break;
+		}
+
+		if (stretch_try > high_any)
+			stretch_try = high_any;
+
+		if (stretch_try < vid.stretch_x)
+			stretch_try = vid.stretch_x;
+
+		vid.stretch_x = vid.stretch_y = stretch_try;
+	}
+#endif
 	vid.conwidth  = vid.modelist[modenum].width  / vid.stretch_x;
 	vid.conheight  = vid.modelist[modenum].height  / vid.stretch_y;
 

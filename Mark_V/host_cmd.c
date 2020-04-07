@@ -200,9 +200,9 @@ void HD_Folder_f (lparse_t *line)
 			return;
 		}
 #endif
-		// Should be ok		
+		// Should be ok
 	} while (0);
-	
+
 	Cvar_SetQuick (&hd_folder, new_basepath);
 	Con_SafePrintf ("HD folder set to \"%s\".\n", hd_folder.string);
 
@@ -255,7 +255,7 @@ int Host_Gamedir_Change (const char *gamedir_new, const char *new_hud_typestr, c
 force_only:
 	// If we aren't receiving this via connected signon switch
 	// then kill the server.
-	
+
 	if (liveswitch == false)
 	{
 		//Kill the server
@@ -293,7 +293,7 @@ force_only:
 	if (!isDedicated && hd_folder.string[0] && HD_Folder_Ok (/* editing it maybe !*/(char *) hd_folder.string)) {
 		char		this_qpath[MAX_QPATH_64];
 		const char	*cursor = hd_folder.string;
-			
+
 		while (  (cursor = String_Get_Word (cursor, ",", this_qpath, sizeof(this_qpath)))  ) {
 			char folder_url[MAX_OSPATH];
 			// Construct the full url
@@ -301,14 +301,14 @@ force_only:
 			if (File_Exists (folder_url) && File_Is_Folder(folder_url)) {
 				// It's going to put screenshots and configs and demos in there.
 				// Needs to be a read only folder, though.  I think we are fine.  We write to com_gamedir.
-				
+
 				com_modified = true;
 				COM_AddGameDirectory (this_qpath, true /*hd only*/);
 			}
 			else {
 				extern cbool in_hdfolder_cmd;
 				if (in_hdfolder_cmd)
-					Con_SafePrintf ("Folder \"%s\" does not exist.\n", folder_url); 
+					Con_SafePrintf ("Folder \"%s\" does not exist.\n", folder_url);
 			}
 
 		}
@@ -320,7 +320,7 @@ force_only:
 #endif // SUPPORTS_NEHAHRA
 
 
-	
+
 	Keys_Flush_ServerBinds ();		// Flush server keybinds.  sv_gameplayfix_alias_flush could be set to 0, which means we must do it here.
 	Cmd_Unalias_ServerAliases ();	// Flush server keybinds.  sv_gameplayfix_binds_flush could be set to 0, which means we must do it here.
 
@@ -467,7 +467,7 @@ void Host_Status_f (lparse_t *line)
 		if (ipv4Available) print_fn ("ipv4:    %s:%d\n", my_ipv4_address, net_hostport);
 		if (ipv6Available)	print_fn ("ipv6:    %s:%d\n", my_ipv6_address, net_hostport);
 	}
-		
+
 	print_fn ("map:     %s\n", sv.name);
 	print_fn ("players: %d active (%d max)\n\n", net_activeconnections, svs.maxclients_public); // Because we are telling them the cap
 	for (j=0, client = svs.clients ; j < svs.maxclients_internal ; j++, client++) // Because we can now change the cap in-game.
@@ -745,7 +745,7 @@ void Host_Freezeall_f (lparse_t *line)
 	if (pr_global_struct->deathmatch && !host_client->privileged) {
 		// Allow freezeall in deathmatch if just 1 player, allows debugging.
 		// Or sv_cheats -1 or 1.
-		if (svs.maxclients_internal > 1 && sv.disallow_minor_cheats) 
+		if (svs.maxclients_internal > 1 && sv.disallow_minor_cheats)
 			return;
 	}
 
@@ -869,7 +869,7 @@ void Host_Map_f (lparse_t *line)
 			Con_Printf ("\n");
 			Con_Printf ("Sky key:         %s\n", level.sky_key);
 			Con_Printf ("Fog key:	      %s\n", level.fog_key);
-			
+
 			Con_Printf ("Skyfog key:      %s\n", level.is_skyfog		? String_Write_NiceFloatString(buf, sizeof(buf), level.skyfog)		: "" );
 			Con_Printf ("Lava key:        %s\n", level.is_lavaalpha	? String_Write_NiceFloatString(buf, sizeof(buf), level.lavaalpha)	: "" );
 			Con_Printf ("Slime key:       %s\n", level.is_slimealpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.slimealpha)	: "" );
@@ -1038,13 +1038,13 @@ void Host_Reconnect_f (lparse_t *unused)
 		SCR_EndLoadingPlaque (); // reconnect happens before signon reply #4
 		return;
 	}// Fixes? else if (cls.state == ca_disconnected)
-	
+
 	{
 		if (!unused || unused->count != REAL_CONNECT_NEG_1) { // Dear Lord ... Why must it be so fooey.
 			// Prevent begin loading from begin called if already called.
 			if (!in_load_game)
 				SCR_BeginLoadingPlaque_Force_Transition ();
-			
+
 		}
 		cls.signon = 0;		// need new connection messages
 	}
@@ -1155,7 +1155,7 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 {
 	static char	savegame_name[MAX_OSPATH];
 	FILE	*f;
-	
+
 	// If the server is running multi-player, a different sv_progs.dat or has coop or deathmatch set, use version 6.
 	// Remember, you can set coop 1 even in single player and a few single player mods use "deathmatch" to control behaviors.
 	// So our goal is to use a version 6 save for anything that needs extra stuff.
@@ -1179,7 +1179,7 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 	fprintf (f, "%s\n", Host_Savegame_Comment() );
 
 	if (save_version_6) {
-		//  This should be enough for coop and typical deathmatch.  
+		//  This should be enough for coop and typical deathmatch.
 		//  Not going to overkill with writing all of them like samelevel, noexit, temp1, saved1, saved2, ...
 		//  Something that fragile isn't our target.
 		char cvar_settings[MAX_CMD_256] = {0};
@@ -1190,19 +1190,19 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 		c_strlcat (cvar_settings, va("%s %s;", "deathmatch",  String_Write_NiceFloatString (buf, sizeof(buf), pr_global_struct->deathmatch)));
 		c_strlcat (cvar_settings, va("%s %s;", pr_teamplay.name,  String_Write_NiceFloatString (buf, sizeof(buf), pr_teamplay.value)));
 		fprintf (f, "%s\n", cvar_settings );
-	}	
-	
+	}
+
 	// NEED MORE HERE
 	{
 		int i, plnum;
 		client_t *player;
-		
+
 		for (plnum = 0, host_client = svs.clients ; plnum < svs.maxclients_internal ; plnum ++) {
 			player = &svs.clients[plnum];
 			for (i = 0 ; i < NUM_SPAWN_PARMS ; i++) {
 				fprintf (f, "%f\n", player->spawn_parms[i]);
 			}
-		}		
+		}
 	}
 	//for (i = 0 ; i < NUM_SPAWN_PARMS ; i++)
 	//	fprintf (f, "%f\n", svs.clients->spawn_parms[i]);
@@ -1380,9 +1380,9 @@ void Host_Loadgame_f (lparse_t *line)
 			c_strlcpy (cvar_settings, tempstr_alloc);
 			free (tempstr_alloc);
 		}
-		
+
 		//fscanf (f, "%s\n", cvar_settings); // Read settings to end of line.
-			
+
 		while (  (cursor = String_Get_Word (cursor, ";", this_setting, sizeof(this_setting)))  ) {
 			if (this_setting[0]) {
 				float fval;
@@ -1392,7 +1392,7 @@ void Host_Loadgame_f (lparse_t *line)
 					break;
 
 				svalue[-1] = 0;
-				
+
 				if (String_Does_Match_Caseless( cvname, "maxplayers")) {
 					int save_maxplayers = atoi (svalue);
 					if (save_maxplayers == 1)
@@ -1406,7 +1406,7 @@ void Host_Loadgame_f (lparse_t *line)
 										"1) Disconnect and set \"maxplayers %d\".\n"
 										"2) Then start a map get all particpants connected.\n"
 										"3) Then load this game!\n"
-										, save_maxplayers);	
+										, save_maxplayers);
 							SCR_EndLoadingPlaque ();
 							return;
 						}
@@ -1431,11 +1431,11 @@ void Host_Loadgame_f (lparse_t *line)
 	SCR_BeginLoadingPlaque_Force_NoTransition ();
 	Key_SetDest (key_game);
 	console1.visible_pct = 0;
-#endif 
+#endif
 	{
 		int i, plnum;
 		client_t *player;
-		
+
 		for (plnum = 0, host_client = svs.clients ; plnum < svs.maxclients_internal; plnum ++) {
 			player = &svs.clients[plnum];
 			for (i = 0 ; i < NUM_SPAWN_PARMS ; i++) {
@@ -1443,7 +1443,7 @@ void Host_Loadgame_f (lparse_t *line)
 				player->spawn_parms[i] = spawn_parms[i];
 				// How do we get them to reconnect?  SV_Spawn should do this
 			}
-		}		
+		}
 	}
 
 
@@ -1466,7 +1466,7 @@ void Host_Loadgame_f (lparse_t *line)
 
 	in_load_game = true;
 	SV_SpawnServer (mapname); // Will clear in_load_game
-	
+
 
 	if (!sv.active)
 	{
@@ -1544,12 +1544,12 @@ void Host_Loadgame_f (lparse_t *line)
 
 	FS_fclose (f);
 
-	if (!multiplayer_load) 
+	if (!multiplayer_load)
 	{
 		//// This is the method for loading a single player game.
 		//for (i = 0 ; i < NUM_SPAWN_PARMS ; i++)
 		//	svs.clients->spawn_parms[i] = spawn_parms[i];
-	
+
 		if (!isDedicated)
 		{
 			in_load_game = true;
@@ -1618,11 +1618,11 @@ void Host_Name_f (lparse_t *line)
 
 #ifdef SUPPORTS_PQ_WORD_FILTER // Baker change
 // TODO: Despace and remove non-alphanumeric and check
-const char* bad_words[] = 
+const char* bad_words[] =
 {
 // Lite bad words are replaced with asterisks
 	"fuck", "f**k",
-	"shit", "s__t", 
+	"shit", "s__t",
 	"butt", "****",
 	"cock", "****",
 	"douche", "******",
@@ -1631,8 +1631,8 @@ const char* bad_words[] =
 	"wetback", "houston",
 	"fukking", "beijing",
 	"fucking", "cheddar",
-	"anus", "snus", 
-	"fag", "fan", 
+	"anus", "snus",
+	"fag", "fan",
 	"fgt", "yam",
 	"faggot", "maddog",
 	"faget", "italy",
@@ -1648,7 +1648,7 @@ const char* bad_words[] =
 	"penis", "sonar",
 	"penus", "sugar",
 	"vagina", "robert",
-	
+
 	NULL, NULL
 };
 
@@ -1656,9 +1656,9 @@ const char* bad_words[] =
 
 char *String_Edit_Normalize_Text (const char *text)
 {
-	static char normalized_buffer[SYSTEM_STRING_SIZE_1024];
-	char *cur = normalized_buffer;
-	
+	static unsigned char normalized_buffer[SYSTEM_STRING_SIZE_1024];
+	unsigned char *cur = normalized_buffer;
+
 	c_strlcpy (normalized_buffer, text);
 
 	for ( ; *cur; cur ++)
@@ -1679,7 +1679,7 @@ char* WordFilter_Check (const char* text)
 {
 	static char new_text[SYSTEM_STRING_SIZE_1024];
 	int i;
-	
+
 	const char *norm_text = String_Edit_Normalize_Text (text);
 	char *curword;
 	cbool replacement = false;
@@ -1697,7 +1697,7 @@ char* WordFilter_Check (const char* text)
 #endif
 			if (replacement == false && (replacement = true) /* evile assignment */)
 				c_strlcpy (new_text, text);
-			
+
 			memcpy (&new_text[replace_offset], bad_words[i + 1], replace_len);
 		}
 	}
@@ -1746,7 +1746,7 @@ void Host_Say (lparse_t *line, cbool teamonly)
 	{
 //		p++;
 		p[strlen(p) - 1] = 0;
-	} 
+	}
 	p++; // Baker, advance forward again since it was a space not a quote.
 
 // turn on color set 1

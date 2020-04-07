@@ -265,7 +265,7 @@ void QMB_TeleportSplash (vec3_t org);
 void QMB_LightningBeam (vec3_t start, vec3_t end);
 
 cbool QMB_FlameModelSetState (entity_t *ent);
-void QMB_StaticBubble (entity_t *ent);
+void QMB_StaticBubble (entity_t *ent, vec3_t origin);
 void QMB_ShamblerCharge (vec3_t org);
 void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end);
 

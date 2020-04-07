@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // Right?  Build level define
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -2485,4 +2487,4 @@ void GL_Bind (gltexture_t *texture)
 	}
 }
 
-
+#endif // GLQUAKE - Build level define.

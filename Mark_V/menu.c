@@ -113,7 +113,7 @@ char		m_return_reason [32];
 #if 0 // Farethee well IPX ...
 #define	IPXConfig		(m_net_cursor == 0)
 #define	TCPIPConfig		(m_net_cursor == 1)
-#endif // End Farethee well IPX ... 
+#endif // End Farethee well IPX ...
 void M_ConfigureNetSubsystem(void);
 
 /*
@@ -2427,23 +2427,23 @@ void M_Preferences_Draw (void)
 	const char *_server_aim = sv_aim.value >= 1.0 ? "Aim Help Off" : "Quake Default";
 	const char *_clock		= scr_clock.value >= 1 ? "Always" : (scr_clock.value ? "Deathmatch Only" : "Never");
 #ifdef GLQUAKE_RENDERER_SUPPORT
-	const char *_scaling	= scr_scaleauto.value > 2 ? "Auto Large" : 
-							  scr_scaleauto.value > 1 ? "Auto Medium": 
-							  scr_scaleauto.value > 0 ? "Auto Small": 
+	const char *_scaling	= scr_scaleauto.value > 2 ? "Auto Large" :
+							  scr_scaleauto.value > 1 ? "Auto Medium":
+							  scr_scaleauto.value > 0 ? "Auto Small":
 							  scr_scaleauto.value < 0 ? "Forced Off" : "User Cvar Control";
 #else
 	const char *_scaling	= "(GL Only)";
 #endif // GLQUAKE_FLASH_BLENDS
-	
-	const char *_statusbar	= scr_viewsize.value  == 110	? "Minimal (QW-ish)": 
-							scr_sbaralpha.value < 1		? "Translucent (GL)": 
+
+	const char *_statusbar	= scr_viewsize.value  == 110	? "Minimal (QW-ish)":
+							scr_sbaralpha.value < 1		? "Translucent (GL)":
 							scr_sbarcentered.value		?   "Centered":  "Quake Default";
-	const char *_effects	= 
+	const char *_effects	=
 #ifdef GLQUAKE_SUPPORTS_QMB // def GLQUAKE_RENDERER_SUPPORT
 		qmb_active.value ?	"JoeQuake (QMB)" :
 #endif // GLQUAKE_SUPPORTS_QMB
 							 !r_lerpmodels.value ?  "Normal + Jerky" : "Normal";
-							  
+
 
 
 	const char *help_text[] =
@@ -2588,7 +2588,7 @@ void M_Preferences_Key (int k)
 			Cvar_SetValueQuick (&r_viewmodel_quake, 1.0);
 			Cvar_ResetQuick (&r_viewmodel_size);
 			Cvar_ResetQuick (&r_viewmodel_offset);
-			
+
 			break;
 		case 2: // We are FuhQuake
 			Cvar_SetValueQuick (&r_viewmodel_quake, 1.0);
@@ -2611,7 +2611,7 @@ void M_Preferences_Key (int k)
 		break;
 
 	case 3: // View Blends
-	
+
 		newval = 0;
 
 			if (v_polyblend_lite.value) newval = 1;
@@ -2640,11 +2640,11 @@ void M_Preferences_Key (int k)
 			Cvar_SetValueQuick (&r_waterwarp, 0);   // Off in WinQuake because is annoying, on in GL
 			break;
 		}
-	
+
 		break;
 
 	case 4: // Bobbing
-		
+
 		newval = 1;
 
 		if (cl_sidebobbing.value) newval = 2;
@@ -2691,7 +2691,7 @@ void M_Preferences_Key (int k)
 			Cvar_ResetQuick (&cl_sidebobbing);
 			break;
 		}
-	
+
 		break;
 
 	case 5: // Flashblend
@@ -2741,7 +2741,7 @@ void M_Preferences_Key (int k)
 			Cvar_ResetQuick (&scr_sbaralpha);
 			Cvar_ResetQuick (&scr_sbarcentered); // Default is 1!!!
 			Cvar_ResetQuick (&scr_viewsize);
-			
+
 			break;
 		case 2: // We are transparent 50%
 			Cvar_SetValueQuick (&scr_sbaralpha, 0.5);
@@ -2767,7 +2767,7 @@ void M_Preferences_Key (int k)
 
 		newval = (!r_lerpmodels.value) ? 0 : 1;
 #endif // Not GLQUAKE_SUPPORTS_QMB
-			
+
 		newval += dir;
 #ifdef GLQUAKE_SUPPORTS_QMB // GLQUAKE_RENDERER_SUPPORT
 		if (newval == -1) newval = 2;
@@ -2853,7 +2853,7 @@ void M_Preferences_Key (int k)
 		Cvar_ResetQuick (&v_polyblend);
 		Cvar_SetValueQuick (&v_polyblend_lite, 1);
 		Cvar_ResetQuick (&r_waterwarp); // Was missing?
-		
+
 #ifdef GLQUAKE_FLASH_BLENDS
 		Cvar_SetValueQuick (&gl_flashblend, 0);
 #endif // GLQUAKE_FLASH_BLENDS
@@ -2975,7 +2975,7 @@ void M_UnbindCommand (const char *command)
 #endif // !SUPPORTS_KEYBIND_FLUSH
 		if (!b)
 			continue;
-		
+
 		if (!strcmp (b, command /*, leng*/) ) // Formerly strncmp, caused "impulse 10" to match "impulse 101", etc.
 			Key_SetBinding (j, "");
 	}
@@ -3018,13 +3018,13 @@ void M_Keys_Draw (void)
 		else M_Print (140 + x + 8, y, "or"); x += 4 /*chars*/ * 8;
 
 		name = Key_KeynumToString (keys[1], key_local_name);
-		
+
 		M_Print (140 + x, y, name); 	x += strlen(name) * 8;
-		
+
 		if (keys[2] == -1)
 			continue;
 		else M_Print (140 + x + 8, y, "or"); x += 4 /*chars*/ * 8;
-		
+
 		name = Key_KeynumToString (keys[2], key_local_name);
 		M_Print (140 + x, y, name); 	x += strlen(name) * 8;
 	}
@@ -3414,10 +3414,10 @@ void M_LanConfig_Key (int key)
 				c_strlcpy (lanConfig_joinname, Clipboard_Get_Text_Line ());
 				// This is a way for non-digits to get into the field
 			}
-			else if (len < sizeof(lanConfig_joinname) - 1 /*room for null*/)
+			else if (len < (int)sizeof(lanConfig_joinname) - 1 /*room for null*/)
 			{
 				lanConfig_joinname[len + 0] = key;
-				lanConfig_joinname[len + 1] = 0;	
+				lanConfig_joinname[len + 1] = 0;
 			}
 		}
 		// Allow paste into port
@@ -3427,12 +3427,12 @@ void M_LanConfig_Key (int key)
 			if ( (key == 'v' || key == 'V') && Key_Ctrl_Down()) {
 				c_strlcpy (lanConfig_portname, Clipboard_Get_Text_Line ());
 			}
-			else if (len <  sizeof(lanConfig_portname) - 1 /* room for null*/) {
+			else if (len <  (int)sizeof(lanConfig_portname) - 1 /* room for null*/) {
 				if (!isdigit(key))
 					break;
 
 				lanConfig_portname[len + 0] = key;
-				lanConfig_portname[len + 1] = 0;	
+				lanConfig_portname[len + 1] = 0;
 			}
 		}
 	}

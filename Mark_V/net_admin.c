@@ -23,6 +23,8 @@
 
 // net_admin.c
 
+// Baker: I'm not fond of the network includes being in here, but I'll live with it for now.
+
 #include <core.h>
 #include "q_stdinc.h"
 #include "arch_def.h"
@@ -342,6 +344,7 @@ void Admin_Init (void)
 //  File Transfer
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "core_net_sys.h"
 #include "net_simple.h"
 
 // Update this anytime someone connects or disconnects.
@@ -519,7 +522,7 @@ void Admin_Game_Files_List_Update_Server (void)
 
 	for (i = 0, s = sv.sound_precache + 1; *s; s++, i++)
 		if (*s)
-			List_Add_No_Case_To_Lower (&rawlist, va("soundz/%s", *s) ); // We are in main thread.  And because threads never use va, this is ok.
+			List_Add_No_Case_To_Lower (&rawlist, /* it was soundz ... on purpse?  on accident? */ va("sound/%s", *s) ); // We are in main thread.  And because threads never use va, this is ok.
 
 	pthread_mutex_lock (&gamefiles_list_lock);
 

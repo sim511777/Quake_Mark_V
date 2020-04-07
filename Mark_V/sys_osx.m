@@ -371,7 +371,7 @@ const char *Dedicated_ConsoleInput (void)
 
     return pText;
 }
-
+#ifdef SERVER_ONLY // Restore me at some point for or fix me.  Baker Nov 2016
 void Dedicated_Local_Print (const char *text)
 {
 #ifdef SERVER_ONLY
@@ -395,7 +395,7 @@ void Dedicated_Local_Print (const char *text)
     FD_UNUSED (fmt);
 #endif // ! SERVER_ONLY
 }
-
+#endif // SERVER_ONLY
 void System_SleepUntilInput (int time)
 {
 	// Nothing?

@@ -107,6 +107,8 @@ void *core_free (const void* ptr)
 #ifdef CORE_SDL
 #include "core_keys_sdl.h"
 #else
-#include "core_keys_win.h"
+	#ifdef PLATFORM_WINDOWS
+		#include "core_keys_win.h"
+	#endif
 #endif
 

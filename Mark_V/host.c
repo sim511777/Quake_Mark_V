@@ -153,7 +153,7 @@ void Host_Error (const char *error, ...)
 	SCR_EndLoadingPlaque ();		// reenable screen updates
 
 	len = strlen(text);
-	if (text[len - 1] != '\n' && len + 1 < sizeof(text)) {
+	if (text[len - 1] != '\n' && len + 1 < (int)sizeof(text)) {
 		// Add a newline to Host_Error if we are printing it and it doesn't have one.
 		// This means we can either have a Host_Error terminated with a \n or not.
 		// System Error is a popup and doesn't need the newline anyway.
@@ -235,7 +235,7 @@ void Host_FindMaxClients (void)
 	else if (svs.maxclients_public > MAX_SCOREBOARD_16)
 		svs.maxclients_public = MAX_SCOREBOARD_16;
 
-	
+
 	svs.maxclients_internal = svs.maxclients_public != 1 ? MAX_SCOREBOARD_16 : 1; // This can be 1 for single player or Max of 16.  No other values.
 	svs.maxclientslimit = MAX_SCOREBOARD_16; // This may as well be a constant now.
 
@@ -981,7 +981,7 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 			size_t bytesread, copysize; byte *data = File_To_Memory_Alloc (retryname, &bytesread);
 			if (!data)
 				return false; // Get out!  We failed.
-			
+
 			// Copy smaller of the size of the buffer -1 or the length of the read
 			copysize = c_min (bytesread, sizeof(config_buffer) - 1);
 			memcpy (config_buffer, data, copysize);
@@ -1012,7 +1012,7 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 		}
 
 		Cvar_SetValueQuick (/*unconst*/(cvar_t *)var, value);
-		
+
 	}
 
 	return found_any_cvars;

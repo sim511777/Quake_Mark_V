@@ -439,7 +439,7 @@ void CL_UpdateTEnts (void)
 				// joe: using koval's [sons]Quake code
 				//b->start[2] += 16; // Baker //cl.crouch;  16 is bad!
 
-				f = max(0, min(1, cl_truelightning.value));
+				f = c_max(0, c_min(1, cl_truelightning.value));
 
 				VectorSubtract (playerbeam_end, cl_entities[cl.viewentity_player].origin, v);
 				v[2] -= 22;		// adjust for view height

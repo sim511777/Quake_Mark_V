@@ -1,3 +1,5 @@
+#ifdef CORE_SDL
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2012 John Fitzgibbons and others
@@ -261,6 +263,6 @@ const char *Dedicated_ConsoleInput (void)
 }
 
 
-
+#endif // CORE_SDL
 
 

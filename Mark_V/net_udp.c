@@ -30,6 +30,13 @@
 #include "quakedef.h"
 #include "net_defs.h"
 
+#if defined(__GNUC__) //&& !defined(PLATFORM_OSX) // Fuck you mingw headers
+//	#define FULLY_SUPPORTS_IPV6
+#else
+	#define FULLY_SUPPORTS_IPV6
+#endif
+
+
 //ipv4 defs
 static sys_socket_t netv4_acceptsocket = INVALID_SOCKET;	// socket for fielding new connections
 static sys_socket_t netv4_controlsocket;
@@ -580,7 +587,7 @@ const char *UDP_AddrToString (struct qsockaddr *addr, cbool masked)
 //	
 //	#endif // !s6_addr
 //	
-#ifndef __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
+#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
 
 	if (addr->qsa_family == AF_INET6)
 	{
@@ -820,7 +827,8 @@ int UDP_SetSocketPort (struct qsockaddr *addr, int port)
 
 static void UDP6_GetLocalAddress (void)
 {
-#ifndef __GNUC__
+#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
+
 	char		buff[MAXHOSTNAMELEN];
 	struct addrinfo hints, *local = NULL;
 
@@ -862,7 +870,8 @@ sys_socket_t UDP6_Init (void)
 	char	buff[MAXHOSTNAMELEN];
 	int	t;
 
-#ifdef __GNUC__
+#ifndef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
+
 	return INVALID_SOCKET;
 #endif // fuck you mingw headers
 
@@ -918,7 +927,7 @@ sys_socket_t UDP6_Init (void)
 
 	broadcastaddrv6.sin6_family = AF_INET6;
 	memset(&broadcastaddrv6.sin6_addr, 0, sizeof(broadcastaddrv6.sin6_addr));
-#ifndef __GNUC__ // Fuck you mingw headers
+#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
 	broadcastaddrv6.sin6_addr.u.Byte[0] = 0xff;
 	broadcastaddrv6.sin6_addr.u.Byte[1] = 0x03;
 	broadcastaddrv6.sin6_addr.u.Byte[15] = 0x01;
@@ -981,7 +990,12 @@ sys_socket_t UDP6_OpenSocket (int port)
 
 	memset(&address, 0, sizeof(address));
 	address.sin6_family = AF_INET6;
+#ifdef PLATFORM_OSX // Crusty Mac .. although is IPv6 issue
+	memcpy (&address.sin6_addr, &bindAddrv6, sizeof(address.sin6_addr));
+#else
 	address.sin6_addr = bindAddrv6;
+#endif
+
 	address.sin6_port = htons((unsigned short)port);
 	if (bind (newsocket, (struct sockaddr *)&address, sizeof(address)) == 0)
 	{
@@ -1039,7 +1053,8 @@ int  UDP6_GetNameFromAddr (struct qsockaddr *addr, char *name, int len)
 // Return 0 on success, -1 on failure
 int UDP6_GetAddrFromName (const char *name, struct qsockaddr *addr)
 {
-#ifndef __GNUC__ // Fuck you mingw headers
+#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
+
 	struct addrinfo *addrinfo = NULL;
 	struct addrinfo *pos;
 	struct addrinfo udp6hint;
@@ -1093,7 +1108,7 @@ int UDP6_GetAddrFromName (const char *name, struct qsockaddr *addr)
 		((struct sockaddr*)addr)->sa_family = 0;
 		for (pos = addrinfo; pos; pos = pos->ai_next)
 		{
-			if (0)//pos->ai_family == AF_INET)
+			if (pos->ai_family == AF_INET) // Uh?  WHY?
 			{
 				memcpy(addr, pos->ai_addr, pos->ai_addrlen);
 				success = true;

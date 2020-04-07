@@ -30,7 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 R_GetSpriteFrame
 ================
 */
-mspriteframe_t *R_GetSpriteFrame (entity_t *currentent)
+// Baker: This function is 100% in gl and winquake
+static mspriteframe_t *R_GetSpriteFrame (entity_t *currentent)
 {
 	msprite_t		*psprite;
 	mspritegroup_t	*pspritegroup;
@@ -87,12 +88,22 @@ void R_DrawSpriteModel (entity_t *e)
 {
 	vec3_t			point, v_forward, v_right, v_up;
 	msprite_t		*psprite;
-	mspriteframe_t	*frame;
+	mspriteframe_t	*sp_frame;
 	float			*s_up, *s_right;
 	float			angle, sr, cr;
 
+#ifdef GLQUAKE_SUPPORTS_QMB
+	if (frame.qmb && e->modelindex == cl_modelindex[mi_bubble] && qmb_bubbles.value) {
+		if (cl.ctime - cl.oldtime) /*reverse time ok */ {
+			QMB_StaticBubble (e, e->origin); // Draw QMB bubble instead.
+		}
+		return; // Now get out!
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
 	//TODO: frustum cull it?
-	frame = R_GetSpriteFrame (e);
+	sp_frame = R_GetSpriteFrame (e);
 	psprite = (msprite_t *)e->model->cache.data;
 
 	switch(psprite->type)
@@ -105,7 +116,7 @@ void R_DrawSpriteModel (entity_t *e)
 		s_right = vright;
 		break;
 	case SPR_FACING_UPRIGHT: //faces camera origin, up is towards the heavens
-		VectorSubtract(currententity->origin, r_origin, v_forward);
+		VectorSubtract(e->origin, r_origin, v_forward);
 		v_forward[2] = 0;
 		VectorNormalizeFast(v_forward);
 		v_right[0] = v_forward[1];
@@ -122,12 +133,12 @@ void R_DrawSpriteModel (entity_t *e)
 		s_right = vright;
 		break;
 	case SPR_ORIENTED: //pitch yaw roll are independent of camera
-		AngleVectors (currententity->angles, v_forward, v_right, v_up);
+		AngleVectors (e->angles, v_forward, v_right, v_up);
 		s_up = v_up;
 		s_right = v_right;
 		break;
 	case SPR_VP_PARALLEL_ORIENTED: //faces view plane, but obeys roll value
-		angle = currententity->angles[ROLL] * M_PI_DIV_180;
+		angle = e->angles[ROLL] * M_PI_DIV_180;
 		sr = sin(angle);
 		cr = cos(angle);
 		v_right[0] = vright[0] * cr + vup[0] * sr;
@@ -151,29 +162,29 @@ void R_DrawSpriteModel (entity_t *e)
 
 	GL_DisableMultitexture();
 
-    GL_Bind(frame->gltexture);
+    GL_Bind(sp_frame->gltexture);
 
 	eglEnable (GL_ALPHA_TEST);
 	eglBegin (GL_TRIANGLE_FAN); //was GL_QUADS, but changed to support r_showtris
 
-	eglTexCoord2f (0, frame->tmax);
-	VectorMA (e->origin, frame->down, s_up, point);
-	VectorMA (point, frame->left, s_right, point);
+	eglTexCoord2f (0, sp_frame->tmax);
+	VectorMA (e->origin, sp_frame->down, s_up, point);
+	VectorMA (point, sp_frame->left, s_right, point);
 	eglVertex3fv (point);
 
 	eglTexCoord2f (0, 0);
-	VectorMA (e->origin, frame->up, s_up, point);
-	VectorMA (point, frame->left, s_right, point);
+	VectorMA (e->origin, sp_frame->up, s_up, point);
+	VectorMA (point, sp_frame->left, s_right, point);
 	eglVertex3fv (point);
 
-	eglTexCoord2f (frame->smax, 0);
-	VectorMA (e->origin, frame->up, s_up, point);
-	VectorMA (point, frame->right, s_right, point);
+	eglTexCoord2f (sp_frame->smax, 0);
+	VectorMA (e->origin, sp_frame->up, s_up, point);
+	VectorMA (point, sp_frame->right, s_right, point);
 	eglVertex3fv (point);
 
-	eglTexCoord2f (frame->smax, frame->tmax);
-	VectorMA (e->origin, frame->down, s_up, point);
-	VectorMA (point, frame->right, s_right, point);
+	eglTexCoord2f (sp_frame->smax, sp_frame->tmax);
+	VectorMA (e->origin, sp_frame->down, s_up, point);
+	VectorMA (point, sp_frame->right, s_right, point);
 	eglVertex3fv (point);
 
 	eglEnd ();

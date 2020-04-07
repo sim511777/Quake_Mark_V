@@ -1,3 +1,5 @@
+#ifdef CORE_SDL
+
 /*
 Copyright (C) 2009-2013 Baker
 
@@ -352,3 +354,5 @@ void VID_Local_Init (void)
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 }
+
+#endif // CORE_SDL

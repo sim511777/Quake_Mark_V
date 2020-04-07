@@ -94,8 +94,13 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 
 	// Baker: On Windows if a user makes a shortcut and doesn't set the "Start In" directory, it won't find the pak files
 	// we will help by silently checking for situation and correcting the directory
-	if (!File_Exists (va ("%s/id1/pak0.pak", host_parms._basedir)) && File_Exists (va ("%s/id1/pak0.pak", executable_directory)) )
-		c_strlcpy (host_parms._basedir, executable_directory); // Copy exe_dir to cwd}
+	//	System_Alert ("Current basedir is \"%s\".", host_parms._basedir);
+	
+	if (!File_Exists (va ("%s/id1/pak0.pak", host_parms._basedir)) && File_Exists (va ("%s/id1/pak0.pak", executable_directory)) ) {
+		// Copy exe_dir to cwd}
+		c_strlcpy (host_parms._basedir, executable_directory); 
+	}  // Right?
+
 
 	host_parms.basedir = host_parms._basedir;
 	host_parms.argc = 1;
@@ -105,6 +110,9 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 	String_Command_String_To_Argv (cmdline, &host_parms.argc, argv, MAX_NUM_Q_ARGVS_50);
 
 	COM_InitArgv (host_parms.argc, host_parms.argv);
+
+	//	System_Alert ("Current final is \"%s\".", host_parms.basedir);
+
 
 	Memory_Init ();
 

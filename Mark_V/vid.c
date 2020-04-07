@@ -723,6 +723,9 @@ void VID_Shutdown (void)
 	vid.initialized = false;
 }
 
+#ifdef GLQUAKE_RENDERER_SUPPORT
+static float vid_texgamma_user_req = 0; // Set back to 0 if changed.  Solely belongs to vid
+#endif // GLQUAKE_RENDERER_SUPPORT
 
 #ifdef GLQUAKE_HARDWARE_GAMMA
 static void VID_Gamma_Table_Make (float gamma, float contrast, unsigned short* ramps)
@@ -780,7 +783,6 @@ void VID_Gamma_Init (void)
 static double hardware_active_enforcer_time_clock = 0;
 static int hardware_enforcer_count = 0;
 
-static float vid_texgamma_user_req = 0; // Set back to 0 if changed.  Solely belongs to vid
 
 
 //#pragma message ("We need to make it so a think here can turn it off if !vid_hardware.gamma && hardware_is_active or vid_hardware,gamma && !hardware_is_active")
@@ -902,38 +904,6 @@ void VID_Gamma_Think (void)
 
 }
 
-void Vid_Gamma_TextureGamma_f (lparse_t *line)
-{
-	float val = atof(line->args[1]), clamped_value = CLAMP(VID_MIN_POSSIBLE_GAMMA, val, VID_MAX_POSSIBLE_GAMMA);
-	extern float texmgr_texturegamma_current;
-
-	if (vid_hardwaregamma.value) {
-		Con_Printf ("Not applicable while vid_hardwaregamma is on.  Current level = %g\n", texmgr_texturegamma_current);
-		return;
-	}
-
-	switch (line->count) {
-	default:	Con_Printf ("Usage: %s <gamma %0.2f to %0.2f> - set gamma level when vid_hardwaregamma is off by baking gamma into textures.\n"
-					"Current text is %g\n", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, texmgr_texturegamma_current);
-				return;				
-			
-	case 2:		if (vid_texgamma_user_req) {
-					Con_Printf ("Last requested texture gamma set never acknowledged\n");
-					return;
-}
-		
-				if (val != clamped_value) {
-					Con_Printf ("gamma %g is out of range (%0.2f to %0.2f), clamping to range = %g\n", 
-						val, (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, clamped_value);
-					val = clamped_value;
-				}
-
-				vid_texgamma_user_req = val;
-				// Now we wait for end of frame for it to take effect.
-	}
-	// Switch num parms texture gamma request end
-}
-
 
 void VID_Gamma_Clock_Set (void)
 {
@@ -1040,6 +1010,46 @@ cbool VID_CheckGamma (void)
 #endif // WINQUAKE_RENDERER_SUPPORT
 
 
+#ifdef GLQUAKE_RENDERER_SUPPORT
+void Vid_Gamma_TextureGamma_f (lparse_t *line)
+{
+
+	float val = atof(line->args[1]), clamped_value = CLAMP(VID_MIN_POSSIBLE_GAMMA, val, VID_MAX_POSSIBLE_GAMMA);
+	extern float texmgr_texturegamma_current;
+
+#ifdef GLQUAKE_HARDWARE_GAMMA
+	if (vid_hardwaregamma.value) {
+		Con_Printf ("Not applicable while vid_hardwaregamma is on.  Current level = %g\n", texmgr_texturegamma_current);
+		return;
+	}
+#endif // GLQUAKE_HARDWARE_GAMMA
+	
+	switch (line->count) {
+	default:	Con_Printf ("Usage: %s <gamma %0.2f to %0.2f> - set gamma level when vid_hardwaregamma is off by baking gamma into textures.\n"
+					"Current text is %g\n", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, texmgr_texturegamma_current);
+				return;				
+			
+	case 2:		if (vid_texgamma_user_req) {
+					Con_Printf ("Last requested texture gamma set never acknowledged\n");
+					return;
+				}
+		
+				if (val != clamped_value) {
+					Con_Printf ("gamma %g is out of range (%0.2f to %0.2f), clamping to range = %g\n", 
+						val, (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, clamped_value);
+					val = clamped_value;
+				}
+
+				vid_texgamma_user_req = val;
+				// Now we wait for end of frame for it to take effect.
+	}
+	// Switch num parms texture gamma request end
+
+	
+}
+#endif // GLQUAKE_RENDERER_SUPPORT
+
+
 /*
 =================
 VID_BeginRendering -- sets values of clx, cly, clwidth, clheight
@@ -1108,10 +1118,10 @@ void VID_EndRendering (void)
 
 #ifdef GLQUAKE_HARDWARE_GAMMA
 	VID_Gamma_Think (); // Baker: Hardware gamma is smart, will self-help and even turn itself off (or on), only when needed
-#endif // GLQUAKE_HARDWARE_GAMMA
 
 	if (!vid_hardwaregamma.value)
-		VID_BrightenScreen ();
+#endif // GLQUAKE_HARDWARE_GAMMA
+		VID_BrightenScreen (); // Doesn't depend on hardware gamma, but rather GL renderer or not.
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 	VID_SwapBuffers ();

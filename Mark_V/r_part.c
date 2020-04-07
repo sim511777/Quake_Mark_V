@@ -1206,14 +1206,14 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 
 cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg)
 {
-// Do we relink entities if paused?  What if connected to a server *and* paused.
-// I hate that scenario.
+#if 0 // Killed.  Bubble replacement now occurs in gl_sprite.c
 	if (ent->modelindex == cl_modelindex[mi_bubble] && qmb_bubbles.value) {
 		// Apparently this isn't optional as there is no way to turn this off.  If QMB is on, this happens.
 		if (!cl.paused && cl.oldtime != cl.time)	// Apparently doing this while paused or otherwise stopped inserts lots of bubbles.
 			QMB_StaticBubble (ent);					// Do we relink entities if paused?  What if connected to a server *and* paused.
 		return true; // Software removal of bubble
 	}
+#endif
 	
 	if (qmb_lightning.value && ent->modelindex == cl_modelindex[mi_shambler]) {
 		// So why is it ok to do this when paused?

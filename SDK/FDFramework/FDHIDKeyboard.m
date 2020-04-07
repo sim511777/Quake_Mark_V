@@ -304,39 +304,39 @@ const UInt8     gInSpecialKey[] =
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      0,                      0,                      K_INS,
-    K_DEL,                  K_HOME,                 0,                      K_END,
-    K_PGUP,                 K_PGDN,                 0,                      0,
+    0,                      0,                      0,                      K_INSERT,
+    K_DELETE,                  K_HOME,                 0,                      K_END,
+    K_PAGEUP,                 K_PAGEDOWN,                 0,                      0,
     K_PAUSE,                0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      K_KP_NUMLOCK,           0,                      0,
+    0,                      K_NUMLOCK,           0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      0,                      K_INS
+    0,                      0,                      K_INSERT
 };
 
 
 
 const UInt8     gInSpecialKeyFn[] =
 {
-    K_PGUP,                 K_PGDN,                 K_HOME,                 K_END,
+    K_PAGEUP,                 K_PAGEDOWN,                 K_HOME,                 K_END,
     K_F1,                   K_F2,                   K_F3,                   K_F4,
     K_F5,                   K_F6,                   K_F7,                   K_F8,
     K_F9,                   K_F10,                  K_F11,                  K_F12,
-    K_F13,                  K_F14,                  K_F15,                  0,
+    0 /*K_F13*/,             0 /*     K_F14*/,      0          /*  K_F15*/,                  0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      0,                      0,                      K_INS,
-    K_DEL,                  K_HOME,                 0,                      K_END,
-    K_PGUP,                 K_PGDN,                 0,                      0,
+    0,                      0,                      0,                      K_INSERT,
+    K_DELETE,                  K_HOME,                 0,                      K_END,
+    K_PAGEUP,                 K_PAGEDOWN,                 0,                      0,
     K_PAUSE,                0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      K_KP_NUMLOCK,           0,                      0,
+    0,                      K_NUMLOCK,           0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      0,                      K_INS
+    0,                      0,                      K_INSERT
 };
 
 
@@ -359,14 +359,14 @@ const UInt8     gInNumPadKey[] =
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
     0,                      0,                      0,                      0,
-    0,                      0 /*KeyPadPeriod*/,     0,                      K_KP_STAR,
-    0,                      K_KP_PLUS,              0,                      0,
+    0,                      0 /*KeyPadPeriod*/,     0,                      K_NUMPAD_MULTIPLY /*K_KP_STAR*/,
+    0,                      K_NUMPAD_PLUS /*K_KP_PLUS*/,              0,                      0,
     0,                      0,                      0,                      0,
-    K_KP_ENTER,             K_KP_SLASH,             K_KP_MINUS,             0,
-    0,                      0 /*KeyPadEqual*/,      K_KP_INS,               K_KP_END,
-    K_KP_DOWNARROW,         K_KP_PGDN,              K_KP_LEFTARROW,         K_KP_5,
-    K_KP_RIGHTARROW,        K_KP_HOME,              0,                      K_KP_UPARROW,
-    K_KP_PGUP
+    K_ENTER /*K_KP_ENTER*/,             K_NUMPAD_PERIOD /*K_KP_SLASH*/,             K_NUMPAD_MINUS /*K_KP_MINUS*/,             0,
+    0,                      0 /*KeyPadEqual*/,      K_NUMPAD_0 /*K_KP_INS*/,               K_NUMPAD_1 /*K_KP_END*/,
+    K_NUMPAD_2 /*K_KP_DOWNARROW*/,         K_NUMPAD_3 /*K_KP_PGDN*/,              K_NUMPAD_4 /*K_KP_LEFTARROW*/,         K_NUMPAD_5,
+    K_NUMPAD_6 /*K_KP_RIGHTARROW*/,        K_NUMPAD_7 /*K_KP_HOME*/,              0,                      K_NUMPAD_8 /*K_KP_UPARROW*/,
+    K_NUMPAD_9 /*K_KP_PGUP*/
 };
 
 

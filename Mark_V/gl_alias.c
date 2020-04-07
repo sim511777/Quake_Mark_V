@@ -339,8 +339,6 @@ void R_DrawAliasModel (entity_t *e)
 
 	if (entalpha < 1)
 	{
-		if (!renderer.gl_texture_env_combine)
-			fb = NULL; // Works fine now!  Oct 22 2016 - formerly overbright = false, but that didn't honor alpha.  This affects mainly Direct3D
 #if 0
 		// I cannot recall why I had done this.  If I recall the rocket launcher looked dumb.
 		// If it does become a problem, we can use Spike's draw with no effect trick (only writes to depth buffer)
@@ -383,6 +381,12 @@ void R_DrawAliasModel (entity_t *e)
 		tx = e->coloredskin;
 	if (!gl_fullbrights.value)
 		fb = NULL;
+
+// Here we go
+	if (entalpha < 1 && vid.direct3d && !renderer.gl_texture_env_combine) {
+		fb = NULL; // Works fine now!  Oct 22 2016 - formerly overbright = false, but that didn't honor alpha.  This affects mainly Direct3D
+		overbright = false; // Added because of .alpha was not very transparent
+	}
 
 	if (!tx)
 		tx = whitetexture; //Baker: Part of missing skins fix

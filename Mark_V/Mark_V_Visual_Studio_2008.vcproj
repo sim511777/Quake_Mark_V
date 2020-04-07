@@ -10346,6 +10346,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\SDK\Core\core_net_sys.h"
+					>
+				</File>
+				<File
 					RelativePath="..\SDK\core\core_opengl.h"
 					>
 				</File>

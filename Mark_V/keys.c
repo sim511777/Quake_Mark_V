@@ -1033,7 +1033,7 @@ void Key_Bindlist_f (void)
 	int	k, count;
 
 	count = 0;
-	for (k = 0; k < KEYMAP_COUNT_512; k ++)
+	for (k = 0; k < (KEYMAP_COUNT_512 - 1) /* -1 because of hard toggle console key*/ ; k ++)
 	{
 		const char *binding = Key_GetBinding (k);
 		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: \"%s\")",  keybindings[k].real) : "";

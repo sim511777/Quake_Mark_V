@@ -52,6 +52,7 @@ static	float	hack_ctr;
 
 
 static cbool movie_is_capturing = false;
+static cbool movie_is_capturing_temp = false;
 cbool	avi_loaded, acm_loaded;
 
 cbool Movie_IsActive (void)
@@ -160,13 +161,15 @@ void Movie_StopPlayback (void);
 
 void Movie_CaptureDemo_f (lparse_t *line)
 {
+	char demoname[MAX_QPATH_64];
+
 	if (line->count != 2)
 	{
 		Con_Printf ("Usage: capturedemo <demoname>\n\nNote: stopdemo will stop video capture\nUse cl_capturevideo_* cvars for codec, fps, etc.\n");
 		return;
 	}
 
-	if (movie_is_capturing)
+	if (movie_is_capturing || movie_is_capturing_temp)
 	{
 		Con_Printf ("Can't capture demo, video is capturing\n");
 		return;
@@ -182,6 +185,12 @@ void Movie_CaptureDemo_f (lparse_t *line)
 	if (!cls.demoplayback)
 		return;
 
+	c_strlcpy (demoname, line->args[1]);
+	// Note: line is about to become stale!!!  If we run a frame, that means additional commands
+	// can stomp all over line!!
+	// We are also potentially opening a hole if the first 2 frames of the demo run a command.
+	// So in many ways this is a bad idea, but let's see what happens here.
+movie_is_capturing_temp = true;
 	{
 		// Due to double buffering
 		// And my hate of capturing the console.
@@ -197,8 +206,8 @@ void Movie_CaptureDemo_f (lparse_t *line)
 			oldtime = newtime;
 		}
 	}
-
-	Movie_Start_Capturing (line->args[1]);
+movie_is_capturing_temp = false;
+	Movie_Start_Capturing (demoname);
 	cls.capturedemo = true;
 
 	if (!movie_is_capturing)

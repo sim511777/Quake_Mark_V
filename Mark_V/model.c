@@ -2164,7 +2164,7 @@ static void Mod_LoadNodes (lump_t *l, int bsp2)
 	else
 		Mod_LoadNodes_S(l);
 
-	Mod_SetParent (loadmodel->nodes, NULL);	// sets nodes and leafs
+	Mod_SetParent (loadmodel->nodes, NULL);	// Spike commented this out?
 }
 
 static void Mod_ProcessLeafs_S (dsleaf_t *in, int filelen)

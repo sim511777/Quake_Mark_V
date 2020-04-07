@@ -445,9 +445,10 @@ typedef struct
 	maliasframedesc_t	frames[1]; // variable sized
 } aliashdr_t;
 
-#define	MAXALIASVERTS	2000	//johnfitz -- was 1024.  Baker: 1024 is GLQuake original limit.  2000 is WinQuake original limit.
+// Baker: Ben Jardrup's engine 3984 //2000	//3985 seems to crash assembler(?)
+#define	MAXALIASVERTS	3984	// johnfitz -- was 1024.  Baker: 1024 is GLQuake original limit.  2000 is WinQuake original limit. Baker 2000->3984
 #define	MAXALIASFRAMES	256
-#define	MAXALIASTRIS	2048	// Baker: Spike uses this but WinQuake renderer seems to not use.  GLQuake structure.
+#define	MAXALIASTRIS	4096	/// Baker 2048 to Ben Jardrup limit of 4096  // Baker: Spike uses this but WinQuake renderer seems to not use.  GLQuake structure.
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 //#define	MAXALIASTRIS	2048 // Have WinQuake check this even though does not use it because is error in GLQuake

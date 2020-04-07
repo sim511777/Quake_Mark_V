@@ -1901,5 +1901,6 @@ void SV_SpawnServer (const char *server)
 			SV_SendServerinfo (host_client);
 
 	Con_DPrintf ("Server spawned.\n");
+	in_load_game = false;
 }
 

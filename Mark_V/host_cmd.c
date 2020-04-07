@@ -1010,6 +1010,7 @@ This is sent just before a server changes levels
 //If signon is 4, that is death or changelevel.  What do we do?  Clear immediately?  But in 0 case, don't
 
 #define REAL_CONNECT_NEG_1 -1
+cbool in_load_game; // Baker: Sheesh
 void Host_Reconnect_f (lparse_t *unused)
 {
 	if (cls.state == ca_disconnected) {
@@ -1034,8 +1035,12 @@ void Host_Reconnect_f (lparse_t *unused)
 	}// Fixes? else if (cls.state == ca_disconnected)
 	
 	{
-		if (!unused || unused->count != REAL_CONNECT_NEG_1) // Dear Lord ... Why must it be so fooey.
-			SCR_BeginLoadingPlaque_Force_Transition ();
+		if (!unused || unused->count != REAL_CONNECT_NEG_1) { // Dear Lord ... Why must it be so fooey.
+			// Prevent begin loading from begin called if already called.
+			if (!in_load_game)
+				SCR_BeginLoadingPlaque_Force_Transition ();
+			
+		}
 		cls.signon = 0;		// need new connection messages
 	}
 }
@@ -1417,11 +1422,11 @@ void Host_Loadgame_f (lparse_t *line)
 
 	}
 
-
+#if 1 // I would prefer this to be here.  It cannot be.   Causes an out of stack space for software renderer.
 	SCR_BeginLoadingPlaque_Force_NoTransition ();
 	Key_SetDest (key_game);
 	console1.visible_pct = 0;
-
+#endif 
 	{
 		int i, plnum;
 		client_t *player;
@@ -1454,7 +1459,9 @@ void Host_Loadgame_f (lparse_t *line)
 		CL_Disconnect ();
 	}
 
-	SV_SpawnServer (mapname);
+	in_load_game = true;
+	SV_SpawnServer (mapname); // Will clear in_load_game
+	
 
 	if (!sv.active)
 	{
@@ -1540,8 +1547,10 @@ void Host_Loadgame_f (lparse_t *line)
 	
 		if (!isDedicated)
 		{
+			in_load_game = true;
 			CL_EstablishConnection ("local");
 			Host_Reconnect_f (NULL);
+			in_load_game = false;
 		}
 	}
 	// End of function

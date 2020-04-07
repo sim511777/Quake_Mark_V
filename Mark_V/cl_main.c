@@ -952,7 +952,7 @@ Add velocity nuking like Quakespasm.
 
 void CL_Setpos_f (lparse_t *line)
 {
-	if (sv.active) 
+	if (!sv.active) 
 		Con_Printf ("Server not active\n");
 	if (!cl.worldmodel || !sv.worldmodel) 
 		Con_Printf ("No map active\n");

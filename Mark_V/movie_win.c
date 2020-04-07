@@ -250,7 +250,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 
 	// initialize video data
 #pragma message ("Video resize should probably be disabled during vid capture")
-	m_video_frame_size = clwidth * clheight * 3;
+	m_video_frame_size = clwidth * clheight * RGB_3;
 #pragma message ("Baker: These should be clwidth, especially with GL -resizable or after blitting is in WinQuake")
 	memset (&bitmap_info_header, 0, sizeof(bitmap_info_header));
 	bitmap_info_header.biSize = sizeof(BITMAPINFOHEADER);
@@ -394,12 +394,12 @@ void Capture_Close (void)
 void Capture_WriteVideo (byte *pixel_buffer)
 {
 	HRESULT	hr;
-	int	size = clwidth * clheight * 3;
+	int	size = clwidth * clheight * RGB_3;
 
 	// check frame size (TODO: other things too?) hasn't changed
 	if (m_video_frame_size != size)
 	{
-		Con_Printf ("ERROR: Frame size changed\n");
+		Con_Printf ("ERROR: Frame size changed: new %d old %d\n", size, m_video_frame_size);
 		return;
 	}
 

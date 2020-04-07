@@ -1176,6 +1176,9 @@ cbool R_MirrorScan_SetMirrorAlpha (void)
 	if (!level.mirror)
 		return false; // Can't!  No need to think about it.
 		
+	if (cl.r_viewleaf->contents == CONTENTS_SOLID) // Pulsar reported
+		return false; // in solid brush ... too bad, so sad ...
+
 	level.is_mirroralpha > 0 ? level.mirroralpha : CLAMP(0, gl_mirroralpha.value, 1.0);
 	alpha_possible = level.is_mirroralpha > 0 ? level.mirroralpha : CLAMP(0, gl_mirroralpha.value, 1.0);
 

@@ -281,46 +281,52 @@ void Cmd_Exec_f (lparse_t *line)
 	}
 
 	#define DEFAULT_CFG_SIZE_1914 1914
-	if (com_filesrcpak == 2 && !isDedicated && com_filesize == DEFAULT_CFG_SIZE_1914 && !strcasecmp (line->args[1], DEFAULT_CFG)) {
-		// Evil additions.
-		//Cbuf_InsertText (f); // Does need newline?  Nope.  Do we add or insert?
-		// What changes are we making?
-		char *soverride =
-						"unalias zoom_in  \n"
-						"unalias zoom_out \n"
-						"alias +zoom_key \"valsave fov 1;valsave sensitivity 2;valsave r_viewmodel_fov 3;r_viewmodel_fov 0;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5; fov 10\" \n"
-						"alias -zoom_key \"mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;valload fov 1;valload sensitivity 2;valload r_viewmodel_fov 3\" \n"
-						"alias +quickgrenade \"-attack;wait;impulse 6;wait;+attack\" \n"
-						"alias -quickgrenade \"-attack;wait;bestweapon 7 8 5 3 4 2 1\" \n"
-//						"alias bestsafe \"bestweapon 8 5 3 4 2 1\" \n" // They can make their own.
-						"bind    ALT     +strafe \n"
-						"unbind  ,       //was +moveleft \n"
-						"unbind  .       //was +moveright \n"
-						"unbind  DEL     // +lookdown \n"
-						"bind    PGDN    +lookdown   // formerly lookup  \n"
-						"bind    PGUP    +lookup \n"
-						"unbind  z       // +lookdown \n"
-						"bind    w       +forward \n"
-						"bind    a       +moveleft \n"
-						"bind    s       +back \n"
-						"bind    d       +moveright \n"
-						"unbind  c       // +movedown \n"
-						"bind    q       +moveup \n"
-						"bind    e       +movedown \n"
-						"bind    [       \"impulse 10\"	// change weapon \n"
-						"bind    ]       \"impulse 12\" // change weapon  \n"
-						"bind    MWHEELUP       \"impulse 10\"	// change weapon \n"
-						"bind    MWHEELDOWN       \"impulse 12\" // change weapon  \n"
-						"bind    .		+mlook  \n"
-						"bind    ,		+klook  \n"
-						"bind    MOUSE3 +zoom_key  \n"
-						"unbind F11      // stupid zoom key  \n"
-						"unbind  \\      // +mlook  \n"
-						"unbind  /      // next weapon  \n"
-						"unbind  INS     // +klook  \n"
-						;
+	if (!isDedicated && !strcasecmp (line->args[1], DEFAULT_CFG)) {
+		char *s_insert = "alias +zoom_key \"valsave fov 1;valsave sensitivity 2;valsave r_viewmodel_fov 3;r_viewmodel_fov 0;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5; fov 10\" \n"
+			"alias -zoom_key \"mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;valload fov 1;valload sensitivity 2;valload r_viewmodel_fov 3\" \n"
+			;
+		Cbuf_InsertText (s_insert);
 
-		Cbuf_InsertText (soverride);			
+		if (com_filesrcpak == 2 && com_filesize == DEFAULT_CFG_SIZE_1914) {
+			// Specifically id1 pak0
+
+			// Evil additions.
+			//Cbuf_InsertText (f); // Does need newline?  Nope.  Do we add or insert?
+			// What changes are we making?
+			char *soverride =
+							"unalias zoom_in  \n"
+							"unalias zoom_out \n"
+							"alias +quickgrenade \"-attack;wait;impulse 6;wait;+attack\" \n"
+							"alias -quickgrenade \"-attack;wait;bestweapon 7 8 5 3 4 2 1\" \n"
+	//						"alias bestsafe \"bestweapon 8 5 3 4 2 1\" \n" // They can make their own.
+							"bind    ALT     +strafe \n"
+							"unbind  ,       //was +moveleft \n"
+							"unbind  .       //was +moveright \n"
+							"unbind  DEL     // +lookdown \n"
+							"bind    PGDN    +lookdown   // formerly lookup  \n"
+							"bind    PGUP    +lookup \n"
+							"unbind  z       // +lookdown \n"
+							"bind    w       +forward \n"
+							"bind    a       +moveleft \n"
+							"bind    s       +back \n"
+							"bind    d       +moveright \n"
+							"unbind  c       // +movedown \n"
+							"bind    q       +moveup \n"
+							"bind    e       +movedown \n"
+							"bind    [       \"impulse 10\"	// change weapon \n"
+							"bind    ]       \"impulse 12\" // change weapon  \n"
+							"bind    MWHEELUP       \"impulse 10\"	// change weapon \n"
+							"bind    MWHEELDOWN       \"impulse 12\" // change weapon  \n"
+							"bind    .		+mlook  \n"
+							"bind    ,		+klook  \n"
+							"bind    MOUSE3 +zoom_key  \n"
+							"unbind F11      // stupid zoom key  \n"
+							"unbind  \\      // +mlook  \n"
+							"unbind  /      // next weapon  \n"
+							"unbind  INS     // +klook  \n"
+							;
+			Cbuf_InsertText (soverride);			
+		}
 	}
 
 

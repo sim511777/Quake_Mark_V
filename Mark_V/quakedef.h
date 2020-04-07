@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
 #define ENGINE_VERSION			1.00
-#define	ENGINE_BUILD			900
+#define	ENGINE_BUILD			1001
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -208,6 +208,7 @@ extern fn_set_t qfunction_set;
 //#define SUPPORTS_64_BIT					// Baker: On Windows someday ... perhaps.  The Mac build is 64 bit, haven't had problems thus far.
 //#define SUPPORTS_WINDOWS_MENUS			// Baker: Older Mark V had this.  Was interesting idea.
 
+extern cbool in_load_game;
 
 #ifdef __GNUC__
 // Baker:  I have not been able to make the following work with CodeBlocks/MinGW32:

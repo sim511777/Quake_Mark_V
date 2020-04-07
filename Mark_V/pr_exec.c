@@ -369,7 +369,7 @@ static int PR_LeaveFunction (void)
 	int		i, c;
 
 	// Baker: Future reduce CPU tax by combining into one watcher
-//	if (pr_in_marcher_keytouch && pr_depth = pr_in_marcher_keytouch)
+//	if (pr_in_marcher_keytouch && pr_depth == pr_in_marcher_keytouch)
 //		PR_In_Marcher_Finish;
 
 #ifdef SUPPORTS_COOP_ENHANCEMENTS

@@ -296,7 +296,7 @@ void Host_InitLocal (void)
 		cls.capturedemo_and_exit = true;
 
 	if (COM_CheckParm ("-developer"))
-		Cvar_SetValueQuick (&developer, 1);
+		Cvar_SetValueQuick (&developer, 2);
 
 	Host_FindMaxClients ();
 }

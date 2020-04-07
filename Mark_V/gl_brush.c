@@ -941,8 +941,18 @@ void GL_BuildLightmaps_Upload_All_NewMap (void)
 	char	lightmap_txname[16];
 	int		i, j;
 
-	for (i = 0; i < MAX_FITZQUAKE_LIGHTMAPS; i ++)
+	for (i = 0; i < MAX_FITZQUAKE_LIGHTMAPS; i ++) {
 		memset (lightmap[i].allocated, 0, sizeof(lightmap[i].allocated));
+#if 1 // Clear more things.  Prevents DX8 dynamic light on map change, as far as I can tell.
+		lightmap[i].modified = 0;
+		lightmap[i].rectchange.l = 0;
+		lightmap[i].rectchange.h = 0;
+		lightmap[i].rectchange.t = 0;
+		lightmap[i].rectchange.w = 0;
+		lightmap[i].polys = NULL;
+		lightmap[i].texture = NULL;
+#endif
+	}
 
 	last_lightmap_allocated = 0; // Quakespasm / ericw
 

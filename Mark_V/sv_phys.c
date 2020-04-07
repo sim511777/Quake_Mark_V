@@ -752,7 +752,7 @@ void SV_PushRotate (edict_t *pusher, float movetime)
 			VectorCopy (entorig, check->v.origin);
 			SV_LinkEdict (check, true);
 			
-			VectorCopy (pushorig, pusher->v.angles);
+			VectorCopy (pushorig, pusher->v.origin /*pusher->v.angles*/); // Formerly 
 			SV_LinkEdict (pusher, false);
 			pusher->v.ltime -= movetime;
 		

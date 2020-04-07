@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+
+static	vec3_t	playerbeam_end; // True lightning
 static sfx_t			*cl_sfx_wizhit;
 static sfx_t			*cl_sfx_knighthit;
 static sfx_t			*cl_sfx_tink1;
@@ -36,7 +38,7 @@ static sfx_t			*cl_sfx_r_exp3;
 CL_InitTEnts
 =================
 */
-void CL_InitTEnts (void)
+void CL_InitTEnts (void) // Should be done at gamedir change time?  Technically.
 {
 	cl_sfx_wizhit = S_PrecacheSound ("wizard/hit.wav", NULL);
 	cl_sfx_knighthit = S_PrecacheSound ("hknight/hit.wav", NULL);
@@ -59,6 +61,7 @@ void CL_ParseBeam (qmodel_t *m)
 	beam_t	*b;
 
 	ent = MSG_ReadShort ();
+
 	start[0] = MSG_ReadCoord ();
 	start[1] = MSG_ReadCoord ();
 	start[2] = MSG_ReadCoord ();
@@ -66,6 +69,8 @@ void CL_ParseBeam (qmodel_t *m)
 	end[0] = MSG_ReadCoord ();
 	end[1] = MSG_ReadCoord ();
 	end[2] = MSG_ReadCoord ();
+	if (ent == cl.viewentity_player)
+		VectorCopy (end, playerbeam_end);	// for cl_truelightning
 
 	Stain_AddStain(end, 13, 22); // Intense blackening, medium radius (beam LG)
 
@@ -106,6 +111,14 @@ void CL_ParseBeam (qmodel_t *m)
 	//johnfitz
 }
 
+
+#define	SetCommonExploStuff						\
+	dl = CL_AllocDlight (0);					\
+	VectorCopy (pos, dl->origin);				\
+	dl->radius = 150 + 200; 					\
+	dl->die = cl.time + 0.5;					\
+	dl->decay = 300
+
 /*
 =================
 CL_ParseTEnt
@@ -128,7 +141,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 20, 30);
+		R_RunParticleEffect (pos, vec3_origin, COLOR_WIZSPIKE_20, WIZSPIKE_COUNT_30);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		S_StartSound (-1, 0, cl_sfx_wizhit, pos, 1, 1);
 		break;
@@ -138,7 +151,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 226, 20);
+		R_RunParticleEffect (pos, vec3_origin, COLOR_KNIGHTSPIKE_226, KNIGHTSPIKE_COUNT_20);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		S_StartSound (-1, 0, cl_sfx_knighthit, pos, 1, 1);
 		break;
@@ -151,10 +164,10 @@ void CL_ParseTEnt (void)
 // joe: they put the ventillator's wind effect to "10" in Nehahra. sigh.
 #ifdef SUPPORTS_NEHAHRA
 		if (nehahra_active)
-			R_RunParticleEffect (pos, vec3_origin, 0, 9);
+			R_RunParticleEffect (pos, vec3_origin, 0, NAIL_SPIKE_COUNT_9);
 		else
 #endif // SUPPORTS_NEHAHRA
-			R_RunParticleEffect (pos, vec3_origin, 0, 10);
+			R_RunParticleEffect (pos, vec3_origin, 0, VENTILLIATION_WIND_COUNT_10);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 
 		if ( rand() % 5 )
@@ -178,7 +191,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 0, 20);
+		R_RunParticleEffect (pos, vec3_origin, 0, SUPER_SPIKE_AND_BULLETS_COUNT_20);
 		Stain_AddStain(pos, 3, 30); // Moderate darkening, moderate radius
 
 		if ( rand() % 5 )
@@ -201,7 +214,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 0, 20);
+		R_RunParticleEffect (pos, vec3_origin, 0, GUNSHOT_COUNT_21); // was 20
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		break;
 
@@ -210,12 +223,15 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
+		SetCommonExploStuff;
+/*
 		R_ParticleExplosion (pos);
 		dl = CL_AllocDlight (0);
 		VectorCopy (pos, dl->origin);
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
 		dl->decay = 300;
+*/
 
 		Stain_AddStain(pos, 5, 50); // Fair darkening, large radius
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
@@ -279,12 +295,13 @@ void CL_ParseTEnt (void)
 
 		colorStart = MSG_ReadByte ();
 		colorLength = MSG_ReadByte ();
-		R_ParticleExplosion2 (pos, colorStart, colorLength);
-		dl = CL_AllocDlight (0);
+		R_ColorMappedExplosion (pos, colorStart, colorLength);  // R_ParticleExplosion2
+		SetCommonExploStuff;
+		/* dl = CL_AllocDlight (0);
 		VectorCopy (pos, dl->origin);
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
-		dl->decay = 300;
+		dl->decay = 300; */
 
 		Stain_AddStain(pos, 5, 50); // Intense darkening, intense radius
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
@@ -298,11 +315,14 @@ void CL_ParseTEnt (void)
 		pos[2] = MSG_ReadCoord ();
 
 		R_ParticleExplosion (pos);
+
+		SetCommonExploStuff;
+/*
 		dl = CL_AllocDlight (0);
 		VectorCopy (pos, dl->origin);
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
-		dl->decay = 300;
+		dl->decay = 300;*/
 
 #ifdef GLQUAKE_COLORED_LIGHTS
         dl->color[0] = MSG_ReadCoord () / 2.0;
@@ -369,7 +389,11 @@ void CL_UpdateTEnts (void)
 	float		forward;
 	int			beamnum;
 
+	vec3_t		beamstart, beamend;
+	int			j;
+	cbool		sparks = false;
 	cl.num_temp_entities = 0;
+
 	srand ((int) (cl.ctime * 1000)); //johnfitz -- freeze beams when paused
 
 // update lightning
@@ -379,8 +403,51 @@ void CL_UpdateTEnts (void)
 		if (!b->model || b->endtime < cl.time) continue;
 
 	// if coming from the player, update the start position
-		if (b->entity == cl.viewentity_player)
+		if (b->entity == cl.viewentity_player) {
 			VectorCopy (cl_entities[cl.viewentity_player].origin, b->start);
+
+			if (cl_truelightning.value)
+			{
+				vec3_t	forward, v, org, ang;
+				float	f, delta;
+				trace_t	trace;
+
+				// joe: using koval's [sons]Quake code
+				//b->start[2] += 16; // Baker //cl.crouch;  16 is bad!
+
+				f = max(0, min(1, cl_truelightning.value));
+
+				VectorSubtract (playerbeam_end, cl_entities[cl.viewentity_player].origin, v);
+				v[2] -= 22;		// adjust for view height
+				vectoangles (v, ang);
+
+				// lerp pitch
+				ang[0] = -ang[0];
+				if (ang[0] < -180)
+					ang[0] += 360;
+				ang[0] += (cl.viewangles[0] - ang[0]) * f;
+
+				// lerp yaw
+				delta = cl.viewangles[1] - ang[1];
+				if (delta > 180)
+					delta -= 360;
+				if (delta < -180)
+					delta += 360;
+				ang[1] += delta * f;
+				ang[2] = 0;
+
+				AngleVectors (ang, forward, NULL, NULL);
+				VectorScale (forward, 600, forward);
+				VectorCopy (cl_entities[cl.viewentity_player].origin, org);
+				org[2] += 16;
+				VectorAdd(org, forward, b->end);
+
+				memset (&trace, 0, sizeof(trace_t));
+				if (!SV_RecursiveHullCheck(cl.worldmodel->hulls, 0, 0, 1, org, b->end, &trace))
+					VectorCopy (trace.endpos, b->end);
+			}
+			// End of if view entity is player
+		}
 
 	// calculate pitch and yaw
 		VectorSubtract (b->end, b->start, dist);
@@ -408,20 +475,25 @@ void CL_UpdateTEnts (void)
 
 	// add new entities for the lightning
 		VectorCopy (b->start, org);
+
+		VectorCopy (b->start, beamstart);
+
 		d = VectorNormalize(dist);
 
 		// Baker: Apparently for every 30 units we do a new beam segment
 		for ( ; d > 0 ; d -= 30)
 		{
-			ent = CL_NewTempEntity ();
-			if (!ent)
-				return;
-
-			VectorCopy (org, ent->origin);
-			ent->model = b->model;
-			ent->angles[0] = pitch;
-			ent->angles[1] = yaw;
-			ent->angles[2] = rand()%360;
+			{
+				ent = CL_NewTempEntity ();
+				if (!ent)
+					return;
+	
+				VectorCopy (org, ent->origin);
+				ent->model = b->model;
+				ent->angles[0] = pitch;
+				ent->angles[1] = yaw;
+				ent->angles[2] = rand()%360;
+			}
 
 			// Baker: VectorMA replaces for loop
 			VectorMA (org, 30, dist, org);

@@ -728,10 +728,10 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 					if (ent->v.movetype != MOVETYPE_PUSH && SV_InvisibleToClient(clent, ent)) // Baker: R00k don't cull doors, lifts, etc. which are MOVETYPE_PUSH
 						continue; // Entity cannot be seen, don't send it
 
-			if (sv_full_invisibility.value && /*ent->v.modelindex == 1*/ (sv.models[ (int)ent->v.modelindex]->flags & MOD_EYES))
+			if (sv_full_invisibility.value && /*ent->v.modelindex == 1*/ (sv.models[ (int)ent->v.modelindex]->modelflags & MOD_EYES))
 				continue;
 	
-			if (sv_filter_gibs.value && (sv.models[ (int)ent->v.modelindex]->flags & MOD_GIBS) )	
+			if (sv_filter_gibs.value && (sv.models[ (int)ent->v.modelindex]->modelflags & MOD_GIBS) )	
 				continue;
 
 			

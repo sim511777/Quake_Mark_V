@@ -470,6 +470,11 @@ void CL_ParseServerInfo (void)
 // needlessly purge it
 
 // precache models
+#ifdef GLQUAKE_SUPPORTS_QMB
+	for (i = 0; i < MODELINDEX_COUNT; i++)
+		cl_modelindex[i] = -1;
+#endif // GLQUAKE_SUPPORTS_QMB
+
 	memset (cl.model_precache, 0, sizeof(cl.model_precache));
 
 	for (nummodels = 1 ; ; nummodels++)
@@ -486,6 +491,19 @@ void CL_ParseServerInfo (void)
 		}
 
 		strlcpy (model_precache[nummodels], str, MAX_QPATH_64);
+
+#ifdef GLQUAKE_SUPPORTS_QMB // After the for loop
+		if (qmb_initialized) {
+			// Update the QMB model index for this model, if applicable.
+			for (i = 0; i < MODELINDEX_COUNT; i++) {
+				if (String_Does_Match (cl_modelnames[i], model_precache[nummodels])) {
+					cl_modelindex[i] = nummodels;
+					break;
+				}
+			}
+		}
+#endif // GLQUAKE_SUPPORTS_QMB
+
 		Mod_TouchModel (str);
 	}
 
@@ -493,7 +511,24 @@ void CL_ParseServerInfo (void)
 	if (nummodels >= MAX_WINQUAKE_MODELS)
 		Con_DWarning ("%d models exceeds standard limit of %d.\n", nummodels, MAX_WINQUAKE_MODELS); //256
 
-	//johnfitz
+#ifdef GLQUAKE_SUPPORTS_QMB // After the for loop
+// joe: load the extra "no-flamed-torch" model  NOTE: this is an ugly hack
+// Baker: Causing the extra flame0.mdl to be inserted.
+	if (qmb_initialized) {
+		if (nummodels == MAX_FITZQUAKE_MODELS)
+		{
+			Con_Printf ("Server sent too many model precaches -> replacing flame0.mdl with flame.mdl\n");
+			cl_modelindex[mi_flame0] = cl_modelindex[mi_flame1];
+		}
+		else
+		{
+			c_strlcpy (model_precache[nummodels], cl_modelnames[mi_flame0]);
+			cl_modelindex[mi_flame0] = nummodels++;
+		}
+	}
+#endif // GLQUAKE_SUPPORTS_QMB
+
+
 
 	// precache sounds
 	memset (cl.sound_precache, 0, sizeof(cl.sound_precache));
@@ -690,6 +725,10 @@ void CL_ParseUpdate (int bits)
 			Host_Error ("CL_ParseModel: bad modnum");
 	}
 	else modnum = ent->baseline.modelindex;
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+	ent->modelindex = modnum;
+#endif // GLQUAKE_SUPPORTS_QMB
 
 	if (bits & U_FRAME)
 		ent->frame = MSG_ReadByte ();

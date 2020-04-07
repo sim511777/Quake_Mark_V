@@ -67,6 +67,12 @@ void KeyDown (lparse_t* line, kbutton_t *b)
 	else
 		k = -1;		// typed manually at the console for continuous down
 
+// PQ_MOVEUP START
+	// JPG 1.05 - if jump is pressed underwater, translate it to a moveup
+	if (b == &in_jump && pq_moveup.value && cl.stats[STAT_HEALTH] > 0 && cl.inwater)
+		b = &in_up;
+// PQ_MOVEUP END
+
 	if (k == b->down[0] || k == b->down[1])
 		return;		// repeating key
 
@@ -107,6 +113,21 @@ void KeyUp (lparse_t* line, kbutton_t *b)
 		b->state = 4;	// impulse up
 		return;
 	}
+
+// PQMOVEUP
+	// JPG 1.05 - check to see if we need to translate -jump to -moveup
+	if (b == &in_jump && pq_moveup.value)
+	{
+		if (k == in_up.down[0] || k == in_up.down[1])
+			b = &in_up;
+		else
+		{
+			// in case a -moveup got lost somewhere
+			in_up.down[0] = in_up.down[1] = 0;
+			in_up.state = 4;
+		}
+	}
+// PQMOVEUP
 
 	if (b->down[0] == k)
 		b->down[0] = 0;

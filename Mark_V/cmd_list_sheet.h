@@ -37,7 +37,8 @@ CMD_DEF (CL_InitInput, DEP_CLIENT  , "-strafe"                   , IN_StrafeUp		
 CMD_DEF (CL_InitInput, DEP_CLIENT  , "-use"                      , IN_UseUp					, "When used it will stop to activate objects in the game.  Not used in actual game."			)
 CMD_DEF (CL_InitInput, DEP_CLIENT  , "bestweapon"                , IN_BestWeapon			, "Set preferred weapon if available, specified by order."			)
 CMD_DEF (CL_InitInput, DEP_CLIENT  , "impulse"                   , IN_Impulse				, "Pass an impulse number to the server to perform a game function."			)
-CMD_DEF (CL_InitInput, DEP_CLIENT  , "pq_fullpitch"              , IN_PQ_Full_Pitch_f		, "External server hint limiting mouse looking to standard Quake range for compatibility and to avoid mouse input irregularities."			)
+CMD_DEF (CL_InitInput, DEP_CLIENT  , "pq_fullpitch"              , IN_PQ_Full_Pitch_f		, "External server hint limiting mouse/keyboard looking to standard Quake range for compatibility and to avoid mouse input irregularities."			)
+CMD_DEF (CL_InitInput, DEP_CLIENT  , "cl_fullpitch"              , IN_PQ_Full_Pitch_f		, "External server hint limiting mouse/keyboard looking to standard Quake range for compatibility and to avoid mouse input irregularities."			)
 
 CMD_DEF (Input_Init  , DEP_CLIENT  , "force_centerview"          , Input_Force_CenterView_f	, "Center the player's screen."			)
 CMD_DEF (Input_Init  , DEP_CLIENT  , "in_info"                   , Input_Info_f				, "Internal input information."			)

@@ -958,8 +958,16 @@ cbool	Cvar_Command (cbool src_server, cvar_t *var, lparse_t *line)
 			Con_Printf ("\"%s\" is \"%g\" (altered!)\n", var->name, var->value);
 			Con_Printf ("user preference is \"%s\"\n", var->string);
 		}
-		else
-			Con_Printf ("\"%s\" is \"%s\"\n", var->name, var->string);
+		else {
+			Con_Printf ("\"%s\" is \"%s\" ", var->name, var->string);
+			if (String_Does_Match(var->string, var->default_string) )
+				Con_Printf ("[default value]\n");
+			else
+				Con_Printf ("[default: \"%s\"]\n", var->default_string);
+			if (con_verbose.value) {
+				Con_Printf ("info: %s\n", var->description);
+			}
+		}
 		return true;
 	}
 

@@ -72,6 +72,11 @@ typedef struct entity_s
 #else
 	byte					*colormap;
 #endif // GLQUAKE vs. WinQuake
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+	int						modelindex;
+#endif // GLQUAKE_SUPPORTS_QMB
+
 	struct efrag_s			*efrag;			// linked list of efrags
 	int						frame;
 	float					syncbase;		// for client-side animations
@@ -186,17 +191,63 @@ typedef enum trail_type_s
 	LAVA_TRAIL_7,
 	BUBBLE_TRAIL_8,
 	NEHAHRA_SMOKE_9
-} trail_type_t;
+} trail_type_e;
 
+
+/*  No ... these are static ....
+void Classic_InitParticles (void); // void R_InitParticles
+void Classic_ClearParticles (void); // R_ClearParticles
+void Classic_ParseParticleEffect (void); // R_ParseParticleEffect 
+void Classic_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count); // R_RunParticleEffect 
+void Classic_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type); // R_RocketTrail 
+void Classic_EntityParticles (entity_t *ent); // R_EntityParticles 
+void Classic_BlobExplosion (vec3_t org); // R_BlobExplosion 
+void Classic_ParticleExplosion (vec3_t org); // R_ParticleExplosion 
+void Classic_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // R_ParticleExplosion2 
+void Classic_LavaSplash (vec3_t org); // R_LavaSplash 
+void Classic_TeleportSplash (vec3_t org); // R_TeleportSplash 
+*/
+
+void R_InitParticles (void); 
+void R_ClearParticles (void);
 void R_ParseParticleEffect (void);
 void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_t type);
+void R_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void R_EntityParticles (entity_t *ent);
 void R_BlobExplosion (vec3_t org);
 void R_ParticleExplosion (vec3_t org);
-void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
+void R_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength);  // ParticleExplosion2
 void R_LavaSplash (vec3_t org);
 void R_TeleportSplash (vec3_t org);
+
+#ifdef GLQUAKE_SUPPORTS_QMB
+const char *QMB_InitParticles_Error (void);   // Returns pointer to reason
+void QMB_ClearParticles (void);
+void QMB_DrawParticles (void);
+void QMB_RunParticles (void);
+
+void QMB_ParseParticleEffect (void);
+void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
+void QMB_RocketTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+void QMB_EntityParticles (entity_t *ent);
+void QMB_BlobExplosion (vec3_t org);
+void QMB_ParticleExplosion (vec3_t org);
+void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+void QMB_LavaSplash (vec3_t org);
+void QMB_TeleportSplash (vec3_t org);
+void QMB_LightningBeam (vec3_t start, vec3_t end);
+
+cbool QMB_FlameModelSetState (entity_t *ent);
+void QMB_StaticBubble (entity_t *ent);
+void QMB_ShamblerCharge (vec3_t org);
+void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end);
+
+dlighttype_e QMB_GetDlightColor (int colornum, dlighttype_e def, cbool random);
+
+extern cbool qmb_initialized;
+
+#endif //  GLQUAKE_SUPPORTS_QMB
+
 
 void R_PushDlights (entity_t *ent);
 
@@ -343,10 +394,10 @@ void R_StoreEfrags (efrag_t **ppefrag);
 
 // r_part.c
 //cmd void R_ReadPointFile_f (void);
-void R_InitParticles (void);
+//void R_InitParticles (void);  moved up
 void CL_RunParticles (void);
 void R_DrawParticles (void);
-void R_ClearParticles (void);
+//void R_ClearParticles (void); // moved up
 
 // r_light.c
 extern int d_lightstylevalue[256]; // 8.8 fraction of base light value

@@ -590,9 +590,13 @@ int Con_DebugLog (const char *fmt, ...)
 		FILE *f;
 		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
-		f = FS_fopen_write (con_debuglog_url, "a");
-		fprintf (f, "%s", text);
-		FS_fclose(f);
+		// Could cause it make the folder, but if the folder doesn't exist
+		// User already make some sort of mistake.  Let's not compound it.
+		f = FS_fopen_write (con_debuglog_url, "a"); // FS_fopen_write_create_path
+		if (f) {
+			fprintf (f, "%s", text);
+			FS_fclose(f);
+		}
 		return 0;
 	}
 	return 0; // Maybe 1?

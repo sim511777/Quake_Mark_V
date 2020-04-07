@@ -301,7 +301,7 @@ cbool VID_Local_SetMode (int modenum)
 
 // Baker: begin resize window on the fly
 #ifndef DIRECT3D_WRAPPER
-	if (bordered && COM_CheckParm ("-resizable"))
+	if (bordered &&  COM_CheckParm ("-resizable"))
 		WindowStyle = WindowStyle | WS_SIZEBOX;
 #endif // DIRECT3D_WRAPPER
 

@@ -137,8 +137,11 @@ static in_addr_t UDP4_GetHostNameIP (char *namebuf, size_t namebuf_size, char * 
 
 		if (ipbuf) {
 			// If ip address, fill that in.
+	//		System_Alert ("%p: %d", ipbuf, (int)ipbuf_size);
 			in_addr_t	haddr = ntohl(netaddr); // Net byte order to host order
-			c_snprintfc (ipbuf, ipbuf_size,  "%ld.%ld.%ld.%ld", (haddr >> 24) & 0xff, (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff);
+			// int is the right tool for this job.
+			//c_snprintfc (ipbuf, ipbuf_size,  "%ld.%ld.%ld.%ld", (haddr >> 24) & 0xff, (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff);
+			c_snprintfc (ipbuf, ipbuf_size,  "%d.%d.%d.%d", (int)((haddr >> 24) & 0xff), (int)((haddr >> 16) & 0xff), (int)((haddr >> 8) & 0xff), (int)(haddr & 0xff));
 		}
 		return netaddr; // In network form.
 	} while (0);
@@ -570,13 +573,13 @@ const char *UDP_AddrToString (struct qsockaddr *addr, cbool masked)
 //	#define _S6_un     u
 //	#define _S6_u8     Byte
 //	#define s6_addr    _S6_un._S6_u8
-//	
+//
 //	/*
 //	** Defines for our implementation.
 //	*/
 //	#define s6_bytes   u.Byte
 //	#define s6_words   u.Word
-//	
+//
 //	struct sockaddr_in6_fuck_you_mingw_headers {
 //	    short   sin6_family;        /* AF_INET6 */
 //	    u_short sin6_port;          /* Transport level port number */
@@ -584,9 +587,9 @@ const char *UDP_AddrToString (struct qsockaddr *addr, cbool masked)
 //	    struct in6_addr sin6_addr;  /* IPv6 address */
 //	    u_long sin6_scope_id;       /* set of interfaces for a scope */
 //	};
-//	
+//
 //	#endif // !s6_addr
-//	
+//
 #ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
 
 	if (addr->qsa_family == AF_INET6)

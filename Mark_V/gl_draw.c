@@ -795,6 +795,7 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 		Scrap_Upload ();
 	gl = (glpic_t *)pic->data;
 	GL_Bind (gl->gltexture);
+
 	eglBegin (GL_QUADS);
 	eglTexCoord2f (gl->sl, gl->tl);
 	eglVertex2f (x, y);

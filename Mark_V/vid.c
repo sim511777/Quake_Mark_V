@@ -786,6 +786,18 @@ static int hardware_enforcer_count = 0;
 
 
 //#pragma message ("We need to make it so a think here can turn it off if !vid_hardware.gamma && hardware_is_active or vid_hardware,gamma && !hardware_is_active")
+
+
+void VID_Gamma_Clock_Set (void)
+{
+	Con_DPrintf ("Gamma protector set\n");
+	hardware_enforcer_count = 2;
+	hardware_active_enforcer_time_clock = realtime + 3;
+}
+#endif // GLQUAKE_HARDWARE_GAMMA
+
+#ifdef GLQUAKE_RENDERER_SUPPORT
+
 void VID_Gamma_Think (void)
 {
 	static cbool	hardware_is_active = false;
@@ -801,7 +813,11 @@ void VID_Gamma_Think (void)
 	if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
 
 	{
+#ifdef GLQUAKE_HARDWARE_GAMMA
 		cbool hardware_should_be_active = gamma_available && vid.ActiveApp && !vid.Minimized && !vid.Hidden && vid_hardwaregamma.value; // && !shutdown;
+#else // Not ...
+		cbool hardware_should_be_active = false;
+#endif
 		cbool hardware_change = (hardware_is_active != hardware_should_be_active);
 
 		// Because quake.rc is going to be read and it will falsely default away from user preference
@@ -848,6 +864,7 @@ void VID_Gamma_Think (void)
 		if (vid_texgamma_user_req)
 			vid_texgamma_user_req = 0; // breakpoint me.  Should be hard to happen.
 
+#ifdef GLQUAKE_HARDWARE_GAMMA
 		if (!hardware_change && hardware_should_be_active && hardware_active_enforcer_time_clock)
 		{
 			if (realtime > hardware_active_enforcer_time_clock)
@@ -860,7 +877,7 @@ void VID_Gamma_Think (void)
 				Con_DPrintf ("Gamma protector clock fired  ... ");
 			}
 		}
-
+#endif
 		if (hardware_change)
 			Con_DPrintf ("Hardware change detected ... ");
 
@@ -870,6 +887,7 @@ void VID_Gamma_Think (void)
 		if (!hardware_change && table_change)
 			Con_DPrintf ("Color change with hardware active ... ");
 
+#ifdef GLQUAKE_HARDWARE_GAMMA
 		// If we hit here, a change occurred.
 		switch (hardware_should_be_active)
 		{
@@ -900,20 +918,13 @@ void VID_Gamma_Think (void)
 			hardware_active_enforcer_time_clock = 0;
 			break;
 		}
+#endif 
 	}
 
 }
 
 
-void VID_Gamma_Clock_Set (void)
-{
-	Con_DPrintf ("Gamma protector set\n");
-	hardware_enforcer_count = 2;
-	hardware_active_enforcer_time_clock = realtime + 3;
-}
-#endif // GLQUAKE_HARDWARE_GAMMA
 
-#ifdef GLQUAKE_RENDERER_SUPPORT
 void VID_BrightenScreen (void)
 {
 	float f;
@@ -1026,7 +1037,7 @@ void Vid_Gamma_TextureGamma_f (lparse_t *line)
 	
 	switch (line->count) {
 	default:	Con_Printf ("Usage: %s <gamma %0.2f to %0.2f> - set gamma level when vid_hardwaregamma is off by baking gamma into textures.\n"
-					"Current text is %g\n", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, texmgr_texturegamma_current);
+					"Current texture gamma is %g\n", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, texmgr_texturegamma_current);
 				return;				
 			
 	case 2:		if (vid_texgamma_user_req) {
@@ -1116,9 +1127,14 @@ void VID_EndRendering (void)
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 
-#ifdef GLQUAKE_HARDWARE_GAMMA
-	VID_Gamma_Think (); // Baker: Hardware gamma is smart, will self-help and even turn itself off (or on), only when needed
+#ifdef PLATFORM_OSX // Baker:  Sigh ... cleanup is something we need.
+	// TODO: frame.hardware_gamma or something.  Or more likely ... cbool vid.hardware_gamma;  float vid.hardware_gamma.
+	if (vid_hardwaregamma.value) vid_hardwaregamma.value = 0; // Notice we aren't changing the string.  We aren't actually interfering with what writes to config.
+					
+#endif // PLATFORM_OSX
 
+	VID_Gamma_Think (); // Baker: Hardware gamma is smart, will self-help and even turn itself off (or on), only when needed
+#ifdef GLQUAKE_HARDWARE_GAMMA
 	if (!vid_hardwaregamma.value)
 #endif // GLQUAKE_HARDWARE_GAMMA
 		VID_BrightenScreen (); // Doesn't depend on hardware gamma, but rather GL renderer or not.

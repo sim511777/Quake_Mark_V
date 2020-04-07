@@ -329,12 +329,12 @@ void R_ParseParticleEffect (void)
 	msgcount = MSG_ReadByte ();
 	color = MSG_ReadByte ();
 
-	if (msgcount == NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255)
+	if (msgcount == NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255) // No, ProQuake has same.  Nothing to do with Nehahra.
 		count = 1024;
 	else
 		count = msgcount;
 
-	R_RunParticleEffect (org, dir, color, count);
+	R_RunParticleEffect (org, dir, color, count, TE_EF_PARSED);
 }
 
 /*
@@ -1312,33 +1312,28 @@ void R_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
 			Classic_RunParticleEffect (org, dir, color, count);
 #endif
 
-void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count)
+void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count, te_ef_effect_e te_ef_effect)
 {
 //	if (cl_ent_disable_blood.integer && (color == 73 || color == 225))
 //		color = 20;		// Switch to spark
+	switch (te_ef_effect) {
+	case TE_EF_GUNSHOT:			RunParticleEffect(gunshots, org, dir, color, count);	return;
+	case TE_EF_SPIKE:			
+	case TE_EF_SUPERSPIKE:		
+	case TE_EF_KNIGHTSPIKE:		
+	case TE_EF_WIZSPIKE:		
+	case TE_EF_VENTILLIATION:	RunParticleEffect(spikes, org, dir, color, count);		return;
+	case TE_EF_EXPLOSION_1_3:	RunParticleEffect(blood, org, dir, color, count);		return;  // 
+								
+	}
 
-	if (color == COLOR_UNKNOWN_BLOOD_73 || color == COLOR_EXPLOSION_225)
-	{
+	// Special scenario
+	if (color == COLOR_UNKNOWN_BLOOD_73) {
 		RunParticleEffect(blood, org, dir, color, count);
-		return;
-	}
-// 75 + 1024 is the explosion box, I think.  Ends up as gunshot, WTF?
-
-	if (count == 1024) {
-		R_ParticleExplosion (org); // Seriously?  Can this even happen in software?
-		return; // K?
 	}
 
-	switch (count)
-	{
-	case 10:
-	case 20:
-	case 30:
-		RunParticleEffect(spikes, org, dir, color, count);
-		break;
-	default:
-		RunParticleEffect(gunshots, org, dir, color, count);
-	}
+	// Now ... everything else ...
+	RunParticleEffect(particles_quakec, org, dir, color, count);
 }
 
 void R_AnyTrail (entity_t *ent, vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)

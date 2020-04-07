@@ -144,6 +144,7 @@ CVAR_DEF( R_Init      , SCENE     ,  DEP_NONE   , cl_truelightning        , "cl_
 // What are you?
 CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_active					, "qmb_active"                    , "0"       , CVAR_ARCHIVE, NULL        ,  "Toggle the use of the QMB particle effects system (not available in software renderer)."           )
 CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_blood                  , "qmb_blood"              , "1"       , CVAR_ARCHIVE         , NULL              ,  "Toggle use of QMB blood effect."            )
+CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_particles_quakec       , "qmb_particles_quakec"   , "1"       , CVAR_ARCHIVE         , NULL              ,  "Toggle use of QMB particle for Quake C emitted particles."            )
 CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_bounceparticles        , "qmb_bounceparticles"      , "1"       , CVAR_ARCHIVE         , NULL              ,  "Toggle use of QMB bouncing particles."            )
 CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_bubbles					 , "qmb_bubbles"             , "1"       , CVAR_ARCHIVE         , NULL              ,  "Toggle QMB replacement bubbles instead of classic bubbles."            )
 CVAR_DEF( R_Init      , SCENE     ,  DEP_GL   , qmb_clipparticles          , "qmb_clipparticles"        , "0"       , CVAR_ARCHIVE         , NULL              ,  "Extra clipping, probably (mild?) performance hit but better clipping.  "            )
@@ -351,8 +352,15 @@ CVAR_DEF( PR_Init     , SVVM      ,  DEP_NONE , vm_imp12hack              , "sv_
 CVAR_DEF( PR_Init     , SVVM      ,  DEP_NONE , vm_imp12hack_exceptions   , "sv_gameplayfix_no_impulse12_exceptions"     , "ne_ruins"       , CVAR_NONE         , NULL                 ,  "Exclude impulse 12 (previous weapon) fix from gamedirs with these names."            )
 CVAR_DEF( PR_Init     , SVVM      ,  DEP_NONE , sv_fix_flush_alias_exceptions   , "sv_gameplayfix_flush_alias_exceptions"     , "frogbot"       , CVAR_NONE         , NULL                 ,  "Disable alias and keybind flushing for certain clevel mods like frogbots that preserve information in cvars for memory across disconnects."            )
 
+
+#ifdef PLATFORM_OSX // Mac Gamma.  No hardware gamma.  This is horrible.  Properly fix sometime.
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gamma"                   , "0.85"       , CVAR_ARCHIVE      , NULL                 ,  "Screen gamma correction level."            )
+#else
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gamma"                   , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen gamma correction level."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
+#endif
+
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_multisample           , "vid_multisample"         , "0"       , CVAR_ARCHIVE      , VID_Local_Multisample_f,  "Enables costly edge smoothing (values: 0, 2, 4, 8)"          )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_contrast              , "contrast"                , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen contrast correction level."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_fullscreen            , "vid_fullscreen"          , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Set fullscreen preference. Requires vid_restart."            )

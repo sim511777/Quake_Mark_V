@@ -222,27 +222,44 @@ typedef enum
 //
 // temp entity events
 //
-#define	TE_SPIKE			0
-#define	TE_SUPERSPIKE		1
-#define	TE_GUNSHOT			2
-#define	TE_EXPLOSION		3
-#define	TE_TAREXPLOSION		4
-#define	TE_LIGHTNING1		5
-#define	TE_LIGHTNING2		6
-#define	TE_WIZSPIKE			7
-#define	TE_KNIGHTSPIKE		8
-#define	TE_LIGHTNING3		9
-#define	TE_LAVASPLASH		10
-#define	TE_TELEPORT			11
-#define TE_EXPLOSION2		12
-
+typedef enum {
+	__te_invalid		= -1, // Fuck you mingw and your unsigned enums
+	TE_SPIKE			= 0,
+	TE_SUPERSPIKE		= 1,
+	TE_GUNSHOT			= 2,
+	TE_EXPLOSION		= 3,
+	TE_TAREXPLOSION		= 4,
+	TE_LIGHTNING1		= 5,
+	TE_LIGHTNING2		= 6,
+	TE_WIZSPIKE			= 7,
+	TE_KNIGHTSPIKE		= 8,
+	TE_LIGHTNING3		= 9,
+	TE_LAVASPLASH		= 10,
+	TE_TELEPORT			= 11,
+ 	TE_EXPLOSION2		= 12,
 // PGM 01/21/97
-#define TE_BEAM				13
+	TE_BEAM				= 13,
 // PGM 01/21/97
+// nehahra support,
+	TE_EXPLOSION3		= 16,
+	TE_LIGHTNING4		= 17,
+} te_effect_e;
 
-// nehahra support
-#define	TE_EXPLOSION3		16
-#define	TE_LIGHTNING4		17
+// Net effect
+typedef enum {
+	___te_ef_invalid	= -1, 
+	TE_EF_NONE			=  0,
+	TE_EF_PARSED		=  1,  // Something from QuakeC
+	TE_EF_GUNSHOT,
+	TE_EF_SPIKE,
+	TE_EF_SUPERSPIKE,
+	TE_EF_KNIGHTSPIKE,
+	TE_EF_WIZSPIKE,		
+	TE_EF_VENTILLIATION,
+	TE_EF_EXPLOSION_1_3,
+	TE_EF_EXPLOSION2,
+} te_ef_effect_e;
+
 
 typedef struct
 {

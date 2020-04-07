@@ -109,8 +109,8 @@
 
 	/* there is no in_addr_t on windows: define it as
 	   the type of the S_addr of in_addr structure */
-	
-	typedef unsigned int	in_addr_t;	/* u_int32_t */
+
+	typedef u_long /*unsigned int*/	in_addr_t;	/* u_int32_t */
 
 	#define	selectsocket	select
 	#define	IOCTLARG_P(x)	/* (u_long *) */ x

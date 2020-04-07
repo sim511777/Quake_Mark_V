@@ -214,7 +214,7 @@ void Classic_TeleportSplash (vec3_t org); // R_TeleportSplash
 void R_InitParticles (void); 
 void R_ClearParticles (void);
 void R_ParseParticleEffect (void);
-void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
+void R_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count, te_ef_effect_e te_ef_effect);
 void R_AnyTrail (entity_t *ent, vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void R_EntityParticles (entity_t *ent);
 void R_BlobExplosion (vec3_t org);
@@ -254,20 +254,20 @@ void QMB_RunParticles (void);
 
 
 void QMB_ParseParticleEffect (void);
-void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int color, int count);
+void QMB_AnyTrail (const vec3_t start, const vec3_t end, vec3_t *trail_origin, trail_type_e type);
 void QMB_EntityParticles (entity_t *ent);
-void QMB_BlobExplosion (vec3_t org);
-void QMB_ParticleExplosion (vec3_t org);
-void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
-void QMB_LavaSplash (vec3_t org);
-void QMB_TeleportSplash (vec3_t org);
-void QMB_LightningBeam (vec3_t start, vec3_t end);
+void QMB_BlobExplosion (const vec3_t org);
+void QMB_ParticleExplosion (const vec3_t org);
+void QMB_ColorMappedExplosion (const vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+void QMB_LavaSplash (const vec3_t org);
+void QMB_TeleportSplash (const vec3_t org);
+void QMB_LightningBeam (const vec3_t start, const vec3_t end);
 
 cbool QMB_FlameModelSetState (entity_t *ent);
-void QMB_StaticBubble (entity_t *ent, vec3_t origin);
-void QMB_ShamblerCharge (vec3_t org);
-void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end);
+void QMB_StaticBubble (entity_t *ent, const vec3_t origin);
+void QMB_ShamblerCharge (const vec3_t org);
+void QMB_MissileFire (const vec3_t org, const vec3_t start, const vec3_t end);
 
 cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg);
 cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);

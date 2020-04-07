@@ -31,11 +31,11 @@
 
 + (void) initialize
 {
-/* 
-    Baker: Use this to wipe the preferences
+#if 0
+    // Baker: Use this to wipe the preferences
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-*/
+#endif
     
     FDPreferences*  prefs       = [FDPreferences sharedPrefs];
 
@@ -467,9 +467,10 @@
             signal (SIGFPE, SIG_IGN); // Baker: Ignore floating point exceptions
 			
 			c_strlcpy (cmdline, lpCmdLineText);
-#ifdef _DEBUG
+#if 0//fdef _DEBUG
             c_strlcat (cmdline, " -basedir /Users/iOS/Desktop/Quake -window");
 #endif
+			
 			
 			Main_Central (cmdline, &fakemainwindow, false /* we perform loop ourselves */);
 

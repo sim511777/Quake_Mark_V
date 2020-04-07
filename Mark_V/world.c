@@ -592,7 +592,7 @@ SV_HullPointContents
 ==================
 */
 #if 1
-int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
+int SV_HullPointContents (hull_t *hull, int num, const vec3_t p)
 {
 
 	float		d;
@@ -705,7 +705,7 @@ SV_RecursiveHullCheck
 
 ==================
 */
-cbool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
+cbool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, const vec3_t p1, const vec3_t p2, trace_t *trace)
 {
 	mclipnode_t	*node; //johnfitz -- was dclipnode_t
 	mplane_t	*plane;

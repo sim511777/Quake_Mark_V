@@ -448,6 +448,9 @@ cbool VID_Local_SetMode (int modenum)
 
 #endif // WINQUAKE_RENDERER_SUPPORT
 	
+	
+	VID_Local_Set_Window_Caption (ENGINE_NAME);
+	
     vid.ActiveApp = 1;
     vid.canalttab = 1;
 

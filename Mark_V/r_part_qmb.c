@@ -196,22 +196,22 @@ static	vec3_t				trail_stop;
 
 
 
-void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, color_vec4b_t color);
-cbool QMB_InitParticles (void);
-void QMB_ClearParticles (void);
-void QMB_ParseParticleEffect (void);
-void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
-void QMB_EntityParticles (entity_t *ent);
-void QMB_BlobExplosion (vec3_t org);
-void QMB_ParticleExplosion (vec3_t org);
-void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
-void QMB_LavaSplash (vec3_t org);
-void QMB_TeleportSplash (vec3_t org);
+static void QMB_ParticleTrail (const vec3_t start, const vec3_t end, float size, float time, color_vec4b_t color);
+//cbool QMB_InitParticles (void);
+//void QMB_ClearParticles (void);
+//void QMB_ParseParticleEffect (void);
+//void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int color, int count);
+//void QMB_AnyTrail (const vec3_t start, const vec3_t end, vec3_t *trail_origin, trail_type_e type);
+//void QMB_EntityParticles (entity_t *ent);
+//void QMB_BlobExplosion (const vec3_t org);
+//void QMB_ParticleExplosion (const vec3_t org);
+//void QMB_ColorMappedExplosion (const vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+//void QMB_LavaSplash (const vec3_t org);
+//void QMB_TeleportSplash (const vec3_t org);
 #define TruePointContents(p) SV_HullPointContents(&cl.worldmodel->hulls[0], 0, p)
 #define ISUNDERWATER(x) ((x) == CONTENTS_WATER || (x) == CONTENTS_SLIME || (x) == CONTENTS_LAVA)
 
-static cbool TraceLineN (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal)
+static cbool TraceLineN (const vec3_t start, const vec3_t end, vec3_t impact, vec3_t normal)
 {
 	trace_t	trace;
 
@@ -330,7 +330,7 @@ gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, con
 	}
 
 	(*punsigned) = rgba_data; //c_memdup (rgba_data, rgba_data_length); // Store!
-	return TexMgr_LoadImage (NULL, -1, description, width, height, SRC_RGBA,  (*punsigned), "", (src_offset_t)(*punsigned), TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP);
+	return TexMgr_LoadImage (NULL, -1, description, width, height, SRC_RGBA,  (*punsigned), "", (src_offset_t)(*punsigned), TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED);
 // Image_Load_PNG_Memory_Alloc
 }
 
@@ -925,7 +925,7 @@ void QMB_DrawParticles (void)
 	_p->bounces = 0;														\
 	VectorCopy(_color, _p->color);
 
-__inline static void AddParticle (part_type_e type, vec3_t org, int count, float size, float time, color_vec4b_t col, vec3_t dir)
+__inline static void AddParticle (part_type_e type, const vec3_t org, int count, float size, float time, color_vec4b_t col, const vec3_t dir)
 {
 	byte		*color;
 	int			i, j;
@@ -1072,7 +1072,7 @@ __inline static void AddParticle (part_type_e type, vec3_t org, int count, float
 	}
 }
 
-__inline static void AddParticleTrail (part_type_e type, vec3_t start, vec3_t end, float size, float time, color_vec4b_t col)
+__inline static void AddParticleTrail (part_type_e type, const vec3_t start, const vec3_t end, float size, float time, color_vec4b_t col)
 {
 	byte		*color;
 	int		i, j, num_particles;
@@ -1222,7 +1222,7 @@ done:
 	VectorCopy (point, trail_stop);
 }
 
-void QMB_ParticleExplosion (vec3_t org)
+void QMB_ParticleExplosion (const vec3_t org)
 {
 	if (!cl.worldmodel)		// Baker: if connected to a server with "nomap" doing a TruePointContents
 		return;				//        will crash us.  Client isn't receiving ents, but is getting particles. == CRASH ... so bail if cl.worldmodel is NULL
@@ -1267,7 +1267,7 @@ void d8to24col (color_vec4b_t colourv, int colour)
 	colourv[2] = colourByte[2];
 }
 
-__inline static void AddColoredParticle (part_type_e type, vec3_t org, int count, float size, float time, int colorStart, int colorLength, vec3_t dir)
+__inline static void AddColoredParticle (part_type_e type, const vec3_t org, int count, float size, float time, int colorStart, int colorLength, const vec3_t dir)
 {
 	color_vec4b_t		color;
 	int		i, j, colorMod = 0;
@@ -1315,7 +1315,7 @@ __inline static void AddColoredParticle (part_type_e type, vec3_t org, int count
 	}
 }
 
-void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
+void QMB_ColorMappedExplosion (const vec3_t org, int colorStart, int colorLength)
 {
 	if (!cl.worldmodel)		// Baker: if connected to a server with "nomap" doing a TruePointContents
 		return;				//        will crash us.  Client isn't receiving ents, but is getting particles. == CRASH ... so bail if cl.worldmodel is NULL
@@ -1342,7 +1342,7 @@ void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength)
 	}
 }
 
-void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int col, int count)
+void QMB_RunParticleEffect (const vec3_t org, const vec3_t dir, int col, int count)
 {
 	color_vec4b_t	color;
 	vec3_t	neworg, newdir;
@@ -1492,7 +1492,7 @@ void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int col, int count)
 	}
 }
 
-void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type)
+void QMB_AnyTrail (const vec3_t start, const vec3_t end, vec3_t *trail_origin, trail_type_e type)
 {
 	color_vec4b_t		color;
 	static	int	make_blood_rare = 0, make_smoke_rare = 0;
@@ -1587,7 +1587,7 @@ void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e 
 	VectorCopy (trail_stop, *trail_origin);
 }
 
-void QMB_BlobExplosion (vec3_t org)
+void QMB_BlobExplosion (const vec3_t org)
 {
 	float	theta;
 	color_vec4b_t	color;
@@ -1628,7 +1628,7 @@ void QMB_BlobExplosion (vec3_t org)
 	}
 }
 
-void QMB_LavaSplash (vec3_t org)
+void QMB_LavaSplash (const vec3_t org)
 {
 	int	i, j;
 	float	vel;
@@ -1655,7 +1655,7 @@ void QMB_LavaSplash (vec3_t org)
 	}
 }
 
-void QMB_TeleportSplash (vec3_t org)
+void QMB_TeleportSplash (const vec3_t org)
 {
 	int	i, j, k;
 	vec3_t	neworg, angle;
@@ -1694,20 +1694,20 @@ void QMB_TeleportSplash (vec3_t org)
 	}
 }
 
-#define ONE_FRAME_ONLY	(0.0001)
+#define ONE_FRAME_ONLY	(1.0/1024) // (0.001)
 
-void QMB_StaticBubble (entity_t *ent, vec3_t origin)
+void QMB_StaticBubble (entity_t *ent, const vec3_t origin)
 {
 	AddParticle (p_staticbubble, ent->origin, 1, ent->frame == 1 ? 1.85 : 2.9, ONE_FRAME_ONLY, NULL, zerodir);
 }
 
-void QMB_TorchFlame (vec3_t org, float size, float time)
+void QMB_TorchFlame (const vec3_t org, float size, float time)
 {
 	if (fabs(cl.ctime - cl.oldtime))
 		AddParticle (p_flame, org, 1, size, time, NULL, zerodir);
 }
 
-void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end)
+void QMB_MissileFire (const vec3_t org, const vec3_t start, const vec3_t end)
 {
 	if (fabs(cl.ctime - cl.oldtime))
 		AddParticle (p_missilefire, org, 1, 20, ONE_FRAME_ONLY, NULL, zerodir);
@@ -1715,19 +1715,19 @@ void QMB_MissileFire (vec3_t org, vec3_t start, vec3_t end)
 	AddParticleTrail (p_trailpart, start, end, 2.5, 0.1, ColorForParticle(p_missilefire));
 }
 
-void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, color_vec4b_t color)
+static void QMB_ParticleTrail (const vec3_t start, const vec3_t end, float size, float time, color_vec4b_t color)
 {
 	AddParticle (p_streaktrail, start, 1, size, time, color, end);
 }
 
-void QMB_ShamblerCharge (vec3_t org)
+void QMB_ShamblerCharge (const vec3_t org)
 {
 	vec3_t	pos, vec, dir;
 	color_vec4b_t	col = {60, 100, 240, 0};
 	float	time, len;
 	int	i;
 
-	for (i=0 ; i<5 ; i++)
+	for (i = 0 ; i < 5 ; i++)
 	{
 		VectorClear (vec);
 		VectorClear (dir);
@@ -1748,7 +1748,7 @@ void QMB_ShamblerCharge (vec3_t org)
 }
 
 
-void QMB_LightningSplash (vec3_t org)
+void QMB_LightningSplash (const vec3_t org)
 {
 	int		i, j;
 	vec3_t	neworg, angle;
@@ -1772,7 +1772,7 @@ void QMB_LightningSplash (vec3_t org)
 }
 
 
-void QMB_LightningBeam (vec3_t start, vec3_t end)
+void QMB_LightningBeam (const vec3_t start, const vec3_t end)
 {
 	float	frametime = fabs(cl.ctime - cl.oldtime);
 	color_vec4b_t	color = {120, 140, 255, 0};
@@ -1787,7 +1787,7 @@ void QMB_LightningBeam (vec3_t start, vec3_t end)
 
 }
 
-void QMB_GenSparks (vec3_t org, byte col[3], float count, float size, float life)
+void QMB_GenSparks (const vec3_t org, byte col[3], float count, float size, float life)
 {
 	color_vec4b_t	color;
 	vec3_t	dir;
@@ -1806,7 +1806,7 @@ void QMB_GenSparks (vec3_t org, byte col[3], float count, float size, float life
 	}
 }
 
-void QMB_Lightning_Splash (vec3_t org)
+void QMB_Lightning_Splash (const vec3_t org)
 {
 	int	i, j;
 	vec3_t	neworg, angle;

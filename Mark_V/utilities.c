@@ -752,7 +752,8 @@ void Http_Command_f (lparse_t *line)
 void Install_Command_f (lparse_t *line)
 {
 	char game_url[SYSTEM_STRING_SIZE_1024];
-
+	const char *quoth22name = "quoth2pt2full";
+	cbool game_is_quoth = false;  // We'll set this to quoth if quoth2pt2full
 	if (line->count != 2)
 	{
 		Con_Printf ("Need the game to install or the entire URL with the http:// in it\n");
@@ -768,8 +769,13 @@ void Install_Command_f (lparse_t *line)
 			// Be more flexible if someone types "install travail" (add .zip if necessary, fix case, etc.)
 			c_snprintf2 (game_url, "%s/%s", install_depot_source.string, arg1);
 
-			if (!String_Does_End_With_Caseless (game_url, ".zip"))
+			if (String_Does_Match_Caseless (arg1, quoth22name)) {
+				game_is_quoth = true;
+			}
+
+			if (!String_Does_End_With_Caseless (game_url, ".zip")) {
 				c_strlcat (game_url, ".zip");
+			}
 
 			// Convert to lower case.
 			String_Edit_To_Lower_Case (game_url);
@@ -898,6 +904,7 @@ void Install_Command_f (lparse_t *line)
 		// If we are here, we have a zip to decompress
 		{
 			int zip_skipchars = -1; // It better not be that long.  Needs to contain either a map or a pak.
+			cbool match_maps = false;
 			enum found_what_e { found_none, found_game, found_map};
 			enum found_what_e what_found = found_none; // Until we know otherwise.
 			cbool contains_bsp = false, contains_pak = false, found_playable_content = false;
@@ -947,6 +954,15 @@ void Install_Command_f (lparse_t *line)
 						break;
 					}
 
+					if ( is_bsp && numslashes == 1 && String_Does_Start_With_Caseless (thisname, "maps/"))
+					{
+						what_found = found_map;
+						zip_skipchars = -1; // strlen ("maps/");
+						match_maps = true;  // Reevaluate later?
+						//break;  // Don't break .. doesn't have to be just maps.
+					}
+
+
 					if (nested_path_level)
 					{
 						const char *begin_text;
@@ -963,17 +979,24 @@ void Install_Command_f (lparse_t *line)
 				if ( what_found != found_game && (is_progs || is_pak )  )
 				{
 					what_found = found_game;
+					match_maps = false;
 					break;
 				}
 
-				if ( what_found == found_none && is_bsp)
+				if ( what_found == found_none && is_bsp) {
 					what_found = found_map;
+
+				}
 
 				// If just a .bsp it will keep going.
 
 			}
 
-			
+			if (found_game && game_is_quoth) { 
+				Con_Warning ("Assuming Quoth installation.\n");
+				String_Edit_Replace (install_game_folder_url, sizeof(install_game_folder_url), quoth22name, "quoth");
+			}
+
 			if (what_found == found_none)
 			{
 				Con_Printf ("This archive has no maps, no paks and no progs.dat so appears to have no playable content.\n");
@@ -991,9 +1014,15 @@ void Install_Command_f (lparse_t *line)
 			}
 			else
 			{
-				const char *_dest_base[] = {install_game_folder_url, va("%s/" GAMENAME, com_basedir), va("%s/" GAMENAME "/maps", com_basedir)};
+				const char *_dest_base[] = {
+					install_game_folder_url, 
+					va("%s/" GAMENAME, com_basedir), 
+					va("%s/" GAMENAME "/maps", com_basedir)
+				};
 				char dest_base[MAX_OSPATH];
-				int dnum = what_found == found_game ? 0 : what_found == found_map && zip_skipchars == -1 ? 2 : 1;
+				int dnum = what_found == found_game ? 0 : 
+							what_found == found_map && zip_skipchars == -1 && !match_maps ? 2 : 
+										1;
 
 				c_strlcpy (dest_base, _dest_base[dnum]);
 
@@ -1034,6 +1063,11 @@ void Install_Command_f (lparse_t *line)
 					// Let's have all extractions be lower case out of courtesy
 					c_strlcpy (lower_name, cur->name);
 					String_Edit_To_Lower_Case (lower_name);
+
+					if (found_map && match_maps) {
+						if (!String_Does_Start_With_Caseless (cur->name, "maps/"))
+							continue; // We only found a map.  And it is subdir.
+					}
 
 					if (found_map && zip_skipchars == -1)
 						dest_name = va("%s/%s", dest_base, lower_name); // Maps only

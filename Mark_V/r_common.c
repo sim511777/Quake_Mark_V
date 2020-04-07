@@ -148,8 +148,12 @@ void R_Level_Key_Alpha_SkyFog_Changed (cvar_t *var)
 	if (var == &gl_skyfog && level.is_skyfog == true) {
 		level.is_skyfog = -1; // Set but overridden
 	}
-
-
+#ifdef GLQUAKE_RENDERER_SUPPORT
+	if (var == &gl_mirroralpha && level.is_mirroralpha == true) {
+		extern int vis_changed;
+		vis_changed = 1;
+	}
+#endif // GLQUAKE_RENDERER_SUPPORT
 }
 
 

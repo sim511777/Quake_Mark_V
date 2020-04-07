@@ -38,7 +38,6 @@ char *va (const char *format, ...) __core_attribute__((__format__(__printf__,1,2
 #define c_snprintf3(_var,_fmt,_s1,_s2,_s3) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3)
 #define c_snprintf4(_var,_fmt,_s1,_s2,_s3,_s4) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4)
 #define c_snprintf5(_var,_fmt,_s1,_s2,_s3,_s4,_s5) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4,_s5)
-#define c_snprintf5(_var,_fmt,_s1,_s2,_s3,_s4,_s5) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4,_s5)
 #define c_snprintf6(_var,_fmt,_s1,_s2,_s3,_s4,_s5,_s6) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4,_s5,_s6)
 #define c_snprintf7(_var,_fmt,_s1,_s2,_s3,_s4,_s5,_s6,_s7) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4,_s5,_s6,_s7)
 #define c_snprintf8(_var,_fmt,_s1,_s2,_s3,_s4,_s5,_s6,_s7,_s8) c_snprintfc (_var, sizeof(_var), _fmt, _s1,_s2,_s3,_s4,_s5,_s6,_s7,_s8)
@@ -245,7 +244,7 @@ typedef struct
 	void 		*source;	// user defined behavior
 	int			count;
 	const char	*args[MAX_ARGS_80]; // pointers to chopped
-	
+
 } lparse_t;
 
 lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args); // allow_empty_args can allow a blank final parameter

@@ -127,7 +127,7 @@ CL_ParseTEnt
 */
 void CL_ParseTEnt (void)
 {
-	int		type;
+	te_effect_e		type;
 	vec3_t	pos;
 	dlight_t	*dl;
 	int		rnd;
@@ -145,7 +145,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, COLOR_WIZSPIKE_20, WIZSPIKE_COUNT_30);
+		R_RunParticleEffect (pos, vec3_origin, COLOR_WIZSPIKE_20, WIZSPIKE_COUNT_30, TE_EF_WIZSPIKE);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		S_StartSound (-1, 0, cl_sfx_wizhit, pos, 1, 1);
 		break;
@@ -155,7 +155,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, COLOR_KNIGHTSPIKE_226, KNIGHTSPIKE_COUNT_20);
+		R_RunParticleEffect (pos, vec3_origin, COLOR_KNIGHTSPIKE_226, KNIGHTSPIKE_COUNT_20, TE_EF_KNIGHTSPIKE);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		S_StartSound (-1, 0, cl_sfx_knighthit, pos, 1, 1);
 		break;
@@ -168,10 +168,10 @@ void CL_ParseTEnt (void)
 // joe: they put the ventillator's wind effect to "10" in Nehahra. sigh.
 #ifdef SUPPORTS_NEHAHRA
 		if (nehahra_active)
-			R_RunParticleEffect (pos, vec3_origin, 0, NAIL_SPIKE_COUNT_9);
+			R_RunParticleEffect (pos, vec3_origin, 0, VENTILLIATION_WIND_COUNT_10, TE_EF_VENTILLIATION);
 		else
 #endif // SUPPORTS_NEHAHRA
-			R_RunParticleEffect (pos, vec3_origin, 0, VENTILLIATION_WIND_COUNT_10);
+			R_RunParticleEffect (pos, vec3_origin, 0, NAIL_SPIKE_COUNT_9, TE_EF_SPIKE);
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 
 		if ( rand() % 5 )
@@ -195,7 +195,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 0, SUPER_SPIKE_AND_BULLETS_COUNT_20);
+		R_RunParticleEffect (pos, vec3_origin, 0, SUPER_SPIKE_AND_BULLETS_COUNT_20, TE_EF_SUPERSPIKE);
 		Stain_AddStain(pos, 3, 30); // Moderate darkening, moderate radius
 
 		if ( rand() % 5 )
@@ -218,7 +218,7 @@ void CL_ParseTEnt (void)
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 
-		R_RunParticleEffect (pos, vec3_origin, 0, GUNSHOT_COUNT_21); // was 20
+		R_RunParticleEffect (pos, vec3_origin, 0, GUNSHOT_COUNT_21, TE_EF_GUNSHOT); // was 20
 		Stain_AddStain(pos, 2, 20); // Minimal darkening, normal radius
 		break;
 
@@ -231,7 +231,8 @@ void CL_ParseTEnt (void)
 		
 
 		if (frame.qmb && qmb_explosiontype.value == 3)
-			R_RunParticleEffect (pos, vec3_origin, COLOR_EXPLOSION_225, 50); // I am QMB, explosion type 3
+			R_RunParticleEffect (pos, vec3_origin, COLOR_EXPLOSION_225, 50, TE_EF_EXPLOSION_1_3); // I am QMB, explosion type 3
+//			RunParticleEffect(blood, org, dir, color, count);
 		else
 			R_ParticleExplosion (pos); // Classic or QMB except 3
 
@@ -310,7 +311,8 @@ void CL_ParseTEnt (void)
 		colorLength = MSG_ReadByte ();
 
 		if (frame.qmb && qmb_explosiontype.value == 3)
-			R_RunParticleEffect (pos, vec3_origin, NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255, 50);
+			//R_RunParticleEffect (pos, vec3_origin, NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255, 50, TE_EF_EXPLOSION2);
+			R_ParticleExplosion (pos); // Seriously?  Can this even happen in software?
 		else
 			R_ColorMappedExplosion (pos, colorStart, colorLength); // R_ParticleExplosion2
 
@@ -505,6 +507,7 @@ void CL_UpdateTEnts (void)
 #endif // !GLQUAKE_SUPPORTS_QMB
 
 		d = VectorNormalize(dist);
+	VectorScale (dist, 30, dist);
 
 		// Baker: Apparently for every 30 units we do a new beam segment
 		for ( ; d > 0 ; d -= 30)
@@ -514,10 +517,12 @@ void CL_UpdateTEnts (void)
 			if (frame.qmb && qmb_lightning.value)
 			{
 				VectorAdd(org, dist, beamend);
-//				for (j=0 ; j<3 ; j++)
-//					beamend[j] += (b->entity != cl.viewentity_player) ? (rand() % 40) - 20 : (rand() % 16) - 8;
-				for (j = 0 ; j < 3 ; j++)
-					beamend[j] += (rand() % 10) - 5;
+				for (j=0 ; j<3 ; j++)
+					beamend[j] += (b->entity != cl.viewentity_player) ? (rand() % 40) - 20 : (rand() % 10) - 5; // Better.
+					//beamend[j] += (b->entity != cl.viewentity_player) ? (rand() % 40) - 20 : (rand() % 16) - 8;
+//					beamend[j] += (b->entity != cl.viewentity_player) ? (rand() % 40) - 20 : 0;
+//				for (j = 0 ; j < 3 ; j++)
+//					beamend[j] += (rand() % 10) - 5;
 
 				QMB_LightningBeam (beamstart, beamend);
 				VectorCopy (beamend, beamstart);
@@ -539,7 +544,8 @@ void CL_UpdateTEnts (void)
 			// SPARKS GO HERE
 
 			// Baker: VectorMA replaces for loop
-			VectorMA (org, 30, dist, org);
+			//VectorMA (org, 30, dist, org);
+			VectorAdd (org, dist, org);
 //			VectorCopy (org, ent->origin); // You would think, but the origin Quake loop isn't written like that
 
 		} // End of while

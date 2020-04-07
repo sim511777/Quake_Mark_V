@@ -4393,7 +4393,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 	c_snprintf2 (name, "%s:frame%i", loadmodel->name, framenum);
 	offset = (src_offset_t)(pinframe+1) - (src_offset_t)mod_base; //johnfitz
 
-	if (gl_external_textures.value)
+	if (!isDedicated && gl_external_textures.value)
 	{
 		// Prepare name
 		int hunkmark = Hunk_LowMark ();

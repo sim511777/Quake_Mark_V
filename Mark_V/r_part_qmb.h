@@ -165,18 +165,18 @@ typedef	struct particle_tree_s
 	float				custom;
 } particle_type_t;
 
-void QMB_ParticleTrail (vec3_t start, vec3_t end, float size, float time, color_vec4b_t color);
-cbool QMB_InitParticles (void);
-void QMB_ClearParticles (void);
-void QMB_ParseParticleEffect (void);
-void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
-void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
-void QMB_EntityParticles (entity_t *ent);
-void QMB_BlobExplosion (vec3_t org);
-void QMB_ParticleExplosion (vec3_t org);
-void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
-void QMB_LavaSplash (vec3_t org);
-void QMB_TeleportSplash (vec3_t org);
+void QMB_ParticleTrail (const vec3_t start, const vec3_t end, float size, float time, color_vec4b_t color);
+//cbool QMB_InitParticles (void);
+//void QMB_ClearParticles (void);
+//void QMB_ParseParticleEffect (void);
+//void QMB_RunParticleEffect (vec3_t org, const vec3_t dir, int color, int count);
+//void QMB_AnyTrail (vec3_t start, vec3_t end, vec3_t *trail_origin, trail_type_e type);
+//void QMB_EntityParticles (entity_t *ent);
+//void QMB_BlobExplosion (vec3_t org);
+//void QMB_ParticleExplosion (vec3_t org);
+//void QMB_ColorMappedExplosion (vec3_t org, int colorStart, int colorLength); // ParticleExplosion2
+//void QMB_LavaSplash (vec3_t org);
+//void QMB_TeleportSplash (vec3_t org);
 
 static cbool TraceLineN (vec3_t start, vec3_t end, vec3_t impact, vec3_t normal)
 {

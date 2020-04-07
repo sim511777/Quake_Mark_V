@@ -83,6 +83,11 @@ void Movie_Start_Capturing (const char *moviename)
 	File_URL_Edit_Force_Extension (movie_capturing_name, ".avi", sizeof(movie_capturing_name) );
 	FS_FullPath_From_QPath (movie_capturing_fullpath, movie_capturing_name);
 
+	if (vid.screen.width % 4) {
+		Con_Printf ("Can't video mode width is %d, but must be multiple of 4\n", vid.screen.width);
+		return;	
+	}
+
 	if (!(moviefile = FS_fopen_write(movie_capturing_fullpath, "wb")))
 	{
 		File_Mkdir_Recursive (movie_capturing_fullpath);

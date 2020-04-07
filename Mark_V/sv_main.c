@@ -1321,7 +1321,7 @@ void SV_Autosave_Think (void)
 			checkit = File_Rename (autosave0, autosave1);
 	}
 
-	Host_Savegame ("a0", false);
+	Host_Savegame (AUTOSAVE_BASENAME "0", false);
 	Con_DPrintf ("Autosaved %d:%02d\n", Time_Minutes((int)sv.time), Time_Seconds((int)sv.time) );
 
 	// Set the next auto save time

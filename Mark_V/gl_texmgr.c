@@ -431,7 +431,7 @@ gltexture_t* TexMgr_FreeTexture (gltexture_t *kill)
 	gltexture_t *glt;
 
 	if (in_reload_images) // Baker: Does this happen?
-		return kill; // Pow!!!
+		return kill; // Pow!!!  We do not want to kill the slot for reload images, we are reusing the slot.
 
 
 	if (kill == NULL)
@@ -1541,14 +1541,14 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 	{
 		TexMgr_MipMapW (data, glt->width, glt->height);
 		glt->width >>= 1;
-		if (glt->flags & TEXPREF_ALPHA)
+		if (Flag_Check (glt->flags, TEXPREF_ALPHA) )
 			TexMgr_AlphaEdgeFix ((byte *)data, glt->width, glt->height);
 	}
 	while ((int) glt->height > mipheight)
 	{
 		TexMgr_MipMapH (data, glt->width, glt->height);
 		glt->height >>= 1;
-		if (glt->flags & TEXPREF_ALPHA)
+		if (Flag_Check (glt->flags, TEXPREF_ALPHA) )
 			TexMgr_AlphaEdgeFix ((byte *)data, glt->width, glt->height);
 	}
 
@@ -1561,8 +1561,9 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 	// What if lightmap?  Well, we are in the 32 bits zone here.
 		//if (glt->flags & TEXPREF_WARPIMAGE) // Wrong place to do this, as this is not a real image.  And it's WAY too late at this point.
 		// Remember a warp image supplies data we shall not write to.  Sigh.			
-		if (texmgr_texturegamma_current && !(glt->flags & TEXPREF_WARPIMAGE) && isin2(glt->source_format, SRC_RGBA, SRC_INDEXED_WITH_PALETTE)) {
+		if (texmgr_texturegamma_current && !Flag_Check(glt->flags, TEXPREF_WARPIMAGE) && !Flag_Check(glt->flags, TEXPREF_BLENDED) && isin2(glt->source_format, SRC_RGBA, SRC_INDEXED_WITH_PALETTE)) {
 			for (i = 0; i < pixelcount; i++) {
+				// Baker: Not that we care but this isn't Big Endian friendly.
 				byte *pixel = (byte*)&myData[i];
 				pixel[0] = texture_gammatable_256[pixel[0]];
 				pixel[1] = texture_gammatable_256[pixel[1]];

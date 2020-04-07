@@ -69,12 +69,16 @@ typedef struct entity_s
 #ifdef GLQUAKE // Baker: Eliminate in future
 	struct gltexture_s		*coloredskin;
 	int						colormap;
+	cbool					is_static_entity;
+//	int						static_mirror_numsurfs;
+	//struct mplane_s		*mirror_plane;
 #else
 	byte					*colormap;
 #endif // GLQUAKE vs. WinQuake
 
+
+	int						modelindex; // Too useful
 #ifdef GLQUAKE_SUPPORTS_QMB
-	int						modelindex;
 	cbool					is_fake_frame0;
 #endif // GLQUAKE_SUPPORTS_QMB
 

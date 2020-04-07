@@ -139,14 +139,19 @@ typedef struct
 
 
 // 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
+typedef enum {
+	
+PLANE_X_0			= 0,	//#define	PLANE_X			0
+PLANE_Y_1			= 1,	//#define	PLANE_Y			1
+PLANE_Z_2			= 2,	//#define	PLANE_Z			2
 
 // 3-5 are non-axial planes snapped to the nearest
-#define	PLANE_ANYX		3
-#define	PLANE_ANYY		4
-#define	PLANE_ANYZ		5
+PLANE_ANYX_3		= 3,	//#define	PLANE_ANYX		3
+PLANE_ANYY_4		= 4,	//#define	PLANE_ANYY		4
+PLANE_ANYZ_5		= 5,	//#define	PLANE_ANYZ		5
+
+} PLANE_E;
+
 
 typedef struct
 {

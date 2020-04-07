@@ -235,11 +235,12 @@ void VID_Local_Resize_Act (void)
 	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
 
 #ifndef DIRECT3D_WRAPPER
-	if (COM_CheckParm ("-resizable"))
+	if (1 /*COM_CheckParm ("-resizable")*/)
 	{
 		vid.screen.width = vid.client_window.width;
 		vid.screen.height = vid.client_window.height;
 		vid.consize_stale = true;
+		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.
 	}
 #endif // DIRECT3D_WRAPPER
 }
@@ -301,7 +302,7 @@ cbool VID_Local_SetMode (int modenum)
 
 // Baker: begin resize window on the fly
 #ifndef DIRECT3D_WRAPPER
-	if (bordered &&  COM_CheckParm ("-resizable"))
+	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
 		WindowStyle = WindowStyle | WS_SIZEBOX;
 #endif // DIRECT3D_WRAPPER
 

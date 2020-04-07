@@ -566,13 +566,13 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 
 		switch (plane->type)
 		{
-		case PLANE_X:
+		case PLANE_X_0:
 			dot = modelorg[0] - plane->dist;
 			break;
-		case PLANE_Y:
+		case PLANE_Y_1:
 			dot = modelorg[1] - plane->dist;
 			break;
-		case PLANE_Z:
+		case PLANE_Z_2:
 			dot = modelorg[2] - plane->dist;
 			break;
 		default:

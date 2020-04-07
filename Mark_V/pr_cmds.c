@@ -303,6 +303,7 @@ static void PF_setmodel (void)
 			SetMinMaxSize (e, boxmins, boxmaxs, true); // Baker end
 		} else if (mod->type == mod_alias)
 			SetMinMaxSize (e, mod->mins, mod->maxs, true);
+		else SetMinMaxSize (e, mod->mins, mod->maxs, true); // Anything else
 	}
 	//johnfitz
 	else

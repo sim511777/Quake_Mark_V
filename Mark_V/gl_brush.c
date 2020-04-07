@@ -174,15 +174,30 @@ void DrawGLTriangleFan (glpoly_t *p, int renderfx)
 R_DrawSequentialPoly -- johnfitz -- rewritten
 ================
 */
-void R_DrawSequentialPoly (msurface_t *s)
+// Ony R_DrawBrushModel calls me.
+#define ACTIVE_MIRROR(_s) (frame.has_mirror && (Flag_Check ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
+#define DRAW_ACTIVE_MIRROR (active_mirror && frame.in_mirror_overlay)
+
+static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
 {
 	glpoly_t	*p;
 	texture_t	*t;
 	float		*v;
 	float		entalpha;
 	int			i;
-//	cbool		active_mirror = frame.has_mirror ? false : (Flag_Check (s->flags, SURF_DRAWMIRROR) && !memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])));
-	
+	cbool		active_mirror = ACTIVE_MIRROR(s); //frame.has_mirror ? false : (Flag_Check (s->flags, SURF_DRAWMIRROR) && !memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])));
+
+	if (active_mirror) // && !DRAW_ACTIVE_MIRROR)
+		return;  // We are an active mirror, we never get drawn in this manner when active.                        // We are an active mirror, but we are not in mirror overlay draw.
+
+	//if (frame.in_mirror_draw && s == ent->model->mirror_only_surface) {
+	//	// We are in a mirror draw, do not draw mirrors matching the plane
+	//	//frame.mirror_plane
+	//	if (ent->model->mirror_plane
+	//	if (memcmp (frame.mirror_plane, ent->model->mirror_plane, sizeof(frame.mirror_plane[0])));
+	//}
+
+
 	t = R_TextureAnimation (s->texinfo->texture, currententity->frame);
 	entalpha = ENTALPHA_DECODE(currententity->alpha);
 
@@ -566,9 +581,12 @@ void R_DrawBrushModel (entity_t *e)
 	mplane_t	*pplane;
 	qmodel_t		*clmodel;
 
+	if (e->model->mirror_only_surface)
+		return; // Only the mirror draws, that does not occur here.
 
 	if (R_CullModelForEntity(e))
 		return;
+
 
 	currententity = e;
 	clmodel = e->model;
@@ -629,12 +647,13 @@ void R_DrawBrushModel (entity_t *e)
 
 	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, psurf++)
 	{
+// HERE?  
 		pplane = psurf->plane;
 		dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
 		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) ||
 			(!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON)))
 		{
-			R_DrawSequentialPoly (psurf);
+			R_DrawBrushModel_DrawSequentialPoly (e, psurf);
 			rs_brushpolys++;
 		}
 	}

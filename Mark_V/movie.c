@@ -84,7 +84,12 @@ void Movie_Start_Capturing (const char *moviename)
 	FS_FullPath_From_QPath (movie_capturing_fullpath, movie_capturing_name);
 
 	if (vid.screen.width % 4) {
-		Con_Printf ("Can't video mode width is %d, but must be multiple of 4\n", vid.screen.width);
+		Con_Printf ("Can't video mode width is %d, but must be multiple of 4\nMaybe press ALT-ENTER once or twice and try again?", vid.screen.width);
+		return;	
+	}
+
+	if (vid.screen.height % 4) {
+		Con_Printf ("Can't video mode height is %d, but must be multiple of 4.\nMaybe press ALT-ENTER once or twice and try again?\n", vid.screen.height);
 		return;	
 	}
 

@@ -202,10 +202,8 @@ Point3D R_SurfCenter (msurface_t *surf)
 
 cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname)
 {
+	// In order to hit here, we are not Direct3D
 	cbool Is_Texture_Prefix (const char *texturename, const char *prefixstring);
-
-	if (vid.direct3d)
-		return false; // Not supported right now.
 	
 	if (Is_Texture_Prefix (txname, gl_texprefix_mirror.string) && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME)) {
 		return true; // id1 gamedir
@@ -217,6 +215,90 @@ cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname)
 
 	return false;
 }
+
+void GL_Mirrors_Scan_Surface (msurface_t *surf, int surfnum);
+
+// Scan each static entity as it comes in.
+
+
+
+void GL_Mirrors_Build_Vis (void)
+{
+	// level.mirror must already be true to be here
+	mnode_t *node; int i;
+	for (i = 0, node = cl.worldmodel->nodes; i < cl.worldmodel->numnodes ; i++, node++) {
+		msurface_t	*surf; int j;
+		for (j = 0, surf = &cl.worldmodel->surfaces[node->firstsurface] ; (unsigned int)j < node->numsurfaces ; j++, surf++) {
+			if (Flag_Check (surf->flags, SURF_DRAWMIRROR)) {
+				GL_Mirrors_Scan_Surface (surf, j);
+			} // end surf->draw mirror
+		} // j
+	} // i
+
+#if 0 // Can't do this here.  Make sure hunk_lowmark is ok after signon2
+	for i = 1 to cl.worldmodel->numsubmodels
+	clmodel = cl_precache [modelindex + 1]
+		for each surf {
+			if mirror clmodel= mirrors ++
+				GL_Mirrors_Scan_Surface
+		}
+
+// We need to walk the submodels here somehow
+	mod->firstmodelsurface = (dmodel_t *)bm->firstface;
+
+msurface_t	*psurf =&clmodel->surfaces[clmodel->firstmodelsurface];
+// mod->nummodelsurfaces = bm->numfaces;
+	// Do we need to translate it?  I think no?
+	// Why?  Because lights on unmoved brush models is right in Quake
+	// It's the moved ones that we have to translate.
+	// if (clmodel->firstmodelsurface == 0) // I am a health box or ammo box, not a wall
+
+	for (j=0 ; j<clmodel->nummodelsurfaces ; j++, psurf++)
+#endif
+}
+
+
+void GL_Mirrors_Scan_Surface (msurface_t *surf, int surfnum)
+{
+	// SURF_DRAWMIRROR must be true to be here )
+	mleaf_t		*mirror_leaf;
+	Point3D center = R_SurfCenter (surf); //+ surf->plane->normal;
+	VectorAdd (center.vec3, surf->plane->normal, center.vec3); // works
+	
+	mirror_leaf = Mod_PointInLeaf (center.vec3, cl.worldmodel);
+
+	if (mirror_leaf->contents != CONTENTS_SOLID) {
+		// Add matching leafs to the surface.  Isn't there just one?  We can't easily repeat the vis.  Just finish this dammit.
+		byte *vis = Mod_LeafPVS (mirror_leaf, cl.worldmodel);					
+		
+		int hunk_add_mark = Hunk_LowMark ();
+		int hunk_add_size = 0;
+		
+		size_t siz = sizeof( *(surf->xtraleafs));
+		surf->xtraleafs = Hunk_AllocName (sizeof(surf->xtraleafs[0]) * MAX_MAP_LEAFS, va("mirror_surfs_%d", surfnum)); // We'll chop this.
+
+		//Con_SafePrintf ("Mirror Surface %x (%d) appears in vis node %d viewleaf is %x\n", surf, j, i, mirror_leaf);
+		{	int j2;
+			mleaf_t	*leaf;
+			for (j2 = 0, leaf = &cl.worldmodel->leafs[1]; j2 < cl.worldmodel->numleafs; j2++, leaf++) {
+				// We could add the surface specific leafs here .. like if it fails the viskey, 
+				if (vis[j2 >> 3 /*div by 8 */] & (1 << (j2 & 7))) {
+					// Mirror sees you.
+					surf->xtraleafs[surf->xtraleafs_count] = leaf;
+					surf->xtraleafs_count ++;
+				} // if
+			} // j2
+		}
+		
+		hunk_add_size = surf->xtraleafs_count * siz;
+		// Too lazy to chop it.
+		// If we try to chop it ourselves, we trash a sentinel.
+		// Easy enough to fix really, memdup and put that on the hunk.
+		// Next time.
+		//Hunk_FreeToLowMark ( hunk_add_mark + hunk_add_size);
+	}
+}
+
 
 /*
 ===============
@@ -235,59 +317,19 @@ void R_NewMap_Local (void)
 	TexturePointer_Reset ();
 
 		// Baker addition:
-
-	if (level.mirror)  { 
-		int i, j;
-		//byte		*vis;
-		 
-		mnode_t		*node;
-		msurface_t	*surf;
-		mleaf_t		*mirror_leaf;
+#if 1
+	if (level.mirror) {
+		void Mirror_Scan_SubModels (qmodel_t *world_model);
+		Mirror_Scan_SubModels (cl.worldmodel);
 
 		//Con_SafePrintf ("Num nodes is %d\n", cl.worldmodel->numnodes);
 		//Con_Printf ("Num surfaces is %d\n", cl.worldmodel->numnodes); // ?
 
 		//Con_Printf ("Num leafs %d\n", cl.worldmodel->numleafs);
 		// Scan for mirrors
-		for (i = 0, node = cl.worldmodel->nodes ; i < cl.worldmodel->numnodes ; i++, node++)
-			for (j = 0, surf = &cl.worldmodel->surfaces[node->firstsurface] ; (unsigned int)j < node->numsurfaces ; j++, surf++)
-				if (Flag_Check (surf->flags, SURF_DRAWMIRROR)) {
-					
-					Point3D center = R_SurfCenter (surf); //+ surf->plane->normal;
-					VectorAdd (center.vec3, surf->plane->normal, center.vec3); // works
-					mirror_leaf = Mod_PointInLeaf (center.vec3, cl.worldmodel);
-					if (mirror_leaf->contents != CONTENTS_SOLID) {
-						// Add matching leafs to the surface.  Isn't there just one?  We can't easily repeat the vis.  Just finish this dammit.
-						byte *vis = Mod_LeafPVS (mirror_leaf, cl.worldmodel);					
-						
-						int hunk_add_mark = Hunk_LowMark ();
-						int hunk_add_size = 0;
-						mleaf_t	*leaf;
-						int j2;//, k2;
-						size_t siz=sizeof( *(surf->xtraleafs));
-						surf->xtraleafs = Hunk_AllocName (sizeof(surf->xtraleafs[0]) * MAX_MAP_LEAFS, va("mr%d", j)); // We'll chop this.
-						
-						//Con_SafePrintf ("Mirror Surface %x (%d) appears in vis node %d viewleaf is %x\n", surf, j, i, mirror_leaf);
-						for (j2 = 0, leaf = &cl.worldmodel->leafs[1]; j2 < cl.worldmodel->numleafs; j2++, leaf++)
-						{
-							// We could add the surface specific leafs here .. like if it fails the viskey, 
-							if (vis[j2 >> 3] & (1 << (j2 & 7))) { // >> 3 = divide by 8
-								// Mirror sees you.
-								surf->xtraleafs[surf->xtraleafs_count] = leaf;
-								surf->xtraleafs_count ++;
-							}
-						}
-						
-						hunk_add_size = surf->xtraleafs_count * siz;
-						// Too lazy to chop it.
-						// If we try to chop it ourselves, we trash a sentinel.
-						// Easy enough to fix really, memdup and put that on the hunk.
-						// Next time.
-						//Hunk_FreeToLowMark ( hunk_add_mark + hunk_add_size);
-					}
-				}
+		GL_Mirrors_Build_Vis ();
 	}
-
+#endif
 
 	load_subdivide_size = gl_subdivide_size.value; //johnfitz -- is this the right place to set this?
 }

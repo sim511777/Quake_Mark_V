@@ -81,6 +81,8 @@ void TexturePointer_CheckChange (texturepointer_t *test)
 		strlcpy (texturepointer.texturename, test->surf->texinfo->texture->name, 16 /* WAD sizeof name */ );
 		texturepointer.glt = test->surf->texinfo->texture->gltexture;
 
+		//Con_Printf ("surf dist %f %p\n", test->surf->plane->dist, test->surf);
+
 		// Is water or lava, redirect to that glt
 		if (!texturepointer.glt && test->surf->texinfo->texture->warpimage)
 			texturepointer.glt = test->surf->texinfo->texture->warpimage;
@@ -125,7 +127,7 @@ void Texture_Pointer_f (lparse_t *line)
 
 static vec3_t collision_spot;
 
-msurface_t* SurfacePoint_NodeCheck_Recursive (mnode_t *node, vec3_t start, vec3_t end)
+msurface_t *SurfacePoint_NodeCheck_Recursive (mnode_t *node, vec3_t start, vec3_t end)
 {
 	float		front, back, frac;
 	vec3_t		mid;
@@ -187,7 +189,7 @@ loc0:
 		// Baker: Apparently we need this if the for loop below fails
 		VectorCopy (mid, collision_spot);
 
-		for (i = 0; i < node->numsurfaces;i++, surf++)
+		for (i = 0; i < node->numsurfaces; i++, surf++)
 		{
 			// light would check if SURF_DRAWTILED (no lightmaps), but we want for texture pointer
 			//if (surf->flags & SURF_DRAWTILED)

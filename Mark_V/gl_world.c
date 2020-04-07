@@ -131,7 +131,7 @@ void R_MarkSurfaces (void)
 					if ((*mark)->xtraleafs_count) {
 						// Irony.
 						msurface_t *surf = (*mark), **mark2;
-						
+//MARKSURFACES						
 						int j2, k2;
 						for (j2 = 0; j2 < surf->xtraleafs_count; j2++) {
 							mleaf_t	*leafx = surf->xtraleafs[j2];
@@ -201,13 +201,13 @@ cbool R_BackFaceCull (msurface_t *surf)
 
 	switch (surf->plane->type)
 	{
-	case PLANE_X:
+	case PLANE_X_0:
 		dot = r_refdef.vieworg[0] - surf->plane->dist;
 		break;
-	case PLANE_Y:
+	case PLANE_Y_1:
 		dot = r_refdef.vieworg[1] - surf->plane->dist;
 		break;
-	case PLANE_Z:
+	case PLANE_Z_2:
 		dot = r_refdef.vieworg[2] - surf->plane->dist;
 		break;
 	default:
@@ -432,10 +432,29 @@ static void R_DrawTextureChains_Multitexture_Tex (texture_t *t) //is_mirror_pass
 		// If we aren't culled *OR* we are in mirror draw, continue ...
 		// Remember, we don't use culling for the mirror pass because FOV alone is not enough to determine the true frustum.
 		// And determining the true frustum in a mirror scene would be very, very hard to calculate.
-		
+#if 1 // Baker: Dec 2
+		if (!level.water_vis_known)
+		{
+			if (s->flags & SURF_UNDERWATER)
+				frame.has_underwater = true;
+			else
+				frame.has_abovewater = true;
+		}		
+#endif
 
 		if (!s->culled || frame.in_mirror_draw) {
 			cbool active_mirror = ACTIVE_MIRROR(s);
+#if 0
+// Debugging
+			cbool surf_mirro = Flag_Check (s->flags, SURF_DRAWMIRROR);
+			cbool planematch = frame.mirror_plane && s->plane;
+			int mirrorcmp  = frame.mirror_plane && s->plane ? memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])) : 0;
+//cbool test = (frame.has_mirror && (Flag_Check ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
+//#define DRAW_ACTIVE_MIRROR (active_mirror && frame.in_mirror_overlay)
+			if (frame.in_mirror_draw && surf_mirro)
+				continue;
+#endif 
+
 			if (active_mirror && !DRAW_ACTIVE_MIRROR) // Mirrors only draw in overlay
 				continue; 
 			if (!bound) //only bind once we are sure we need this texture
@@ -444,6 +463,7 @@ static void R_DrawTextureChains_Multitexture_Tex (texture_t *t) //is_mirror_pass
 				GL_EnableMultitexture(); // selects TEXTURE1
 				bound = true;
 			}
+#if 0
 			if (!level.water_vis_known)
 			{
 				if (s->flags & SURF_UNDERWATER)
@@ -451,6 +471,7 @@ static void R_DrawTextureChains_Multitexture_Tex (texture_t *t) //is_mirror_pass
 				else
 					frame.has_abovewater = true;
 			}
+#endif
 			if (s->flags & SURF_DRAWFENCE)
 			{
 				GL_DisableMultitexture(); // selects TEXTURE0
@@ -471,6 +492,7 @@ static void R_DrawTextureChains_Multitexture_Tex (texture_t *t) //is_mirror_pass
 					eglVertex3fv (v);
 				}
 				eglEnd ();
+				GL_EnableMultitexture(); // Restore state
 			}
 			else {
 				eglBegin(GL_POLYGON);
@@ -535,16 +557,17 @@ void R_DrawTextureChains_Multitexture_Mirrors (void)
 	texture_t	*t;
 
 	for (i = 0; i < cl.worldmodel->numtextures; i++) {
+		const char *txname = cl.worldmodel->textures[i]->name;
 		t = cl.worldmodel->textures[i];
 
 		if (!t || !t->texturechain || t->texturechain->flags & (SURF_DRAWTILED | SURF_NOTEXTURE)) // Make a draw mirror pass using flags.
 			continue;
 
 // Let Multitexture catch this
-//		if ( !Flag_Check (t->texturechain->flags, SURF_DRAWMIRROR) )
-//			continue;
+		if ( !Flag_Check (t->texturechain->flags, SURF_DRAWMIRROR) )
+			continue;
 // Culled by who and when?  I don't want to draw mirrors that can't be seen.
-
+		
 		R_DrawTextureChains_Multitexture_Tex (t);
 	}
 

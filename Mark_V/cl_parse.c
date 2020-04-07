@@ -729,9 +729,9 @@ void CL_ParseUpdate (int bits)
 	}
 	else modnum = ent->baseline.modelindex;
 
-#ifdef GLQUAKE_SUPPORTS_QMB
+//#ifdef GLQUAKE_SUPPORTS_QMB
 	ent->modelindex = modnum;
-#endif // GLQUAKE_SUPPORTS_QMB
+//#endif // GLQUAKE_SUPPORTS_QMB
 
 	if (bits & U_FRAME)
 		ent->frame = MSG_ReadByte ();
@@ -940,6 +940,17 @@ void CL_ParseBaseline (entity_t *ent, int version) //johnfitz -- added argument
 	}
 
 	ent->baseline.alpha = (bits & B_ALPHA) ? MSG_ReadByte() : ENTALPHA_DEFAULT; //johnfitz -- PROTOCOL_FITZQUAKE
+
+#if 0 //def GLQUAKE_COLORMAP_TEXTURES
+// Mirrors
+	if (level.mirror) {
+		/*ent->static_mirror_numsurfs =*/ GL_Mirrors_Scan_Entity (ent);
+		// Operate on the assumption that func_illusionary is fixed in map.
+		// How do we expand vis on server side?
+	}
+#endif // GLQUAKE_COLORMAP_TEXTURES
+
+	//One more thing ...
 }
 
 
@@ -1217,6 +1228,7 @@ void CL_ParseStatic (int version) //johnfitz -- added a parameter
 
 #ifdef GLQUAKE_COLORMAP_TEXTURES
 	ent->colormap = 0; // Baker: no colormap
+	ent->is_static_entity = true;	// In case we ever care
 #endif // GLQUAKE_COLORMAP_TEXTURES
 
 #ifdef WINQUAKE_COLORMAP_TRANSLATION
@@ -1226,12 +1238,22 @@ void CL_ParseStatic (int version) //johnfitz -- added a parameter
 	ent->skinnum = ent->baseline.skin;
 	ent->effects = ent->baseline.effects;
 	ent->alpha = ent->baseline.alpha; //johnfitz -- alpha
+	ent->modelindex = ent->baseline.modelindex;
 
 	VectorCopy (ent->baseline.origin, ent->origin);
 	VectorCopy (ent->baseline.angles, ent->angles);
 
 // Baker: MH does a lightspot check for static entities here
 // and stores it off, since they never move
+
+#if 0 //def GLQUAKE_COLORMAP_TEXTURES
+// Mirrors
+	if (level.mirror) {
+		/* ent->static_mirror_numsurfs = */ GL_Mirrors_Scan_Entity (ent);
+		// Operate on the assumption that func_illusionary is fixed in map.
+		// How do we expand vis on server side?
+	}
+#endif // GLQUAKE_COLORMAP_TEXTURES
 
 	R_AddEfrags (ent);
 }

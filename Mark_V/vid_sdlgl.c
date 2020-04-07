@@ -158,7 +158,7 @@ void VID_Local_Resize_Act (void)
 	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
 
 #ifndef DIRECT3D_WRAPPER
-	if (COM_CheckParm ("-resizable"))
+	if (1 /*COM_CheckParm ("-resizable")*/)
 	{
 		vid.screen.width = vid.client_window.width;
 		vid.screen.height = vid.client_window.height;

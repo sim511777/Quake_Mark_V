@@ -60,6 +60,7 @@ typedef struct gltexture_s {
 	qmodel_t			*owner;
 // Baker
 	int		            bsp_texnum; // for bsp
+	cbool				is_mirror; // For debugging
 #if 0
 	char				paste_texture_name[MAX_QPATH_64]; //relative filepath to data source, or "" if source is in memory
 	unsigned int		paste_texture_width; //size of image in source data

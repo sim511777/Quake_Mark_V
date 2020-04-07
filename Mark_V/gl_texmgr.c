@@ -2477,8 +2477,10 @@ void GL_Bind (gltexture_t *texture)
 	if (!texture)
 		texture = nulltexture;
 
-	if (strstr (texture->name, "window02_1") && strstr(texture->name, "glow"))
-		texture=texture;
+#if 0
+	if (texture->is_mirror)  // debugging
+		texture = texture;
+#endif
 
 	if ((int)texture->texnum != currenttexture)
 	{

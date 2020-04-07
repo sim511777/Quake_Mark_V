@@ -731,9 +731,6 @@ void Mod_Load_Brush_Model_Texture (qmodel_t* ownermod, int bsp_texnum, texture_t
 	int			extraflags = 0;
 	const char *warp_texturename;
 
-		if (String_Does_End_With_Caseless (tx->name, "window02_1"))
-			data=data;
-
 #pragma message ("Baker: If this isn't right, we will find out")
 	if (tx->gltexture) 	 tx->gltexture = TexMgr_FreeTexture (tx->gltexture);
 	if (tx->fullbright)  tx->fullbright= TexMgr_FreeTexture (tx->fullbright);
@@ -1177,8 +1174,22 @@ static void Mod_LoadTextures (lump_t *l)
 			continue; // We're done for this texture
 		}
 
+
 #ifdef GLQUAKE_RENDERER_SUPPORT
 		Mod_Load_Brush_Model_Texture (loadmodel, i, tx, tx_qpixels, tx_wad3_palette);
+
+// FUNC_ILLUSIONARY_MIRRORS
+#if 1 // For debugging only.  Allows us to track the rendering.
+		if (loadmodel->isworldmodel /* prevent healthboxes from having mirrors*/ &&  GL_Mirrors_Is_TextureName_Mirror(tx->name)) {
+			level.mirror = true; // Set to true, but never set this to false.
+			// We will need to scan static entities
+			// If this is true
+			// If this is true and other is false then
+			//   there are only mirrors on func_illusionary
+			tx->gltexture->is_mirror = true;
+		}
+#endif
+
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 	}
@@ -2030,9 +2041,9 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 			out->flags |= SURF_DRAWFENCE;
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		if (loadmodel->isworldmodel /* prevent healthboxes from having mirrors*/ && GL_Mirrors_Is_TextureName_Mirror (out->texinfo->texture->name)) {
+		if (loadmodel->isworldmodel /* prevent healthboxes mirrors*/ && !vid.direct3d && GL_Mirrors_Is_TextureName_Mirror (out->texinfo->texture->name)) {
 			level.mirror = true;
-			out->flags |= SURF_DRAWMIRROR; // mirror_
+			out->flags |= SURF_DRAWMIRROR; // mirror_		// Yes submodel surfaces get marked here.
 		}
 
 		if (Is_Texture_Prefix (out->texinfo->texture->name, gl_texprefix_envmap.string))
@@ -2999,19 +3010,19 @@ void Mod_BoundsFromClipNode (qmodel_t *mod, int hull, int nodenum)
 	switch (plane->type)
 	{
 
-	case PLANE_X:
+	case PLANE_X_0:
 		if (plane->signbits == 1)
 			mod->clipmins[0] = c_min (mod->clipmins[0], -plane->dist - mod->hulls[hull].clip_mins[0]);
 		else
 			mod->clipmaxs[0] = c_max (mod->clipmaxs[0], plane->dist - mod->hulls[hull].clip_maxs[0]);
 		break;
-	case PLANE_Y:
+	case PLANE_Y_1:
 		if (plane->signbits == 2)
 			mod->clipmins[1] = c_min (mod->clipmins[1], -plane->dist - mod->hulls[hull].clip_mins[1]);
 		else
 			mod->clipmaxs[1] = c_max (mod->clipmaxs[1], plane->dist - mod->hulls[hull].clip_maxs[1]);
 		break;
-	case PLANE_Z:
+	case PLANE_Z_2:
 		if (plane->signbits == 4)
 			mod->clipmins[2] = c_min (mod->clipmins[2], -plane->dist - mod->hulls[hull].clip_mins[2]);
 		else
@@ -3204,6 +3215,71 @@ void Mod_LoadBrushModel (qmodel_t *mod, void *buffer)
 
 
 }
+
+// Returns count of the number of mirror surfaces
+#ifdef GLQUAKE_RENDERER_SUPPORT	
+void Mirror_Scan_SubModels (qmodel_t *world_model)
+{
+	int Mirror_Scan_Model (qmodel_t *mdl);
+#define MODELINDEX_WORLDMODEL_1				1							// 
+#define MODELINDEX_SUBMODEL_START_2			(MODELINDEX_WORLDMODEL_1 + 1)
+#define MODELINDEX_SUBMODEL_LAST			(MODELINDEX_SUBMODEL_START_2 + world_model->numsubmodels - 1)
+	int first_submodel = MODELINDEX_SUBMODEL_START_2;
+	int last_submodel = MODELINDEX_SUBMODEL_LAST;
+	int j;
+	for (j = first_submodel; j <= last_submodel; j++) {
+		qmodel_t *mdl = cl.model_precache[j];
+
+		Mirror_Scan_Model (mdl);
+	}
+}
+
+
+int Mirror_Scan_Model (qmodel_t *mdl)
+{
+	void GL_Mirrors_Scan_Surface (msurface_t *surf, int surfnum);
+
+	//if (!in_range (first_submodel, ent->modelindex, last_submodel))
+	//	return 0;
+
+	//if (ent->model->mirror_numsurfaces)
+	//	return 0; // Already scanned.  This means negke like trickery or something where someone duplicated a door or made a healthbox inside the map model.
+
+	//if (!ent->model || ent->model->type != mod_brush)
+	//	return 0; // Should never happen.
+
+	//if (ent->origin[0] || ent->origin[1] || ent->origin[2])
+	//	return 0; // Moved.  Disqualified.
+
+	//if (ent->angles[0] || ent->angles[1] || ent->angles[2])
+	//	return 0; // Angles.  Disqualified.
+
+	//if (ent->model->firstmodelsurface == 0)
+	//	return 0; // Health box or something.  It isn't part of the world.
+
+
+	msurface_t *surf = &mdl->surfaces[mdl->firstmodelsurface];  int j, count; //    &ent->model->surfaces[ent->model->firstmodelsurface];  
+	for (count = 0, j = 0 ;  j < mdl->nummodelsurfaces ; j++, surf++) {
+		if (Flag_Check (surf->flags, SURF_DRAWMIRROR)) {
+			GL_Mirrors_Scan_Surface (surf, j);
+#if 1
+			count ++;
+			mdl->mirror_numsurfaces = count;
+			mdl->mirror_only_surface = surf;
+			mdl->mirror_plane = surf->plane; // Since this is a static, it's ok to set the entity.  Right?  Nah.  And let's use ent->static_mirror_numsurfs
+			return 1; // Yes
+#endif
+			
+		}
+		// Mark the model mod->mirror_surfaces too
+	}
+
+	// Should only be reached if 0 at this time.
+	return count;
+}
+#endif // GLQUAKE_RENDERER_SUPPORT
+
+
 
 // Baker: I should move alias model loading into different file
 // with one for GL and one for WinQuake
@@ -4588,16 +4664,32 @@ void Mod_LoadSpriteModel (qmodel_t *mod, void *buffer)
 Mod_Print
 ================
 */
+
+static int Mod_ModelIndex (const char *model_name)
+{
+	if (cls.state == ca_connected) {
+		int j; for (j = 1; j < MAX_FITZQUAKE_MODELS; j++) {
+			if (!cl.model_precache[j])
+				break;
+
+			if (String_Does_Match_Caseless(cl.model_precache[j]->name, model_name))
+				return j;
+		}
+	}
+	return - 1;
+}
+
+
 void Mod_Print (lparse_t *unused)
 {
 	int		i;
 	qmodel_t	*mod;
 
-	Con_SafePrintf ("Cached models:\n"); //johnfitz -- safeprint instead of print
+	Con_SafePrintf ("Cached models: (column 2 is modelindex)\n"); //johnfitz -- safeprint instead of print
 	for (i=0, mod=mod_known ; i < mod_numknown ; i++, mod++)
 	{
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		Con_SafePrintf ("%8p : %s\n", mod->cache.data, mod->name);
+		Con_SafePrintf ("%8p %04d: %s %s\n", mod->cache.data, Mod_ModelIndex(mod->name), mod->name, mod->needload ? "(Need load)" : "");
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 #ifdef WINQUAKE_RENDERER_SUPPORT

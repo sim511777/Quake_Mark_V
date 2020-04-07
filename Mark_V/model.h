@@ -589,6 +589,10 @@ typedef struct qmodel_s
 //#ifdef GLQUAKE_SUPPORTS_QMB
 	modhint_e		modhint;
 	cbool			is_original_flame_mdl;
+//	int				mirror_scanned;  // avoid sv.worldmodel and cl.worldmodel both performing task
+	int				mirror_numsurfaces;
+	msurface_t		*mirror_only_surface; // For submodels
+	mplane_t		*mirror_plane;
 //#endif	// GLQUAKE_SUPPORTS_QMB
 
 	modtype_t		type;

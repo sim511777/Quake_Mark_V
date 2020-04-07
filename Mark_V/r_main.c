@@ -196,7 +196,7 @@ void R_SetFrustum (float fovx, float fovy)
 
 	for (i=0 ; i<4 ; i++)
 	{
-		r_frustum[i].type = PLANE_ANYZ;
+		r_frustum[i].type = PLANE_ANYZ_5;
 		r_frustum[i].dist = DotProduct (r_origin, r_frustum[i].normal); //FIXME: shouldn't this always be zero?
 		r_frustum[i].signbits = SignbitsForPlane (&r_frustum[i]);
 	}
@@ -323,26 +323,26 @@ void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect)
 	screenedge[0].normal[0] = -1.0 / (xOrigin*r_refdef.horizontalFieldOfView);
 	screenedge[0].normal[1] = 0;
 	screenedge[0].normal[2] = 1;
-	screenedge[0].type = PLANE_ANYZ;
+	screenedge[0].type = PLANE_ANYZ_5;
 
 // right side clip
 	screenedge[1].normal[0] =
 		1.0 / ((1.0-xOrigin)*r_refdef.horizontalFieldOfView);
 	screenedge[1].normal[1] = 0;
 	screenedge[1].normal[2] = 1;
-	screenedge[1].type = PLANE_ANYZ;
+	screenedge[1].type = PLANE_ANYZ_5;
 
 // top side clip
 	screenedge[2].normal[0] = 0;
 	screenedge[2].normal[1] = -1.0 / (yOrigin*verticalFieldOfView);
 	screenedge[2].normal[2] = 1;
-	screenedge[2].type = PLANE_ANYZ;
+	screenedge[2].type = PLANE_ANYZ_5;
 
 // bottom side clip
 	screenedge[3].normal[0] = 0;
 	screenedge[3].normal[1] = 1.0 / ((1.0-yOrigin)*verticalFieldOfView);
 	screenedge[3].normal[2] = 1;
-	screenedge[3].type = PLANE_ANYZ;
+	screenedge[3].type = PLANE_ANYZ_5;
 
 	for (i=0 ; i<4 ; i++)
 		VectorNormalize (screenedge[i].normal);

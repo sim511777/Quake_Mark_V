@@ -238,7 +238,7 @@ void R_SetFrustum (float fovx, float fovy)
 
 	for (i=0 ; i<4 ; i++)
 	{
-		r_frustum[i].type = PLANE_ANYZ;
+		r_frustum[i].type = PLANE_ANYZ_5;
 		r_frustum[i].dist = DotProduct (r_origin, r_frustum[i].normal); //FIXME: shouldn't this always be zero?
 		r_frustum[i].signbits = SignbitsForPlane (&r_frustum[i]);
 	}
@@ -452,7 +452,8 @@ void R_SetupView (void)
 R_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
+
+static void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
 {
 	int		i;
 
@@ -484,7 +485,7 @@ void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
 			case mod_alias:
 #ifdef SUPPORTS_NEHAHRA
 				if (nehahra_active && !strcmp("progs/null.mdl", currententity->model->name))
-					break; // Baker: TO DO: Something should have filtered this out.
+					break; // Baker: TO DO: Something should have filtered this out.  No, it is carrying an effect or something.
 #endif // SUPPORTS_NEHAHRA
 					R_DrawAliasModel (currententity);
 				break;
@@ -1205,7 +1206,7 @@ cbool R_MirrorScan_SetMirrorAlpha (void)
 		for (s = t->texturechain; s; s = s->texturechain) {
 			if (s->culled)
 				continue;
-			
+
 			// Mirror found!
 			frame.has_mirror = true;
 			frame.mirroralpha = alpha_possible; // level.is_mirroralpha > 0 ? level.mirroralpha : CLAMP(0, gl_mirroralpha.value, 1.0);
@@ -1214,6 +1215,25 @@ cbool R_MirrorScan_SetMirrorAlpha (void)
 		}				
 
 	}
+
+	// Extra work to do here.
+	
+	if (!r_drawentities.value)
+		return false;
+
+	for (i = 0 ; i < cl.numvisedicts; i++) {
+		entity_t *ent = cl.visedicts[i];
+		if (!ent->model || ent->model->type != mod_brush || !ent->model->mirror_only_surface)
+			continue; // No mirrors.
+
+		// Weakness.  We don't actually know if it is facing towards us.
+		// Mirror found!  It's on an entity
+		frame.has_mirror = true;
+		frame.mirroralpha = alpha_possible; // level.is_mirroralpha > 0 ? level.mirroralpha : CLAMP(0, gl_mirroralpha.value, 1.0);
+		frame.mirror_plane = ent->model->mirror_plane;
+		return true;
+	}
+
 	return false;
 }
 
@@ -1318,6 +1338,79 @@ void R_Mirror_RenderScene_Partial (void)
 R_Mirror
 =============
 */
+// Do all the entities that aren't culled, but only do the mirror surfaces.  Capabilities already set.
+static void R_Mirror_Entity_Surfaces (void)
+{
+	// Mirror entity hardening belt.
+	if (r_drawentities.value) {
+		int i;  for (i = 0 ; i < cl.numvisedicts ; i++) {
+			entity_t *ent = cl.visedicts[i];
+//			if (!ent->static_mirror_numsurfs)
+//				continue; // No mirror surfaces.
+
+			//if (!ent->model || ent->model->type != mod_brush) // Can't happen
+			if (!ent->model || ent->model->type != mod_brush || !ent->model->mirror_only_surface)
+				continue;
+
+			if (memcmp (frame.mirror_plane, ent->model->mirror_plane, sizeof(frame.mirror_plane[0])))
+				continue; // Not right mirror plane.  Two mirrors in frame.
+			
+			//R_DrawBrushModel (ent);
+			if (R_CullModelForEntity(ent) == false /*not culled*/) {
+				// Draw it.  We want to have a little bit of control over this.
+				qmodel_t	*clmodel = ent->model;
+				msurface_t	*surf = clmodel->mirror_only_surface;   //&clmodel->surfaces[clmodel->firstmodelsurface];
+				int j;
+				
+				// We are operating on the idea that origin and angles must be zero.
+				// No transation or anything else.  We could just use vieworg.
+				VectorSubtract (r_refdef.vieworg, ent->origin, modelorg); // Shouldn't need to do this technically, we should be at zero!
+				for (j = 0 ; j < clmodel->nummodelsurfaces; j++, surf++) {
+					
+						
+					if (surf == clmodel->mirror_only_surface) {
+						// Normally
+						float dot = DotProduct (modelorg, clmodel->mirror_plane->normal  /*pplane->normal*/) - clmodel->mirror_plane->dist /*pplane->dist*/;
+						if (       (  Flag_Check(surf->flags, SURF_PLANEBACK) &&  dot < -BACKFACE_EPSILON )
+								|| ( !Flag_Check(surf->flags, SURF_PLANEBACK) &&  dot >  BACKFACE_EPSILON )      ) {
+							//glpoly_t	*polys = surf->polys;
+							texture_t	*texture = surf->texinfo->texture; // R_TextureAnimation (, ent->frame);  // We don't animate
+							
+							GL_Bind (texture->gltexture);
+							DrawGLPoly (surf->polys, 0); // I'm thinking texturefx on missing texture would be bad
+							rs_brushpolys++; // Won't kill us
+						}
+					}
+					// 
+				} // For each surface
+			}
+		} // For loop
+	}
+
+
+}
+
+float DotProductEx (const vec3_t vorg, const mplane_t *pplane)
+{
+	float dot;
+	switch (pplane->type)
+	{
+	case PLANE_X_0:
+		dot = vorg[0] - pplane->dist;
+		break;
+	case PLANE_Y_1:
+		dot = vorg[1] - pplane->dist;
+		break;
+	case PLANE_Z_2:
+		dot = vorg[2] - pplane->dist;
+		break;
+	default:
+		//dot = DotProduct (r_refdef.vieworg, surf->plane->normal) - surf->plane->dist;
+		dot = DotProduct (vorg, pplane->normal) - pplane->dist;
+		break;
+	}
+	return dot;
+}
 
 void R_Mirror (void)
 {
@@ -1344,7 +1437,10 @@ void R_Mirror (void)
 	}
 
 	// Depth only pass.	
-	R_DrawTextureChains_Multitexture_Mirrors ();
+	
+	// Hardening phase.  Phase 1
+	if (gl_drawmirror_world.value >= 1)			R_DrawTextureChains_Multitexture_Mirrors ();
+	if (gl_drawmirror_entities.value >= 1)		R_Mirror_Entity_Surfaces ();
 
 	{
 		// In mirror textures draw = false
@@ -1377,19 +1473,72 @@ void R_Mirror (void)
 	// Calculate the things we need.
 	// 
 	{
-		float d;
+		float dot;
 
-		d = DotProduct (r_refdef.vieworg, frame.mirror_plane->normal) - frame.mirror_plane->dist;
-		VectorMA (r_refdef.vieworg, -2 * d, frame.mirror_plane->normal, r_refdef.vieworg);
+//Con_Printf ("Current org: %3.2f %3.2f %3.2f", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
 
-		d = DotProduct (/*frame.mirror_view.*/ vpn, frame.mirror_plane->normal);
-		VectorMA (/*frame.mirror_view.*/ vpn, -2 * d, frame.mirror_plane->normal, /*frame.mirror_view.*/ vpn);
+		// This ... seems to make no difference
+		//dot = DotProduct (r_refdef.vieworg, frame.mirror_plane->normal) - frame.mirror_plane->dist;
+		dot = DotProductEx (r_refdef.vieworg, frame.mirror_plane); // - frame.mirror_plane->dist;
+		
+		VectorMA (r_refdef.vieworg, -2 * dot, frame.mirror_plane->normal, r_refdef.vieworg);
+//Con_Printf ("mir: %3.2f %3.2f %3.2f\n", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
 
+		dot = DotProduct (/*frame.mirror_view.*/ vpn, frame.mirror_plane->normal);
+		//dot = DotProductEx (vpn, frame.mirror_plane);
+		VectorMA (/*frame.mirror_view.*/ vpn, -2 * dot, frame.mirror_plane->normal, /*frame.mirror_view.*/ vpn);
+
+//Con_Printf ("Current angles: %3.2f %3.2f %3.2f", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
+		/// r_refdef.viewangles[0] = -asin (/*frame.mirror_view.*/ vpn[2])/M_PI*180;  orig
+
+// This is pretty much all fuct.
+// It's like it is 180 degrees off.  And somehow super sensitive to the mouse?  The slope isn't even much?
+#if 0
+		r_refdef.viewangles[0] = -asin (/*frame.mirror_view.*/ vpn[2])/M_PI*180;
+		r_refdef.viewangles[1] = atan2 (/*frame.mirror_view.*/ vpn[1], /*frame.mirror_view.*/ vpn[0])/M_PI*180;
+
+#else
+	// There is something I need to do convert between degrees and euler angles, but can't remember what it is.
+	// Under certain conditions I need a 180 degree twist or maybe a full roll angle 180?
+	// Plane type 4 - signbits pitch 0 yaw 0.866618 roll .499999
 
 		r_refdef.viewangles[0] = -asin (/*frame.mirror_view.*/ vpn[2])/M_PI*180;
 		r_refdef.viewangles[1] = atan2 (/*frame.mirror_view.*/ vpn[1], /*frame.mirror_view.*/ vpn[0])/M_PI*180;
+#endif
+		//r_refdef.viewangles[2] = -r_refdef.viewangles[2];  original
+		//..
 		r_refdef.viewangles[2] = -r_refdef.viewangles[2];
+
 		
+		//{
+		//	float dot;
+		//	switch (pplane->type)
+		//	{
+		//	case PLANE_X_0:
+		//		dot = vorg[0] - pplane->dist;
+		//		break;
+		//	case PLANE_Y_1:
+		//		dot = vorg[1] - pplane->dist;
+		//		break;
+		//	case PLANE_Z_2:
+		//		dot = vorg[2] - pplane->dist;
+		//		break;
+		//	default:
+		//		//dot = DotProduct (r_refdef.vieworg, surf->plane->normal) - surf->plane->dist;
+		//		dot = DotProduct (vorg, pplane->normal) - pplane->dist;
+		//		break;
+		//	}
+		//	return dot;
+		//}
+		//
+
+//		switch {
+
+
+//Con_Printf ("mir: %3.2f %3.2f %3.2f\n", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
+		
+
+
 		// These too ...
 		AngleVectors (r_refdef.viewangles, vpn, vright, vup); // Split it back out?  Must we negate these?
 		VectorCopy (r_refdef.vieworg, r_origin);
@@ -1443,11 +1592,13 @@ void R_Mirror (void)
 	R_SetFrustum (360, 360); // Need a maximum fov view because mirror has wider view range
 #endif
 
+	// Reverso phase.  Phase 2
+	if (gl_drawmirror_world.value >= 2) {			
+		R_Mirror_RenderScene_Partial ();
+		R_DrawParticles ();  // They are oriented.
+	}
 
-	R_Mirror_RenderScene_Partial ();
-	R_DrawParticles ();  // They are oriented.
-
-	{	
+	{
 		eglDepthRange (Q_GLDEPTHRANGE_MIN_0_0, Q_GLDEPTHRANGE_MAX_0_5);
 		eglDepthFunc (GL_LEQUAL);
 		eglCullFace(GL_BACK);
@@ -1488,8 +1639,9 @@ void R_Mirror (void)
 		frame.in_mirror_overlay = true;
 	}
 	
-	R_DrawTextureChains_Multitexture_Mirrors ();
-	
+	if (gl_drawmirror_world.value >= 3)		R_DrawTextureChains_Multitexture_Mirrors ();
+	if (gl_drawmirror_entities.value >= 3)	R_Mirror_Entity_Surfaces ();
+
 	//R_DrawTextureChains_Multitexture_Mirrors (); // Hit it again.
 	{
 		// In mirror textures draw = false

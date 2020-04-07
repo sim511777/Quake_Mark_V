@@ -777,6 +777,9 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 		//johnfitz -- alpha
 		// Baker: Coop protection uses spawn alpha no matter what.
 		// What does this do for PURE protocol 15, though?  Test but I think is ok.
+#if 1  // Dec 2 2016
+		ent_alpha = ent->alpha; // fallback.
+#endif
 		if (e <= svs.maxclients_internal && svs.clients[e - 1].coop_protect_end_time) { // Because the cap can change at any time now.
 			// If progs for some reason has player already alphaed, that's just tough cookies but bloody unlikely.
 			float pct0	= (svs.clients[e - 1].coop_protect_end_time - sv.time) / COOP_PROTECT_INTERVAL_5_0;
@@ -789,7 +792,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 			eval_t	*val = GETEDICTFIELDVALUE(ent, eval_alpha);
 			if (val)
 				ent_alpha = ent->alpha = ENTALPHA_ENCODE(val->_float);
-		} else ent_alpha = ENTALPHA_DEFAULT;
+		} // else ent_alpha = ent->alpha; // Commented out Dec 2
 
 		//don't send invisible entities unless they have effects
 		if (ent_alpha == ENTALPHA_ZERO && !ent->v.effects)

@@ -1,3 +1,4 @@
+#ifdef CORE_GL
 /*
 Copyright (C) 2012-2014 Baker
 
@@ -26,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  OPENGL: Determine platform #includes
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
 #ifdef PLATFORM_WINDOWS
 //	#include <windows.h> // APIENTRY
 	#include "core_windows.h" // If it fucks up, then bail
@@ -43,7 +46,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 	#undef APIENTRY
 	#define APIENTRY WINAPI
+	
+	#ifdef PLATFORM_GUI_WINDOWS
+		#if defined(CORE_GL) && defined (PLATFORM_WINDOWS)
+			extern LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
+			extern HGLRC (WINAPI *ewglCreateContext) (HDC);
+			extern BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
+			extern HGLRC (WINAPI *ewglGetCurrentContext) (VOID);
+			extern HDC   (WINAPI *ewglGetCurrentDC) (VOID);
+			extern PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
+			extern BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
+			extern BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
+			extern BOOL  (WINAPI *eSwapBuffers) (HDC);
+		#endif // CORE_GL + PLATFORM_WINDOWS
+	#endif // PLATFORM_GUI_WINDOWS
 
+#else
+	#define APIENTRY
 #endif // PLATFORM_WINDOWS
 
 #ifdef PLATFORM_OSX
@@ -51,9 +70,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#include 	<OpenGL/glu.h>
 	#include	<OpenGL/glext.h>
 	#include	<math.h>
-
-	#define APIENTRY
 #endif // PLATFORM_OSX
+
+#ifdef PLATFORM_IOS
+	#include <OpenGLES/ES1/gl.h>				// OpenGL ES 1
+	#include <OpenGLES/ES1/glext.h>				// OpenGL ES 1
+	#define PLATFORM_OPENGLES
+#endif
 
 #ifdef PLATFORM_LINUX
 //	#include 	<OpenGL/gl.h>
@@ -61,19 +84,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	#include	<OpenGL/glext.h>
 
     #include    <SDL2/SDL_opengl.h>//    #include
-    #include	<math.h>
-	#define APIENTRY
 #endif
 
+#ifdef PLATFORM_ANDROID
+    #include <GLES/gl.h>
+	#include <GLES/glext.h>
+
+	#define PLATFORM_OPENGLES
+#endif
+
+#ifdef PLATFORM_OPENGLES
+//	#pragma message ("Not orthoed")
+	#define glOrtho glOrthof
+	#define glFrustum glFrustumf
+#else
+	#define glOrthof "Nope"			// We want consistency.  Use "glOrtho" and "glFrustum".
+	#define glFrustumf "Nope"		// NEVER glOrthof or glFrustumf.  We cannot #define glOrthof to glOrtho and disallow glOrtho
+//	#pragma message ("Orthoed")		// Because that would be macro recursion.  So glOrtho and glFrustum it is!
+#endif // PLATFORM_OPENGL_DESKTOP	// Note that in decent and final code, we will never be using either of those anyway.
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //  OPENGL: Patch up stuff missing from gl.h and friends
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef void (APIENTRY *PFNGLMULTITEXCOORD2FARBPROC) (GLenum, GLfloat, GLfloat);
-typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
+#ifndef PLATFORM_OPENGLES // Hmmmm.  I'm not sure this will survive.  I would wire the functions to glActiveTexture and glMultiTexCoord2 or whatever its name is.
+	typedef void (APIENTRY *PFNGLMULTITEXCOORD2FARBPROC) (GLenum, GLfloat, GLfloat);
+	typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
+	typedef void (APIENTRY *qGLColorTableEXT) (int, int, int, int, int, const void*);
+	typedef void (APIENTRY *qgl3DfxSetPaletteEXT) (GLuint *);
+#endif // PLATFORM_OPENGL_DESKTOP
 
+#ifndef GL_CLAMP_TO_EDGE
+	#define GL_CLAMP_TO_EDGE 0x812F
+#endif // GL_CLAMP_TO_EDGE not defined
 
 #ifdef PLATFORM_WINDOWS
 
@@ -146,6 +190,19 @@ typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
 
 #endif // PLATFORM_WINDOWS
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OUR STUFF
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void _GL_CheckError (const char *funcname, int linenum);
+
+#define GL_CheckError _GL_CheckError (NULL, __LINE__)
+
+#ifdef _DEBUG
+	#undef  GL_CheckError
+	#define GL_CheckError _GL_CheckError (__func__, __LINE__)
+#endif
+
 #endif // __CORE_OPENGL_H__
 
-
+#endif // CORE_GL

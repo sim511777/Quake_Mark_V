@@ -45,7 +45,7 @@ int http_client (download_x_t *download);
 char *default_user_agent = "User Agent";
 
 static download_x_t *Stuff_Download_Alloc (const char *user_agent, const char *www_url, const char *path_to_file,  
-										   progress_fn_t update_fn, print_fn_t print_fn, int *pset_size, int *pexit_code,  // Blocking
+										   progress_fn_t update_fn, printline_fn_t my_printline, int *pset_size, int *pexit_code,  // Blocking
 											cbool *async_cancellator, eventfunc_t finish_event_fn, int finish_code, void *id) // Threaded (non-Blocking)
 {
 	download_x_t *download = core_calloc(sizeof(download_x_t), 1);
@@ -64,7 +64,7 @@ static download_x_t *Stuff_Download_Alloc (const char *user_agent, const char *w
 	download->finish_event_data = NULL; // Will become download later.
 	download->finish_code = finish_code; // Will become download later.
 
-	download->print_fn	= print_fn; // For async this will be Con_Queue_Printf.  For blocking, probably will be NULL.
+	download->printline_fn	= my_printline; // For async this will be Con_Queue_Printf.  For blocking, probably will be NULL.
 	download->update_fn = update_fn; // For async this will be NULL.
 
 	download->out_expected_size = pset_size;			// Howz this work 
@@ -85,7 +85,7 @@ static void *Download_Http_ (download_x_t *download)
 		ret = -1;
 	else
 	{
-		c_snprintf (download->argbuckets.cmdline, "anything /h:%s", download->remote_url);
+		c_snprintf1 (download->argbuckets.cmdline, "anything /h:%s", download->remote_url);
 		String_To_Arg_Buckets (&download->argbuckets, download->argbuckets.cmdline);
 		ret = http_client (download); // argbuckets.argcount, argbuckets.argvs); HTTP_CLIENT_EOS = 1000 which is good
 	}
@@ -136,15 +136,15 @@ static void *Download_Http_ (download_x_t *download)
 	return download->mem.memory ? download->mem.memory : (void *) true;	
 }
 //		download = core_free (download); // Release it.  But if download to mem, we passed the memory stream.
-//		Con_Printf ("Result was %d\n%s\n", ret, KeyValue_GetKey (downloader_error_strings, *errorcode));
+//		Core_Print Linef ("Result was %d:%s", ret, KeyValue_GetKey (downloader_error_strings, *errorcode));
 
 
 // If you want a temp name, feed us the temp name.  This function shouldn't be deciding temp names.  Doesn't know cache.
 // Doesn't know folders structure for binary running, etc.
-cbool Download_To_File (const char *user_agent, const char *www_url, const char *path_to_file, progress_fn_t update_fn, print_fn_t print_fn, int *pset_size, int *pexit_code)
+cbool Download_To_File (const char *user_agent, const char *www_url, const char *path_to_file, progress_fn_t update_fn, printline_fn_t my_printline, int *pset_size, int *pexit_code)
 {
 	download_x_t *download = Stuff_Download_Alloc (user_agent, www_url, path_to_file, 
-								update_fn, print_fn, pset_size, pexit_code,  
+								update_fn, my_printline, pset_size, pexit_code,  
 								NULL /* async cancel */, NULL /*event finish */, 0 /* finish code */, NULL /* id */);
 		
 	cbool result = (Download_Http_ (download) != NULL);
@@ -152,10 +152,10 @@ cbool Download_To_File (const char *user_agent, const char *www_url, const char 
 	return result;
 }
 
-void *Download_To_Memory_Alloc (const char *user_agent, const char *www_url, progress_fn_t update_fn, print_fn_t print_fn, int *pset_size, int *pexit_code)
+void *Download_To_Memory_Alloc (const char *user_agent, const char *www_url, progress_fn_t update_fn, printline_fn_t my_printline, int *pset_size, int *pexit_code)
 {
 	download_x_t *download = Stuff_Download_Alloc (user_agent, www_url, NULL /* no path, memory write */, 
-								update_fn, print_fn, pset_size, pexit_code, 
+								update_fn, my_printline, pset_size, pexit_code, 
 								NULL /* async cancel */, NULL /*event finish */, 0 /* finish code */, NULL /* id */);
 
 	void * ret = Download_Http_ (download);
@@ -175,7 +175,7 @@ static void *Download_Async_Go (void *_download)
 
 	download->finish_event_fn (EVENT_DOWNLOAD_COMPLETE, download->finish_code, download->id, download /*data*/);
 	
-//	Con_Queue_Printf ("Download Thread ended\n"); // Thread-safe, blocking.
+//	Con_Queue_PrintLinef ("Download Thread ended"); // Thread-safe, blocking.
 	pthread_exit (NULL); // This is optional unless you want to return something for pthread_join to read.
 	return NULL;
 }
@@ -194,7 +194,8 @@ void Download_Http_Async_To_Memory (const char *user_agent, const char *www_url,
 	pthread_t my_thread;
 	download_x_t *download = Stuff_Download_Alloc (user_agent, www_url, NULL /*no path_to_file*/, NULL, NULL, NULL, NULL, async_cancellator, finish_event_fn, finish_code, id);
 
-	Con_Printf ("Download Thread: %s\n", download->remote_url); // Thread-safe, blocking.
+#pragma message ("make sure there is a blocking form of print for this")
+	//Con_Queue_PrintLinef ("Download Thread: %s", download->remote_url); // Thread-safe, blocking.  Really?
 	
 	pthread_create (&my_thread, NULL /* no attributes */, Download_Async_Go, (void *)download);
 }
@@ -217,7 +218,7 @@ int Download_HTTP_Write (download_x_t *download, void *newdata, size_t size, siz
 	if (download->mem.memory)
 		download_procs_memwrite (newdata,  size, count, &download->mem);
 	else download_procs_filewrite (newdata, size, count, download->local_url);
-				//printf ("%i\n", nTotal);
+				//printf ("%d", nTotal);
 
 	// If there is an update function (there usually is)
 	// Give it an update.  This also gives the opportunity to cancel.

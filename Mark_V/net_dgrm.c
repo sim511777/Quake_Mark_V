@@ -101,25 +101,25 @@ void Rcon_f (lparse_t *line)
 
 	// Baker: A server shouldn't be sending rcon commands
 	if (cmd_from_server) {
-		Con_Warning ("Server has attempted to get to us to send an rcon command.  Highly inappropriate.  Rejected.\n");
+		Con_WarningLinef ("Server has attempted to get to us to send an rcon command.  Highly inappropriate.  Rejected.");
 		return;
 	}
 
 	if (testInProgress)
 	{
-		Con_Printf ("There is already a test/rcon in progress\n");
+		Con_PrintLinef ("There is already a test/rcon in progress");
 		return;
 	}
 
 	if (line->count < 2)
 	{
-		Con_Printf ("usage: rcon <command>\n");
+		Con_PrintLinef ("usage: rcon <command>");
 		return;
 	}
 
 	if (!*rcon_password.string)
 	{
-		Con_Printf ("rcon_password has not been set\n");
+		Con_PrintLinef ("rcon_password has not been set");
 		return;
 	}
 
@@ -136,7 +136,7 @@ void Rcon_f (lparse_t *line)
 		}
 		else
 		{
-			Con_Printf ("rcon_server has not been set\n");
+			Con_PrintLinef ("rcon_server has not been set");
 			return;
 		}
 	}
@@ -169,7 +169,7 @@ void Rcon_f (lparse_t *line)
 	}
 	if (net_landriverlevel == net_numlandrivers)
 	{
-		Con_Printf ("Could not resolve %s\n", host);
+		Con_PrintLinef ("Could not resolve %s", host);
 		return;
 	}
 
@@ -177,7 +177,7 @@ JustDoIt:
 	testSocket = dfunc.Open_Socket(0);
 	if (testSocket == INVALID_SOCKET /*  -1*/)
 	{
-		Con_Printf ("Could not open socket\n");
+		Con_PrintLinef ("Could not open socket");
 		return;
 	}
 
@@ -215,7 +215,7 @@ static void Rcon_Poll (void* unused)
 			SchedulePollProcedure(&rconPollProcedure, 0.25);
 			return;
 		}
-		Con_Printf ("rcon: no response\n");
+		Con_PrintLinef ("rcon: no response");
 		goto Done;
 	}
 
@@ -226,7 +226,7 @@ static void Rcon_Poll (void* unused)
 	MSG_ReadLong();
 	if (control == -1)
 		goto Error;
-	if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+	if ((control & (~NETFLAG_LENGTH_MASK)) !=  (int)NETFLAG_CTL) // Matters?
 		goto Error;
 	if ((control & NETFLAG_LENGTH_MASK) != len)
 		goto Error;
@@ -234,12 +234,12 @@ static void Rcon_Poll (void* unused)
 	if (MSG_ReadByte() != CCREP_RCON)
 		goto Error;
 
-	Con_Printf ("%s\n", MSG_ReadString());
+	Con_PrintLinef ("%s", MSG_ReadString());
 
 	goto Done;
 
 Error:
-	Con_Printf ("Unexpected response to rcon command\n");
+	Con_PrintLinef ("Unexpected response to rcon command");
 
 Done:
 	dfunc.Close_Socket(testSocket);
@@ -291,7 +291,7 @@ cbool Rcon_Blackout (const char* address, float nowtime)
 			if (strcmp(slot->ip_address, address) == 0) // found
 				if (slot->count == 0 && realtime < slot->when + 300)
 				{
-					Con_Printf ("Slot %i has rcon black out until %f (remaining is %f)\n", i, slot->when + 300, realtime - (slot->when + 300));
+					Con_PrintLinef ("Slot %d has rcon black out until %f (remaining is %f)", i, slot->when + 300, realtime - (slot->when + 300));
 					return true;
 				}
 				else break;
@@ -339,7 +339,7 @@ void Rcon_Fails_Log (const char* address, float nowtime)
 		c_strlcpy (slot->ip_address, address);
 		slot->count = 1;
 		slot->when = nowtime;
-		Con_Printf ("Rcon failure recorded to new slot %i\n", myslot);
+		Con_PrintLinef ("Rcon failure recorded to new slot %d", myslot);
 	}
 	else
 	{
@@ -351,7 +351,7 @@ void Rcon_Fails_Log (const char* address, float nowtime)
 		if (slot->count > 3)
 			slot->count = 0; // Black out
 
-		Con_Printf ("Rcon failure  count for existing slot of %i is count = %i\n", i, slot->count);
+		Con_PrintLinef ("Rcon failure  count for existing slot of %d is count = %d", i, slot->count);
 
 	}
 
@@ -369,7 +369,7 @@ void NET_Ban_f (lparse_t *line)
 {
 	char	addrStr [32];
 	char	maskStr [32];
-	int	    (*print_fn)(const char *fmt, ...)__core_attribute__((__format__(__printf__,1,2)));
+	int	    (*printline_fn)(const char *fmt, ...)__core_attribute__((__format__(__printf__,1,2)));
 
 	if (cmd_source == src_command)
 	{
@@ -378,13 +378,13 @@ void NET_Ban_f (lparse_t *line)
 			Cmd_ForwardToServer (line);
 			return;
 		}
-		print_fn = Con_Printf;
+		printline_fn = Con_PrintLinef;
 	}
 	else
 	{
 		if (pr_global_struct->deathmatch && !host_client->privileged)
 			return;
-		print_fn = SV_ClientPrintf;
+		printline_fn = SV_ClientPrintLinef;
 	}
 
 // This function is just a gatekeeper now.
@@ -396,10 +396,10 @@ void NET_Ban_f (lparse_t *line)
 			{
 			c_strlcpy (addrStr, inet_ntoa(banAddr));
 			c_strlcpy (maskStr, inet_ntoa(banMask));
-				print_fn("Banning %s [%s]\n", addrStr, maskStr);
+				printline_fn ("Banning %s [%s]", addrStr, maskStr);
 			}
 			else
-				print_fn("Banning not active\n");
+				printline_fn ("Banning not active");
 			break;
 
 		case 2:
@@ -416,7 +416,7 @@ void NET_Ban_f (lparse_t *line)
 			break;
 
 		default:
-			print_fn("BAN ip_address [mask]\n");
+			printline_fn ("BAN ip_address [mask]");
 			break;
 	}
 }
@@ -434,13 +434,13 @@ int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
 		System_Error ("Datagram_SendMessage: zero length message");
 
 	if (data->cursize > NET_MARK_V_MAXMESSAGE)
-		System_Error ("Datagram_SendMessage: message too big %u\n", data->cursize);
+		System_Error ("Datagram_SendMessage: message too big %u", data->cursize);
 
 	if (sock->canSend == false)
 		System_Error ("SendMessage: called with canSend == false");
 #endif
 
-//	Con_Printf ("Sending data to %s with length of %i (max: %i) with maxsize of %i\n", sock->address,  data->cursize, data->maxsize, sv.datagram.maxsize);
+//	Con_PrintLinef ("Sending data to %s with length of %d (max: %d) with maxsize of %d", sock->address,  data->cursize, data->maxsize, sv.datagram.maxsize);
 
 	memcpy (sock->sendMessage, data->data, data->cursize);
 	sock->sendMessageLength = data->cursize;
@@ -467,7 +467,7 @@ int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
 
 	sock->canSend = false;
 
-//	Con_Printf ("Datagram sent with size %d, maxsize should be %d\n", packetLen, host_protocol_datagram_maxsize);
+//	Con_PrintLinef ("Datagram sent with size %d, maxsize should be %d", packetLen, host_protocol_datagram_maxsize);
 
 	if (sfunc.Write (sock->socket, (byte *)&packetBuffer, packetLen, &sock->addr) == -1)
 		return -1;
@@ -624,14 +624,14 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 	{
 		if (sequence < sock->unreliableReceiveSequence)
 		{
-			Con_DPrintf("Got a stale datagram\n");
+			Con_PrintLinef ("Got a stale datagram");
 			return false;
 		}
 		if (sequence != sock->unreliableReceiveSequence)
 		{
 			count = sequence - sock->unreliableReceiveSequence;
 			droppedDatagrams += count;
-			Con_DPrintf("Dropped %u datagram(s)\n", count);
+			Con_DPrintLinef ("Dropped %u datagram(s)", count);
 		}
 		sock->unreliableReceiveSequence = sequence + 1;
 
@@ -639,7 +639,7 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 
 		if (length > (unsigned int)net_message.maxsize)
 		{	//is this even possible? maybe it will be in the future! either way, no sys_errors please.
-			Con_Printf("Over-sized unreliable\n");
+			Con_PrintLinef ("Over-sized unreliable");
 			return -1;
 		}
 
@@ -654,18 +654,18 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 	{
 		if (sequence != (sock->sendSequence - 1))
 		{
-			Con_DPrintf("Stale ACK received\n");
+			Con_PrintLinef ("Stale ACK received");
 			return false;
 		}
 		if (sequence == sock->ackSequence)
 		{
 			sock->ackSequence++;
 			if (sock->ackSequence != sock->sendSequence)
-				Con_DPrintf("ack sequencing error\n");
+				Con_PrintLinef ("ack sequencing error");
 		}
 		else
 		{
-			Con_DPrintf("Duplicate ACK received\n");
+			Con_PrintLinef ("Duplicate ACK received");
 			return false;
 		}
 		//sock->sendMessageLength -= RELIABLE_MTU;
@@ -703,7 +703,7 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 		{
 			if (sock->receiveMessageLength + length > (unsigned int)net_message.maxsize)
 			{
-				Con_Printf("Over-sized reliable\n");
+				Con_PrintLinef ("Over-sized reliable");
 				return -1;
 			}
 			SZ_Clear(&net_message);
@@ -717,7 +717,7 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 
 		if (sock->receiveMessageLength + length > sizeof(sock->receiveMessage))
 		{
-			Con_Printf("Over-sized reliable\n");
+			Con_PrintLinef ("Over-sized reliable");
 			return -1;
 		}
 		memcpy(sock->receiveMessage + sock->receiveMessageLength, packetBuffer.data, length);
@@ -725,7 +725,7 @@ cbool Datagram_ProcessPacket(unsigned int length, qsocket_t *sock)
 		return false;	//still watiting for the eom
 	}
 	//unknown flags
-	Con_DPrintf("Unknown packet flags\n");
+	Con_PrintLinef ("Unknown packet flags");
 	return false;
 }
 
@@ -762,7 +762,7 @@ qsocket_t *Datagram_GetAnyMessage(void)
 						for (i = 0; i < svs.maxclients_internal; i ++) {  // Because the cap can change at any time now.
 							if (svs.clients[i].netconnection == s) {
 								host_client = &svs.clients[i];
-								Con_DPrintf ("Booting %d for socket error\n", i);
+								Con_DPrintLinef ("Booting %d for socket error", i);
 								SV_DropClient (false);
 								break;
 							}
@@ -880,16 +880,16 @@ int	Datagram_GetMessage (qsocket_t *sock)
 
 		if (length == (unsigned int)-1)
 		{
-			Con_Printf ("Datagram_GetMessage: Read error\n");
+			Con_PrintLinef ("Datagram_GetMessage: Read error");
 			return -1;
 		}
 
 		if (sfunc.AddrCompare(&readaddr, &sock->addr) != 0)
 		{
 #if 0 //def _DEBUG // Baker:  Quake source release doesn't printf this in release build
-			Con_Printf ("Forged packet received\n");
-			Con_Printf ("Expected: %s\n", StrAddr (&sock->addr));
-			Con_Printf ("Received: %s\n", StrAddr (&readaddr));
+			Con_PrintLinef ("Forged packet received");
+			Con_PrintLinef ("Expected: %s", StrAddr (&sock->addr));
+			Con_PrintLinef ("Received: %s", StrAddr (&readaddr));
 			continue;
 #endif //
 		}
@@ -908,7 +908,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 		// From ProQuake:  fix for attack that crashes server
 		if (length > NET_MARK_V_DATAGRAMSIZE)
 		{
-			Con_Printf ("Datagram_GetMessage: Invalid length\n");
+			Con_PrintLinef ("Datagram_GetMessage: Invalid length");
 			return -1;
 		}
 //#endif // Baker change +
@@ -923,7 +923,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 		{
 			if (sequence < sock->unreliableReceiveSequence)
 			{
-				Con_DPrintf("Got a stale datagram\n");
+				Con_PrintLinef ("Got a stale datagram");
 				ret = 0;
 				break;
 			}
@@ -931,7 +931,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 			{
 				count = sequence - sock->unreliableReceiveSequence;
 				droppedDatagrams += count;
-				Con_DPrintf("Dropped %u datagram(s)\n", count);
+				Con_DPrintLinef ("Dropped %u datagram(s)", count);
 			}
 			sock->unreliableReceiveSequence = sequence + 1;
 
@@ -948,18 +948,18 @@ int	Datagram_GetMessage (qsocket_t *sock)
 		{
 			if (sequence != (sock->sendSequence - 1))
 			{
-				Con_DPrintf("Stale ACK received\n");
+				Con_PrintLinef ("Stale ACK received");
 				continue;
 			}
 			if (sequence == sock->ackSequence)
 			{
 				sock->ackSequence++;
 				if (sock->ackSequence != sock->sendSequence)
-					Con_DPrintf("ack sequencing error\n");
+					Con_PrintLinef ("ack sequencing error");
 			}
 			else
 			{
-				Con_DPrintf("Duplicate ACK received\n");
+				Con_PrintLinef ("Duplicate ACK received");
 				continue;
 			}
 #ifdef SUPPORTS_SERVER_PROTOCOL_15
@@ -999,7 +999,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 			{
 				if (sock->receiveMessageLength + length > (unsigned int)net_message.maxsize)
 				{
-					Con_Printf("Over-sized reliable\n");
+					Con_PrintLinef ("Over-sized reliable");
 					return -1;
 				}
 				SZ_Clear(&net_message);
@@ -1013,7 +1013,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 
 			if (sock->receiveMessageLength + length > sizeof(sock->receiveMessage))
 			{
-				Con_Printf("Over-sized reliable\n");
+				Con_PrintLinef ("Over-sized reliable");
 				return -1;
 			}
 			memcpy (sock->receiveMessage + sock->receiveMessageLength, packetBuffer.data, length);
@@ -1031,10 +1031,10 @@ int	Datagram_GetMessage (qsocket_t *sock)
 
 static void PrintStats(qsocket_t *s)
 {
-	Con_Printf ("canSend = %4u   \n", s->canSend);
-	Con_Printf ("sendSeq = %4u   ", s->sendSequence);
-	Con_Printf ("recvSeq = %4u   \n", s->receiveSequence);
-	Con_Printf ("\n");
+	Con_PrintLinef ("canSend = %4u   ", s->canSend);
+	Con_PrintLinef ("sendSeq = %4u   ", s->sendSequence);
+	Con_PrintLinef ("recvSeq = %4u   ", s->receiveSequence);
+	Con_PrintLine ();
 }
 
 void NET_Stats_f (lparse_t *line)
@@ -1043,16 +1043,16 @@ void NET_Stats_f (lparse_t *line)
 
 	if (line->count == 1)
 	{
-		Con_Printf ("unreliable messages sent   = %i\n", unreliableMessagesSent);
-		Con_Printf ("unreliable messages recv   = %i\n", unreliableMessagesReceived);
-		Con_Printf ("reliable messages sent     = %i\n", messagesSent);
-		Con_Printf ("reliable messages received = %i\n", messagesReceived);
-		Con_Printf ("packetsSent                = %i\n", packetsSent);
-		Con_Printf ("packetsReSent              = %i\n", packetsReSent);
-		Con_Printf ("packetsReceived            = %i\n", packetsReceived);
-		Con_Printf ("receivedDuplicateCount     = %i\n", receivedDuplicateCount);
-		Con_Printf ("shortPacketCount           = %i\n", shortPacketCount);
-		Con_Printf ("droppedDatagrams           = %i\n", droppedDatagrams);
+		Con_PrintLinef ("unreliable messages sent   = %d", unreliableMessagesSent);
+		Con_PrintLinef ("unreliable messages recv   = %d", unreliableMessagesReceived);
+		Con_PrintLinef ("reliable messages sent     = %d", messagesSent);
+		Con_PrintLinef ("reliable messages received = %d", messagesReceived);
+		Con_PrintLinef ("packetsSent                = %d", packetsSent);
+		Con_PrintLinef ("packetsReSent              = %d", packetsReSent);
+		Con_PrintLinef ("packetsReceived            = %d", packetsReceived);
+		Con_PrintLinef ("receivedDuplicateCount     = %d", receivedDuplicateCount);
+		Con_PrintLinef ("shortPacketCount           = %d", shortPacketCount);
+		Con_PrintLinef ("droppedDatagrams           = %d", droppedDatagrams);
 	}
 	else if (strcmp(line->args[1], "*") == 0)
 	{
@@ -1110,7 +1110,7 @@ static const char *Strip_Port (const char *host)
 	if (port > 0 && port < 65536 && port != net_hostport)
 	{
 		net_hostport = port;
-		Con_Printf ("Port set to %d\n", net_hostport);
+		Con_PrintLinef ("Port set to %d", net_hostport);
 	}
 	return noport;
 }
@@ -1151,7 +1151,7 @@ static void Test_Poll(void *unused)
 
 		if (MSG_ReadByte() != CCREP_PLAYER_INFO)
 		{
-			Con_Printf ("Unexpected response to Player Info request\n");
+			Con_PrintLinef ("Unexpected response to Player Info request");
 			break;
 		}
 
@@ -1162,7 +1162,9 @@ static void Test_Poll(void *unused)
 		connectTime = MSG_ReadLong();
 		c_strlcpy (address, MSG_ReadString());
 
-		Con_Printf ("%s\n  frags:%3i  colors:%d %d  time:%d\n  %s\n", name, frags, colors >> 4, colors & 0x0f, connectTime / 60, address);
+		Con_PrintLinef ("%s", name);
+		Con_PrintLinef ("  frags:%3d  colors:%d %d  time:%d", frags, colors >> 4, colors & 0x0f, connectTime / 60);
+		Con_PrintLinef ("%s", address);
 	}
 
 	testPollCount--;
@@ -1186,13 +1188,13 @@ void Test_f (lparse_t *line)
 
 	if (testInProgress)
 	{
-		Con_Printf ("There is already a test/rcon in progress\n");
+		Con_PrintLinef ("There is already a test/rcon in progress");
 		return;
 	}
 
 	if (line->count < 2)
 	{
-		Con_Printf ("Usage: test <host>\n");
+		Con_PrintLinef ("Usage: test <host>");
 		return;
 	}
 
@@ -1228,14 +1230,14 @@ void Test_f (lparse_t *line)
 
 	if (net_landriverlevel == net_numlandrivers)
 	{
-		Con_Printf ("Could not resolve %s\n", host); 	// JPG 3.00 - added error message
+		Con_PrintLinef ("Could not resolve %s", host); 	// JPG 3.00 - added error message
 		return;
 	}
 
 JustDoIt:
 	testSocket = dfunc.Open_Socket(0);
 	if (testSocket == INVALID_SOCKET) {
-		Con_Printf ("Could not open socket\n");  // JPG 3.00 - added error message
+		Con_PrintLinef ("Could not open socket");  // JPG 3.00 - added error message
 		return;
 	}
 
@@ -1301,7 +1303,7 @@ static void Test2_Poll (void *unused)
 		goto Done;
 	c_strlcpy (value, MSG_ReadString());
 
-	Con_Printf ("%-16.16s  %-16.16s\n", name, value);
+	Con_PrintLinef ("%-16.16s  %-16.16s", name, value);
 
 	SZ_Clear(&net_message);
 	// save space for the header, filled in later
@@ -1323,7 +1325,7 @@ Reschedule:
 	goto Done;
 
 Error:
-	Con_Printf ("Unexpected response to Rule Info request\n");
+	Con_PrintLinef ("Unexpected response to Rule Info request");
 
 Done:
 	dfunc.Close_Socket (testSocket);
@@ -1339,13 +1341,13 @@ void Test2_f (lparse_t *line)
 
 	if (testInProgress)
 	{
-		Con_Printf ("There is already a test/rcon in progress\n");
+		Con_PrintLinef ("There is already a test/rcon in progress");
 		return;
 	}
 
 	if (line->count < 2)
 	{
-		Con_Printf ("Usage: test2 <host>\n");
+		Con_PrintLinef ("Usage: test2 <host>");
 		return;
 	}
 
@@ -1381,14 +1383,14 @@ void Test2_f (lparse_t *line)
 
 	if (net_landriverlevel == net_numlandrivers)
 	{
-		Con_Printf ("Could not resolve %s\n", host);	// JPG 3.00 - added error message
+		Con_PrintLinef ("Could not resolve %s", host);	// JPG 3.00 - added error message
 		return;
 	}
 
 JustDoIt:
 	testSocket = dfunc.Open_Socket (0);
 	if (testSocket == INVALID_SOCKET) {
-		Con_Printf ("Could not open socket\n"); // JPG 3.00 - added error message
+		Con_PrintLinef ("Could not open socket"); // JPG 3.00 - added error message
 		return;
 	}
 
@@ -1521,7 +1523,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 		char firstword[256];
 		const char *cursor; //, *mystring = cursor = "  dpmaster.deathmask.net:27950 , dpmaster.tchr.no:27950  ";
 //while ( (cursor = String_Get_Word (cursor, ",", word, sizeof(word))) ) {
-//	System_Alert ("\"%s\"", word);
+//	alert (QUOTED_S, word);
 //	cursor=cursor;
 //}
 		int i;
@@ -1560,7 +1562,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 
 			SZ_Clear			(&net_message);
 			MSG_WriteLong		(&net_message, -1);
-			MSG_WriteString		(&net_message, full_reply ? "statusResponse":"infoResponse\n"); net_message.cursize--;
+			MSG_WriteString		(&net_message, full_reply ? "statusResponse":"infoResponse" NEWLINE); net_message.cursize--;
 
 			cursor = String_Get_Word (com_protocolname.string, ",", firstword, sizeof(firstword)); // Get first word off protocol string
 
@@ -1589,7 +1591,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 						total /= NUM_PING_TIMES;
 						total *= 1000;	//put it in ms
 
-						MSG_WriteStringf (&net_message, "\n%d %d %d_%d \"%s\"",
+						MSG_WriteStringf (&net_message, NEWLINE "%d %d %d_%d " QUOTED_S,
 									svs.clients[i].old_frags,
 									(int)total,
 									svs.clients[i].colors & 15,
@@ -1764,7 +1766,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 #ifdef SUPPORTS_PQ_RCON_ATTEMPTS_LOGGED // Baker change
 			Rcon_Fails_Log (rcon_client_ip, realtime);
 			MSG_WriteString(&rcon_message, "rcon incorrect password (attempt logged with ip)");
-			Con_Printf ("(%s) rcon invalid password on \"%s\" %s\n", rcon_client_ip, cmd, ctime( &ltime ) ); //(%s) %s", host_client->netconnection->address,  &text[1]);
+			Con_PrintLinef ("(%s) rcon invalid password on " QUOTED_S " %s", rcon_client_ip, cmd, ctime( &ltime ) ); //(%s) %s", host_client->netconnection->address,  &text[1]);
 #endif // Baker change + SUPPORTS_RCON_ATTEMPTS_LOGGED
 		}
 		else
@@ -1772,7 +1774,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 #ifdef SUPPORTS_PQ_RCON_ATTEMPTS_LOGGED // Baker change
 			MSG_WriteString(&rcon_message, "");
 			rcon_active = true;
-			Con_Printf ("(%s) Rcon command: \"%s\" %s\n ", rcon_client_ip, cmd, ctime( &ltime ) ); //(%s) %s", host_client->netconnection->address,  &text[1])
+			Con_PrintLinef ("(%s) Rcon command: " QUOTED_S " %s", rcon_client_ip, cmd, ctime( &ltime ) ); //(%s) %s", host_client->netconnection->address,  &text[1])
 			Cmd_ExecuteString (cmd, src_command);
 			rcon_active = false;
 #endif // Baker change + SUPPORTS_RCON_ATTEMPTS_LOGGED
@@ -1798,14 +1800,14 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 		return;
 
 	if (MSG_ReadByte() != NET_PROTOCOL_VERSION) {
-		Datagram_Reject ("Incompatible version.\n", acceptsock, pclientaddr);
+		Datagram_Reject ("Incompatible version." NEWLINE, acceptsock, pclientaddr);
 		return;
 	}
 
 // LOCKED_SERVER
 
 	if (Admin_Check_ServerLock(ipstring)) { // ipstring isn't needed, but if someone is prevented from joining log it
-		Datagram_Reject ("Server isn't accepting new players at the moment.\n", acceptsock, pclientaddr);
+		Datagram_Reject ("Server isn't accepting new players at the moment." NEWLINE, acceptsock, pclientaddr);
 		return;
 	}
 
@@ -1815,10 +1817,10 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 
 	// check for a ban
 	if (Admin_Check_Ban (ipstring) )
-		return Datagram_Reject ("You have been banned.\n", acceptsock, &clientaddr);
+		return Datagram_Reject ("You have been banned." NEWLINE, acceptsock, &clientaddr);
 
 	if (Admin_Check_Whitelist (ipstring) )
-		return Datagram_Reject ("You aren't whitelisted.  If you should be and are very new, try again in a minute.\n", acceptsock, &clientaddr);
+		return Datagram_Reject ("You aren't whitelisted.  If you should be and are very new, try again in a minute." NEWLINE, acceptsock, &clientaddr);
 #endif
 
 	// see if this guy is already connected
@@ -1837,7 +1839,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 					MSG_WriteByte(&net_message, CCREP_ACCEPT);
 					dfunc.GetSocketAddr(s->socket, &newaddr);
 					MSG_WriteLong(&net_message, dfunc.GetSocketPort(&newaddr));
-					Con_DPrintf ("Client port on the server is %s\n", dfunc.AddrToString(&newaddr, false));
+					Con_DPrintLinef ("Client port on the server is %s", dfunc.AddrToString(&newaddr, false));
 					*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
 					dfunc.Write (acceptsock, net_message.data, net_message.cursize, pclientaddr);
 					SZ_Clear(&net_message);
@@ -1864,11 +1866,11 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 	// Baker: Skipped cheat-free check
 	if (pq_password.value > 0) {
 		if (cl_proquake_password == NO_PASSWORD_NEG_1) {
-			Datagram_Reject ("Password protected server.  Set pq_password to specify the password.\nRequires Mark V, ProQuake, DirectQ or other ProQuake compatible client.\n", acceptsock, pclientaddr);
+			Datagram_Reject ("Password protected server.  Set pq_password to specify the password." NEWLINE "Requires Mark V, ProQuake, DirectQ or other ProQuake compatible client." NEWLINE, acceptsock, pclientaddr);
 			return;
 		}
 		if (cl_proquake_password != pq_password.value) {
-			Datagram_Reject ("Password is wrong (pq_password).\n", acceptsock, pclientaddr);
+			Datagram_Reject ("Password is wrong (pq_password)." NEWLINE, acceptsock, pclientaddr);
 			return;
 		}
 		// We are ok!
@@ -1889,7 +1891,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 
 		// no room; try to let him know
 		if (sock == NULL) {
-			Datagram_Reject("Server is full.\n", acceptsock, pclientaddr);
+			Datagram_Reject("Server is full." NEWLINE, acceptsock, pclientaddr);
 			return;
 		}
 
@@ -1919,7 +1921,7 @@ static void _Datagram_ServerControlPacket (sys_socket_t acceptsock, struct qsock
 			sock->proquake_connection = cl_proquake_connection;
 			sock->proquake_version	  = cl_proquake_version;
 			sock->proquake_flags	  = cl_proquake_flags;
-//			Con_DPrintf ("A ProQuake client connected reporting as version %d\n", cl_proquake_version);
+//			Con_DPrintLinef ("A ProQuake client connected reporting as version %d", cl_proquake_version);
 		}
 
 
@@ -1956,11 +1958,11 @@ qsocket_t *Datagram_CheckNewConnections (void)
 					if (net_landrivers[net_landriverlevel].initialized && dfunc.listeningSock != INVALID_SOCKET) {
 						if (dfunc.GetAddrFromName(this_master, &addr) >= 0) {
 							if (sv_reportheartbeats.value)
-								Con_Printf ("Sending heartbeat to %s\n", this_master);
+								Con_PrintLinef ("Sending heartbeat to %s", this_master);
 							dfunc.Write(dfunc.listeningSock, (byte*)str, strlen(str), &addr);
 						} else {
 							if (sv_reportheartbeats.value)
-								Con_Printf ("Unable to resolve %s\n", this_master);
+								Con_PrintLinef ("Unable to resolve %s", this_master);
 						}
 					}
 				}
@@ -2050,21 +2052,26 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 //			struct qsockaddr addr;
 			heartbeat_time = System_DoubleTime() + 300; // Add 5 minutes
 			while (  (cursor = String_Get_Word (cursor, ",", this_master, sizeof(this_master)))  ) {
-			{
-				if (dfunc.GetAddrFromName(this_master, &masteraddr) >= 0)
-				{
+				//alert ("This master [%s]", this_master);
+				if (dfunc.GetAddrFromName(this_master, &masteraddr) >= 0) {
 					const char *cursor2, *protocol_string = cursor2 = com_protocolname.string;
 					char this_protocol[256];
-					while ( (cursor2 = String_Get_Word (cursor2, ",", this_protocol, sizeof(this_protocol)))   )
-					{	//send a request for each protocol
+					while ( (cursor2 = String_Get_Word (cursor2, ",", this_protocol, sizeof(this_protocol)))   )  {	
+						//send a request for each Quake server protocol
+						int retcode = 0;
 						if (masteraddr.qsa_family == AF_INET6)
 							str = va("%c%c%c%cgetserversExt %s %u empty full ipv6"/*\x0A\n"*/, 255, 255, 255, 255, this_protocol, NET_PROTOCOL_VERSION);
 						else
 							str = va("%c%c%c%cgetservers %s %u empty full"/*\x0A\n"*/, 255, 255, 255, 255, this_protocol, NET_PROTOCOL_VERSION);
-						dfunc.Write (dfunc.controlSock, (byte*)str, strlen(str), &masteraddr);
-						}
-					}
-				}
+						retcode = dfunc.Write (dfunc.controlSock, (byte*)str, strlen(str), &masteraddr);
+						// Every other write is ok.
+						//if (retcode == SOCKET_ERROR) {
+						//	Con_SafePrintLinef ("Master server [%s] may not be reachable for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);	
+						//}
+						//else Con_SafePrintLinef ("Master server [%s] WAS GOOD for protocol [%s] INET %d", this_master, this_protocol, masteraddr.qsa_family);	
+					} // End while each protocol
+				} // end if
+
 			}
 		}
 		sentsomething = true;
@@ -2076,7 +2083,7 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 			continue;
 		net_message.cursize = ret;
 
-		// Con_Printf ("Received reply from %s\n", dfunc.AddrToString (&readaddr));
+		// Con_PrintLinef ("Received reply from %s", dfunc.AddrToString (&readaddr));
 
 		// don't answer our own query
 		// Spike: Note: this doesn't really work too well if we're multi-homed.
@@ -2152,7 +2159,7 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 			char peer[NET_NAMELEN];
 			q_strlcpy(read, dfunc.AddrToString(&readaddr), sizeof(read));
 			q_strlcpy(peer, dfunc.AddrToString(&peeraddr), sizeof(peer));
-			Con_SafePrintf("Server at %s claimed to be at %s\n", read, peer);
+			Con_SafePrintLinef ("Server at %s claimed to be at %s", read, peer);
 		}*/
 
 		// search the cache for this server
@@ -2171,6 +2178,7 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 
 		// add it
 		hostCacheCount++;
+		//alert("%d Added hostCacheCount", hostCacheCount);
 
 		c_strlcpy (hostcache[n].name, MSG_ReadString());
 		c_strlcpy (hostcache[n].map, MSG_ReadString());
@@ -2188,7 +2196,7 @@ static cbool _Datagram_SearchForHosts (cbool xmit)
 		hostcache[n].driver = net_driverlevel;
 		hostcache[n].ldriver = net_landriverlevel;
 		c_strlcpy (hostcache[n].cname, dfunc.AddrToString(&readaddr, false));
-
+        //alert ("Server name #%d is " QUOTED_S " and [%s].", n, hostcache[n].cname, hostcache[n].name);
 		// check for a name conflict
 		for (i = 0; i < hostCacheCount; i++)
 		{
@@ -2277,7 +2285,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		goto ErrorReturn;
 
 	// send the connection request
-	Con_SafePrintf ("trying...\n");
+	Con_SafePrintLinef ("trying...");
 	SCR_UpdateScreen ();
 	start_time = net_time;
 
@@ -2309,9 +2317,9 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 				// is it from the right place?
 				if (sfunc.AddrCompare(&readaddr, serveraddr) != 0)
 				{
-					Con_SafePrintf ("wrong reply address\n");
-					Con_SafePrintf ("Expected: %s | %s\n", dfunc.AddrToString (serveraddr, false), StrAddr(serveraddr));
-					Con_SafePrintf ("Received: %s | %s\n", dfunc.AddrToString (&readaddr, false), StrAddr(&readaddr));
+					Con_SafePrintLinef ("wrong reply address");
+					Con_SafePrintLinef ("Expected: %s | %s", dfunc.AddrToString (serveraddr, false), StrAddr(serveraddr));
+					Con_SafePrintLinef ("Received: %s | %s", dfunc.AddrToString (&readaddr, false), StrAddr(&readaddr));
 					SCR_UpdateScreen ();
 					ret = 0;
 					continue;
@@ -2350,7 +2358,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		if (ret)
 			break;
 
-		Con_SafePrintf ("still trying...\n");
+		Con_SafePrintLinef ("still trying...");
 		SCR_UpdateScreen ();
 		start_time = SetNetTime();
 	}
@@ -2358,7 +2366,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	if (ret == 0)
 	{
 		reason = "No Response";
-		Con_SafePrintf ("%s\n", reason);
+		Con_SafePrintLinef ("%s", reason);
 		c_strlcpy (m_return_reason, reason);
 		goto ErrorReturn;
 	}
@@ -2366,7 +2374,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	if (ret == -1)
 	{
 		reason = "Network Error";
-		Con_SafePrintf ("%s\n", reason);
+		Con_SafePrintLinef ("%s", reason);
 		c_strlcpy (m_return_reason, reason);
 		goto ErrorReturn;
 	}
@@ -2377,7 +2385,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	if (ret == CCREP_REJECT)
 	{
 		reason = MSG_ReadString();
-		Con_Printf ("%s\n", reason);
+		Con_PrintLinef ("%s", reason);
 		c_strlcpy (m_return_reason, reason);
 		goto ErrorReturn;
 	}
@@ -2407,15 +2415,15 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		// Technically, if proquake_flags flags & 1 then there is 1 more long to read -- the ROT seed.
 		// However, we are not supporting cheat-free therefore we will not be reading it.
 		// And cheat-free is nigh impossible since I stopped signing ProQuake clients/server @ version 4.00 in 2008
-		Con_DPrintf ("Client port on the server is %s\n", dfunc.AddrToString(&sock->addr, false));
+		Con_DPrintLinef ("Client port on the server is %s", dfunc.AddrToString(&sock->addr, false));
 
 		if (sock->proquake_connection)
-			Con_DPrintf ("Server is ProQuake ? %i\n", sock->proquake_connection);
+			Con_DPrintLinef ("Server is ProQuake ? %d", sock->proquake_connection);
 	}
 	else
 	{
 		reason = "Bad Response";
-		Con_Printf ("%s\n", reason);
+		Con_PrintLinef ("%s", reason);
 		c_strlcpy (m_return_reason, reason);
 		goto ErrorReturn;
 	}
@@ -2425,7 +2433,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	dfunc.GetNameFromAddr (serveraddr, sock->trueaddress, sizeof(sock->trueaddress));
 	dfunc.GetNameFromAddr (serveraddr, sock->maskedaddress, sizeof(sock->maskedaddress));
 
-	Con_Printf ("Connection accepted\n");
+	Con_PrintLinef ("Connection accepted");
 	sock->lastMessageTime = SetNetTime();
 
 	// If we are connected to a legacy ProQuake server 3.50 or higher
@@ -2448,7 +2456,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	{
 		// Basically this is unreachable.  UDP_Connect always returns 0.  Loop_Connect probably can't fail.
 		reason = "Connect to Game failed";
-		Con_Printf ("%s\n", reason);
+		Con_PrintLinef ("%s", reason);
 		c_strlcpy (m_return_reason, reason);
 
 		goto ErrorReturn;
@@ -2518,7 +2526,6 @@ qsocket_t *Datagram_Connect (const char *host)
 		}
 	}
 	if (!resolved)
-		Con_SafePrintf("Could not resolve %s\n", host);
+		Con_SafePrintLinef ("Could not resolve %s", host);
 	return ret;
 }
-

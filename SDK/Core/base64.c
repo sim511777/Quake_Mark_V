@@ -17,51 +17,27 @@ static int Base64encode_len (size_t len)
 }
 
 
-char *base64_encode_a (const void *data, size_t in_len, size_t *numbytes)
+char *base64_encode_a (const void *data, size_t in_len, reply size_t *numbytes)
 {
-	byte *bytes_to_encode = (byte *)data;
-	size_t outlen = Base64encode_len(in_len);
-	char *_ret = calloc (outlen, 1);
-	char *ret = _ret;
-	int i = 0;
-	int j = 0;
-	unsigned char char_array_3[3];
-	unsigned char char_array_4[4] = {0}; // GCC says used uninitialized by I don't see it
+	const byte *src;
+	int outlen = (in_len + 2) / 3 * 4;
+	char *out = calloc (outlen + 1 /* for the null*/, 1);
+	char *dst = out;
+	int remaining;
 
-	while (in_len--) {
-		char_array_3[i++] = *(bytes_to_encode++);
-		if (i == 3) {
-			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-			char_array_4[3] = char_array_3[2] & 0x3f;
-
-			for(i = 0; (i <4) ; i++)
-				*ret++ = base64_chars[char_array_4[i]];
-			i = 0;
-		}
+	for (src = data, dst = out, remaining = in_len; remaining > 0; dst += 4, src +=3, remaining -= 3) {
+		dst[0] = /* can't fail */      base64_chars[((src[0] & 0xfc) >> 2)];
+		dst[1] = /* can't fail */      base64_chars[((src[0] & 0x03) << 4) + ((src[1] & 0xf0) >> 4)];
+		dst[2] = remaining < 2 ? '=' : base64_chars[((src[1] & 0x0f) << 2) + ((src[2] & 0xc0) >> 6)];
+		dst[3] = remaining < 3 ? '=' : base64_chars[((src[2] & 0x3f)     )];
 	}
 
-	if (i)
-	{
-		for(j = i; j < 3; j++)
-			char_array_3[j] = '\0';
-
-		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
-		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
-		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
-		char_array_4[3] = char_array_3[2] & 0x3f;
-
-		for (j = 0; (j < i + 1); j++)
-			*ret++ = base64_chars[char_array_4[j]];
-
-		while((i++ < 3))
-			*ret++ = '=';
-	}
-
-	if (numbytes) *numbytes = outlen;
-	return _ret;
+	if (dst - out != outlen)
+		log_fatal ("base64_encode_a: dst - out != outlen");
+	NOT_MISSING_ASSIGN(numbytes, dst-out);
+	return out;
 }
+
 
 /* aaaack but it's fast and const should make it shared text page. */
 static const unsigned char pr2six[256] =
@@ -100,7 +76,7 @@ static int Base64decode_len(const char *bufcoded)
     return nbytesdecoded + 1;
 }
 
-void *base64_decode_a (const char *encoded_string, size_t *numbytes)
+void *base64_decode_a (const char *encoded_string, reply size_t *numbytes)
 {
 	size_t outlen = Base64decode_len (encoded_string);
 	unsigned char *_ret = calloc (outlen, 1);
@@ -147,7 +123,7 @@ void *base64_decode_a (const char *encoded_string, size_t *numbytes)
 	}
 
 
-	if (numbytes) *numbytes =outlen;
+	NOT_MISSING_ASSIGN(numbytes, (ret - _ret));
 	return (void *)_ret;
 }
 

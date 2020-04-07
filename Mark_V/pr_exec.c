@@ -146,33 +146,33 @@ static void PR_PrintStatement (dstatement_t *s)
 
 	if ( (unsigned int)s->op < sizeof(pr_opnames)/sizeof(pr_opnames[0]))
 	{
-		Con_Printf ("%s ",  pr_opnames[s->op]);
+		Con_PrintContf ("%s ",  pr_opnames[s->op]);
 		i = strlen(pr_opnames[s->op]);
 		for ( ; i<10 ; i++)
-			Con_Printf (" ");
+			Con_PrintContf (" ");
 	}
 
 	if (s->op == OP_IF || s->op == OP_IFNOT)
-		Con_Printf ("%sbranch %i",PR_GlobalString(s->a),s->b);
+		Con_PrintContf ("%sbranch %d", PR_GlobalString(s->a),s->b);
 	else if (s->op == OP_GOTO)
 	{
-		Con_Printf ("branch %i",s->a);
+		Con_PrintContf ("branch %d", s->a);
 	}
 	else if ( (unsigned int)(s->op - OP_STORE_F) < 6)
 	{
-		Con_Printf ("%s",PR_GlobalString(s->a));
-		Con_Printf ("%s", PR_GlobalStringNoContents(s->b));
+		Con_PrintContf ("%s", PR_GlobalString(s->a));
+		Con_PrintContf ("%s", PR_GlobalStringNoContents(s->b));
 	}
 	else
 	{
 		if (s->a)
-			Con_Printf ("%s",PR_GlobalString(s->a));
+			Con_PrintContf ("%s", PR_GlobalString(s->a));
 		if (s->b)
-			Con_Printf ("%s",PR_GlobalString(s->b));
+			Con_PrintContf ("%s", PR_GlobalString(s->b));
 		if (s->c)
-			Con_Printf ("%s", PR_GlobalStringNoContents(s->c));
+			Con_PrintContf ("%s", PR_GlobalStringNoContents(s->c));
 	}
-	Con_Printf ("\n");
+	Con_PrintLine ();
 }
 
 /*
@@ -187,7 +187,7 @@ static void PR_StackTrace (void)
 
 	if (pr_depth == 0)
 	{
-		Con_Printf ("<NO STACK>\n");
+		Con_PrintLinef ("<NO STACK>");
 		return;
 	}
 
@@ -197,11 +197,11 @@ static void PR_StackTrace (void)
 		f = pr_stack[i].f;
 		if (!f)
 		{
-			Con_Printf ("<NO FUNCTION>\n");
+			Con_PrintLinef ("<NO FUNCTION>");
 		}
 		else
 		{
-			Con_Printf ("%12s : %s\n", PR_GetString( f->s_file), PR_GetString( f->s_name));
+			Con_PrintLinef ("%12s : %s", PR_GetString( f->s_file), PR_GetString( f->s_name));
 		}
 	}
 }
@@ -222,7 +222,7 @@ void PR_Profile_f (lparse_t *line)
 	// Baker: the fix for the profile command.  If you aren't running a server, crash ...
 	if (!sv.active)
 	{
-		Con_SafePrintf ("%s : Can't profile .. no active server.\n", line->args[0]);
+		Con_SafePrintLinef ("%s : Can't profile .. no active server.", line->args[0]);
 		return;
 	}
 
@@ -243,7 +243,7 @@ void PR_Profile_f (lparse_t *line)
 		if (best)
 		{
 			if (num < 10)
-				Con_Printf ("%7i %s\n", best->profile, PR_GetString(best->s_name));
+				Con_PrintLinef ("%7i %s", best->profile, PR_GetString(best->s_name));
 			num++;
 			best->profile = 0;
 		}
@@ -265,7 +265,7 @@ void PR_RunError (const char *error, ...)
 	PR_PrintStatement (pr_statements + pr_xstatement);
 	PR_StackTrace ();
 
-	Con_Printf ("%s\n", text);
+	Con_PrintLinef ("%s", text);
 
 	pr_depth = 0;		// dump the stack so host_error can shutdown functions
 
@@ -299,7 +299,7 @@ static int PR_EnterFunction (dfunction_t *f)
 				Host_Error ("Edict num %d out of player bounds (1 to %d)", playernum, svs.maxclients_internal); // Because the cap can change at any time now.
 			svr_player = &svs.clients[playernum - 1];
 			svr_player->coop_protect_end_time = sv.time + COOP_PROTECT_INTERVAL_5_0;
-			//Con_DPrintf ("Coop protect for \"%s\" start now %g until %g\n", svr_player->name, sv.time, svr_player->coop_protect_end_time);
+			//Con_DPrintLinef ("Coop protect for " QUOTED_S " start now %g until %g", svr_player->name, sv.time, svr_player->coop_protect_end_time);
 		}
 
 	}
@@ -313,7 +313,7 @@ static int PR_EnterFunction (dfunction_t *f)
 // save off any locals that the new function steps on
 	c = f->locals;
 	if (localstack_used + c > LOCALSTACK_SIZE)
-		PR_RunError ("PR_ExecuteProgram: locals stack overflow\n");
+		PR_RunError ("PR_ExecuteProgram: locals stack overflow"  NEWLINE);
 
 	for (i=0 ; i < c ; i++)
 		localstack[localstack_used+i] = ((int *)pr_globals)[f->parm_start + i];
@@ -700,7 +700,7 @@ void PR_ExecuteProgram (func_t fnum)
 
 	default:
 		pr_xstatement = st - pr_statements;
-		PR_RunError("Bad opcode %i", st->op);
+		PR_RunError("Bad opcode %d", st->op);
 	}
     }	/* end of while(1) loop */
 }
@@ -1009,7 +1009,7 @@ void PR_ExecuteProgram (func_t fnum)
 			break;
 
 		default:
-			PR_RunError ("Bad opcode %i", st->op);
+			PR_RunError ("Bad opcode %d", st->op);
 		}
 	}	/* end of while(1) loop */
 

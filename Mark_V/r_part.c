@@ -270,16 +270,16 @@ void R_ReadPointFile_f (lparse_t *unused)
 	if (cls.state != ca_connected)
 		return;			// need an active map.
 
-	c_snprintf (name, "maps/%s.pts", cl.worldname);
+	c_snprintf1 (name, "maps/%s.pts", cl.worldname);
 
 	COM_FOpenFile (name, &f);
 	if (!f)
 	{
-		Con_Printf ("couldn't open %s\n", name);
+		Con_PrintLinef ("couldn't open %s", name);
 		return;
 	}
 
-	Con_Printf ("Reading %s...\n", name);
+	Con_PrintLinef ("Reading %s...", name);
 	c = 0;
 	for ( ;; )
 	{
@@ -290,7 +290,7 @@ void R_ReadPointFile_f (lparse_t *unused)
 
 		if (!free_particles)
 		{
-			Con_Printf ("Not enough free particles\n");
+			Con_PrintLinef ("Not enough free particles");
 			break;
 		}
 		p = free_particles;
@@ -306,7 +306,7 @@ void R_ReadPointFile_f (lparse_t *unused)
 	}
 
 	FS_fclose (f);
-	Con_Printf ("%i points read\n", c);
+	Con_PrintLinef ("%d points read", c);
 }
 
 /*
@@ -1279,7 +1279,7 @@ void R_InitParticles (void)
 #ifdef GLQUAKE_SUPPORTS_QMB
 	qmb_is_available = (  (errmsg = QMB_InitParticles_Error ()) == NULL);
 	if (!qmb_is_available) {
-		Con_Printf ("QMB unavailable: %s\n", errmsg);
+		Con_PrintLinef ("QMB unavailable: %s", errmsg);
 	}
 #endif // GLQUAKE_SUPPORTS_QMB
 }
@@ -1424,5 +1424,3 @@ void R_TeleportSplash (vec3_t org)
 
 	Classic_TeleportSplash (org); // Classic
 }
-
-

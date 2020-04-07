@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-	
+
 //
 // view origin
 //
@@ -60,7 +60,7 @@ void R_Init (void)
 {
 	Cmd_AddCommands (R_Init);
 
-		
+
 	Sky_Init (); //johnfitz
 
 	R_InitParticles (); // After R_InitTextures ?
@@ -111,6 +111,13 @@ void R_NewMap (void)
 			Cvar_SetQuick (&gl_mirroralpha, va("%f", gl_mirroralpha.value) );  // Dumb but effective.  The extra zeros means next set will not string match, triggering the change action.
 			level.is_mirroralpha = true, level.mirroralpha = CLAMP(0, atof(key), 1);
 		}
+
+		level.sound_nominal_clip_dist = SOUND_NOMINAL_CLIP_DIST_DEFAULT_1000;
+		if ((key = COM_CL_Worldspawn_Value_For_Key (cl.worldmodel->entities, "sound_clipdistance"))) {
+			level.is_sound_nominal_clip_dist = true;
+			level.sound_nominal_clip_dist = CLAMP(10, atof(key), 8192);	// 8192 cap for now, 10 to avoid division by zero.
+		}
+
 
 		// Scan for prefixes?
 	}
@@ -171,7 +178,7 @@ void R_TimeRefresh_f (lparse_t *unused)
 
 	if (cls.state != ca_connected)
 	{
-		Con_Printf ("No map running\n");
+		Con_PrintLinef ("No map running");
 		return;
 	}
 
@@ -186,7 +193,7 @@ void R_TimeRefresh_f (lparse_t *unused)
 
 	stop = System_DoubleTime ();
 	elapsedtime = stop-start;
-	Con_Printf ("%f seconds (%f fps)\n", elapsedtime, 128/elapsedtime);
+	Con_PrintLinef ("%f seconds (%f fps)", elapsedtime, 128/elapsedtime);
 }
 
 
@@ -200,7 +207,7 @@ void R_SetLiquidAlpha (void)
 
 		if (!frame.nearwaterportal && !r_novis.value)
 		{
-			Con_DPrintf ("AUTO WATER VIS:  Level is vised!\n");
+			Con_DPrintLinef ("AUTO WATER VIS:  Level is vised!");
 			level.water_vis_known = true;
 			level.water_vis = true;
 		}
@@ -280,10 +287,10 @@ void R_SetupAliasFrame (aliashdr_t *paliashdr, int frame, lerpdata_t *lerpdata)
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
 	{
-		Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
+		Con_DPrintLinef ("R_AliasSetupFrame: no such frame %d", frame);
 		frame = 0;
 	}
-		
+
 
 	posenum = paliashdr->frames[frame].firstpose;
 	numposes = paliashdr->frames[frame].numposes;
@@ -426,9 +433,9 @@ void Sky_NewMap (void)
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 	// On a new map, these pointers are invalid
-	extern gltexture_t *skybox_textures[6];
+	extern gltexture_t *skybox_textures[SKYBOX_SIDES_COUNT_6];
 	int i;
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 		skybox_textures[i] = NULL;
 #endif
 
@@ -439,6 +446,9 @@ void Sky_NewMap (void)
 	Sky_LoadSkyBox ("");
 
 #ifdef WINQUAKE_SOFTWARE_SKYBOX
+#ifdef PLATFORM_LINUX
+	return; // Linux isn't liking fast gamma.  Is it the pointer size?
+#endif // PLATFORM_LINUX
 	if (!sw_sky_load_skyboxes.value)
 		return; // User doesn't want it
 #endif // WINQUAKE_SOFTWARE_SKYBOX
@@ -472,9 +482,9 @@ void Sky_SkyCommand_f (lparse_t *line)
 	switch (line->count)
 	{
 	case 1:
-		Con_Printf("\"sky\" is \"%s\" (gfx/env folder)\n", skybox_name);
+		Con_PrintLinef (QUOTEDSTR("sky") " is " QUOTED_S " (gfx/env folder)", skybox_name);
 		if (skybox_name[0])
-			Con_Printf ("to set to none type: sky \"\"\n");
+			Con_PrintLinef ("to set to none type: sky " QUOTEDSTR(""));
 		break;
 	case 2:
 		if (!cmd_from_server || cls.demoplayback)
@@ -494,7 +504,7 @@ void Sky_SkyCommand_f (lparse_t *line)
 
 		break;
 	default:
-		Con_Printf("usage: sky <skyname>\n");
+		Con_PrintLinef ("usage: sky <skyname>");
 	}
 
 }

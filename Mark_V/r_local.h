@@ -122,6 +122,8 @@ void R_SetSkyFrame (void);
 void R_DrawSurfaceBlock16 (void);
 void R_DrawSurfaceBlock8 (void);
 
+void R_WinQuake_Generate_Alpha50_Map (byte my_alpha50map[]); //qb: 50% / 50% alpha
+cbool VID_WinQuake_AllocBuffers_D_InitCaches (int width, int height); // Alloc Buffers.
 
 #if	id386
 

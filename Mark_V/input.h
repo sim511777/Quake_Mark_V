@@ -43,10 +43,10 @@ void Input_System_Enhanced_Keys_Changed (cvar_t *var);
 void Input_Local_Init (void);
 void Input_Local_Shutdown (void);
 int Input_Local_Capture_Mouse (cbool bDoCapture); // Returns 0 if capture rejected (Mac)
-void Input_Local_Keyboard_Disable_Sticky_Keys (cbool bDoDisable);
-void Input_Local_Keyboard_Disable_Windows_Key (cbool bDoDisable);
+//void Input_Local_Keyboard_Disable_Sticky_Keys (cbool bDoDisable);   Shell_Input_KeyBoard_Capture
+//void Input_Local_Keyboard_Disable_Windows_Key (cbool bDoDisable);
 void Input_Local_Mouse_Cursor_SetPos (int x, int y);
-void Input_Local_Mouse_Cursor_GetPos (int *x, int *y);
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py);
 cbool Input_Local_Update_Mouse_Clip_Region_Think (mrect_t *mouseregion);
 
 void Input_Local_Deactivate (void); // Stops drag flag

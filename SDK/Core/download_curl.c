@@ -135,7 +135,7 @@ int sDownload_Prep (const char *www_url, const char *path_to_file)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-cbool Download_To_File (const char *www_url, const char *path_to_file, progress_fn_t update_fn, print_fn_t print_fn, int *setsize)
+cbool Download_To_File (const char *www_url, const char *path_to_file, progress_fn_t update_fn, printline_fn_t my_printline, int *setsize)
 {
 	// Run prep
 	int expected_size = sDownload_Prep (www_url, path_to_file);
@@ -143,7 +143,7 @@ cbool Download_To_File (const char *www_url, const char *path_to_file, progress_
 	cbool ismatch;
 
 	// Size of -1 indicates cannot get file
-	if (print_fn) print_fn ("Expected filesize of download is %i\n", expected_size);
+	if (my_printline) my_printline ("Expected filesize of download is %d", expected_size);
 	if (expected_size != -1)
 	{
 		CURL *hcurl = NULL;
@@ -163,7 +163,7 @@ cbool Download_To_File (const char *www_url, const char *path_to_file, progress_
 
 		actual_size = File_Length (path_to_file);
 		ismatch = (actual_size == expected_size);
-		if (print_fn) print_fn ("Actual size %i, expected size %i, match? %i\n", actual_size, expected_size, ismatch );
+		if (my_printline) my_printline ("Actual size %d, expected size %d, match? %d", actual_size, expected_size, ismatch );
 
 		return ismatch;  // Right?  What if aborted?
 	} 
@@ -176,7 +176,7 @@ byte *Download_To_Memory_Alloc (const char *www_url, size_t *len, progress_fn_t 
 {
 	// Run prep
 	int expected_size = sDownload_Prep (www_url, NULL);
-
+alert ("need EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1");
 	// Size of -1 indicates cannot get file
 	if (expected_size != -1)
 	{

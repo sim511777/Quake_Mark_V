@@ -120,12 +120,12 @@ static void CL_WriteDemoMessage (void)
 	float	f;
 
 	len = LittleLong (net_message.cursize);
-	fwrite (&len, 4, 1, cls.demofile);
+	fwrite (&len, 4 /*sizeof int*/, 1, cls.demofile);
 
 	for (i=0 ; i<3 ; i++)
 	{
 		f = LittleFloat (cl.viewangles[i]);
-		fwrite (&f, 4, 1, cls.demofile);
+		fwrite (&f, 4 /*sizeof float*/, 1, cls.demofile);
 	}
 
 	fwrite (net_message.data, net_message.cursize, 1, cls.demofile);
@@ -264,7 +264,7 @@ int CL_GetMessage (void)
 
 	// discard nop keepalive message
 		if (net_message.cursize == 1 && net_message.data[0] == svc_nop)
-			Con_Printf ("<-- server to client keepalive\n");
+			Con_PrintLinef ("<-- server to client keepalive");
 // Could have svc_download handled here to keep it out of demo file? 
 		else
 			break;
@@ -299,7 +299,7 @@ void CL_Stop_f (lparse_t *unused)
 
 	if (!cls.demorecording)
 	{
-		Con_Printf ("Not recording a demo.\n");
+		Con_PrintLinef ("Not recording a demo.");
 		return;
 	}
 
@@ -316,10 +316,10 @@ void CL_Stop_f (lparse_t *unused)
 	cls.demorecording = false;
 	Lists_Update_Demolist ();
 	if (!cls.autodemo)
-		Con_Printf ("Completed demo %s, type \"showfile\" to open folder\n", File_URL_SkipPath (cls.demo_url));
+		Con_PrintLinef ("Completed demo %s, type " QUOTEDSTR ("showfile") " to open folder", File_URL_SkipPath (cls.demo_url));
 	else
 	{
-		Con_DPrintf ("Completed demo %s\n", File_URL_SkipPath (cls.demo_url) );
+		Con_DPrintLinef ("Completed demo %s", File_URL_SkipPath (cls.demo_url) );
 		cls.autodemo = false;
 	}
 }
@@ -327,7 +327,7 @@ void CL_Stop_f (lparse_t *unused)
 void CL_Clear_Demos_Queue (void)
 {
 	int i;
-	for (i = 0;i < MAX_DEMOS; i ++)	// Clear demo loop queue
+	for (i = 0;i < MAX_DEMOS_32; i ++)	// Clear demo loop queue
 		cls.demos[i][0] = 0;
 	cls.demonum = -1;				// Set next demo to none
 }
@@ -354,32 +354,32 @@ void CL_Record_f (lparse_t *line)
 
 	if (cls.demoplayback)
 	{
-		Con_Printf ("Can't record during demo playback\n");
+		Con_PrintLinef ("Can't record during demo playback");
 		return;
 	}
 
 	c = line->count;
 	if (c != 2 && c != 3 && c != 4)
 	{
-		Con_Printf ("record <demoname> [<map> [cd track]]\n");
+		Con_PrintLinef ("record <demoname> [<map> [cd track]]");
 		return;
 	}
 
 	if (strstr(line->args[1], ".."))
 	{
-		Con_Printf ("Relative pathnames are not allowed.\n");
+		Con_PrintLinef ("Relative pathnames are not allowed.");
 		return;
 	}
 
 	if (c == 2 && cls.state == ca_connected)
 	{
 #if 0
-		Con_Printf("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
+		Con_PrintLinef ("Can not record - already connected to server" NEWLINE "Client demo recording must be started before connecting");
 		return;
 #endif
 		if (cls.signon < 2)
 		{
-			Con_Printf("Can't record - try again when connected\n");
+			Con_PrintLinef ("Can't record - try again when connected");
 			return;
 		}
 	}
@@ -391,7 +391,7 @@ void CL_Record_f (lparse_t *line)
 	if (c == 4)
 	{
 		track = atoi(line->args[3]);
-		Con_Printf ("Forcing CD track to %i\n", cls.forcetrack);
+		Con_PrintLinef ("Forcing CD track to %d", cls.forcetrack);
 	}
 	else
 	{
@@ -438,13 +438,13 @@ void CL_Record_f (lparse_t *line)
 	File_URL_Edit_Force_Extension (record_name_url, ".dem", sizeof(record_name_url));
 
 	if (!is_automatic)
-		Con_Printf ("recording to %s\n", record_name_url);
-	else Con_DPrintf ("recording to %s\n", record_name_url);
+		Con_PrintLinef ("recording to %s", record_name_url);
+	else Con_DPrintLinef ("recording to %s", record_name_url);
 
 	cls.demofile = FS_fopen_write (record_name_url, "wb");
 	if (!cls.demofile)
 	{
-		Con_Printf ("ERROR: couldn't create %s\n", File_URL_SkipPath(record_name_url));
+		Con_PrintLinef ("ERROR: couldn't create %s", File_URL_SkipPath(record_name_url));
 		return;
 	}
 
@@ -452,7 +452,7 @@ void CL_Record_f (lparse_t *line)
 	c_strlcpy (cls.demo_url, record_name_url);
 
 	cls.forcetrack = track;
-	fprintf (cls.demofile, "%i\n", cls.forcetrack);
+	fprintf (cls.demofile, "%d\n", cls.forcetrack);
 
 	cls.demorecording = true;
 
@@ -594,7 +594,7 @@ void CL_PlayDemo_Opened (const char *in_demo_name_url)
 	if (neg)
 		cls.forcetrack = -cls.forcetrack;
 // ZOID, fscanf is evil
-//	fscanf (cls.demofile, "%i\n", &cls.forcetrack);
+//	fscanf (cls.demofile, "%d\n", &cls.forcetrack);
 
 }
 
@@ -614,7 +614,7 @@ void CL_PlayDZDemo (const char *dz_quake_folder_url)
 	// check if the file exists
 	if (!File_Exists(dz_quake_folder_url))
 	{
-		Con_Printf ("ERROR: couldn't open %s\n", File_URL_SkipPath(dz_quake_folder_url));
+		Con_PrintLinef ("ERROR: couldn't open %s", File_URL_SkipPath(dz_quake_folder_url));
 		return;
 	}
 
@@ -623,11 +623,11 @@ void CL_PlayDZDemo (const char *dz_quake_folder_url)
 	File_URL_Edit_Change_Extension (safedir_dem_url, ".dem", sizeof(safedir_dem_url));
 
 	// 4.  If we are here, we have work to do.
-	Con_Printf ("\x02" "\nunpacking demo. please wait...\n\n");
+	Con_PrintLinef ("\x02" "\nunpacking demo. please wait..." NEWLINE);
 	
 	FS_SafeDirClean (); // Remove anything in our safe dir
 	File_Chdir (com_safedir); // Change directory to our safe directory.
-	c_snprintf (argbuckets_dz.cmdline, "anything -x -f \"%s\"", dz_quake_folder_url);
+	c_snprintf1 (argbuckets_dz.cmdline, "anything -x -f " QUOTED_S, dz_quake_folder_url);
 	String_To_Arg_Buckets (&argbuckets_dz, argbuckets_dz.cmdline);
 	dzip_runner (argbuckets_dz.argcount, argbuckets_dz.argvs);
 
@@ -637,10 +637,10 @@ void CL_PlayDZDemo (const char *dz_quake_folder_url)
 
 	if (!cls.demofile)
 	{
-		const char *msg_no_exist = "File \"%s\" was not able to be extracted from archive\n";
-		const char *msg_exists_couldnt_play  = "ERROR: couldn't open \"%s\"\n";
+		const char *msg_no_exist = "File " QUOTED_S " was not able to be extracted from archive";
+		const char *msg_exists_couldnt_play  = "ERROR: couldn't open " QUOTED_S;
 		const char *msg = expected_dem_exists ? msg_exists_couldnt_play : msg_no_exist;
-		Con_Printf (msg, File_URL_SkipPath(safedir_dem_url));
+		Con_PrintLinef (msg, File_URL_SkipPath(safedir_dem_url));
 		cls.demonum = -1;
 		FS_SafeDirClean (); // We are done with the safedir temps
 		return; // Get out, right?
@@ -665,7 +665,7 @@ void CL_PlayDemo_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("playdemo <demoname> : plays a demo\n");
+		Con_PrintLinef ("playdemo <demoname> : plays a demo");
 		return;
 	}
 
@@ -686,12 +686,12 @@ void CL_PlayDemo_f (lparse_t *line)
 	
 	c_strlcpy (playdemo_name_qpath, line->args[1]);
 	File_URL_Edit_Force_Extension (playdemo_name_qpath, ".dem", sizeof(playdemo_name_qpath));
-	Con_Printf ("Playing demo from %s.\n", playdemo_name_qpath);
+	Con_PrintLinef ("Playing demo from %s.", playdemo_name_qpath);
 
 	COM_FOpenFile (playdemo_name_qpath, &cls.demofile);
 	if (!cls.demofile)
 	{
-		Con_Printf ("ERROR: couldn't open %s\n", playdemo_name_qpath);
+		Con_PrintLinef ("ERROR: couldn't open %s", playdemo_name_qpath);
 		cls.demonum = -1;		// stop demo loop
 		return;
 	}
@@ -719,7 +719,7 @@ static void CL_FinishTimeDemo (void)
 	if (!time)
 		time = 1;
 
-	Con_Printf ("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames/time);
+	Con_PrintLinef ("%d frames %5.1f seconds %5.1f fps", frames, time, frames/time);
 }
 
 /*
@@ -736,7 +736,7 @@ void CL_TimeDemo_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("timedemo <demoname> : gets demo speeds\n");
+		Con_PrintLinef ("timedemo <demoname> : gets demo speeds");
 		return;
 	}
 
@@ -761,4 +761,3 @@ void CL_TimeDemo_f (lparse_t *line)
 	Key_SetDest (key_game);
 	console1.visible_pct = 0;
 }
-

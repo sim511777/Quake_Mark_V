@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // download_curl.c -- download functions
 
+#if 0
 
 #define CORE_LOCAL
 #include "core.h"
@@ -79,7 +80,7 @@ NSString*       downloadingURL;
             {
                 NSLog (@"Error writing file %@", downloadBaseName);
             }
-            else System_Operating_System_OpenFolder_HighlightFile ([writeCacheURL cStringUsingEncoding:NSASCIIStringEncoding]);
+            else System_Operating_System_OpenFolder_HighlightFile (TO_CSTRING(writeCacheURL));
         }
     }   
     // Save to disk, do more if needed
@@ -512,3 +513,6 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     return retVal;
 }
 @end
+
+#endif
+

@@ -36,7 +36,7 @@ static const char * const _tag = "memchain";  	// TAG
 typedef struct mitem_s
 {
 __LIST_UNSORTED_ITEM_REQUIRED__ (struct mitem_s) // Supplies *prev, *next
-	char   tag[16];
+	char   tag[32];
 	size_t bytes;
 	void   *data;
 } mitem_t;
@@ -158,7 +158,7 @@ static void *Free (mobj_t *me, const void *ptr, const char *hint)
 
 		if (!item)
 		{
-			Core_Error ("Missing Link");
+			log_fatal ("Missing Link");
 			return NULL;
 		}
 
@@ -178,7 +178,7 @@ static void *Realloc (mobj_t *me, const void *ptr, size_t len, const char *tag)
 	mitem_t *item = sFindLink (&m->memlist, ptr);
 
 	if (item == NULL)
-		Core_Error ("Missing Link");
+		log_fatal ("Missing Link");
 
 	sUnlink (&m->memlist, item);
 
@@ -228,7 +228,7 @@ static void *Shutdown (mobj_t *me)
 
 	// Warn of memory we didn't shutdown ourselves
 	for (cur = m->memlist.first; cur; cur = cur->next)
-		System_Alert ("Mem remained %s", cur->tag);
+		alert ("Mem remained %s", cur->tag);
 #endif
 
 

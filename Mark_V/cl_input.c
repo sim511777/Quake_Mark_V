@@ -82,7 +82,7 @@ void KeyDown (lparse_t* line, kbutton_t *b)
 		b->down[1] = k;
 	else
 	{
-		Con_Printf ("Three keys down for a button!\n");
+		Con_PrintLinef ("Three keys down for a button!");
 		return;
 	}
 
@@ -457,7 +457,7 @@ void CL_SendMove (const usercmd_t *cmd)
 
 	if (NET_SendUnreliableMessage (cls.netcon, &buf) == -1)
 	{
-		Con_Printf ("CL_SendMove: lost server connection\n");
+		Con_PrintLinef ("CL_SendMove: lost server connection");
 		CL_Disconnect ();
 	}
 }
@@ -483,7 +483,7 @@ void IN_PQ_Full_Pitch_f (lparse_t *line)
 
 		Cvar_Set_Untrusted (cl_minpitch.name, "-70");
 		Cvar_Set_Untrusted (cl_maxpitch.name, va("%f", proquake_maxpitch)); // Baker: 80 doesn't work right when connect to a ProQuake server for some reason, gets slight jitter?
-		Con_DPrintf ("ProQuake fullpitch temporarily set for duration of map\n");
+		Con_DPrintLinef ("ProQuake fullpitch temporarily set for duration of map");
 	}
 }
 
@@ -496,4 +496,3 @@ void CL_InitInput (void)
 {
 	Cmd_AddCommands (CL_InitInput);
 }
-

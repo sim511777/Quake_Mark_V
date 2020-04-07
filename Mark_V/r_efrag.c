@@ -124,7 +124,7 @@ void R_SplitEntityOnNode (mnode_t *node)
 			//johnfitz -- less spammy overflow message
 			if (!dev_overflows.efrags || dev_overflows.efrags + CONSOLE_RESPAM_TIME < realtime )
 			{
-				Con_Printf ("Too many efrags!\n");
+				Con_PrintLinef ("Too many efrags!");
 				dev_overflows.efrags = realtime;
 			}
 			//johnfitz
@@ -185,13 +185,13 @@ void R_CheckEfrags (void)
 		;
 
 //	if (count > 640 && dev_peakstats.efrags <= 640)
-//		Con_Warning ("%i efrags exceeds standard limit of 640.\n", count);
+//		Con_WarningLinef ("%d efrags exceeds standard limit of 640.", count);
 
 	if (count > MAX_FITZQUAKE_EFRAGS && dev_peakstats.efrags <= MAX_WINQUAKE_EFRAGS)
-		Con_DWarning ("%i efrags exceeds FitzQuake limit of %i.\n", count, MAX_FITZQUAKE_EFRAGS);
+		Con_DWarningLine ("%d efrags exceeds FitzQuake limit of %d.", count, MAX_FITZQUAKE_EFRAGS);
 
 	if (count > MAX_WINQUAKE_EFRAGS && dev_peakstats.efrags <= MAX_WINQUAKE_EFRAGS)
-		Con_DWarning ("%i efrags exceeds standard limit of %i.\n", count, MAX_WINQUAKE_EFRAGS);
+		Con_DWarningLine ("%d efrags exceeds standard limit of %d.", count, MAX_WINQUAKE_EFRAGS);
 
 	dev_stats.efrags = count;
 	dev_peakstats.efrags = c_max(count, dev_peakstats.efrags);
@@ -299,6 +299,3 @@ void R_StoreEfrags (efrag_t **ppefrag)
 		ppefrag = &pefrag->leafnext;
 	}
 }
-
-
-

@@ -6,7 +6,7 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Win32 Debug">
+			<Target title="Win32 WinQuake Debug">
 				<Option output="c:/quake/mark_v_winquake_debug_gcc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="./Object_Files/Debug_GCC_WinQuake" />
 				<Option type="0" />
@@ -19,21 +19,20 @@
 					<Add option="-DWIN32" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-D_DEBUG" />
+					<Add option="-DDEBUG" />
+					<Add option="-DCORE_PTHREADS" />
 					<Add option="-Did386=0" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
 				</Compiler>
 				<Linker>
-					<Add option="-pg" />
 					<Add option="-pg -lgmon" />
+					<Add option="-pg" />
 					<Add library="msvcrt" />
 					<Add library="kernel32" />
 					<Add library="user32" />
 					<Add library="comdlg32" />
 					<Add library="gdi32" />
-					<Add library="opengl32" />
-					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -41,7 +40,7 @@
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
 				</Linker>
 			</Target>
-			<Target title="Win32 Release">
+			<Target title="Win32 WinQuake Release">
 				<Option output="c:/quake/mark_v_winquake_gcc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="./Object_Files/Release_GCC_WinQuake" />
 				<Option type="0" />
@@ -63,10 +62,78 @@
 					<Add library="user32" />
 					<Add library="comdlg32" />
 					<Add library="gdi32" />
+					<Add library="ws2_32" />
+					<Add library="shlwapi" />
+					<Add library="dxguid" />
+					<Add library="winmm" />
+					<Add library="libpthreadGC2.a" />
+					<Add directory="../SDK/pthread-static-msvc2010/lib" />
+				</Linker>
+			</Target>
+			<Target title="Win32 WinQuake GL Debug">
+				<Option output="c:/quake/mark_v_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Debug_GCC_WinQuake_GL" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-pg" />
+					<Add option="-g" />
+					<Add option="-ggdb" />
+					<Add option="-D_WIN32" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DDEBUG" />
+					<Add option="-Did386=0" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+					<Add option="-pg" />
+					<Add library="msvcrt" />
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
 					<Add library="opengl32" />
 					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
+					<Add library="shlwapi" />
+					<Add library="dxguid" />
+					<Add library="winmm" />
+					<Add library="libpthreadGC2.a" />
+					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
+				</Linker>
+			</Target>
+			<Target title="Win32 WinQuake GL Release">
+				<Option output="c:/quake/mark_v_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Release_GCC_WinQuake_GL" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-D_WIN32" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DNDEBUG" />
+					<Add option="-Did386=1" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DPTW32_STATIC_LIB" />
+					<Add directory="../SDK/pthread-static-msvc2010/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="msvcrt" />
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
+					<Add library="opengl32" />
+					<Add library="glu32" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -87,7 +154,10 @@
 					<Add option="-DWIN32" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-D_DEBUG" />
+					<Add option="-DDEBUG" />
 					<Add option="-DGLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DDEBUGGL" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
 				</Compiler>
@@ -100,8 +170,7 @@
 					<Add library="gdi32" />
 					<Add library="opengl32" />
 					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -121,6 +190,8 @@
 					<Add option="-D_WINDOWS" />
 					<Add option="-DNDEBUG" />
 					<Add option="-DGLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
 					<Add option="-DPTW32_STATIC_LIB" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
 				</Compiler>
@@ -133,8 +204,7 @@
 					<Add library="gdi32" />
 					<Add library="opengl32" />
 					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -142,9 +212,9 @@
 					<Add directory="../SDK/pthread-static-msvc2010/lib" />
 				</Linker>
 			</Target>
-			<Target title="Win32 SDL Debug">
-				<Option output="c:/quake/mark_v_sdl_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_SDLQuake" />
+			<Target title="Win32 SDL WinQuake GL Debug">
+				<Option output="c:/quake/mark_v_sdl_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Debug_GCC_SDL_Winquake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-condebug -window" />
@@ -156,15 +226,18 @@
 					<Add option="-DWIN32" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-D_DEBUG" />
-					<Add option="-DGLQUAKE" />
+					<Add option="-DDEBUG" />
 					<Add option="-DDEBUGGL" />
-					<Add option="-DSDLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+					<Add option="-Did386=0" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
-					<Add option="-pg" />
 					<Add option="-pg -lgmon" />
+					<Add option="-pg" />
 					<Add library="msvcrt" />
 					<Add library="kernel32" />
 					<Add library="user32" />
@@ -172,8 +245,7 @@
 					<Add library="gdi32" />
 					<Add library="opengl32" />
 					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -182,12 +254,12 @@
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
-					<Add directory="../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
 				</Linker>
 			</Target>
-			<Target title="Win32 SDL Release">
-				<Option output="c:/quake/mark_v_sdl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDLQuake" />
+			<Target title="Win32 SDL WinQuake GL Release">
+				<Option output="c:/quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Release_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -196,14 +268,19 @@
 					<Add option="-DWIN32" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-DNDEBUG" />
-					<Add option="-DGLQUAKE" />
-					<Add option="-DSDLQUAKE" />
+					<Add option="-Did386=1" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+					<Add option="-DCORE_SDL_STATIC" />
 					<Add option="-DPTW32_STATIC_LIB" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-static" />
+					<Add option="-static-libgcc" />
 					<Add library="msvcrt" />
 					<Add library="kernel32" />
 					<Add library="user32" />
@@ -211,8 +288,58 @@
 					<Add library="gdi32" />
 					<Add library="opengl32" />
 					<Add library="glu32" />
-					<Add library="wsock32" />
-					<Add library="libcurl" />
+					<Add library="ws2_32" />
+					<Add library="shlwapi" />
+					<Add library="dxguid" />
+					<Add library="libpthreadGC2.a" />
+					<Add library="mingw32" />
+					<Add library="libSDL2main" />
+					<Add library="libSDL2" />
+					<Add library="winmm" />
+					<Add library="dinput8" />
+					<Add library="dxerr8" />
+					<Add library="imm32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="version" />
+					<Add directory="../SDK/pthread-static-msvc2010/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+				</Linker>
+			</Target>
+			<Target title="Win32 SDL GL Debug">
+				<Option output="c:/quake/mark_v_sdl_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Debug_GCC_SDL_GLQuake" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-condebug -window" />
+				<Compiler>
+					<Add option="-pg" />
+					<Add option="-g" />
+					<Add option="-ggdb" />
+					<Add option="-D_WIN32" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DDEBUG" />
+					<Add option="-DGLQUAKE" />
+					<Add option="-DDEBUGGL" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg -lgmon" />
+					<Add option="-pg" />
+					<Add library="msvcrt" />
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
+					<Add library="opengl32" />
+					<Add library="glu32" />
+					<Add library="ws2_32" />
 					<Add library="shlwapi" />
 					<Add library="dxguid" />
 					<Add library="winmm" />
@@ -220,24 +347,73 @@
 					<Add library="mingw32" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
-					<Add directory="../SDK/pthread-static-msvc2010/lib" />
-					<Add directory="../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
 				</Linker>
 			</Target>
-			<Target title="Linux SDL Debug">
-				<Option output="../../Quake/mark_v_sdl_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="../../Quake/" />
-				<Option object_output="./Object_Files/Debug_GCC_SDLQuake" />
-				<Option type="1" />
+			<Target title="Win32 SDL GL Release">
+				<Option output="c:/quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Release_GCC_SDL_GLQuake" />
+				<Option type="0" />
 				<Option compiler="gcc" />
-				<Option use_console_runner="0" />
-				<Option parameters="-condebug -window -basedir /home/charles/Desktop/Quake +vid_hardwaregamma 0 +disconnect -noudp" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_WIN32" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-DNDEBUG" />
+					<Add option="-DGLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+					<Add option="-DCORE_SDL_STATIC" />
+					<Add option="-DPTW32_STATIC_LIB" />
+					<Add directory="../SDK/pthread-static-msvc2010/include" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-static" />
+					<Add option="-static-libgcc" />
+					<Add library="msvcrt" />
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="comdlg32" />
+					<Add library="gdi32" />
+					<Add library="opengl32" />
+					<Add library="glu32" />
+					<Add library="ws2_32" />
+					<Add library="shlwapi" />
+					<Add library="dxguid" />
+					<Add library="libpthreadGC2.a" />
+					<Add library="mingw32" />
+					<Add library="libSDL2main" />
+					<Add library="libSDL2" />
+					<Add library="winmm" />
+					<Add library="dinput8" />
+					<Add library="dxerr8" />
+					<Add library="imm32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="version" />
+					<Add directory="../SDK/pthread-static-msvc2010/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+				</Linker>
+			</Target>
+			<Target title="Linux SDL WinQuake GL Debug">
+				<Option output="../../Quake/mark_v_sdl_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../Quake/" />
+				<Option object_output="./Object_Files/Debug_GCC_SDL_WinQuake_GLQuake" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-window -basedir /home/charles/Desktop/Quake -developer -width 640 -height 480 -fullscreen" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-D_DEBUG" />
-					<Add option="-DGLQUAKE" />
+					<Add option="-DDEBUG" />
 					<Add option="-DDEBUGGL" />
-					<Add option="-DSDLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
 				</Compiler>
 				<Linker>
 					<Add option="`sdl2-config --libs`" />
@@ -247,28 +423,86 @@
 					<Add library="dl" />
 				</Linker>
 			</Target>
-			<Target title="Linux SDL Release">
-				<Option output="c:/quake/mark_v_sdl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDLQuake" />
+			<Target title="Linux SDL WinQuake GL Release">
+				<Option output="../../Quake/mark_v_sdl_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Release_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
+				<Option parameters="-window -basedir /home/charles/Desktop/Quake" />
 				<Compiler>
 					<Add option="-O3" />
 					<Add option="-DNDEBUG" />
-					<Add option="-DGLQUAKE" />
-					<Add option="-DSDLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
 					<Add option="-DPTW32_STATIC_LIB" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="mingw32" />
+					<Add option="`sdl2-config --libs`" />
+					<Add option="-pthread" />
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
+					<Add library="GL" />
+					<Add library="GLU" />
+					<Add library="dl" />
+				</Linker>
+			</Target>
+			<Target title="Linux SDL GL Debug">
+				<Option output="../../Quake/mark_v_sdl_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../Quake/" />
+				<Option object_output="./Object_Files/Debug_GCC_SDL_GLQuake" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-window -basedir /home/charles/Desktop/Quake -developer" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DDEBUG" />
+					<Add option="-DGLQUAKE" />
+					<Add option="-DDEBUGGL" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+				</Compiler>
+				<Linker>
+					<Add option="`sdl2-config --libs`" />
+					<Add option="-pthread" />
+					<Add library="GL" />
+					<Add library="GLU" />
+					<Add library="dl" />
+				</Linker>
+			</Target>
+			<Target title="Linux SDL GL Release">
+				<Option output="../../Quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./Object_Files/Release_GCC_SDL_GLQuake" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-window -basedir /home/charles/Desktop/Quake" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-DNDEBUG" />
+					<Add option="-DGLQUAKE" />
+					<Add option="-DCORE_GL" />
+					<Add option="-DCORE_PTHREADS" />
+					<Add option="-DCORE_SDL" />
+					<Add option="-DPTW32_STATIC_LIB" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="`sdl2-config --libs`" />
+					<Add option="-pthread" />
+					<Add library="libSDL2main" />
+					<Add library="libSDL2" />
+					<Add library="GL" />
+					<Add library="GLU" />
+					<Add library="dl" />
 				</Linker>
 			</Target>
 		</Build>
 		<VirtualTargets>
-			<Add alias="Windows All" targets="Win32 Debug;Win32 Release;Win32 GL Debug;Win32 GL Release;Win32 SDL Debug;" />
+			<Add alias="A) Windows All" targets="Win32 WinQuake Debug;Win32 WinQuake Release;Win32 WinQuake GL Debug;Win32 WinQuake GL Release;Win32 GL Debug;Win32 GL Release;Win32 SDL WinQuake GL Debug;Win32 SDL WinQuake GL Release;Win32 SDL GL Debug;Win32 SDL GL Release;" />
+			<Add alias="B) Linux All" targets="Linux SDL WinQuake GL Debug;Linux SDL WinQuake GL Release;Linux SDL GL Debug;Linux SDL GL Release;" />
 		</VirtualTargets>
 		<Compiler>
 			<Add option="-Winline" />
@@ -279,27 +513,29 @@
 			<Add option="-DCORE_PTHREADS" />
 			<Add directory="../SDK" />
 			<Add directory="../SDK/Core" />
-			<Add directory="../SDK/libcurl-7.18.0-win32-msvc/include" />
 			<Add directory="../SDK/dxsdk/sdk/inc" />
 		</Compiler>
 		<Linker>
 			<Add directory="../SDK" />
 			<Add directory="../SDK/Core" />
-			<Add directory="../SDK/libcurl-7.18.0-win32-msvc" />
 		</Linker>
 		<Unit filename="../SDK/Core/base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/base64.h" />
+		<Unit filename="../SDK/Core/clip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/clip.h" />
+		<Unit filename="../SDK/Core/color.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/color.h" />
+		<Unit filename="../SDK/Core/color_html_colors.enum.h" />
 		<Unit filename="../SDK/Core/core.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/core.h" />
-		<Unit filename="../SDK/Core/core_linux.c">
-			<Option compilerVar="CC" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
-		</Unit>
 		<Unit filename="../SDK/Core/core_net.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -307,15 +543,7 @@
 		<Unit filename="../SDK/Core/core_net_sys.h" />
 		<Unit filename="../SDK/Core/core_opengl.h" />
 		<Unit filename="../SDK/Core/core_osx.m" />
-		<Unit filename="../SDK/Core/core_win.c">
-			<Option compilerVar="CC" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-		</Unit>
+		<Unit filename="../SDK/Core/core_sdl.h" />
 		<Unit filename="../SDK/Core/core_windows.h" />
 		<Unit filename="../SDK/Core/dirent_win.c">
 			<Option compilerVar="CC" />
@@ -347,6 +575,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/file.h" />
+		<Unit filename="../SDK/Core/file_system.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../SDK/Core/gl_constants.h" />
 		<Unit filename="../SDK/Core/html_colors.enum.h" />
 		<Unit filename="../SDK/Core/image.c">
@@ -357,6 +588,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/interface.h" />
+		<Unit filename="../SDK/Core/libcurl.dll" />
 		<Unit filename="../SDK/Core/links.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -385,16 +617,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/memchain.h" />
+		<Unit filename="../SDK/Core/memstick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/memstick.h" />
 		<Unit filename="../SDK/Core/miniz.h" />
 		<Unit filename="../SDK/Core/music.h" />
 		<Unit filename="../SDK/Core/music_cd_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
 		</Unit>
 		<Unit filename="../SDK/Core/music_mp3_win.c">
 			<Option compilerVar="CC" />
@@ -408,6 +638,21 @@
 		</Unit>
 		<Unit filename="../SDK/Core/pak.h" />
 		<Unit filename="../SDK/Core/pthreads_core.h" />
+		<Unit filename="../SDK/Core/shell_android.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/shell_ios.m" />
+		<Unit filename="../SDK/Core/shell_linux.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/shell_osx.m" />
+		<Unit filename="../SDK/Core/shell_win.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/stick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/stick.h" />
 		<Unit filename="../SDK/Core/stringlib.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -421,6 +666,22 @@
 		<Unit filename="../SDK/Core/timelib.h" />
 		<Unit filename="../SDK/Core/unzip_win.cpp" />
 		<Unit filename="../SDK/Core/unzip_win.h" />
+		<Unit filename="../SDK/Core/vid_osx_keys.h" />
+		<Unit filename="../SDK/Core/vidco.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/vidco.h" />
+		<Unit filename="../SDK/Core/vidco_console.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/vidco_ios.m" />
+		<Unit filename="../SDK/Core/vidco_osx.m" />
+		<Unit filename="../SDK/Core/vidco_sdl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/vidco_win.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../SDK/Core/zip.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -527,22 +788,11 @@
 		<Unit filename="QController.m" />
 		<Unit filename="QSettingsPanel.m" />
 		<Unit filename="QSettingsWindow.m" />
-		<Unit filename="adivtab.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
-		<Unit filename="anorm_dots.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-		</Unit>
+		<Unit filename="adivtab.h" />
+		<Unit filename="anorm_dots.h" />
 		<Unit filename="anorms.h" />
 		<Unit filename="arch_def.h" />
-		<Unit filename="asm_i386.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="asm_i386.h" />
 		<Unit filename="bspfile.h" />
 		<Unit filename="buffers.c">
 			<Option compilerVar="CC" />
@@ -551,17 +801,9 @@
 		<Unit filename="cd_osx.m" />
 		<Unit filename="cd_sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="cd_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 GL Release" />
 		</Unit>
 		<Unit filename="cdaudio.h" />
 		<Unit filename="chase.c">
@@ -607,103 +849,78 @@
 		<Unit filename="cvar.h" />
 		<Unit filename="cvar_list_sheet.h" />
 		<Unit filename="d_draw.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_draw16.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_edge.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_fill.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
-		<Unit filename="d_iface.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="d_iface.h" />
 		<Unit filename="d_init.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
-		<Unit filename="d_local.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="d_local.h" />
 		<Unit filename="d_modech.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_part.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_parta.S">
-			<Option target="Win32 Release" />
-		</Unit>
-		<Unit filename="d_polysa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_polyse.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_scan.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_scana.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_sky.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_spr8.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_sprite.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_surf.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_vars.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="d_varsa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="d_zpoint.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="dedicated.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="dedicated_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 GL Release" />
 		</Unit>
 		<Unit filename="dedicated_win.h" />
 		<Unit filename="documentation.txt" />
@@ -711,13 +928,8 @@
 		<Unit filename="downloads_osx.m" />
 		<Unit filename="draw.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
-		<Unit filename="draw.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="draw.h" />
 		<Unit filename="dshow_mp3.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -725,164 +937,53 @@
 		<Unit filename="dx8_mh_wrapper.h" />
 		<Unit filename="gl_alias.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_brush.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_common.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_draw.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_fog.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_mesh.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_renderer.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_renderer.h" />
 		<Unit filename="gl_rmain.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_rmisc.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_sky.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_sprite.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_test.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="gl_texmgr.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="gl_texmgr.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
-		</Unit>
+		<Unit filename="gl_texmgr.h" />
 		<Unit filename="gl_warp.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="gl_warp_sin.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
-		</Unit>
+		<Unit filename="gl_warp_sin.h" />
 		<Unit filename="gl_world.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="glquake.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
-		</Unit>
+		<Unit filename="glquake.h" />
 		<Unit filename="host.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -892,17 +993,9 @@
 		<Unit filename="in_osx.m" />
 		<Unit filename="in_sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="in_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
 		</Unit>
 		<Unit filename="input.c">
 			<Option compilerVar="CC" />
@@ -933,11 +1026,15 @@
 		<Unit filename="mark_v_winquake.ico" />
 		<Unit filename="mark_v_winquake.rc">
 			<Option compilerVar="WINDRES" />
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="math.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="menu.c">
 			<Option compilerVar="CC" />
@@ -1015,50 +1112,45 @@
 		<Unit filename="q_music.h" />
 		<Unit filename="q_sound.h" />
 		<Unit filename="q_stdinc.h" />
-		<Unit filename="quakeasm.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="quakeasm.h" />
 		<Unit filename="quakedef.h" />
 		<Unit filename="r_aclip.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_aclipa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="r_alias.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_aliasa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="r_bsp.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_common.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="r_draw.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_drawa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="r_edge.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_edgea.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="r_efrag.c">
 			<Option compilerVar="CC" />
@@ -1066,19 +1158,12 @@
 		<Unit filename="r_light.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="r_local.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="r_local.h" />
 		<Unit filename="r_main.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_misc.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_part.c">
 			<Option compilerVar="CC" />
@@ -1086,27 +1171,20 @@
 		<Unit filename="r_part_qmb.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="r_shared.h">
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-		</Unit>
+		<Unit filename="r_shared.h" />
 		<Unit filename="r_sky.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_sprite.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_surf.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
 		</Unit>
 		<Unit filename="r_varsa.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="recent_file.c">
 			<Option compilerVar="CC" />
@@ -1124,15 +1202,8 @@
 		<Unit filename="screen.h" />
 		<Unit filename="sdl_main.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="sdlquake.h">
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-		</Unit>
+		<Unit filename="sdlquake.h" />
 		<Unit filename="server.h" />
 		<Unit filename="snd_dma.c">
 			<Option compilerVar="CC" />
@@ -1146,25 +1217,21 @@
 		<Unit filename="snd_osx.m" />
 		<Unit filename="snd_sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="snd_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
 		</Unit>
 		<Unit filename="sound.h" />
 		<Unit filename="spritegn.h" />
 		<Unit filename="surf16.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="surf8.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="sv_main.c">
 			<Option compilerVar="CC" />
@@ -1182,20 +1249,14 @@
 		<Unit filename="sys_osx.m" />
 		<Unit filename="sys_sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
 		<Unit filename="sys_win.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
 		</Unit>
 		<Unit filename="sys_wina.S">
-			<Option target="Win32 Release" />
+			<Option target="Win32 WinQuake Release" />
+			<Option target="Win32 WinQuake GL Release" />
+			<Option target="Win32 SDL WinQuake GL Release" />
 		</Unit>
 		<Unit filename="talk_macro.c">
 			<Option compilerVar="CC" />
@@ -1225,34 +1286,12 @@
 		<Unit filename="todo_done.txt" />
 		<Unit filename="tool_inspector.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="tool_inspector.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-		</Unit>
+		<Unit filename="tool_inspector.h" />
 		<Unit filename="tool_texturepointer.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
 		</Unit>
-		<Unit filename="tool_texturepointer.h">
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Win32 SDL Debug" />
-		</Unit>
+		<Unit filename="tool_texturepointer.h" />
 		<Unit filename="utilities.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -1267,21 +1306,19 @@
 		<Unit filename="vid_osx.m" />
 		<Unit filename="vid_sdlgl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDL Debug" />
-			<Option target="Win32 SDL Release" />
-			<Option target="Linux SDL Debug" />
-			<Option target="Linux SDL Release" />
+		</Unit>
+		<Unit filename="vid_sdlwin.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="vid_wgl.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 GL Release" />
-			<Option target="Win32 GL Debug" />
 		</Unit>
 		<Unit filename="vid_wglext.h" />
 		<Unit filename="vid_wsoft.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 Release" />
-			<Option target="Win32 Debug" />
+		</Unit>
+		<Unit filename="vid_wsoftgl.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="view.c">
 			<Option compilerVar="CC" />

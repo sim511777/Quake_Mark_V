@@ -39,7 +39,8 @@ void System_MakeCodeWriteable (unsigned long startaddr, unsigned long len);
 ///////////////////////////////////////////////////////////////////////////////
 
 void Dedicated_Init (void);
-void Dedicated_Printf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // send text to the console
+int Dedicated_Printf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // send text to the console
+int Dedicated_PrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // send text to the console
 const char *Dedicated_ConsoleInput (void); // Console input
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,8 +69,11 @@ int System_FileWrite (int handle, const void *data, int count);
 
 void System_Init (void); // ASM
 void System_Quit (void) __core_attribute__((__noreturn__));
-void System_Error (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2), __noreturn__));
-double System_DoubleTime (void);
+int System_Error (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2), __noreturn__));
+//int System_MessageBox (const char *_title, const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+
+//double System_DoubleTime (void);
+#define System_DoubleTime Platform_MachineTime 
 void System_SleepUntilInput (int time);
 
 

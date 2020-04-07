@@ -84,12 +84,14 @@ void Movie_Start_Capturing (const char *moviename)
 	FS_FullPath_From_QPath (movie_capturing_fullpath, movie_capturing_name);
 
 	if (vid.screen.width % 4) {
-		Con_Printf ("Can't video mode width is %d, but must be multiple of 4\nMaybe press ALT-ENTER once or twice and try again?", vid.screen.width);
+		Con_PrintLinef ("Can't video mode width is %d, but must be multiple of 4", vid.screen.width);
+		Con_PrintLinef ("Maybe press ALT-ENTER once or twice and try again?");
 		return;	
 	}
 
 	if (vid.screen.height % 4) {
-		Con_Printf ("Can't video mode height is %d, but must be multiple of 4.\nMaybe press ALT-ENTER once or twice and try again?\n", vid.screen.height);
+		Con_PrintLinef ("Can't video mode height is %d, but must be multiple of 4.", vid.screen.height);
+		Con_PrintLinef ("Maybe press ALT-ENTER once or twice and try again?");
 		return;	
 	}
 
@@ -98,7 +100,7 @@ void Movie_Start_Capturing (const char *moviename)
 		File_Mkdir_Recursive (movie_capturing_fullpath);
 		if (!(moviefile = FS_fopen_write(movie_capturing_fullpath, "wb")))
 		{
-			Con_Printf ("ERROR: Couldn't open %s\n", movie_capturing_name);
+			Con_PrintLinef ("ERROR: Couldn't open %s", movie_capturing_name);
 			return;
 		}
 	}
@@ -122,7 +124,7 @@ void Movie_Start_Capturing (const char *moviename)
 		if (result != true)
 		{
 			movie_is_capturing = false;
-			Con_Printf ("ERROR: Couldn't create video stream\n");
+			Con_PrintLinef ("ERROR: Couldn't create video stream");
 		}
 		else
 			movie_is_capturing = true;
@@ -145,10 +147,10 @@ void Movie_Stop (void)
 	Recent_File_Set_QPath (movie_capturing_name);
 
 	if (cls.demo_hosttime_elapsed /*cls.capturedemo*/) // Because cls.capturedemo already was cleared :(
-		Con_Printf ("Video completed: %s in %d:%02d (codec: %s)\n", movie_capturing_name, Time_Minutes((int)cls.demo_hosttime_elapsed), Time_Seconds((int)cls.demo_hosttime_elapsed), movie_codec);
+		Con_PrintLinef ("Video completed: %s in %d:%02d (codec: %s)", movie_capturing_name, Time_Minutes((int)cls.demo_hosttime_elapsed), Time_Seconds((int)cls.demo_hosttime_elapsed), movie_codec);
 	else
 	VID_Local_Set_Window_Caption (NULL); // Restores it to default
-	Con_Printf ("Video completed: %s (codec: %s)\n", movie_capturing_name, movie_codec);
+	Con_PrintLinef ("Video completed: %s (codec: %s)", movie_capturing_name, movie_codec);
 
 }
 
@@ -156,7 +158,7 @@ void Movie_Stop_Capturing (void)
 {
 	if (movie_is_capturing == 0)
 	{
-		Con_Printf ("Not capturing\n");
+		Con_PrintLinef ("Not capturing");
 		return;
 	}
 
@@ -175,13 +177,13 @@ void Movie_CaptureDemo_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("Usage: capturedemo <demoname>\n\nNote: stopdemo will stop video capture\nUse cl_capturevideo_* cvars for codec, fps, etc.\n");
+		Con_PrintLinef ("Usage: capturedemo <demoname>" NEWLINE NEWLINE "Note: stopdemo will stop video capture" NEWLINE "Use cl_capturevideo_* cvars for codec, fps, etc.");
 		return;
 	}
 
 	if (movie_is_capturing || movie_is_capturing_temp)
 	{
-		Con_Printf ("Can't capture demo, video is capturing\n");
+		Con_PrintLinef ("Can't capture demo, video is capturing");
 		return;
 	}
 
@@ -239,14 +241,14 @@ void Movie_Capture_Toggle_f (lparse_t *line)
 {
 	if (line->count != 2 || strcasecmp(line->args[1], "toggle") != 0)
 	{
-		Con_Printf ("usage: %s <toggle>\n\nset capturevideo_codec and fps first\n", line->args[0]);
-		Con_Printf (movie_is_capturing ? "status: movie capturing\n" : "status: not capturing\n");
+		Con_PrintLinef ("usage: %s <toggle>" NEWLINE NEWLINE "set capturevideo_codec and fps first", line->args[0]);
+		Con_PrintLinef (movie_is_capturing ? "status: movie capturing" : "status: not capturing");
 		return;
 	}
 
 	if (cls.capturedemo)
 	{
-		Con_Printf ("Can't capturevideo toggle, capturedemo running\n");
+		Con_PrintLinef ("Can't capturevideo toggle, capturedemo running");
 		return;
 	}
 
@@ -268,14 +270,14 @@ void Movie_Capture_Toggle_f (lparse_t *line)
 	// find a file name to save it to
 		for (i = 0; i < 10000; i++)
 		{
-			c_snprintf2 (aviname, "%s%04i.avi", barename, i);
+			c_snprintf2 (aviname, "%s%04d.avi", barename, i);
 			FS_FullPath_From_QPath (checkname, aviname);
 			if (!File_Exists (checkname))
 				break;	// file doesn't exist
 		}
 		if (i == 10000)
 		{
-			Con_Printf ("Movie_Capture_Toggle_f: Couldn't find an unused filename\n");
+			Con_PrintLinef ("Movie_Capture_Toggle_f: Couldn't find an unused filename");
 			return;
  		}
 
@@ -435,9 +437,8 @@ void CaptureCodec_Validate (cvar_t *var)
 	if (capture_codec.string[0] == '0') // Begins with 0 ... set to auto
 	{
 		Cvar_SetQuick (&capture_codec, "auto");
-		Con_Printf ("%s set to \"%s\"\n", capture_codec.name, capture_codec.string);
+		Con_PrintLinef ("%s set to " QUOTED_S, capture_codec.name, capture_codec.string);
 	}
 #endif // SUPPORTS_AVI_CAPTURE
 	
 }
-

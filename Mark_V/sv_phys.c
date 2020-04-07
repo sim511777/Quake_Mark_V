@@ -76,7 +76,7 @@ void SV_CheckAllEnts (void)
 		}
 
 		if (SV_TestEntityPosition (check))
-			Con_Printf ("entity in invalid position\n");
+			Con_PrintLinef ("entity in invalid position");
 	}
 }
 
@@ -98,7 +98,7 @@ void SV_CheckVelocity (edict_t *ent)
 #ifdef SUPPORTS_NEHAHRA
 			if (!nehahra_active)
 #endif // SUPPORTS_NEHAHRA
-				Con_Printf ("Got a NaN velocity on %s\n", PR_GetString( ent->v.classname) );
+				Con_PrintLinef ("Got a NaN velocity on %s", PR_GetString( ent->v.classname) );
 			ent->v.velocity[i] = 0;
 		}
 
@@ -107,7 +107,7 @@ void SV_CheckVelocity (edict_t *ent)
 #ifdef SUPPORTS_NEHAHRA
 			if (!nehahra_active)
 #endif // SUPPORTS_NEHAHRA
-				Con_Printf ("Got a NaN origin on %s\n", PR_GetString( ent->v.classname) );
+				Con_PrintLinef ("Got a NaN origin on %s", PR_GetString( ent->v.classname) );
 			ent->v.origin[i] = 0;
 		}
 
@@ -173,7 +173,7 @@ cbool SV_RunThink (edict_t *ent, double frametime)
 			pr_global_struct->total_monsters -= 1;
 			if (sv.fish_counted == 1)
 			{
-				Con_Warning ("Override progs.dat fish-count bug\n");
+				Con_WarningLinef ("Override progs.dat fish-count bug");
 				sv.fish_counted++;
 			}
 		}
@@ -411,12 +411,12 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 			// go along the crease
 			if (numplanes != 2)
 			{
-//				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+//				Con_PrintLinef ("clip velocity, numplanes == %d",numplanes);
 				VectorCopy (vec3_origin, ent->v.velocity);
 				return 7;
 			}
 
-			CrossProduct (planes[0], planes[1], dir);
+			VectorCrossProduct (planes[0], planes[1], dir);
 			d = DotProduct (dir, ent->v.velocity);
 			VectorScale (dir, d, ent->v.velocity);
 		}
@@ -869,7 +869,7 @@ void SV_CheckStuck (edict_t *ent)
 
 	if (!SV_TestEntityPosition(ent))
 	{
-		Con_DPrintf ("Unstuck.\n");
+		Con_DPrintLinef ("Unstuck.");
 		SV_LinkEdict (ent, true);
 		return;
 	}
@@ -886,7 +886,7 @@ void SV_CheckStuck (edict_t *ent)
 
 				if (!SV_TestEntityPosition(ent))
 				{
-					Con_DPrintf ("Unstuck.\n");
+					Con_DPrintLinef ("Unstuck.");
 					SV_LinkEdict (ent, true);
 					return;
 				}
@@ -895,7 +895,7 @@ void SV_CheckStuck (edict_t *ent)
 	}
 
 	VectorCopy (org, ent->v.origin);
-	Con_DPrintf ("player is stuck.\n");
+	Con_DPrintLinef ("player is stuck.");
 }
 
 
@@ -1015,7 +1015,7 @@ int SV_TryUnstick (edict_t *ent, vec3_t oldvel)
 
 		if ( fabs(oldorg[1] - ent->v.origin[1]) > 4 || fabs(oldorg[0] - ent->v.origin[0]) > 4 )
 		{
-//Con_DPrintf ("unstuck!\n");
+//Con_DPrintLinef ("unstuck!");
 			return clip;
 		}
 
@@ -1132,7 +1132,7 @@ void SV_CycleWeaponReverse (edict_t *ent)
 	weapon = (int) ent->v.weapon;
 	ent->v.impulse = 0;
 
-//	Con_Printf ("SV_CycleWeaponReverse fired\n");
+//	Con_PrintLinef ("SV_CycleWeaponReverse fired");
 
 	while (1)
 	{
@@ -1270,7 +1270,7 @@ static void SV_Physics_Client (edict_t *ent, int num, double frametime)
 		break;
 
 	default:
-		Host_Error ("SV_Physics_client: bad movetype %i", (int)ent->v.movetype);
+		Host_Error ("SV_Physics_client: bad movetype %d", (int)ent->v.movetype);
 	}
 
 // call standard player post-think
@@ -1567,7 +1567,7 @@ void SV_Physics (double frametime)
 				if (svr_player->coop_protect_end_time < sv.time) {
 					// END THE COOP PROTECTION
 					svr_player->coop_protect_end_time = 0; // Protection is gone
-					//Con_Printf ("Spawn protection is gone for \"%s\" at %g\n", svr_player->name, sv.time);
+					//Con_PrintLinef ("Spawn protection is gone for " QUOTED_S " at %g", svr_player->name, sv.time);
 				}
 			}
 			// Set the global
@@ -1612,7 +1612,7 @@ void SV_Physics (double frametime)
 			SV_Physics_Toss (ent, frametime);
 			break;
 		default:
-			Host_Error ("SV_Physics: bad movetype %i", (int)ent->v.movetype);
+			Host_Error ("SV_Physics: bad movetype %d", (int)ent->v.movetype);
 		}
 	}
 

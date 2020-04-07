@@ -1,5 +1,6 @@
 #ifdef CORE_SDL
 
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2012 John Fitzgibbons and others
@@ -28,6 +29,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "sdlquake.h"
 
+///////////////////////////////////////////////////////////////////////////////
+//  PLATFORM: DISPATCH.  AT LEAST THE DEFAULT ONE.
+///////////////////////////////////////////////////////////////////////////////
+
+
 int Input_Local_Capture_Mouse (cbool bDoCapture)
 {
 	static cbool captured = false;
@@ -35,21 +41,28 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 	if (bDoCapture && !captured)
 	{
 //	    SDL_WM_GrabInput(SDL_GRAB_ON);
-	    SDL_SetRelativeMouseMode(SDL_TRUE);
+//	    SDL_SetRelativeMouseMode(SDL_TRUE);
 //		ShowCursor (FALSE); // Hides mouse cursor
 //		SetCapture (sysplat.mainwindow);	// Captures mouse events
-		Con_DPrintf ("Mouse Captured\n");
+		SDL_ShowCursor (SDL_DISABLE /*0 FALSE*/); // Hides mouse cursor
+		SDL_CaptureMouse (SDL_ENABLE /* 1 TRUE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
+
+		Con_DPrintLinef ("Mouse Captured");
 		captured = true;
 	}
 
 	if (!bDoCapture && captured)
 	{
 //	    SDL_WM_GrabInput(SDL_GRAB_OFF);
-	    SDL_SetRelativeMouseMode(SDL_FALSE);
+//	    SDL_SetRelativeMouseMode(SDL_FALSE);
 		//ShowCursor (TRUE); // Hides mouse cursor
 		//ReleaseCapture ();
 		//ClipCursor (NULL); // Can't hurt
-		Con_DPrintf ("Mouse Released\n");
+
+		SDL_CaptureMouse (SDL_DISABLE /* 0 FALSE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
+		SDL_ShowCursor (SDL_ENABLE /* 1 TRUE*/); // Hides mouse cursor
+
+		Con_DPrintLinef ("Mouse Released");
 		captured = false;
 	}
 
@@ -59,239 +72,127 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 
 cbool Input_Local_Update_Mouse_Clip_Region_Think (mrect_t* mouseregion)
 {
-#if 0
+// What's the plan here?
 	mrect_t oldregion = *mouseregion;
-	WINDOWINFO windowinfo;
-	windowinfo.cbSize = sizeof (WINDOWINFO);
-	GetWindowInfo (sysplat.mainwindow, &windowinfo);	// client_area screen coordinates
+	// This should be the client area ...  does it return negative too I hope?
+	SDL_GetWindowPosition (sysplat.mainwindow, &mouseregion->left, &mouseregion->top);
+	SDL_GetWindowSize (sysplat.mainwindow, &mouseregion->width, &mouseregion->height);
 
-	// Fill in top left, bottom, right, center
-	mouseregion->left = windowinfo.rcClient.left;
-	mouseregion->right = windowinfo.rcClient.right;
-	mouseregion->bottom = windowinfo.rcClient.bottom;
-	mouseregion->top = windowinfo.rcClient.top;
+	// What about +1 possibility?
 
 	if (memcmp (mouseregion, &oldregion, sizeof(mrect_t) ) != 0)
 	{  // Changed!
-		mouseregion->width = mouseregion->right - mouseregion->left;
-		mouseregion->height = mouseregion->bottom - mouseregion->top;
+		mouseregion->bottom = mouseregion->top + mouseregion->height;
+		mouseregion->right = mouseregion->left + mouseregion->width;
 		mouseregion->center_x = (mouseregion->left + mouseregion->right) / 2;
 		mouseregion->center_y = (mouseregion->top + mouseregion->bottom) / 2;
-		ClipCursor (&windowinfo.rcClient);
+		//ClipCursor (&windowinfo.rcClient); // SDL can't.  Also if cursor is invisible should Windows even try?  Yeah probably.
 		return true;
 	}
-#endif
 	return false;
 }
 
 void Input_Local_Mouse_Cursor_SetPos (int x, int y)
 {
 //	SetCursorPos (x, y);
+	if (SDL_WarpMouseGlobal (x,y) != 0) // Returns 0 on success.
+		log_debug ("Unable to set mouse position");
 }
 
-void Input_Local_Mouse_Cursor_GetPos (int *x, int *y)
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py)
 {
-//	POINT current_pos;
-//	GetCursorPos (&current_pos);
+	int x, y;
+	if (SDL_GetGlobalMouseState (&x, &y) != 0) // Returns 0 on success
+		log_debug ("Unable to get mouse position");
+
+	REQUIRED_ASSIGN (px, x);
+	REQUIRED_ASSIGN (py, y);
+}
+
+
+
+cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
+{
+	SDL_Event  *e    = _sdl_event;
+	cbool down = false;
+
+	int button_bits = 0;
+
+	switch (e->type) {
 //
-//	*x = current_pos.x;
-//	*y = current_pos.y;
-}
+// Input events
+//
 
-
-#ifdef _WIN32
-
-STICKYKEYS StartupStickyKeys = {sizeof (STICKYKEYS), 0};
-TOGGLEKEYS StartupToggleKeys = {sizeof (TOGGLEKEYS), 0};
-FILTERKEYS StartupFilterKeys = {sizeof (FILTERKEYS), 0};
-
-
-void AllowAccessibilityShortcutKeys (cbool bAllowKeys)
-{
-	static cbool initialized = false;
-
-	if (!initialized)
-	{	// Save the current sticky/toggle/filter key settings so they can be restored them later
-		SystemParametersInfo (SPI_GETSTICKYKEYS, sizeof (STICKYKEYS), &StartupStickyKeys, 0);
-		SystemParametersInfo (SPI_GETTOGGLEKEYS, sizeof (TOGGLEKEYS), &StartupToggleKeys, 0);
-		SystemParametersInfo (SPI_GETFILTERKEYS, sizeof (FILTERKEYS), &StartupFilterKeys, 0);
-		Con_DPrintf ("Accessibility key startup settings saved\n");
-		initialized = true;
-	}
-
-	if (bAllowKeys)
-	{
-		// Restore StickyKeys/etc to original state
-		// (note that this function is called "allow", not "enable"; if they were previously
-		// disabled it will put them back that way too, it doesn't force them to be enabled.)
-		SystemParametersInfo (SPI_SETSTICKYKEYS, sizeof (STICKYKEYS), &StartupStickyKeys, 0);
-		SystemParametersInfo (SPI_SETTOGGLEKEYS, sizeof (TOGGLEKEYS), &StartupToggleKeys, 0);
-		SystemParametersInfo (SPI_SETFILTERKEYS, sizeof (FILTERKEYS), &StartupFilterKeys, 0);
-
-		Con_DPrintf ("Accessibility keys enabled\n");
-	}
-	else
-	{
-		// Disable StickyKeys/etc shortcuts but if the accessibility feature is on,
-		// then leave the settings alone as its probably being usefully used
-		STICKYKEYS skOff = StartupStickyKeys;
-		TOGGLEKEYS tkOff = StartupToggleKeys;
-		FILTERKEYS fkOff = StartupFilterKeys;
-
-		if ((skOff.dwFlags & SKF_STICKYKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			skOff.dwFlags &= ~SKF_HOTKEYACTIVE;
-			skOff.dwFlags &= ~SKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETSTICKYKEYS, sizeof (STICKYKEYS), &skOff, 0);
-		}
-
-		if ((tkOff.dwFlags & TKF_TOGGLEKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			tkOff.dwFlags &= ~TKF_HOTKEYACTIVE;
-			tkOff.dwFlags &= ~TKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETTOGGLEKEYS, sizeof (TOGGLEKEYS), &tkOff, 0);
-		}
-
-		if ((fkOff.dwFlags & FKF_FILTERKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			fkOff.dwFlags &= ~FKF_HOTKEYACTIVE;
-			fkOff.dwFlags &= ~FKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETFILTERKEYS, sizeof (FILTERKEYS), &fkOff, 0);
-		}
-
-		Con_DPrintf ("Accessibility keys disabled\n");
-	}
-}
-
-
-
-LRESULT CALLBACK LLWinKeyHook(int Code, WPARAM wParam, LPARAM lParam)
-{
-	PKBDLLHOOKSTRUCT p;
-	p = (PKBDLLHOOKSTRUCT) lParam;
-
-    if (1 || vid.ActiveApp)
-	{
-		switch(p->vkCode)
-		{
-		case VK_LWIN:	// Left Windows Key
-		case VK_RWIN:	// Right Windows key
-		case VK_APPS: 	// Context Menu key
-
-			return 1; // Ignore these keys
-		}
-	} else Con_Printf ("Not active app\n");
-
-	return CallNextHookEx(NULL, Code, wParam, lParam);
-}
-
-
-
-void AllowWindowsShortcutKeys (cbool bAllowKeys)
-{
-	static cbool WinKeyHook_isActive = false;
-	static HHOOK WinKeyHook;
-
-	if (!bAllowKeys)
-	{
-		// Disable if not already disabled
-		if (!WinKeyHook_isActive)
-		{
-			if (!(WinKeyHook = SetWindowsHookEx(13, LLWinKeyHook, GetModuleHandle(NULL), 0))) // GetModuleHandle(NULL) gets hinstance
-			{
-				Con_Printf("Failed to install winkey hook.\n");
-				Con_Printf("Microsoft Windows NT 4.0, 2000 or XP is required.\n");
-				return;
+// Keyboard character emission
+	case SDL_TEXTINPUT:
+		if (1) {
+#pragma message ("TODO: emit UTF-16 or UCS2 or something")
+			char *ch; for (ch = e->text.text; *ch; ch++) {
+				int unicode = *ch;
+				int ascii 	= in_range (32, unicode, 126) ? unicode : 0;
+				// We do not do control characters here.
+				Key_Event_Ex (NO_WINDOW_NULL, SCANCODE_0,  /*down*/ true, ascii, unicode, shiftbits (e) ); // Future, convert this to utf-32
 			}
-
-			WinKeyHook_isActive = true;
-			Con_DPrintf ("Windows and context menu key disabled\n");
 		}
-	}
+		return true;
 
-	if (bAllowKeys)
-	{	// Keys allowed .. stop hook
-		if (WinKeyHook_isActive)
-		{
-			UnhookWindowsHookEx(WinKeyHook);
-			WinKeyHook_isActive = false;
-			Con_DPrintf ("Windows and context menu key enabled\n");
+//
+// Keyboard scancode emission
+//
+
+	case SDL_KEYDOWN:
+		down = true;  // Fall through ...
+
+	case SDL_KEYUP:
+
+
+		if (1) {
+			int theirs				= e->key.keysym.scancode;
+			key_scancode_e scancode	= keymap[theirs][2];
+			// Keypad HOME, END, etc are screwed for now and won't emit a "keypress" (but will emit a keydown)
+			// Reason?  We don't have a way to know from the scan code whether it should emit a number or a cursor move
+			// And SDL numlock reports wrong.
+			// I'm not going to write a per platform numlock checker to work around this SDL limitation.
+			// But on windows is a simple GetKeyState (VK_NUMLOCK) != 0;
+			cbool should_emit 		= down && (!in_range (32, scancode, 126) && !in_range (K_NUMPAD_0, scancode, K_NUMPAD_DIVIDE));
+			int ascii				= should_emit ? scancode : 0;
+			if (scancode)
+				//Key_Event_Ex (NO_WINDOW_NULL, scancode, down, ascii, /*unicode*/ 0, shiftbits (e) ); // Future, convert this to utf-32
+				Key_Event_Ex (NO_WINDOW_NULL, scancode, down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits (e) ); // Future, convert this to utf-32
+
 		}
+
+		return true; // handled
+
+	case SDL_MOUSEWHEEL:
+		if (1) {
+			cbool direction = !(e->wheel.y > 0);
+			key_scancode_e scancode = direction ? K_MOUSEWHEELDOWN : K_MOUSEWHEELUP;
+			Key_Event_Ex (NO_WINDOW_NULL, scancode, /*down */ true, ASCII_0 , UNICODE_0, shiftbits(e));
+			Key_Event_Ex (NO_WINDOW_NULL, scancode, /*up   */ false, ASCII_0 , UNICODE_0, shiftbits(e));
+		}
+		return true; // handled
+
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
+//	case SDL_MOUSEMOTION:	// Yes mouse move is in here
+
+		if (1) {
+			int buttons, shift, x, y;
+
+			getmousebits (e, &buttons, &shift, &x, &y);
+			Input_Mouse_Button_Event (buttons);
+		}
+		return true; // handled
+
+//	case WM_MOUSELEAVE:	 // Mouse cancel
+	//	return true; // handled
+
+	default:
+		return false; // not handled
 	}
 }
-#endif // _WIN32
 
-void Input_Local_Keyboard_Disable_Sticky_Keys (cbool bDoDisable)
-{
-#ifdef _WIN32
-	if (bDoDisable)
-	{
-		AllowAccessibilityShortcutKeys (false);
-	}
-	else
-	{
-		AllowAccessibilityShortcutKeys (true);
-	}
-#endif // _WIN32
-}
-
-void Input_Local_Keyboard_Disable_Windows_Key (cbool bDoDisable)
-{
-#ifdef _WIN32
-	if (bDoDisable)
-	{
-		AllowWindowsShortcutKeys (false);
-	}
-	else
-	{
-		AllowWindowsShortcutKeys (true);
-	}
-#endif // _WIN32
-}
-
-
-/*
-=======
-MapKey
-
-Map from windows to quake keynums
-=======
-*/
-int Input_Local_MapKey (int windowskey)
-{
-	static byte scantokey[128] =
-	{
-		0 ,	27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', K_BACKSPACE,
-		9, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 13 ,
-		K_CTRL, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
-		K_SHIFT,'\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', K_SHIFT,'*',K_ALT,' ', 0 ,
-		K_F1, K_F2, K_F3, K_F4, K_F5,K_F6, K_F7, K_F8, K_F9, K_F10, K_PAUSE, 0,
-		K_HOME, K_UPARROW,K_PGUP,'-',K_LEFTARROW,'5',K_RIGHTARROW,'+',K_END,
-		K_DOWNARROW,K_PGDN,K_INSERT,K_DEL,0,0, 0, K_F11, K_F12,0 , 0 , 0 , 0 , 0 , 0 , 0,
-	};
-	int key = (windowskey >> 16) & 255;
-
-	if (key > 127)
-		return 0;
-
-	key = scantokey[key];
-/*
-	switch (key)
-	{
-		case K_KP_STAR:		return '*';
-		case K_KP_MINUS:	return '-';
-		case K_KP_5:		return '5';
-		case K_KP_PLUS:		return '+';
-	}
-*/
-	return key;
-}
 
 
 void Input_Local_Joy_AdvancedUpdate_f (lparse_t *unused)
@@ -329,31 +230,28 @@ void Input_Local_Init (void)
 {
 //    Not needed?
 //    if (SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL) == -1)
-//        Con_Warning ("Warning: SDL_EnableKeyRepeat() failed.\n");
+//        Con_WarningLinef ("Warning: SDL_EnableKeyRepeat() failed.");
 }
 
 void Input_Local_Shutdown (void)
 {
-
 }
 
 
 // Baker: On Windows these might not only be key events.
 void Input_Local_SendKeyEvents (void)
 {
-//    MSG        msg;
-//
-//	while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
-//	{
-//	// we always update if there are any event, even if we're paused
-//		scr_skipupdate = 0;
-//
-//		if (!GetMessage (&msg, NULL, 0, 0))
-//			System_Quit ();
-//
-//      	TranslateMessage (&msg);
-//      	DispatchMessage (&msg);
-//	}
+	int			done = 0;
+	SDL_Event	my_event;
+
+	while (SDL_PollEvent (&my_event)) {
+		int should_quit = Session_Dispatch (&my_event);
+		if (should_quit) {
+			System_Quit();
+		}
+	}
+    
+	SDL_Delay(1);
 }
 
 // Baker: Stops drag flag on Mac (when activation is received by a mouseclick on title bar and user drags it.

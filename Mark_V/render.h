@@ -451,6 +451,7 @@ void R_RenderDlights_Flashblend (void);
 void R_NewGame (void);
 
 // r_sky.c and gl_sky.c
+#define SKYBOX_SIDES_COUNT_6 6
 void Sky_LoadSkyBox (const char *name);
 void Sky_NewMap (void);
 void Sky_Init (void);

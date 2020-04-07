@@ -46,8 +46,87 @@ static in_mousepos_t            sInMouseOldPosition     = { 0 };
 // However, it may become important for mouse drag operations in future
 void Input_Local_Deactivate (void)
 {
+// VID_Activate false (ALT-TAB out) calls us.  This is the same function that turns off the sound.
+// VID_Activate false also releases the keyboard.
+// I don't know why those events couldn't wait for a think, perhaps a click on another application outside a window which must occur immediately.
+// I would not have added this on a whim.
     [sysplat.gVidWindow dragMoveEnded]; // Baker: Reset the drag even if we don't have the mouse
 }
+
+#if 1 // ACCELERATION FIX - Q3 via Quakespasm/Sleepwalkr
+	// Add IOKit.framework to frameworks
+	// DEPLOYMENT_POSTPROCESSING = YES for release to strip symbols.  Not specifically related to mouse acceleration.
+
+	static double originalMouseSpeed = -1.0; // Acceleration.  Saved here  -1 means not saved.
+
+	#include <IOKit/hidsystem/IOHIDParameter.h>
+	#include <IOKit/hidsystem/event_status_driver.h>
+
+	static io_connect_t IN_GetIOHandle(void) // Called twice
+	{
+		io_connect_t iohandle = MACH_PORT_NULL;
+		io_service_t iohidsystem = MACH_PORT_NULL;
+		mach_port_t masterport;
+		kern_return_t status;
+
+		status = IOMasterPort(MACH_PORT_NULL, &masterport);
+		if (status != KERN_SUCCESS)
+			return 0;
+
+		iohidsystem = IORegistryEntryFromPath(masterport, kIOServicePlane ":/IOResources/IOHIDSystem");
+		if (!iohidsystem)
+			return 0;
+
+		status = IOServiceOpen(iohidsystem, mach_task_self(), kIOHIDParamConnectType, &iohandle);
+		IOObjectRelease(iohidsystem);
+
+		return iohandle;
+	}
+	
+	static void IN_DisableOSXMouseAccel (void)
+	{
+		io_connect_t mouseDev = IN_GetIOHandle();
+		if (mouseDev != 0)
+		{
+			if (IOHIDGetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), &originalMouseSpeed) == kIOReturnSuccess)
+			{
+				if (IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), -1.0) != kIOReturnSuccess)
+				{
+					//Cvar_Set("in_disablemacosxmouseaccel", "0");
+					Con_PrintLinef ("WARNING: Could not disable mouse acceleration (failed at IOHIDSetAccelerationWithKey).");
+				}
+			}
+			else
+			{
+				//Cvar_Set("in_disablemacosxmouseaccel", "0");
+				Con_PrintLinef ("WARNING: Could not disable mouse acceleration (failed at IOHIDGetAccelerationWithKey).");
+			}
+			IOServiceClose(mouseDev);
+		}
+		else
+		{
+			//Cvar_Set("in_disablemacosxmouseaccel", "0");
+			Con_PrintLinef ("WARNING: Could not disable mouse acceleration (failed at IO_GetIOHandle).");
+		}
+	}
+
+	static void IN_ReenableOSXMouseAccel (void)
+	{
+		io_connect_t mouseDev = IN_GetIOHandle();
+		if (mouseDev != 0)
+		{
+			if (IOHIDSetAccelerationWithKey(mouseDev, CFSTR(kIOHIDMouseAccelerationType), originalMouseSpeed) != kIOReturnSuccess)
+				Con_PrintLinef ("WARNING: Could not re-enable mouse acceleration (failed at IOHIDSetAccelerationWithKey).");
+			IOServiceClose(mouseDev);
+		}
+		else
+		{
+			Con_PrintLinef ("WARNING: Could not re-enable mouse acceleration (failed at IO_GetIOHandle).");
+		}
+		originalMouseSpeed = -1;
+	}
+	
+#endif
 
 int Input_Local_Capture_Mouse (cbool bDoCapture)
 {
@@ -57,20 +136,27 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
     {
         if (![sysplat.gVidWindow captureMouse: YES]) // Shows mouse cursor
         {
-//          Con_Printf ("Capture rejected");
-            return 0; // Capture rejected
+			Con_DPrintLinef ("Capture rejected");			
+            return 0; // Capture rejected.  Can this ever happen?  Yes.  Perhaps mouse isn't in window area.
         }
+		// Save the acceleration and then set ours
+		
+		IN_DisableOSXMouseAccel (); // Acceleration
 
-        Con_DPrintf ("Mouse Captured\n");
+        Con_DPrintLinef ("Mouse Captured");
         captured = true;
     }
     
     if (!bDoCapture && captured)
     {
-        [sysplat.gVidWindow captureMouse: NO]; // Hides mouse cursor
+        [sysplat.gVidWindow captureMouse: NO]; // Shows the mouse cursor             Was commented: Hides mouse cursor?  
         [sysplat.gVidWindow dragMoveEnded]; // Baker: By definition, if we capture
+        
+        IN_ReenableOSXMouseAccel ();
+        
+        
 // Baker: Windows does a release capture and unclips cursor move
-        Con_DPrintf ("Mouse Released\n");
+        Con_DPrintLinef ("Mouse Released");
         captured = false;
     }
 
@@ -231,7 +317,7 @@ void Input_Local_SendKeyEvents (void)
                         if ([sysplat.gVidWindow inDragMove])
                         {
                             [sysplat.gVidWindow dragMoveEnded];
-         //                   Con_Printf ("Drag move ended\n");
+         //                   Con_PrintLinef ("Drag move ended");
                         }
                     }
                 } else Key_Event (K_MOUSE1 + pEvent->mButton, pEvent->mBoolVal,  0 /*never special at this time*/);

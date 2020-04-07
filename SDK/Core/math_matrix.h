@@ -44,13 +44,54 @@ typedef struct _glmatrix
 } glmatrix;
 
 
-struct _glmatrix *GL_MultiplyMatrix (struct _glmatrix *out, struct _glmatrix *m1, struct _glmatrix *m2);
-struct _glmatrix *GL_TranslateMatrix (struct _glmatrix *m, float x, float y, float z);
-struct _glmatrix *GL_ScaleMatrix (struct _glmatrix *m, float x, float y, float z);
-struct _glmatrix *GL_RotateMatrix (struct _glmatrix *m, float a, float x, float y, float z);
-struct _glmatrix *GL_IdentityMatrix (struct _glmatrix *m);
-struct _glmatrix *GL_LoadMatrix (struct _glmatrix *dst, struct _glmatrix *src);
+glmatrix *Mat4_Multiply (glmatrix *m, const glmatrix *a, const glmatrix *b);
+glmatrix *Mat4_Translate (glmatrix *m, float x, float y, float z);
+glmatrix *Mat4_Scale (glmatrix *m, float x, float y, float z);
+glmatrix *Mat4_Rotate (glmatrix *m, float a, float x, float y, float z);
+glmatrix *Mat4_Identity_Set (glmatrix *m);
+glmatrix *Mat4_Copy (glmatrix *m, const glmatrix *src);
 
+glmatrix *Mat4_Invert (glmatrix *m, const glmatrix *src);
+
+glmatrix *Mat4_Ortho (glmatrix *m, double left, double right, double bottom, double top, double znear, double zfar);
+glmatrix *Mat4_OrthoAspect (glmatrix *m, float width, float height);
+glmatrix *Mat4_OrthoAspectRect (glmatrix *m, float left, float top, float width, float height);
+glmatrix *Mat4_OrthoZero (glmatrix *m, float width, float height);
+
+glmatrix *Mat4_Ortho3D (glmatrix *m, double width, double height);
+
+glmatrix *Mat4_Frustum (glmatrix *m, double left, double right, double bottom, double top, double znear, double zfar);
+// glFrustum (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+// glOrtho   (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+
+glmatrix *Mat4_Perspective (glmatrix *m, float fovy, float aspect, float zNear, float zFar);
+
+glmatrix *Mat4_LookAt (glmatrix *m, float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz);
+
+
+cbool _Mat4_Project_Classic_Normal (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
+									float *winx, float *winy, float *winz);
+
+cbool Mat4_Project_Smart (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
+									float *winx, float *winy, float *winz);
+
+
+
+// Direct gluUnproject equivalent except it takes floats instead of doubles
+cbool _Mat4_UnProject_Classic_Normal (float winx, float winy, float winz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
+			   float *objx, float *objy, float *objz);
+
+
+// This converts the screen coordinates as if they were Windows-like where y = 0 is top of screen.  Mac y = 0 is bottom, just like OpenGL.
+cbool Mat4_UnProject_Smart (float winx, float winy, float winz, const glmatrix *model, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
+			   float *objx, float *objy, float *objz);
+
+
+glmatrix *Mat4_Pick (glmatrix *m, float x, float y, float deltax, float deltay, const int *viewport /*[4]*/);
+
+
+cbool Mat4_Compare (glmatrix *a, glmatrix *b);
+char *Mat4_String (glmatrix *m);
 
 #endif // ! __MATH_MATRIX_H__
 

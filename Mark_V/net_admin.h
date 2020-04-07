@@ -62,6 +62,10 @@ typedef struct
 } remotelist_t;
 
 
+// A home for these?
+void Player_IPv4_List_Update (void);
+
+
 #endif // ! __NET_ADMIN_H__
 
 /*

@@ -36,7 +36,7 @@ servers can also send across commands and entire text files can be execed.
 
 The + command line options are also added to the command buffer.
 
-The game starts with a Cbuf_AddText ("exec quake.rc\n"); Cbuf_Execute ();
+The game starts with a Cbuf_AddTextLine ("exec quake.rc"); Cbuf_Execute ();
 
 */
 
@@ -44,6 +44,9 @@ void Cbuf_Init (void);
 // allocates an initial text buffer that will grow as needed
 
 void Cbuf_AddText (const char *text);
+int Cbuf_AddTextLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+void Cbuf_AddTextLine (const char *text); // Fairly popular
+
 // as new commands are generated from the console or keybindings,
 // the text is added to the end of the command buffer.
 
@@ -172,5 +175,4 @@ void Cmd_Unalias_ServerAliases (void); // Baker: Clear server aliases
 
 
 #endif // __CMD_H__
-
 

@@ -33,17 +33,17 @@ void Dedicated_Local_Print (const char *fmt, ...)
 }
 #endif
 
-void Dedicated_Printf (const char *fmt, ...)
+int Dedicated_Printf (const char *fmt, ...)
 {
 	if (isDedicated)
 	{
-		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024 * 2, fmt);
+		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
 
 		// JPG 1.05 - translate to plain text
 		if (pq_dedicated_dequake.value)
 			COM_DeQuake_String (text);
 
-		Dedicated_Local_Print (text);
+		Dedicated_Local_Print ("%s", text);
 
 		// JPG 3.00 - rcon (64 doesn't mean anything special, but we need some extra space because NET_MAXMESSAGE == RCON_BUFF_SIZE)
 		if (rcon_active  && (rcon_message.cursize < rcon_message.maxsize - (int)strlen(text) - 64))
@@ -52,4 +52,14 @@ void Dedicated_Printf (const char *fmt, ...)
 			MSG_WriteString(&rcon_message, text);
 		}		
 	}
+	return 0; // I guess.  Success
 }
+
+int Dedicated_PrintLinef (const char *fmt, ...)
+{
+	VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
+	return Dedicated_Printf ("%s", text); // newline baked into the text.
+
+}
+
+

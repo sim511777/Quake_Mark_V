@@ -713,6 +713,8 @@ typedef struct
 	cbool	teleporter;
 	cbool	mirror;
 	cbool	sky;
+	float	sound_nominal_clip_dist;
+	cbool	is_sound_nominal_clip_dist;
 //	cbool	mirror; // Server needs to know to send better model visibility
 //	cbool	camera; // Server needs to know to send better model visibility
 //	cbool	camera_screen; // Server needs to know to send better model visibility

@@ -343,22 +343,22 @@ void APIENTRY d3dmh_glVertexPointer (GLint size, GLenum type, GLsizei stride, co
 void APIENTRY d3dmh_glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 
 // wgl interface
-HGLRC WINAPI d3dmh_wglCreateContext (HDC hdc);
-BOOL WINAPI d3dmh_wglDeleteContext (HGLRC hglrc);
-HGLRC WINAPI d3dmh_wglGetCurrentContext (VOID);
-HDC WINAPI d3dmh_wglGetCurrentDC (VOID);
-BOOL WINAPI d3dmh_wglMakeCurrent (HDC hdc, HGLRC hglrc);
-PROC WINAPI d3dmh_wglGetProcAddress (LPCSTR s);
+HGLRC WINAPI Direct3D8_wglCreateContext (HDC hdc);
+BOOL WINAPI Direct3D8_wglDeleteContext (HGLRC hglrc);
+HGLRC WINAPI Direct3D8_wglGetCurrentContext (VOID);
+HDC WINAPI Direct3D8_wglGetCurrentDC (VOID);
+BOOL WINAPI Direct3D8_wglMakeCurrent (HDC hdc, HGLRC hglrc);
+PROC WINAPI Direct3D8_wglGetProcAddress (LPCSTR s);
 
 // override SPF
-BOOL WINAPI d3dmh_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * ppfd);
+BOOL WINAPI Direct3D8_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * ppfd);
 
 // our fake CDS replacement
-LONG WINAPI ChangeDisplaySettings_FakeGL (LPDEVMODE lpDevMode, DWORD dwflags);
+LONG WINAPI Direct3D8_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags);
 
-void Direct3D_SetVsync (int wants_vsync); // Baker
-void Direct3D_SetFullscreen (int wants_fullscreen); // Baker
-void Direct3D_SetBPP (int wants_bpp);
-void Direct3D_SwapBuffers (void); // Baker
+void Direct3D8_SetVsync (int wants_vsync); // Baker
+void Direct3D8_SetFullscreen (int wants_fullscreen); // Baker
+void Direct3D8_SetBPP (int wants_bpp);
+BOOL WINAPI Direct3D8_SwapBuffers (HDC unused); // Baker
 
 #endif // ! __DX8_MH_WRAPPER_H

@@ -1,3 +1,5 @@
+#ifdef CORE_GL // Ok, even if we aren't GLQUAKE and are instead WinQuake through GL we need this
+
 /*
 Copyright (C) 2009-2013 Baker
 
@@ -105,22 +107,11 @@ void (APIENTRY *eglVertex3f) (GLfloat x, GLfloat y, GLfloat z);
 void (APIENTRY *eglVertex3fv) (const GLfloat *v);
 void (APIENTRY *eglViewport) (GLint x, GLint y, GLsizei width, GLsizei height);
 
-#ifdef _WIN32
-
-LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
-
-HGLRC (WINAPI *ewglCreateContext) (HDC);
-BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
-HGLRC (WINAPI *ewglGetCurrentContext) (VOID);
-HDC   (WINAPI *ewglGetCurrentDC) (VOID);
-PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
-BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
-BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
-#endif
+// See vidco_win.c for Windows specific functions like ewglCreateContext, ewglGetProcAddress, eSetPixelFormat, eChangeDisplaySettings, ..
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - Hookup Open GL functions (or at least our equivalents)
 
-void VID_Renderer_Set_Render_Functions (void)
+void VID_Renderer_Set_Direct3D8 (void)
 {
 	eglAlphaFunc            = d3dmh_glAlphaFunc;
 	eglBegin                = d3dmh_glBegin;
@@ -199,23 +190,24 @@ void VID_Renderer_Set_Render_Functions (void)
 	eglViewport             = d3dmh_glViewport;
 
 #ifdef _WIN32
-	ewglCreateContext       = d3dmh_wglCreateContext;
-	ewglDeleteContext       = d3dmh_wglDeleteContext;
-	ewglGetCurrentContext   = d3dmh_wglGetCurrentContext;
-	ewglGetCurrentDC        = d3dmh_wglGetCurrentDC;
-	ewglMakeCurrent         = d3dmh_wglMakeCurrent;
-	ewglGetProcAddress		= d3dmh_wglGetProcAddress;
+	ewglCreateContext       = Direct3D8_wglCreateContext;
+	ewglDeleteContext       = Direct3D8_wglDeleteContext;
+	ewglGetCurrentContext   = Direct3D8_wglGetCurrentContext;
+	ewglGetCurrentDC        = Direct3D8_wglGetCurrentDC;
+	ewglMakeCurrent         = Direct3D8_wglMakeCurrent;
+	ewglGetProcAddress		= Direct3D8_wglGetProcAddress;
+	
+	eSwapBuffers			= Direct3D8_SwapBuffers;
+	eSetPixelFormat         = Direct3D8_SetPixelFormat;
 
-	eSetPixelFormat         = d3dmh_SetPixelFormat;
-
-	eChangeDisplaySettings  = ChangeDisplaySettings_FakeGL;
+	eChangeDisplaySettings  = Direct3D8_ChangeDisplaySettings;
 #endif
 
 }
 
 #elif defined(DIRECT3D9_WRAPPER)
 
-void VID_Renderer_Set_Render_Functions (void)
+void VID_Renderer_Set_Direct3D9 (void)
 {
 	eglAlphaFunc            = d3d9mh_glAlphaFunc;
 	eglBegin                = d3d9mh_glBegin;
@@ -302,7 +294,7 @@ void VID_Renderer_Set_Render_Functions (void)
 	ewglGetProcAddress		= Direct3D9_wglGetProcAddress;
 
 	eSetPixelFormat         = Direct3D9_SetPixelFormat;
-
+	eSwapBuffers			= Direct3D9_SwapBuffers;
 	eChangeDisplaySettings  = Direct3D9_ChangeDisplaySettings;
 #endif // WIN32
 
@@ -310,8 +302,155 @@ void VID_Renderer_Set_Render_Functions (void)
 
 #else // OpenGL
 
-void VID_Renderer_Set_Render_Functions (void)
+void VID_Renderer_Set_OpenGL (void)
 {
+#ifdef PLATFORM_WINDOWS // Even SDL needs this
+	const char *binary_folder		= Folder_Binary_Folder_URL ();
+	const char *opengl32_dll_url	= va("%s/opengl32.dll", binary_folder);
+
+	
+	if (File_Exists (opengl32_dll_url)) {
+		const char *Shell_Windows_Folder_System32 (void);
+		const char *sys32dir = Shell_Windows_Folder_System32 (); // ("SYSTEM");
+		const char *system32_opengl32_dll_url = va("%s/opengl32.dll", sys32dir);
+		const char *failure_message =
+			"OpenGL32.dll detected in Quake folder, this file is almost without exception obsolete and will result in the engine crashing." NEWLINE NEWLINE
+			"Tried to use standard OpenGL32.dll located at " QUOTED_S " but %s." NEWLINE NEWLINE
+			"Please rename or delete the opengl32.dll in your Quake folder." NEWLINE NEWLINE
+			"Opening folder ...";
+
+		Con_WarningLinef ("An OpenGL32.DLL was found in the same folder as the binary " QUOTED_S, opengl32_dll_url);
+		Con_WarningLinef ("Attempting reroute to " QUOTED_S, system32_opengl32_dll_url);
+		if (!File_Exists (system32_opengl32_dll_url)) {
+			Con_WarningLinef ("Failed as file not found " QUOTED_S, system32_opengl32_dll_url);
+			msgbox ("OpenGL32.dll detected in Quake folder", failure_message, system32_opengl32_dll_url, "file not found");
+			Folder_Open_Highlight (opengl32_dll_url);
+			System_Error ("OpenGL32.dll found in Quake folder.  Please remedy and restart.");
+		}
+		else
+		{
+			HMODULE hOpenGL32 = LoadLibraryA (system32_opengl32_dll_url);
+			void *last;
+			const char *str_failed_proc = NULL;
+
+			if (!hOpenGL32) {
+				Con_WarningLinef ("Failed as DLL would not load " QUOTED_S, system32_opengl32_dll_url);
+				msgbox ("OpenGL32.dll detected in Quake folder", failure_message, system32_opengl32_dll_url, "DLL could not load.");
+				Folder_Open_Highlight (opengl32_dll_url);
+				System_Error ("OpenGL32.dll found in Quake folder.  Please remedy and restart.");
+			}
+
+
+			#define OPENGL_GETFUNC(f) (last = (void *)GetProcAddress(hOpenGL32, #f)); if (!last) str_failed_proc = #f
+			eglAlphaFunc            = OPENGL_GETFUNC(glAlphaFunc);
+			eglBegin                = OPENGL_GETFUNC(glBegin);
+			eglBindTexture          = OPENGL_GETFUNC(glBindTexture);
+			eglBlendFunc            = OPENGL_GETFUNC(glBlendFunc);
+			eglClear                = OPENGL_GETFUNC(glClear);
+			eglClearColor           = OPENGL_GETFUNC(glClearColor);
+			eglClearStencil         = OPENGL_GETFUNC(glClearStencil);
+			eglColor3f              = OPENGL_GETFUNC(glColor3f);
+			eglColor3fv             = OPENGL_GETFUNC(glColor3fv);
+			eglColor3ubv            = OPENGL_GETFUNC(glColor3ubv);
+			eglColor4f              = OPENGL_GETFUNC(glColor4f);
+			eglColor4fv             = OPENGL_GETFUNC(glColor4fv);
+			eglColor4ub             = OPENGL_GETFUNC(glColor4ub);
+			eglColor4ubv            = OPENGL_GETFUNC(glColor4ubv);
+			eglColorMask            = OPENGL_GETFUNC(glColorMask);
+
+			eglCopyTexSubImage2D	= OPENGL_GETFUNC(glCopyTexSubImage2D);
+
+			eglCullFace             = OPENGL_GETFUNC(glCullFace);
+			eglDeleteTextures       = OPENGL_GETFUNC(glDeleteTextures);
+			eglDepthFunc            = OPENGL_GETFUNC(glDepthFunc);
+			eglDepthMask            = OPENGL_GETFUNC(glDepthMask);
+			eglDepthRange           = OPENGL_GETFUNC(glDepthRange);
+			eglDisable              = OPENGL_GETFUNC(glDisable);
+			eglDrawBuffer           = OPENGL_GETFUNC(glDrawBuffer);
+			eglEnable               = OPENGL_GETFUNC(glEnable);
+			eglEnd                  = OPENGL_GETFUNC(glEnd);
+			eglFinish               = OPENGL_GETFUNC(glFinish);
+			eglFogf                 = OPENGL_GETFUNC(glFogf);
+			eglFogfv                = OPENGL_GETFUNC(glFogfv);
+			eglFogi                 = OPENGL_GETFUNC(glFogi);
+			eglFogiv                = OPENGL_GETFUNC(glFogiv);
+			eglFrontFace            = OPENGL_GETFUNC(glFrontFace);
+			eglFrustum              = OPENGL_GETFUNC(glFrustum);
+			eglGenTextures          = OPENGL_GETFUNC(glGenTextures);
+			eglGetFloatv            = OPENGL_GETFUNC(glGetFloatv);
+			eglGetIntegerv          = OPENGL_GETFUNC(glGetIntegerv);
+			eglGetString            = OPENGL_GETFUNC(glGetString);
+			eglGetTexImage          = OPENGL_GETFUNC(glGetTexImage);
+			eglGetTexParameterfv    = OPENGL_GETFUNC(glGetTexParameterfv);
+			eglHint                 = OPENGL_GETFUNC(glHint);
+			eglLineWidth            = OPENGL_GETFUNC(glLineWidth);
+			eglLoadIdentity         = OPENGL_GETFUNC(glLoadIdentity);
+			eglLoadMatrixf          = OPENGL_GETFUNC(glLoadMatrixf);
+			eglMatrixMode           = OPENGL_GETFUNC(glMatrixMode);
+			eglMultMatrixf          = OPENGL_GETFUNC(glMultMatrixf);
+			eglNormal3f             = OPENGL_GETFUNC(glNormal3f);
+			eglOrtho                = OPENGL_GETFUNC(glOrtho);
+			eglPixelStorei			= OPENGL_GETFUNC(glPixelStorei);
+			eglPolygonMode          = OPENGL_GETFUNC(glPolygonMode);
+			eglPolygonOffset        = OPENGL_GETFUNC(glPolygonOffset);
+			eglPopMatrix            = OPENGL_GETFUNC(glPopMatrix);
+			eglPushMatrix           = OPENGL_GETFUNC(glPushMatrix);
+			eglReadBuffer           = OPENGL_GETFUNC(glReadBuffer);
+			eglReadPixels           = OPENGL_GETFUNC(glReadPixels);
+			eglRotatef              = OPENGL_GETFUNC(glRotatef);
+			eglScalef               = OPENGL_GETFUNC(glScalef);
+			eglScissor              = OPENGL_GETFUNC(glScissor);
+			eglShadeModel           = OPENGL_GETFUNC(glShadeModel);
+			eglStencilFunc          = OPENGL_GETFUNC(glStencilFunc);
+			eglStencilOp            = OPENGL_GETFUNC(glStencilOp);
+			eglTexCoord2f           = OPENGL_GETFUNC(glTexCoord2f);
+			eglTexCoord2fv          = OPENGL_GETFUNC(glTexCoord2fv);
+			eglTexEnvf              = OPENGL_GETFUNC(glTexEnvf);
+			eglTexEnvi              = OPENGL_GETFUNC(glTexEnvi);
+			eglTexImage2D           = OPENGL_GETFUNC(glTexImage2D);
+			eglTexParameterf        = OPENGL_GETFUNC(glTexParameterf);
+			eglTexParameteri        = OPENGL_GETFUNC(glTexParameteri);
+			eglTexSubImage2D        = OPENGL_GETFUNC(glTexSubImage2D);
+			eglTranslatef           = OPENGL_GETFUNC(glTranslatef);
+			eglVertex2f             = OPENGL_GETFUNC(glVertex2f);
+			eglVertex2fv            = OPENGL_GETFUNC(glVertex2fv);
+			eglVertex3f             = OPENGL_GETFUNC(glVertex3f);
+			eglVertex3fv            = OPENGL_GETFUNC(glVertex3fv);
+			eglViewport             = OPENGL_GETFUNC(glViewport);
+
+			#ifdef PLATFORM_GUI_WINDOWS // SDL does not use these
+			ewglCreateContext       = OPENGL_GETFUNC(wglCreateContext);
+			ewglDeleteContext       = OPENGL_GETFUNC(wglDeleteContext);
+			ewglGetCurrentContext   = OPENGL_GETFUNC(wglGetCurrentContext);
+			ewglGetCurrentDC        = OPENGL_GETFUNC(wglGetCurrentDC);
+			ewglMakeCurrent         = OPENGL_GETFUNC(wglMakeCurrent);
+			ewglGetProcAddress		= OPENGL_GETFUNC(wglGetProcAddress);
+
+			eSetPixelFormat         = SetPixelFormat;
+			eSwapBuffers			= SwapBuffers;
+
+			eChangeDisplaySettings  = ChangeDisplaySettings; // Different beast!  Not in opengl32.dll
+			#endif // PLATFORM_GUI_WINDOWS
+
+			if (str_failed_proc) {
+				const char *str_fail_reason = va("(%s function not found)", str_failed_proc);
+				Con_WarningLinef (QUOTED_S " loading " QUOTED_S, str_fail_reason, system32_opengl32_dll_url);
+				msgbox ("OpenGL32.dll detected in Quake folder", failure_message, system32_opengl32_dll_url, str_fail_reason);
+				Folder_Open_Highlight (opengl32_dll_url);
+				System_Error ("OpenGL32.dll found in Quake folder.  Please remedy and restart.");
+			}
+
+			Con_WarningLinef ("Succeeded in reroute use of " QUOTED_S, system32_opengl32_dll_url);
+			// FreeLibrary (hOpenGL32);  // Don't do that!
+			return;
+		}
+		
+	}
+	// If we are here, on Windows there was no opengl32.dll in the folder.
+
+#endif // PLATFORM_WINDOWS // Even SDL needs this
+
+
 	eglAlphaFunc            = glAlphaFunc;
 	eglBegin                = glBegin;
 	eglBindTexture          = glBindTexture;
@@ -388,7 +527,7 @@ void VID_Renderer_Set_Render_Functions (void)
 	eglVertex3fv            = glVertex3fv;
 	eglViewport             = glViewport;
 
-#ifdef _WIN32
+#ifdef PLATFORM_GUI_WINDOWS // SDL does not use these
 	ewglCreateContext       = wglCreateContext;
 	ewglDeleteContext       = wglDeleteContext;
 	ewglGetCurrentContext   = wglGetCurrentContext;
@@ -397,9 +536,9 @@ void VID_Renderer_Set_Render_Functions (void)
 	ewglGetProcAddress		= wglGetProcAddress;
 
 	eSetPixelFormat         = SetPixelFormat;
-
+	eSwapBuffers			= SwapBuffers;
 	eChangeDisplaySettings  = ChangeDisplaySettings;
-#endif
+#endif // PLATFORM_GUI_WINDOWS
 }
 
 #endif // ! DIRECT3DX_WRAPPER
@@ -407,8 +546,16 @@ void VID_Renderer_Set_Render_Functions (void)
 
 void VID_Renderer_Setup (void)
 {
-	VID_Renderer_Set_Render_Functions ();
+	
+#if defined(DIRECT3D8_WRAPPER)
+	VID_Renderer_Set_Direct3D8 ();
+#elif defined(DIRECT3D9_WRAPPER)
+	VID_Renderer_Set_Direct3D9 ();
+#else
+	VID_Renderer_Set_OpenGL ();
+#endif // DIRECT3D_WRAPPER
 
 	vid.direct3d = DIRECT3D_WRAPPER_VERSION;
 }
 
+#endif // CORE_GL

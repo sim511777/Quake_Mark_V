@@ -31,53 +31,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h> // malloc, etc.
 
 
-const char *System_Clipboard_Get_Text_Line (void)
+int msgbox (const char *_title, const char *fmt, ...)
 {
-	static char out[SYS_CLIPBOARD_SIZE_256];
-	const char *cliptext = System_Clipboard_Get_Text_Alloc ();
-
-	out[0] = 0;
-	if (cliptext)
-	{
-		const char *src = cliptext;
-		char *dst = out;
-		int remaining = sizeof out - 1;
-		/*
-		\e	Write an <escape> character.
-		\a	Write a <bell> character.
-		\b	Write a <backspace> character.
-		\f	Write a <form-feed> character.
-		\n	Write a <new-line> character.
-		\r	Write a <carriage return> character.
-		\t	Write a <tab> character.
-		\v	Write a <vertical tab> character.
-		\'	Write a <single quote> character.
-		\\	Write a backslash character.
-		*/
-
-		// Truncate at any new line or carriage return or backspace character
-		// BUT convert any whitespace characters that are not actual spaces into spaces.
-		//while (*src && dst - cliptext < sizeof out - 1 && *src != '\n' && *src != '\r' && *src != '\b')
-		while (*src && remaining > 0 && *src != '\n' && *src != '\r' && *src != '\b')
-		{
-			if (*src < ' ')
-				*dst++ = ' ';
-			else *dst++ = *src;
-			src++;
-			remaining --;
-		}
-		*dst = 0;
-
-		core_free (cliptext);
-	}
-
-	return (const char *)out;
-}
-
-int System_Alert (const char *fmt, ...)
-{
-	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
-	System_MessageBox (NULL, text);
+	const char *title = _title ? _title : "Alert";
+	// We are intentionally cutting this off at 1024 otherwise Windows is REAL slow with mega sized ones.
+	// NO TOO SLOW WITH SUPERSIZED ONES: NVA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+	VA_EXPAND (text, MAX_MSGBOX_TEXT_SIZE_BECAUSE_UNLIMITED_IS_SLOW_2048 /* maxsize */, fmt);
+	_Platform_MessageBox (title, text);
+	// NO TOO SLOW WITH SUPERSIZED ONES: (text);
 	return 0;
 }
+
+int alert (const char *fmt, ...)
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt); // We are variably sized, but msgbox is 2048 sized because huge msgbox is slow as hell, at least on Windows
+//	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
+
+	msgbox (NULL, "%s", text);
+	free (text); // VA_EXPAND_ALLOC free
+	return 0;
+}
+
+
+
 

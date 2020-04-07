@@ -203,7 +203,7 @@ void Q_ErrorOut (int errz)
 	extern void Host_Error (const char *error, ...);
 //	extern jmp_buf host_dzfail;
 //	longjmp (host_dzfail, 1);
-	Host_Error ("Dzip couldn't open file.\n");
+	Host_Error ("Dzip couldn't open file.");
 #else
 	exit (1);
 #endif
@@ -661,14 +661,16 @@ int main(int argc, const char * argv[])
 }
 #endif
 
-#ifndef _WIN32
-int z_verbose; // Baker: Hmmm.  Apparently Mac uses this function
+//#ifndef _WIN32
+// Dec 2016 - apparently defining "DEBUG" activated this.
+int z_verbose; // Baker: Hmmm.  Apparently Mac uses this function.
+
 void z_error (char * msg)
 {
 	Q_fprintf (stderr, msg);
 	Q_exit (1); // Failure
 }
-#endif // _WIN32
+//#endif // _WIN32
 
 
 

@@ -166,7 +166,7 @@ edict_t *ED_Alloc (void)
 	}
 
 	if (i == sv.max_edicts) //johnfitz -- use sv.max_edicts instead of MAX_EDICTS
-		Host_Error ("ED_Alloc: no free edicts (max_edicts is %i)", sv.max_edicts);
+		Host_Error ("ED_Alloc: no free edicts (max_edicts is %d)", sv.max_edicts);
 
 	sv.num_edicts++;
 	e = EDICT_NUM(i);
@@ -335,24 +335,24 @@ static const char *PR_ValueString (int type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		c_snprintf (line, "%s", PR_GetString(val->string));
+		c_snprintf1 (line, "%s", PR_GetString(val->string));
 		break;
 	case ev_entity:
-		c_snprintf (line, "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
+		c_snprintf1 (line, "entity %d", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		c_snprintf (line, "%s()", PR_GetString(f->s_name));
+		c_snprintf1 (line, "%s()", PR_GetString(f->s_name));
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		c_snprintf (line, ".%s", PR_GetString(def->s_name));
+		c_snprintf1 (line, ".%s", PR_GetString(def->s_name));
 		break;
 	case ev_void:
 		c_strlcpy (line, "void");
 		break;
 	case ev_float:
-		c_snprintf (line, "%5.1f", val->_float);
+		c_snprintf1 (line, "%5.1f", val->_float);
 		break;
 	case ev_vector:
 		c_snprintf3 (line, "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
@@ -361,7 +361,7 @@ static const char *PR_ValueString (int type, eval_t *val)
 		c_strlcpy (line, "pointer");
 		break;
 	default:
-		c_snprintf (line, "bad type %i", type);
+		c_snprintf1 (line, "bad type %d", type);
 		break;
 	}
 
@@ -389,30 +389,30 @@ static const char *PR_UglyValueString (int type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		c_snprintf (line, "%s", PR_GetString(val->string));
+		c_snprintf1 (line, "%s", PR_GetString(val->string));
 		break;
 	case ev_entity:
-		c_snprintf (line, "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
+		c_snprintf1 (line, "%d", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		c_snprintf (line, "%s", PR_GetString(f->s_name));
+		c_snprintf1 (line, "%s", PR_GetString(f->s_name));
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		c_snprintf (line, "%s", PR_GetString(def->s_name));
+		c_snprintf1 (line, "%s", PR_GetString(def->s_name));
 		break;
 	case ev_void:
 		c_strlcpy (line, "void");
 		break;
 	case ev_float:
-		c_snprintf (line, "%f", val->_float);
+		c_snprintf1 (line, "%f", val->_float);
 		break;
 	case ev_vector:
 		c_snprintf3 (line, "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	default:
-		c_snprintf (line, "bad type %i", type);
+		c_snprintf1 (line, "bad type %d", type);
 		break;
 	}
 
@@ -439,11 +439,11 @@ const char *PR_GlobalString (int ofs)
 	def = ED_GlobalAtOfs(ofs);
 
 	if (!def)
-		c_snprintf (line,"%i(???)", ofs);
+		c_snprintf1 (line,"%d(???)", ofs);
 	else
 	{
 		s = PR_ValueString (def->type, (eval_t *)val);
-		c_snprintf3 (line,"%i(%s)%s", ofs, PR_GetString(def->s_name), s);
+		c_snprintf3 (line,"%d(%s)%s", ofs, PR_GetString(def->s_name), s);
 	}
 
 	i = strlen(line);
@@ -468,10 +468,10 @@ const char *PR_GlobalStringNoContents (int ofs)
 	if (!def)
 	{
 		// more trigraph warnings here
-		c_snprintf (line, "%i(???)", ofs);
+		c_snprintf1 (line, "%d(???)", ofs);
 	}
 	else
-		c_snprintf2 (line, "%i(%s)", ofs, PR_GetString(def->s_name));
+		c_snprintf2 (line, "%d(%s)", ofs, PR_GetString(def->s_name));
 
 	i = strlen(line);
 
@@ -501,11 +501,12 @@ void ED_Print (edict_t *ed)
 
 	if (ed->free)
 	{
-		Con_Printf ("FREE\n");
+		Con_PrintLinef ("FREE");
 		return;
 	}
 
-	Con_SafePrintf("\nEDICT %i:\n", NUM_FOR_EDICT(ed)); //johnfitz -- was Con_Printf
+	Con_SafePrintLine ();
+	Con_SafePrintLinef ("EDICT %d:", NUM_FOR_EDICT(ed)); //johnfitz -- was Con_Printf
 
 	for (i = 1 ; i < progs->numfielddefs ; i++)
 	{
@@ -530,10 +531,10 @@ void ED_Print (edict_t *ed)
 		if (j == type_size[type])
 			continue;
 
-		Con_SafePrintf ("%s",name); //johnfitz -- was Con_Printf
+		Con_SafePrintContf ("%s" ,name); //johnfitz -- was Con_Printf
 
 		while (l++ < 15)
-			Con_SafePrintf (" "); //johnfitz -- was Con_Printf
+			Con_SafePrintContf (" "); //johnfitz -- was Con_Printf
 #if 0
 		if (!strcmp (name, "solid"))
 		{
@@ -545,7 +546,7 @@ void ED_Print (edict_t *ed)
 #endif
 		//const char * solid_s[] = {"SOLID_NOT", "SOLID_TRIGGER", "SOLID_BBOX", "SOLID_SLIDEBOX", "SOLID_BSP", NULL};
 #pragma message ("Baker: string to enum here ?  Movetype and flags too?  Effects")
-		Con_SafePrintf ("%s\n", PR_ValueString(d->type, (eval_t *)v)); //johnfitz -- was Con_Printf
+		Con_SafePrintLinef ("%s", PR_ValueString(d->type, (eval_t *)v)); //johnfitz -- was Con_Printf
 	}
 }
 
@@ -595,13 +596,13 @@ void ED_Write (FILE *f, edict_t *ed)
 		if (j == type_size[type])
 			continue;
 
-		fprintf (f,"\"%s\" ",name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));
+		fprintf (f, QUOTED_S " " /* <-- an important space */, name);
+		fprintf (f, QUOTED_S "\n", PR_UglyValueString(d->type, (eval_t *)v));
 	}
 
 	//johnfitz -- save entity alpha manually when progs.dat doesn't know about alpha
 	if (!pr_alpha_supported && ed->alpha != ENTALPHA_DEFAULT)
-		fprintf (f,"\"alpha\" \"%f\"\n", ENTALPHA_TOSAVE(ed->alpha));
+		fprintf (f, QUOTEDSTR("alpha") " " QUOTED_F "\n", ENTALPHA_TOSAVE(ed->alpha));
 	//johnfitz
 
 	fprintf (f, "}\n");
@@ -626,7 +627,7 @@ void ED_PrintEdicts (lparse_t *unused)
 	if (!sv.active)
 		return;
 
-	Con_Printf ("%i entities\n", sv.num_edicts);
+	Con_PrintLinef ("%d entities", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
 		ED_PrintNum (i);
 }
@@ -648,7 +649,7 @@ void ED_PrintEdict_f (lparse_t *line)
 	i = atoi (line->args[1]);
 	if (i < 0 || i >= sv.num_edicts)
 	{
-		Con_Printf("Bad edict number\n");
+		Con_PrintLinef ("Bad edict number");
 		return;
 	}
 
@@ -691,11 +692,11 @@ void ED_Count (void)
 			step++;
 	}
 
-	Con_Printf ("num_edicts:%3i\n", sv.num_edicts);
-	Con_Printf ("active    :%3i\n", active);
-	Con_Printf ("view      :%3i\n", models);
-	Con_Printf ("touch     :%3i\n", solid);
-	Con_Printf ("step      :%3i\n", step);
+	Con_PrintLinef ("num_edicts:%3d", sv.num_edicts);
+	Con_PrintLinef ("active    :%3d", active);
+	Con_PrintLinef ("view      :%3d", models);
+	Con_PrintLinef ("touch     :%3d", solid);
+	Con_PrintLinef ("step      :%3d", step);
 }
 
 
@@ -736,8 +737,8 @@ void ED_WriteGlobals (FILE *f)
 			continue;
 
 		name = PR_GetString(def->s_name);
-		fprintf (f,"\"%s\" ", name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));
+		fprintf (f, QUOTED_S " " /* <--- an important space */, name);
+		fprintf (f, QUOTED_S "\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));
 	}
 
 	fprintf (f,"}\n");
@@ -779,7 +780,7 @@ void ED_ParseGlobals (const char *data)
 
 		if (!key)
 		{
-			Con_Printf ("'%s' is not a global\n", keyname);
+			Con_PrintLinef ("'%s' is not a global", keyname);
 			continue;
 		}
 
@@ -882,7 +883,7 @@ static cbool ED_ParseEpair (void *base, ddef_t *key, const char *s)
 		{
 			//johnfitz -- HACK -- suppress error becuase fog/sky fields might not be mentioned in defs.qc
 			if (strncmp(s, "sky", 3) && strcmp(s, "fog"))
-				Con_DPrintf ("Can't find field %s\n", s);
+				Con_DPrintLinef ("Can't find field %s", s);
 
 			return false;
 		}
@@ -895,7 +896,7 @@ static cbool ED_ParseEpair (void *base, ddef_t *key, const char *s)
 
 		if (!func)
 		{
-			Con_Printf ("Can't find function %s\n", s);
+			Con_PrintLinef ("Can't find function %s", s);
 			return false;
 		}
 
@@ -994,7 +995,7 @@ const char *ED_ParseEdict (const char *data, edict_t *ent, cbool *out_angle_hack
 		{
 			//johnfitz -- HACK -- suppress error becuase fog/sky/alpha fields might not be mentioned in defs.qc
 			if (strncmp(keyname, "sky", 3) && strcmp(keyname, "fog") && strcmp(keyname, "alpha"))
-				Con_DPrintf ("\"%s\" is not a field\n", keyname); //johnfitz -- was Con_Printf
+				Con_DPrintLinef (QUOTED_S " is not a field", keyname); //johnfitz -- was Con_Printf
 
 			continue;
 		}
@@ -1003,7 +1004,7 @@ const char *ED_ParseEdict (const char *data, edict_t *ent, cbool *out_angle_hack
 		{
 			char	temp[32];
 			c_strlcpy (temp, com_token);
-			c_snprintf (com_token, "0 %s 0", temp);
+			c_snprintf1 (com_token, "0 %s 0", temp);
 		}
 
 		if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
@@ -1095,7 +1096,7 @@ void ED_LoadFromFile (const char *data)
 // immediately call spawn function
 		if (!ent->v.classname)
 		{
-			Con_SafePrintf ("No classname for:\n"); //johnfitz -- was Con_Printf
+			Con_SafePrintLinef ("No classname for:"); //johnfitz -- was Con_Printf
 			ED_Print (ent);
 			ED_Free (ent);
 			continue;
@@ -1106,7 +1107,7 @@ void ED_LoadFromFile (const char *data)
 
 		if (!func)
 		{
-			Con_SafePrintf ("No spawn function for:\n"); //johnfitz -- was Con_Printf
+			Con_SafePrintLinef ("No spawn function for:"); //johnfitz -- was Con_Printf
 			ED_Print (ent);
 			ED_Free (ent);
 			continue;
@@ -1130,7 +1131,7 @@ void ED_LoadFromFile (const char *data)
 
 	}
 
-	Con_DPrintf ("%i entities inhibited\n", inhibit);
+	Con_DPrintLinef ("%d entities inhibited", inhibit);
 }
 
 /*
@@ -1252,13 +1253,13 @@ void PR_In_Killed_Check (dfunction_t *f, int depth)
 	sv.pr_in_killed = depth;
 	sv.pr_in_killed_murderer_frags_ev = murderer_frag_ev;
 	sv.pr_in_killed_start_frags = murderer_frag_ev->_float;
-	//Con_SafePrintf ("Entered killed\n");
+	//Con_SafePrintLinef ("Entered killed");
 }
 
 void PR_In_Killed_Finish (void)
 {
 	sv.pr_in_killed = 0;
-	//Con_SafePrintf ("Exit killed\n");
+	//Con_SafePrintLinef ("Exit killed");
 
 	if (!sv.pr_in_killed_murderer_frags_ev)
 		return; // Error?
@@ -1295,7 +1296,7 @@ dfunction_t* PR_Check_Coop_Kills (void)
 		dfunction_t* testfunc = PR_FindFunction ("Killed", PRFF_NOBUILTINS | PRFF_NOPARTIALS);
 		if (testfunc && testfunc->numparms == 2 && testfunc->parm_size[0] == 1 && testfunc->parm_size[1])
 		{
-//			Con_SafePrintf ("Per player coop scores initialized\n");
+//			Con_SafePrintLinef ("Per player coop scores initialized");
 			return testfunc; // Looks good!
 		}
 	}
@@ -1322,8 +1323,8 @@ void PR_LoadProgs (const char *__progs_name)
 
 	progs = (dprograms_t *)COM_LoadHunkFile (sv.progs_name);
 	if (!progs)
-		Host_Error ("PR_LoadProgs: couldn't load \"%s\"", sv.progs_name);
-	Con_DPrintf ("Programs occupy %dK.\n", com_filesize/1024);
+		Host_Error ("PR_LoadProgs: couldn't load " QUOTED_S, sv.progs_name);
+	Con_DPrintLinef ("Programs occupy %d K.", (int)Math_KiloBytesDouble(com_filesize) );
 
 	for (i=0 ; i<com_filesize ; i++)
 		CRC_ProcessByte (&pr_crc, ((byte *)progs)[i]);
@@ -1341,7 +1342,7 @@ void PR_LoadProgs (const char *__progs_name)
 	pr_strings = (char *)progs + progs->ofs_strings;
 #if 1
 	if (progs->ofs_strings + progs->numstrings >= com_filesize)
-		Host_Error ("progs.dat strings go past end of file\n");
+		Host_Error ("progs.dat strings go past end of file");
 #endif
 
 #if 1
@@ -1422,15 +1423,15 @@ void PR_LoadProgs (const char *__progs_name)
 
 	if (!sv.pr_handles_imp12 && vm_imp12hack.value && vm_imp12hack.value < 2 && COM_ListMatch (vm_imp12hack_exceptions.string, gamedir_shortname()) )
 	{
-		Con_DPrintf ("Mod \"%s\" is on impulse 12 exception list\n", gamedir_shortname());
+		Con_DPrintLinef ("Mod " QUOTED_S " is on impulse 12 exception list", gamedir_shortname());
 	}
 	else
 	{
 		sv.pr_imp12_override = vm_imp12hack.value >=2 || ( !sv.pr_handles_imp12 && vm_imp12hack.value) ;
-			 if (!sv.pr_handles_imp12 && !sv.pr_imp12_override)  Con_VerbosePrintf ("Progs.dat does not appear to support impulse 12\n");
-		else if (!sv.pr_handles_imp12 &&  sv.pr_imp12_override)  Con_VerbosePrintf ("Overriding missing impulse 12 support\n");
-		else if ( sv.pr_handles_imp12 &&  sv.pr_imp12_override)  Con_VerbosePrintf ("Overriding existing impulse 12 support\n");
-		else if ( sv.pr_handles_imp12 && !sv.pr_imp12_override)  Con_DPrintf ("Mod appears to support impulse 12\n");
+			 if (!sv.pr_handles_imp12 && !sv.pr_imp12_override)  Con_VerbosePrintLinef ("Progs.dat does not appear to support impulse 12");
+		else if (!sv.pr_handles_imp12 &&  sv.pr_imp12_override)  Con_VerbosePrintLinef ("Overriding missing impulse 12 support");
+		else if ( sv.pr_handles_imp12 &&  sv.pr_imp12_override)  Con_VerbosePrintLinef ("Overriding existing impulse 12 support");
+		else if ( sv.pr_handles_imp12 && !sv.pr_imp12_override)  Con_DPrintLinef ("Mod appears to support impulse 12");
 	}
 
 #ifdef SUPPORTS_COOP_ENHANCEMENTS
@@ -1464,13 +1465,13 @@ void PR_QC_Exec (lparse_t *line)
 
 	if (!sv.active)
 	{
-		Con_Printf ("Not running local game\n");
+		Con_PrintLinef ("Not running local game");
 		return;
 	};
 
 	if (!developer.value)
 	{
-		Con_Printf ("Only available in developer mode\n");
+		Con_PrintLinef ("Only available in developer mode");
 		return;
 	};
 
@@ -1482,7 +1483,7 @@ void PR_QC_Exec (lparse_t *line)
 		PR_ExecuteProgram ((func_t)(f - pr_functions));
 	}
 	else
-		Con_Printf("bad function\n");
+		Con_PrintLinef ("bad function");
 
 }
 
@@ -1498,7 +1499,7 @@ void PR_Listfunctions_f (lparse_t *line)
 	if (sv.active)
 	{
 		int				i;
-		Con_Printf ("QuakeC Functions:\n");
+		Con_PrintLinef ("QuakeC Functions:");
 		for (i = 0 ; i < progs->numfunctions ; i++)
 		{
 			dfunction_t	*func = &pr_functions[i];
@@ -1521,14 +1522,14 @@ void PR_Listfunctions_f (lparse_t *line)
 					break;
 
 				if (doclassnames) // Just print them
-					Con_Printf ("%s\n", PR_GetString(func->s_name) );
-				else Con_Printf ("%05i: %s\n", i, PR_GetString(func->s_name) );
+					Con_PrintLinef ("%s", PR_GetString(func->s_name) );
+				else Con_PrintLinef ("%05i: %s", i, PR_GetString(func->s_name) );
 
 				break;
 			} while (0);
 		}
 
-	} else Con_Printf ("No active server\n");
+	} else Con_PrintLinef ("No active server");
 }
 
 
@@ -1547,7 +1548,7 @@ void PR_Init (void)
 edict_t *EDICT_NUM(int n)
 {
 	if (n < 0 || n >= sv.max_edicts)
-		Host_Error ("EDICT_NUM: bad number %i", n);
+		Host_Error ("EDICT_NUM: bad number %d", n);
 	return (edict_t *)((byte *)sv.edicts+ (n)*pr_edict_size);
 }
 
@@ -1571,7 +1572,7 @@ int NUM_FOR_EDICT(const edict_t *e)
 static void PR_AllocStringSlots (void)
 {
 	pr_maxknownstrings += PR_STRING_ALLOCSLOTS;
-	Con_DPrintf("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
+	Con_DPrintLinef ("PR_AllocStringSlots: realloc'ing for %d slots", pr_maxknownstrings);
 	pr_knownstrings = (const char **) Z_Realloc ((void *)pr_knownstrings, pr_maxknownstrings * sizeof(char *));
 }
 
@@ -1583,7 +1584,7 @@ const char *PR_GetString (int num)
 	{
 		if (!pr_knownstrings[-1 - num])
 		{
-			Host_Error ("PR_GetString: attempt to get a non-existant string %d\n", num);
+			Host_Error ("PR_GetString: attempt to get a non-existant string %d", num);
 			return "";
 		}
 		return pr_knownstrings[-1 - num];
@@ -1591,7 +1592,7 @@ const char *PR_GetString (int num)
 	else
 	{
 		return pr_strings;
-		Host_Error("PR_GetString: invalid string offset %d\n", num);
+		Host_Error ("PR_GetString: invalid string offset %d", num);
 		return "";
 	}
 }
@@ -1604,7 +1605,7 @@ int PR_SetEngineString (const char *s)
 		return 0;
 #if 0	/* can't: sv.model_precache & sv.sound_precache points to pr_strings */
 	if (s >= pr_strings && s <= pr_strings + pr_stringssize)
-		Host_Error("PR_SetEngineString: \"%s\" in pr_strings area\n", s);
+		Host_Error ("PR_SetEngineString: " QUOTED_S " in pr_strings area", s);
 #else
 	if (s >= pr_strings && s <= pr_strings + pr_stringssize - 2)
 		return (int)(s - pr_strings);
@@ -1615,7 +1616,7 @@ int PR_SetEngineString (const char *s)
 			return -1 - i;
 	}
 	// new unknown engine string
-	//Con_DPrintf ("PR_SetEngineString: new engine string %p\n", s);
+	//Con_DPrintLinef ("PR_SetEngineString: new engine string %p", s);
 #if 0
 	for (i = 0; i < pr_numknownstrings; i++)
 	{
@@ -1655,4 +1656,3 @@ int PR_AllocString (int size, char **ptr)
 		*ptr = (char *) pr_knownstrings[i];
 	return -1 - i;
 }
-

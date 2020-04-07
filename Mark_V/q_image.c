@@ -39,26 +39,37 @@ unsigned *Image_Load_Limited (const char *qpath_file_url, int *width, int *heigh
 	char loadfilename[MAX_OSPATH];
 	FILE	*f;
 
-	c_snprintf (loadfilename, "%s.tga", qpath_file_url);
+	c_snprintf1 (loadfilename, "%s.tga", qpath_file_url);
 	COM_FOpenFile_Limited (loadfilename, &f, media_owner_path);
-	if (f)
+	if (f) {
+		unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_fn_t Malloc_Fn, const char *description);
 		return Image_Load_TGA_FileHandle (f, width, height, Hunk_Alloc, loadfilename);
+	}
 
 
-	c_snprintf (loadfilename, "%s.pcx", qpath_file_url);
+	c_snprintf1 (loadfilename, "%s.pcx", qpath_file_url);
 	COM_FOpenFile_Limited (loadfilename, &f, media_owner_path);
-	if (f)
+	if (f) {
+		unsigned *Image_Load_PCX_FileHandle (FILE *fin, int *width, int *height, size_t filelen, malloc_fn_t Malloc_Fn, const char *description);
 		return Image_Load_PCX_FileHandle (f, width, height, com_filesize, Hunk_Alloc, loadfilename);
+	}
 
 	return NULL;
 }
 
 cbool Image_Save_TGA_QPath (const char *qpath_file_url, unsigned *pixels_rgba, int width, int height, cbool upsidedown)
 {
+	// Note: We are never actually saving TGA, but the old code *always* saved them upside down.
 	char *file_url = (char *)qpath_to_url (qpath_file_url);
 
 	File_URL_Edit_Force_Extension (file_url, ".tga", CORE_STRINGS_VA_ROTATING_BUFFER_BUFSIZ_1024);
-	return Image_Save_TGA (file_url, pixels_rgba, width, height, 32 /*bitsperpixel*/, upsidedown);
+
+	//Image_Save_File (file_url, pixels_rgba, width, height); <--- these functions cannot handle RGB
+	//Image_Save_Auto (file_url, pixels_rgba, width, height); <--- but the BPP_32 below means that is never the case anyway.
+	//																Plus remember we are never writing TGA anyway!
+
+	//return Image_Save_TGA (file_url, pixels_rgba, width, height, BPP_32 /*bitsperpixel*/, upsidedown);
+	return !!Image_Save_File (file_url, pixels_rgba, width, height); // Converts from pointer to boolean!  NULL becomes 0.
 }
 
 
@@ -66,7 +77,8 @@ cbool Image_Save_PNG_QPath (const char *qpath_file_url, unsigned *pixels_rgba, i
 {
 	char *file_url = (char *)qpath_to_url (qpath_file_url);
 	File_URL_Edit_Force_Extension (file_url, ".png", CORE_STRINGS_VA_ROTATING_BUFFER_BUFSIZ_1024);
-	return Image_Save_PNG (file_url, pixels_rgba, width, height);
+	//return Image_Save_PNG (file_url, pixels_rgba, width, height);
+	return !!Image_Save_File (file_url, pixels_rgba, width, height);
 }
 
 
@@ -75,6 +87,7 @@ cbool Image_Save_PNG_QPath (const char *qpath_file_url, unsigned *pixels_rgba, i
 // Only supports TGA
 byte *Image_Load_Convert_RGBA_To_Palette (const char *name, int *width, int *height, byte palette_768[])
 {
+    unsigned *Image_Load_TGA_FileHandle (FILE *fin, int *width, int *height, malloc_fn_t Malloc_Fn, const char *description);
 	char loadfilename[MAX_OSPATH];
 
 	FILE		*f;
@@ -84,7 +97,7 @@ byte *Image_Load_Convert_RGBA_To_Palette (const char *name, int *width, int *hei
 	int			fwidth, fheight;
 	int			x, y;
 
-	c_snprintf (loadfilename, "%s.tga", name);
+	c_snprintf1 (loadfilename, "%s.tga", name);
 	COM_FOpenFile_Limited (loadfilename, &f, NULL);
 
 	if (!f)
@@ -94,7 +107,7 @@ byte *Image_Load_Convert_RGBA_To_Palette (const char *name, int *width, int *hei
 	if (!data)
 		return NULL;
 
-//	Con_Printf ("Converting skybox to palette ...\n");
+//	Con_PrintLinef ("Converting skybox to palette ...");
 
 	src = (unsigned *)data;
 	dst = out = (byte *)Hunk_Alloc (fwidth * fheight);
@@ -108,6 +121,5 @@ byte *Image_Load_Convert_RGBA_To_Palette (const char *name, int *width, int *hei
 
 	return out;
 }
-
 
 

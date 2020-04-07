@@ -38,7 +38,7 @@ size_t download_procs_memwrite (void *contents, size_t size, size_t nmemb, memst
 	if (mem->memory == NULL)
 	{
 		// out of memory!
-		Core_Error ("not enough memory (realloc returned NULL)\n");
+		log_fatal ("not enough memory (realloc returned NULL)");
 	}
 
 	memcpy(&(mem->memory[mem->size]), contents, realsize);

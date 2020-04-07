@@ -53,11 +53,11 @@ static void List_QPrint (list_info_t* list_info_item)
 	clist_t	*cursor;
 
 	for (cursor = list_info_item->plist, count = 0; cursor; cursor = cursor->next, count ++)
-		Con_SafePrintf ("   %s\n", cursor->name);
+		Con_SafePrintLinef ("   %s", cursor->name);
 
 	if (count)
-		Con_SafePrintf ("%i %s(s)\n", count, list_info_item->description);
-	else Con_SafePrintf ("no %ss found\n", list_info_item->description);
+		Con_SafePrintLinef ("%d %s(s)", count, list_info_item->description);
+	else Con_SafePrintLinef ("no %ss found", list_info_item->description);
 }
 
 
@@ -72,7 +72,7 @@ void Lists_Update_ModList (void)
 	char			dir_string[MAX_OSPATH];
 
 	FS_FullPath_From_Basedir (dir_string, "");
-//	c_snprintf (dir_string, "%s/", com_basedir); // Fill in the com_basedir into dir_string
+//	c_snprintf1 (dir_string, "%s/", com_basedir); // Fill in the com_basedir into dir_string
 
 	dir_p = opendir(dir_string);
 	if (dir_p == NULL)
@@ -112,7 +112,7 @@ void Lists_Update_ModList (void)
 				DIR *mod_subdir_p;
 
 				c_snprintf3 (mod_dir_string, "%s%s/%s/", dir_string, dir_t->d_name, cur);
-//				System_Alert (mod_dir_string);
+//				alert (mod_dir_string);
 #if 1
 				// A super long directory name isn't supported by Quake.
 				if (strlen(dir_t->d_name) > MAX_QPATH_64)
@@ -174,15 +174,19 @@ static void List_Func_Rebuild (clist_t** list, constcharfunc_t runFunction)
 	while ( (namestring = runFunction()    ) )
 	{
 		List_Add (list, namestring);
-//		Con_Printf ("Adding %s\n", namestring);
+//		Con_PrintLinef ("Adding %s", namestring);
 	}
 
 }
 
 void Shareware_Notify (void)
 {
-	if (!static_registered)
-		Con_Printf ("\nNote: You are using shareware.\nCustom maps and games are not available.\n\n");
+	if (!static_registered) {
+		Con_PrintLine ();
+		Con_PrintLinef ("Note: You are using shareware.");
+		Con_PrintLinef ("Custom maps and games are not available.");
+		Con_PrintLine ();
+	}
 }
 
 void List_Configs_f (void)		{ List_QPrint (&list_info[list_type_config]);  }
@@ -192,10 +196,10 @@ void List_Game_Huds_f (void)	{ List_QPrint (&list_info[list_type_game_hud]); }
 void List_Keys_f (void)			{ List_QPrint (&list_info[list_type_key]); }
 void List_Maps_f (void)	 		{ List_QPrint (&list_info[list_type_map]); Shareware_Notify (); }
 void List_Savegames_f (void)	{ List_QPrint (&list_info[list_type_savegame]); }
-void List_Skys_f (void)			{ List_QPrint (&list_info[list_type_sky]); Con_Printf ("Located in gfx/env folder\n"); }
-void List_MP3s_f (void)			{ List_QPrint (&list_info[list_type_mp3]); Con_Printf ("Located in music folder\n"); }
+void List_Skys_f (void)			{ List_QPrint (&list_info[list_type_sky]); Con_PrintLinef ("Located in gfx/env folder"); }
+void List_MP3s_f (void)			{ List_QPrint (&list_info[list_type_mp3]); Con_PrintLinef ("Located in music folder"); }
 
-void List_Sounds_f (void)		{ List_QPrint (&list_info[list_type_sound]); Con_Printf ("These are cached sounds only -- loaded in memory\n"); }
+void List_Sounds_f (void)		{ List_QPrint (&list_info[list_type_sound]); Con_PrintLinef ("These are cached sounds only -- loaded in memory"); }
 
 
 
@@ -276,7 +280,7 @@ void Lists_Update_Maps (void)
 		}
 
 		c_strlcpy (game_startmap, best->name);
-		Con_DPrintf ("Start map determined to be %s\n", game_startmap);
+		Con_DPrintLinef ("Start map determined to be %s", game_startmap);
 	}
 
 }
@@ -341,7 +345,7 @@ const char *GameHud_ListExport (void)
 			String_Edit_To_Lower_Case (returnbuf); // Baker: avoid hassles with uppercase keynames
 
 			last = i;
-//			Con_Printf ("Added %s\n", returnbuf);
+//			Con_PrintLinef ("Added %s", returnbuf);
 			return returnbuf;
 		}
 	}
@@ -385,7 +389,7 @@ const char *Give_ListExport (void)
 			String_Edit_To_Lower_Case (returnbuf); // Baker: avoid hassles with uppercase keynames
 
 			last = i;
-//			Con_Printf ("Added %s\n", returnbuf);
+//			Con_PrintLinef ("Added %s", returnbuf);
 			return returnbuf;
 		}
 	}
@@ -953,7 +957,7 @@ const char *Quaddicted_ListExport (void)
 			String_Edit_To_Lower_Case (returnbuf); // Baker: avoid hassles with uppercase keynames
 
 			last = i;
-//			Con_Printf ("Added %s\n", returnbuf);
+//			Con_PrintLinef ("Added %s", returnbuf);
 			return returnbuf;
 		}
 	}

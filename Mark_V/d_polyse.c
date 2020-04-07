@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -158,20 +160,20 @@ void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts)
 		if ((fv->v[0] < r_refdef.vrectright) &&
 			(fv->v[1] < r_refdef.vrectbottom))
 		{
-			if (/* Baker */  fv->v[0] >=0 && fv->v[1] >=0)
+			if (/* Baker */  fv->v[0] >= 0 && fv->v[1] >= 0)
 			{
-			z = fv->v[5]>>16;
-			zbuf = zspantable[fv->v[1]] + fv->v[0];
-			if (z >= *zbuf)
-			{
-				int		pix;
-
-				*zbuf = z;
-				pix = skintable[fv->v[3]>>16][fv->v[2]>>16];
-				pix = ((byte *)acolormap)[pix + (fv->v[4] & 0xFF00) ];
-				d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]] = pix;
-			}
-			} else Con_Printf("D_PolysetDrawFinalVerts: Wanted to draw a vert %i %i with negative offset\n", fv->v[0], fv->v[1]);
+				z = fv->v[5]>>16;
+				zbuf = zspantable[fv->v[1]] + fv->v[0];
+				if (z >= *zbuf)
+				{
+					int		pix;
+	
+					*zbuf = z;
+					pix = skintable[fv->v[3]>>16][fv->v[2]>>16];
+					pix = ((byte *)acolormap)[pix + (fv->v[4] & 0xFF00) ];
+					d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]] = pix;
+				}
+			} else Con_PrintLinef ("D_PolysetDrawFinalVerts: Wanted to draw a vert %d %d with negative offset", fv->v[0], fv->v[1]);
 		}
 	}
 }
@@ -633,7 +635,7 @@ void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage)
 #ifdef WINQUAKE_DEBUG // Baker
 				if (lpz < d_viewbufferstart	|| d_viewbufferend	< lpz)
 				{
-					Con_Printf ("Baker: lpz is out of range\n");
+					Con_PrintLinef ("Baker: lpz is out of range");
 					return;
 				}
 #endif // WINQUAKE_DEBUG
@@ -643,7 +645,7 @@ void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage)
 					if (!ismasked || *lptex != 255) { // Baker: EF_ALPHA_MASKED_MDL
 						#define temp ((byte *)acolormap)[*lptex + (llight & 0xFF00)]
 						if (currententity->alpha != ENTALPHA_DEFAULT) {
-                        	*lpdest = vid.alpha50map[*lpdest + temp*256];
+                        	*lpdest = vid.alpha50map[*lpdest + temp * 256];
 						}else {
 							*lpdest = temp;  // gel mapping *lpdest = gelmap[*lpdest];	
 						}
@@ -1081,5 +1083,6 @@ split:
 	D_PolysetRecursiveTriangle (new, lp2, lp3);
 }
 
-#endif
+#endif // 0
 
+#endif // !GLQUAKE - WinQuake Software renderer

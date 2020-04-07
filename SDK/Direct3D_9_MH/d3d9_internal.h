@@ -66,9 +66,9 @@ typedef struct _D3DMATRIX
 
 // externs we need from the Quake engine
 #pragma message ("Baker: Deal with these ...")
-void System_Error (char *error, ...);
-void Con_Printf (char *fmt, ...);
-char *va (char *format, ...);
+int System_Error (const char *fmt, ...);// __core_attribute__((__format__(__printf__,1,2), __noreturn__));
+int Con_PrintLinef (const char *fmt, ...); // __core_attribute__((__format__(__printf__,1,2)));
+char *va (const char *format, ...); // __core_attribute__((__format__(__printf__,1,2)));
 
 
 // utility

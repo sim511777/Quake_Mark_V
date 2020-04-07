@@ -105,7 +105,7 @@ void CL_ParseBeam (qmodel_t *m)
 	//johnfitz -- less spammy overflow message
 	if (!dev_overflows.beams || dev_overflows.beams + CONSOLE_RESPAM_TIME < realtime )
 	{
-		Con_Printf ("Beam list overflow!\n");
+		Con_PrintLinef ("Beam list overflow!");
 		dev_overflows.beams = realtime;
 	}
 	//johnfitz
@@ -445,7 +445,7 @@ void CL_UpdateTEnts (void)
 
 				VectorSubtract (playerbeam_end, cl_entities[cl.viewentity_player].origin, v);
 				v[2] -= 22;		// adjust for view height
-				vectoangles (v, ang);
+				VectorToAngles (v, ang); // vectoangles
 
 				// lerp pitch
 				ang[0] = -ang[0];
@@ -551,4 +551,3 @@ void CL_UpdateTEnts (void)
 		} // End of while
 	}
 }
-

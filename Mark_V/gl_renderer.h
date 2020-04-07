@@ -3,9 +3,51 @@
 #ifndef __GL_RENDERER_H
 #define __GL_RENDERER_H
 
-#ifdef _WIN32
-#include <windows.h> // Why?  APIENTRY?
-#endif
+#include "core_opengl.h"
+
+///////////////////////////////////////////////////////////////////////////////
+//  OPENGL: Renderer capabilities
+///////////////////////////////////////////////////////////////////////////////
+
+typedef struct
+{
+	const char	*gl_vendor;
+	const char	*gl_renderer;
+	const char	*gl_version;
+	const char	*gl_extensions;
+	char		*gl_extensions_nice;
+
+	cbool		isIntelVideo;
+	cbool		gl_mtexable;
+	int			gl_max_texture_size;
+	cbool		gl_texture_env_combine;
+	cbool		gl_texture_env_add;
+	cbool		gl_texture_non_power_of_two;
+	cbool		gl_swap_control;
+	cbool		gl_anisotropy_able;
+	float		gl_max_anisotropy; //johnfitz
+	int			gl_stencilbits; //johnfitz
+
+	GLenum		TEXTURE0, TEXTURE1; //johnfitz
+
+	PFNGLMULTITEXCOORD2FARBPROC GL_MTexCoord2fFunc;
+	PFNGLACTIVETEXTUREARBPROC GL_SelectTextureFunc;
+	qGLColorTableEXT GLColorTableEXT;
+	qgl3DfxSetPaletteEXT GLSetPaletteEXT; 
+
+//	glColorTableEXT
+//		glColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE,
+//		(void *) thePalette);
+} renderer_t;
+
+extern renderer_t renderer;
+
+void GL_VID_SetMode_GL_Evaluate_Renderer (void);
+void GL_VID_SetMode_GL_SetupState (void);
+
+//#ifdef _WIN32
+//#include <windows.h> // Why?  APIENTRY?
+//#endif
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - The #include for the wrapper
 	#include "dx8_mh_wrapper.h"
@@ -91,15 +133,19 @@ extern void (APIENTRY *eglViewport) (GLint x, GLint y, GLsizei width, GLsizei he
 
 #ifdef _WIN32
 
-LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
+// I think I commented this out because it is flat out wrong.
+// We were creating variables here :(  In every file, no less!
+// Or were we?  Anyway you need an extern on them if you want to do this still.
 
-HGLRC (WINAPI *ewglCreateContext) (HDC);
-BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
-HGLRC (WINAPI *ewglGetCurrentContext) (VOID);
-HDC   (WINAPI *ewglGetCurrentDC) (VOID);
-PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
-BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
-BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
+//LONG (WINAPI *eChangeDisplaySettings) (LPDEVMODE lpDevMode, DWORD dwflags);
+//
+//HGLRC (WINAPI *ewglCreateContext) (HDC);
+//BOOL  (WINAPI *ewglDeleteContext) (HGLRC);
+//HGLRC (WINAPI *ewglGetCurrentContext) (VOID);
+//HDC   (WINAPI *ewglGetCurrentDC) (VOID);
+//PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
+//BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
+//BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
 
 #define eSystem_GL_GetProcAddress ewglGetProcAddress
 

@@ -951,7 +951,7 @@ UINT32 HTTPClientWriteData (HTTP_SESSION_HANDLE pSession,
 
                                 // If the last verb that was used was HEAD there is no point to get this data (chanses are that we will endup with timeout)
 //#if 1 // Baker
-//	printf ("%i\n", pHTTPSession->HttpHeadersInfo.nHTTPContentLength);
+//	printf ("%d\n", pHTTPSession->HttpHeadersInfo.nHTTPContentLength);
 //#endif
                                 if(pHTTPSession->HttpHeaders.HttpVerb == VerbHead)
                                 {

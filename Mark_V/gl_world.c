@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -95,7 +97,7 @@ void R_MarkSurfaces (void)
 		// scenario.
 		if (level.ever_been_away_from_water_portal)
 		{
-			Con_DPrintf ("AUTO WATER VIS:  Level is NOT vised!\n");
+			Con_DPrintLinef ("AUTO WATER VIS:  Level is NOT vised!");
 			level.water_vis_known = true;
 			level.water_vis = false;
 		}
@@ -113,7 +115,7 @@ void R_MarkSurfaces (void)
 		return;
 	}
 
-	//Con_Printf ("New vis: %x (key? %d\n", cl.r_viewleaf, vis);
+	//Con_PrintLinef ("New vis: %x (key? %d", cl.r_viewleaf, vis);
 	vis_changed = false;
 	cl.r_visframecount++;
 	cl.r_oldviewleaf = cl.r_viewleaf;
@@ -1014,5 +1016,4 @@ fullbrights:
 	}
 }
 
-
-
+#endif // GLQUAKE specific

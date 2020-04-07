@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -200,7 +202,7 @@ void R_Init_Local (void)
 	r_refdef.yOrigin = YCENTERING;
 
 	R_InitTextures ();
-	
+
 
 // TODO: collect 386-specific code in one place
 #if	id386
@@ -308,7 +310,7 @@ void R_PrintTimes (void)
 
 	ms = 1000* (r_time2 - r_time1);
 
-	Con_Printf ("%5.1f ms %3i/%3i/%3i poly %3i surf\n",
+	Con_PrintLinef ("%5.1f ms %3d/%3d/%3d poly %3d surf",
 		ms, c_faceclip, r_polycount, r_drawnpolycount, c_surf);
 	c_surf = 0;
 }
@@ -333,7 +335,7 @@ void R_PrintDSpeeds (void)
 	dv_time = (dv_time2 - dv_time1) * 1000;
 	ms = (r_time2 - r_time1) * 1000;
 
-	Con_Printf ("%3i %4.1fp %3iw %4.1fb %3is %4.1fe %4.1fv\n",
+	Con_PrintLinef ("%3d %4.1fp %3dw %4.1fb %3ds %4.1fe %4.1fv",
 				(int)ms, dp_time, (int)rw_time, db_time, (int)se_time, de_time,
 				 dv_time);
 }
@@ -346,7 +348,7 @@ R_PrintAliasStats
 */
 void R_PrintAliasStats (void)
 {
-	Con_Printf ("%3i polygon model drawn\n", r_amodels_drawn);
+	Con_PrintLinef ("%3d polygon model drawn", r_amodels_drawn);
 }
 
 
@@ -399,6 +401,8 @@ void TransformVector (vec3_t in, vec3_t out)
 R_TransformPlane
 ================
 */
+// Nobody calls this?
+#if 0
 void R_TransformPlane (mplane_t *p, float *normal, float *dist)
 {
 	float	d;
@@ -408,6 +412,7 @@ void R_TransformPlane (mplane_t *p, float *normal, float *dist)
 // TODO: when we have rotating entities, this will need to use the view matrix
 	TransformVector (p->normal, normal);
 }
+#endif
 
 
 /*
@@ -415,7 +420,7 @@ void R_TransformPlane (mplane_t *p, float *normal, float *dist)
 R_SetUpFrustumIndexes
 ===============
 */
-void R_SetUpFrustumIndexes (void)
+static void R_SetUpFrustumIndexes (void)
 {
 	int		i, j, *pindex;
 
@@ -471,7 +476,7 @@ void R_SetupFrame (void)
 		if ((surface_p - surfaces) > r_maxsurfsseen)
 			r_maxsurfsseen = (int) (surface_p - surfaces);
 
-		Con_Printf ("Used %d of %d surfs; %d max\n", (int)(surface_p - surfaces),
+		Con_PrintLinef ("Used %d of %d surfs; %d max", (int)(surface_p - surfaces),
 				(int)(surf_max - surfaces), r_maxsurfsseen);
 	}
 
@@ -482,7 +487,7 @@ void R_SetupFrame (void)
 		if (edgecount > r_maxedgesseen)
 			r_maxedgesseen = edgecount;
 
-		Con_Printf ("Used %d of %d edges; %d max\n", edgecount,
+		Con_PrintLinef ("Used %d of %d edges; %d max", edgecount,
 			r_numallocatededges, r_maxedgesseen);
 	}
 
@@ -602,3 +607,97 @@ void R_SetupFrame (void)
 }
 
 
+#ifdef WINQUAKE_QBISM_ALPHAMAP
+/*
+===============
+BestColor - qb: from qlumpy
+===============
+*/
+// r_misc.c?
+static byte BestPalColor (int r, int g, int b, int start, int stop)
+{
+    int i;
+    int dr, dg, db;
+    int bestdistortion, distortion;
+    int bestcolor_pal_idx;
+    byte *pal;
+
+    r = CLAMP (0, r, 254);
+    g = CLAMP (0, g, 254);
+    b = CLAMP (0, b, 254);
+//
+// let any color go to 0 as a last resort
+//
+
+    bestdistortion =  ( (int)r*r + (int)g*g + (int)b*b )*2; //qb: option- ( (int)r + (int)g + (int)b )*2;
+    bestcolor_pal_idx = 0;
+
+    pal = vid.basepal + start * RGB_3;
+    for (i = start ; i <= stop ; i++) {
+        dr = abs(r - (int)pal[0]);
+        dg = abs(g - (int)pal[1]);
+        db = abs(b - (int)pal[2]);
+        pal += 3;
+        distortion = dr*dr + dg*dg + db*db; //qb: option, more weight on value- dr + dg + db;
+        if (distortion < bestdistortion)
+        {
+            if (!distortion)
+                return i;               // perfect match
+
+            bestdistortion = distortion;
+            bestcolor_pal_idx = i;
+        }
+    }
+
+	if (!in_range(0, bestcolor_pal_idx, 255))
+		System_Error ("BestPalColor: %d outsize 0-255 range", bestcolor_pal_idx);
+    return bestcolor_pal_idx;
+}
+
+// Move to some sort of winquake file but what one?  r_misc.c?
+void R_WinQuake_Generate_Alpha50_Map (byte my_alpha50map[]) //qb: 50% / 50% alpha
+{
+    int color_a, color_b, r, g, b;
+    byte *colmap = my_alpha50map;
+
+    for (color_a = 0; color_a < PALETTE_COLORS_256; color_a ++) {
+        for (color_b = 0 ; color_b < PALETTE_COLORS_256 ; color_b ++) {
+            if (color_a == 255 || color_b == 255)
+                *colmap ++ = 255;
+            else {
+                r = (int)(((float)vid.basepal[color_a * 3 + 0] * 0.5)  + ((float)vid.basepal[color_b * 3 + 0] * 0.5));
+                g = (int)(((float)vid.basepal[color_a * 3 + 1] * 0.5)  + ((float)vid.basepal[color_b * 3 + 1] * 0.5));
+                b = (int)(((float)vid.basepal[color_a * 3 + 2] * 0.5)  + ((float)vid.basepal[color_b * 3 + 2] * 0.5));
+                *colmap ++ = BestPalColor(r, g, b, 0, 254); // High quality color tables get best color
+            }
+        }
+    }
+}
+#endif // WINQUAKE_QBISM_ALPHAMAP
+
+cbool VID_WinQuake_AllocBuffers_D_InitCaches (int width, int height)
+{
+	int		tsize, tbuffersize;
+
+	tbuffersize = width * height * sizeof (*d_pzbuffer);
+	tsize = D_SurfaceCacheForRes (width, height);
+	tbuffersize += tsize;
+
+	vid.surfcachesize = tsize;
+
+	if (d_pzbuffer)
+	{
+		D_FlushCaches ();
+
+		free (d_pzbuffer); // Formerly Hunk_FreeToHighMark (vid.highhunkmark)  but malloc is easier to debug.
+		d_pzbuffer = NULL;
+	}
+
+	d_pzbuffer = malloc (tbuffersize); // Formerly vid.highhunkmark = Hunk_HighMark (); d_pzbuffer = Hunk_HighAllocName (tbuffersize, "video");
+	vid.surfcache = (byte *) d_pzbuffer + width * height * sizeof (*d_pzbuffer);
+
+	D_InitCaches (vid.surfcache, vid.surfcachesize);
+	return true;
+}
+
+#endif // !GLQUAKE - WinQuake Software renderer

@@ -29,9 +29,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef struct
 {
 	int		length;
-	char	map[MAX_STYLESTRING];
-	char	average; //johnfitz
-	char	peak; //johnfitz
+	char	map[MAX_STYLESTRING];		// Baker unsigned char issue?
+	char	average; //johnfitz			// Baker unsigned char issue?
+	char	peak; //johnfitz			// Baker unsigned char issue?
 } lightstyle_t;
 
 typedef struct
@@ -100,9 +100,9 @@ typedef struct
 	vec3_t	start, end;
 } beam_t;
 
-#define	MAX_MAPSTRING	2048
-#define	MAX_DEMOS		32				// JoeQuake
-#define	MAX_DEMONAME	MAX_QPATH_64	// JoeQuake
+#define	MAX_MAPSTRING_2048	2048
+#define	MAX_DEMOS_32		32				// JoeQuake
+#define	MAX_DEMONAME_64		MAX_QPATH_64	// JoeQuake
 
 typedef enum
 {
@@ -136,11 +136,11 @@ typedef struct
 
 // personalization data sent to server
 	char		mapstring[MAX_QPATH_64];
-	char		spawnparms[MAX_MAPSTRING];	// to restart a level
+	char		spawnparms[MAX_MAPSTRING_2048];	// to restart a level		// Baker unsigned char issue?
 
 // demo loop control
 	int			demonum;		// -1 = don't play demos
-	char		demos[MAX_DEMOS][MAX_DEMONAME];		// when not playing
+	char		demos[MAX_DEMOS_32][MAX_DEMONAME_64];		// when not playing
 
 // demo recording info must be here, because record is started before
 // entering a map (and clearing client_state_t)

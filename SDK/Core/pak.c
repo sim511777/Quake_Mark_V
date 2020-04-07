@@ -28,19 +28,204 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define LittleLong(value) (value)
 
 
-typedef struct
-{
-	char			url[MAX_OSPATH];
-	dpackheader_t   header;
-	dpackfile_t		files[MAX_FILES_IN_PACK];
-// Add a structure for new files to add?
-// When we write, do we need to qsort?
-	int				numfiles;
-	FILE			*f;
-} pak_t;
 
 
 enum query_e {query_exists, query_index, query_filesize, query_offset};
+
+///////////////////////////////////////////////////////////////////////////////
+//  Pak from memory
+///////////////////////////////////////////////////////////////////////////////
+
+
+clist_t *Pack_Files_List_Alloc (pak_t *pack, const char *wild_patterns, reply int *num_matches)
+{
+	clist_t *files_list = NULL;
+	clist_t *item;
+	int n, count;
+
+	for (n = 0, count = 0; n < pack->numfiles; n ++) {
+		const char *inside_pak_file_url = pack->files[n].name;
+
+		if (wild_patterns && !wildcompare (inside_pak_file_url, wild_patterns))
+			continue; // The file didn't match our search criteria, so skip!
+
+		item = List_Add_No_Case_To_Lower (&files_list, inside_pak_file_url);
+		count ++;
+	}
+
+	NOT_MISSING_ASSIGN (num_matches, count);
+	return files_list;
+}
+
+
+// returns null
+void *dPack_Find_File_Caseless (pak_t *pack, const char *path_to_file)
+{
+	int n;
+
+	for (n = 0; n < pack->numfiles; n ++) {
+		const char *fn = pack->files[n].name;
+		if (!strcasecmp (path_to_file, fn))
+			return &pack->files[n];
+	}
+
+	return NULL; // Not found
+}
+
+// EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1
+void *Pack_File_Entry_To_Memory_Alloc (pak_t *pack, const byte *pak_blob, const char *path_to_file, reply size_t *mem_length)
+{
+	dpackfile_t *row = dPack_Find_File_Caseless (pack, path_to_file);
+	byte *mem_o = NULL;
+
+	if (row) {
+		size_t _mem_length = 0;
+		mem_o = core_memdup (&pak_blob[row->filepos], (_mem_length = row->filelen) + 1 /*null term assurance*/ );
+		mem_o[_mem_length] = 0; // For possible string treatment
+		NOT_MISSING_ASSIGN(mem_length, _mem_length);
+
+	}
+	return mem_o;
+}
+
+const void *Pack_File_Memory_Pointer (pak_t *pack, const byte *pak_blob, const char *path_to_file, reply size_t *mem_length)
+{
+	dpackfile_t *row = dPack_Find_File_Caseless (pack, path_to_file);
+	const byte *mem_o = mem_o = row ? &pak_blob[row->filepos] : NULL;
+
+	if (!row) {
+		logd ("File not found in pack: '%s'", path_to_file);
+		return NULL;
+	}
+
+	NOT_MISSING_ASSIGN (mem_length, row->filelen);
+	return mem_o;
+}
+
+
+cbool Pack_Extract_File (pak_t *pack, const byte *pak_blob, const char *path_to_file, const char *destfile_url)
+{
+	//pak_t *pack = _pack;
+	size_t mem_length; byte *mem_a = Pack_File_Entry_To_Memory_Alloc (pack, pak_blob, path_to_file, &mem_length);
+
+	if (!mem_a) {
+		logd ("File %s couldn't be extracted from pack", path_to_file);
+		return false;
+	}
+
+	File_Mkdir_Recursive (destfile_url);
+
+	if (!File_Memory_To_File (destfile_url, mem_a, mem_length)) {
+		logd ("Couldn't write %s", destfile_url);
+		return false;
+	}
+
+	mem_a = core_free (mem_a);
+	return true;
+}
+
+
+cbool Pack_Extract_All_To (pak_t *pack, const byte *pak_blob, const char *dest_folder, const char *wild_patterns, const char **replace_tokens2)
+{
+	int n;
+	char dest_url[MAX_OSPATH];
+	char extrabuf[MAX_OSPATH];
+	cbool ret = true;
+
+	for (n = 0; n < pack->numfiles; n ++) {
+		const char *inside_pak_file_url = pack->files[n].name;
+		const char *extract_as_name = inside_pak_file_url;
+
+		if (wild_patterns && !wildcompare (inside_pak_file_url, wild_patterns)) {
+//			alert ("%s failed to match pattern - won't be unpaked", inside_pak_file_url);
+			continue; // The file didn't match our search criteria, so skip!
+		}
+
+		if (replace_tokens2) {
+			c_strlcpy (extrabuf, inside_pak_file_url);
+			String_Edit_Replace_Token_Array (extrabuf, sizeof(extrabuf), replace_tokens2);
+			extract_as_name = extrabuf;
+		}
+
+		c_snprintf2 (dest_url, "%s/%s", dest_folder, extract_as_name);
+
+
+
+//		alertz (inside_pak_file_url, "->", dest_url, NULL);
+		ret = ret & Pack_Extract_File (pack, pak_blob, inside_pak_file_url, dest_url);
+	}
+
+	return ret; // This will be false if any operation fails.
+}
+
+
+// Size is a bit tight!
+pak_t *Pack_Open_Memory_Free (pak_t *pack)
+{
+//	pak_t *pack = _pack;
+
+//	List_Free (&pack->files_list);
+
+	pack = core_free (pack);
+	return NULL;
+}
+
+
+// On OSX, we will need to have the pak file in memory the entire time?
+// And we won't be using this function at all because it is "on disk"?
+pak_t *Pack_Open_Memory_Alloc (const void *mem, size_t mem_length)
+{
+	const byte *bmem = mem;
+	size_t sz;
+
+	pak_t *pack = calloc(sz=sizeof(*pack), 1);
+//	alert ("%d", (int)sz);
+	pack->pHeader			= (void *)bmem; // This doesn't hurt.
+	pack->length			= mem_length;
+
+	memcpy (&pack->header, pack->pHeader, sizeof(pack->header));
+
+	if (memcmp (pack->header.id, PAK_HEADER, strlen(PAK_HEADER)) ) {
+		log_debug ("Data not a packfile"); // Communicate nature of the problem
+		goto pakopenerr;
+	}
+
+	pack->header.dirofs	= LittleLong (pack->header.dirofs); // LittleLong on Little-endian processors like Intel just are the value
+	pack->header.dirlen	= LittleLong (pack->header.dirlen);
+	pack->numfiles		= pack->header.dirlen / PAK_FILE_ENTRY_SIZE_64; // sizeof(dpackfile_t);
+
+	if (pack->numfiles > MAX_FILES_IN_PACK_2048) {
+		log_debug ("%s has %d files > max %d", "<embedded packfile>", pack->numfiles, MAX_FILES_IN_PACK_2048); // Communicate nature of the problem
+		goto pakopenerr;
+	}
+
+	pack->pDirectory		= &pack->pHeader[pack->header.dirofs];
+	memcpy ( (dpackfile_t *)&pack->files, pack->pDirectory, pack->header.dirlen);
+
+#if 0 // Super debug
+    {
+        int n;
+        for (n = 0; n < pack->numfiles; n ++) {
+            const char *fn = pack->files[n].name;
+//            alert ("pak %d: %s", n, fn);
+        }
+    }
+#endif // 1
+	//alert ("%d @ %p", pack->numfiles, pack);
+//	alert ("Pack_Open_Memory_Alloc Bundle: numfiles is %d, last file %s", pack->numfiles, pack->files[pack->numfiles - 1].name);
+	return pack;
+
+// Fail
+pakopenerr:
+	free (pack);
+	return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  PAK from file
+///////////////////////////////////////////////////////////////////////////////
+
 
 pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 {
@@ -53,15 +238,15 @@ pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 
 	if (!curpak.f)
 	{
-		Core_Printf ("Couldn't open pak %s\n", curpak.url);
+		logd ("Couldn't open pak %s", curpak.url);
 		return NULL;
 	}
-	//System_Alert ("Opened the pak");
+	//alert ("Opened the pak");
 	fread (&curpak.header, 1, sizeof(curpak.header), curpak.f);
 
 	if (memcmp (curpak.header.id, PAK_HEADER, strlen(PAK_HEADER)) )
 	{
-		Core_Printf ("%s is not a packfile\n", curpak.url);
+		log_debug ("%s is not a packfile", curpak.url); // Communicate unusual nature of the problem
 		goto pakopenerr;
 	}
 
@@ -69,9 +254,9 @@ pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 	curpak.header.dirlen	= LittleLong (curpak.header.dirlen);
 	curpak.numfiles			= curpak.header.dirlen / PAK_FILE_ENTRY_SIZE_64; // sizeof(dpackfile_t);
 
-	if (curpak.numfiles > MAX_FILES_IN_PACK)
+	if (curpak.numfiles > MAX_FILES_IN_PACK_2048)
 	{
-		Core_Printf ("%s has %i files > max %i\n", curpak.url, curpak.numfiles, MAX_FILES_IN_PACK);
+		log_debug ("%s has %d files > max %d", curpak.url, curpak.numfiles, MAX_FILES_IN_PACK_2048); // Communicate unusual nature of the problem
 		goto pakopenerr;
 	}
 
@@ -146,7 +331,7 @@ cbool Pak_Has_File (const char *packfile_url, const char *filename)
 
 #pragma message ("Baker: Make sure pak extract can do zero length extraction ok")
 // If inside_pak_filename is NULL, we do them all
-int sPak_Extract_File (const char *packfile_url, const char *inside_pak_filename, const char *destfile_url, print_fn_t print_fn)
+int sPak_Extract_File (const char *packfile_url, const char *inside_pak_filename, const char *destfile_url) //, printline_fn_t my_printline) Give it a legit application provided output function or don't, no winging it.
 {
 	pak_t* curpak = Pak_Open (packfile_url, true /* keep it open! */);
 	int written;
@@ -176,11 +361,11 @@ int sPak_Extract_File (const char *packfile_url, const char *inside_pak_filename
 
 			if (!FileHandle_Block_To_File (curpak->f, cur->filelen, curfile))
 			{
-				Core_Printf ("Error trying to write file %s\n", curfile);
+				logd ("Error trying to write file %s", curfile); // Obvious?
 				return false; // Don't need to print error message?
 			}
 
-			print_fn ("Extracted to %s\n", curfile);
+			log_debug ("Extracted to %s", curfile);
 			written ++;
 
 			if (inside_pak_filename)
@@ -197,7 +382,7 @@ int sPak_Extract_File (const char *packfile_url, const char *inside_pak_filename
 
 cbool Pak_Extract_File (const char *packfile_url, const char *inside_pak_filename, const char *destfile_url)
 {
-	if (sPak_Extract_File (packfile_url, inside_pak_filename, destfile_url, Core_Printf))
+	if (sPak_Extract_File (packfile_url, inside_pak_filename, destfile_url))
 		return true;
 
 	return false;
@@ -228,14 +413,14 @@ cbool Pak_Add_File (const char *packfile_url, const char *inside_pak_filename, c
 	if (curpak)
 	{
 		int empty_entry = sPak_Free_Entry (curpak);
-		int free_entry = (empty_entry >= 0) ? empty_entry : (curpak->numfiles < MAX_FILES_IN_PACK) ? curpak->numfiles : -1;
+		int free_entry = (empty_entry >= 0) ? empty_entry : (curpak->numfiles < MAX_FILES_IN_PACK_2048) ? curpak->numfiles : -1;
 		dpackfile_t* cur = (free_entry != -1) ? &curpak->files[free_entry] : NULL;
 
 		int i;
 
-		if (curpak->numfiles >= MAX_FILES_IN_PACK)
+		if (curpak->numfiles >= MAX_FILES_IN_PACK_2048)
 		{
-			Core_Printf ("File file is full %i files\n", MAX_FILES_IN_PACK);
+			log_debug ("File file is full %d files", MAX_FILES_IN_PACK_2048);
 			return false;
 		}
 
@@ -279,7 +464,7 @@ cbool Pak_Add_File (const char *packfile_url, const char *inside_pak_filename, c
 
 int Pak_Unzip (const char *packfile_url, const char *dest_folder_url)
 {
-	int n = sPak_Extract_File (packfile_url, NULL, dest_folder_url, Core_Printf);
+	int n = sPak_Extract_File (packfile_url, NULL, dest_folder_url);//, logc);
 
 	return n;
 }
@@ -295,10 +480,10 @@ void Pak_List_Print (const char *packfile_url)
 	{
 		cur = curpak->files[i].name;
 
-		Core_Printf ("%04i: %s\n", found, cur[0] ? cur : "**deleted**");
+		logd ("%04d: %s", found, cur[0] ? cur : "**deleted**");
 
 		if (curpak->files[i].filelen == 0)
-			Core_Printf ("%s\n", "---Zero length file!");
+			logd ("%s", "---Zero length file!");
 	}
 }
 
@@ -312,7 +497,7 @@ clist_t * Pak_List_Alloc (const char *packfile_url)
 	{
 		for (i = 0, found = 0; i < curpak->numfiles; i++, found ++)
 		{
-			//System_Alert (curpak->files[i].name);
+			//alert (curpak->files[i].name);
 			List_Add(&list, curpak->files[i].name);
 		}
 	}
@@ -330,8 +515,8 @@ clist_t * Pak_List_Details_Alloc (const char *packfile_url, const char *delimite
 	{
 		for (i = 0, found = 0; i < curpak->numfiles; i++, found ++)
 		{
-			//System_Alert (curpak->files[i].name);
-			List_Add(&list, va("%s%s%i",curpak->files[i].name,delimiter,curpak->files[i].filelen));
+			//alert (curpak->files[i].name);
+			List_Addf (&list, "%s%s%d", curpak->files[i].name, delimiter, curpak->files[i].filelen);
 		}
 	}
 	return list;
@@ -343,7 +528,7 @@ int Pak_Zip_Folder (const char *packfile_url, const char *source_folder_url)
 #if 0
 	clist_t *files = File_List_Relative_Alloc (source_folder_url);
 #else
-	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url);
+	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url, NULL /*no wildcard*/);
 #endif
 
 	if (!files)
@@ -380,7 +565,7 @@ int Pak_Zip_Folder (const char *packfile_url, const char *source_folder_url)
 			if (cur->filelen > 0)
 				FileHandle_Append_File (curpak->f, cur->filelen, full_url);
 
-			Core_Printf ("%04i: Added %s\n", count, cur->name);
+			logd ("%04d: Added %s", count, cur->name);
 			curpak->numfiles ++;
 		}
 
@@ -417,7 +602,7 @@ cbool Pak_Remove_File (const char *packfile_url, const char *inside_pak_filename
 
 	if (file_index == -1)
 	{
-		Core_Printf ("File %s not found in pak\n", inside_pak_filename);
+		logd ("File %s not found in pak", inside_pak_filename);
 		return false;
 	}
 	else
@@ -443,7 +628,7 @@ cbool Pak_Rename_File (const char *packfile_url, const char *inside_pak_filename
 
 	if (file_index == -1)
 	{
-		Core_Printf ("File %s not found in pak\n", inside_pak_filename);
+		logd ("File %s not found in pak", inside_pak_filename);
 		return false;
 	}
 	else
@@ -516,9 +701,9 @@ cbool Pak_Compress (const char *packfile_url)
 	if (!srcpak)
 		return false;
 
-	if (srcpak->numfiles > MAX_FILES_IN_PACK)
+	if (srcpak->numfiles > MAX_FILES_IN_PACK_2048)
 	{
-		Core_Printf ("%s has %i files > max (%i)", packfile_url, srcpak->numfiles, MAX_FILES_IN_PACK);
+		logd ("%s has %d files > max (%d)", packfile_url, srcpak->numfiles, MAX_FILES_IN_PACK_2048);
 		return false;
 	}
 
@@ -539,7 +724,7 @@ cbool Pak_Compress (const char *packfile_url)
 	if (File_Exists (tempfile))
 	{
 		core_fclose (srcpak->f);
-		Core_Printf ("tempfile \"%s\" already exists\n", tempfile);
+		logd ("tempfile " QUOTED_S " already exists", tempfile);
 		return false;
 	}
 	curpak->f = core_fopen_write (tempfile,"w+b");
@@ -572,7 +757,7 @@ cbool Pak_Compress (const char *packfile_url)
 			FileHandle_Block_Copy (curpak->f, srcpak->f, cur->filelen);
 		}
 
-		Core_Printf ("%04i: Added %s\n", count, cur->name);
+		logd ("%04d: Added %s", count, cur->name);
 
 		curpak->numfiles ++;
 	}

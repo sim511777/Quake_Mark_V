@@ -58,7 +58,7 @@
 #pragma message ("Cbuf object OS X fixme")
 #if 0
     if (mQuakeRunning)
-        Cbuf->AddText (Cbuf, ("screenshot copy\n");
+        Cbuf->AddTextLine (Cbuf, "screenshot copy");
 #endif
 }
 
@@ -66,7 +66,7 @@
 #pragma message ("Cbuf object OS X fixme")
 #if 0    
 	if (mQuakeRunning)
-       Cbuf->AddText (Cbuf, ("copy\n");
+       Cbuf->AddTextLine (Cbuf, "copy");
 #endif
 }
 
@@ -74,7 +74,7 @@
 #pragma message ("Cbuf object OS X fixme")
 #if 0
     if (mQuakeRunning)
-        Cbuf->AddText (Cbuf, ("copy ents\n");
+        Cbuf->AddTextLine (Cbuf, "copy ents");
 #endif
 }
 
@@ -140,7 +140,7 @@
 {
     FD_UNUSED (sender);
     
-    NSApplicationTerminateReply reply = NSTerminateNow;
+    NSApplicationTerminateReply replier = NSTerminateNow;
     
     if ([self getQuakeRunning] == YES)
     {
@@ -161,11 +161,11 @@
         
         System_Quit (); // Baker: This doesn't return
         
-        reply = NSTerminateCancel; // Offers the opportunity to bail on the quit, but we don't use it
+        replier = NSTerminateCancel; // Offers the opportunity to bail on the quit, but we don't use it
 
     }
     
-    return reply;
+    return replier;
 }
 
 
@@ -195,7 +195,7 @@
     VID_AppActivate(true, false, false);
     
 #ifdef DEBUG_EVENTS
-    Con_Printf ("unmini\n");
+    Con_PrintLinef ("unmini");
 #endif
 }
 
@@ -207,7 +207,7 @@
     VID_AppActivate(false, true, false);
     
 #ifdef DEBUG_EVENTS
-    Con_Printf ("Mini\n");
+    Con_PrintLinef ("Mini");
 #endif
 }
 #endif // Baker: It isn't working
@@ -221,7 +221,7 @@
 
     VID_AppActivate(true, false, false);
 #ifdef DEBUG_EVENTS
-    Con_Printf ("Will become active\n");
+    Con_PrintLinef ("Will become active");
 #endif
 }
 
@@ -234,7 +234,7 @@
     
     VID_AppActivate(false, false, false);
 #ifdef DEBUG_EVENTS
-    Con_Printf ("Will resign active\n");
+    Con_PrintLinef ("Will resign active");
 #endif
 
 }
@@ -256,7 +256,7 @@
         mFrameTimer = nil;
     }
 #ifdef DEBUG_EVENTS
-    Con_Printf ("Hide\n");
+    Con_PrintLinef ("Hide");
 #endif
 }
 
@@ -273,7 +273,7 @@
 
     [self installFrameTimer];
 #ifdef DEBUG_EVENTS
-    Con_Printf ("Unhide\n");
+    Con_PrintLinef ("Unhide");
 #endif
 }
 
@@ -312,7 +312,7 @@
     
     if (selected_pak[0])
     {
-//      System_Alert (selected_pak);
+//      alert (selected_pak);
         char extractpath[MAX_OSPATH];
         int result;
         
@@ -323,10 +323,10 @@
         result = Pak_Unzip (selected_pak, extractpath);
         if (result)
         {
-            System_MessageBox("Pak Successful Unpack", va("Pak \"%s\" extracted to \"%s\" with %i files unpacked", File_URL_SkipPath(selected_pak), extractpath, result));
+            msgbox("Pak Successful Unpack", "Pak " QUOTED_S " extracted to " QUOTED_S " with %d files unpacked", File_URL_SkipPath(selected_pak), extractpath, result);
             Folder_Open(extractpath);
         }
-        else System_MessageBox ("Pak Unpack Failed", va("Pak \"%s\" could not be extracted to \"%s\"", File_URL_SkipPath(selected_pak), extractpath));
+        else msgbox ("Pak Unpack Failed", "Pak " QUOTED_S " could not be extracted to " QUOTED_S, File_URL_SkipPath(selected_pak), extractpath);
     }
 }
 
@@ -345,15 +345,14 @@
         int count;
         
         const char *stringa = NULL;
-        StringAlloc_Cat (&stringa, va("Pak Listing of %s\n----\n", pakurl));
+        txtcat (&stringa, "Pak Listing of %s" NEWLINE "----" NEWLINE, pakurl);
         
         for (cur = list, count = 0; cur; cur = cur->next, count++)
         {
-            StringAlloc_Cat (&stringa, cur->name);
-            StringAlloc_Cat (&stringa, "\n");
+            txtcat (&stringa, "%s" NEWLINE, cur->name);
         }
         
-        StringAlloc_Cat (&stringa, va("----\nFiles = %i\n", count));
+        txtcat (&stringa, "----\nFiles = %d" NEWLINE, count);
         
         Clipboard_Set_Text(stringa);
         
@@ -361,7 +360,7 @@
         List_Free(&list);
         stringa = core_free (stringa);
 
-        System_MessageBox("Pak Listing Placed On Clipboard", va("Pak listing of \"%s\" placed on clipboard", File_URL_SkipPath(pakurl)));
+        msgbox("Pak Listing Placed On Clipboard", "Pak listing of " QUOTED_S " placed on clipboard", File_URL_SkipPath(pakurl));
     }
 }
 
@@ -384,9 +383,9 @@
         result = Pak_Zip_Folder (pakurl, pakpath);
         if (result)
         {
-            System_MessageBox("Pak Created", va("Pak \"%s\" created with %i files", File_URL_SkipPath(pakurl), result));
+            msgbox("Pak Created", "Pak " QUOTED_S " created with %d files", File_URL_SkipPath(pakurl), result);
             Folder_Open_Highlight(pakurl);
-        } else System_MessageBox ("Pak Creation Failed", va("Unable to create pak from \"%s\"", pakpath));
+        } else msgbox ("Pak Creation Failed", "Unable to create pak from " QUOTED_S, pakpath);
     }
 }
 
@@ -530,7 +529,7 @@
         {            
             if (deltaTime < sys_ticrate.value)
             {
-                System_Sleep(1);
+                System_Sleep_Milliseconds (QUAKE_DEDICATED_SLEEP_TIME_MILLISECONDS_1);
                 return;
             }
             
@@ -560,4 +559,3 @@
 }
 
 @end
-

@@ -118,7 +118,7 @@ ID3DBlob *D3D_CompileShaderCommon (const char *Source, const int Len, const char
 	{
 		for (i = 99; i > 32; i--)
 		{
-			if ((hInstCompiler = LoadLibrary (va ("d3dcompiler_%i.dll", i))) != NULL)
+			if ((hInstCompiler = LoadLibrary (va ("d3dcompiler_%d.dll", i))) != NULL)
 			{
 				if ((QD3DCompile = (pD3DCompile) GetProcAddress (hInstCompiler, "D3DCompile")) != NULL)
 					break;

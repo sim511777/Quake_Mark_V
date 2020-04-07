@@ -1,3 +1,10 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+#if !defined(CORE_SDL) && !defined(CORE_GL) /*win thru GL*/
+
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Header level define, must be here
+
+
 /*
 Copyright (C) 2001-2012 Axel 'awe' Wefers (Fruitz Of Dojo)
 Copyright (C) 2010-2011 MH
@@ -19,7 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// vid.c
+// vid_wsoft.c
+
 
 #include "quakedef.h"
 #include "winquake.h"
@@ -27,63 +35,48 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma comment (lib, "gdi32.lib") // CreateCompatibleDC, BitBlt, etc.
 
+static void VID_WinQuake_AdjustBuffers (vmode_t *mode);
+static void VID_CreateDIB (int width, int height, byte *palette);
+
 //
 // miscelleanous init
 //
 
 void VID_Local_Window_PreSetup (void)
 {
-	WNDCLASS		wc;
-	sysplat.hIcon = LoadIcon (sysplat.hInstance, MAKEINTRESOURCE (IDI_ICON1));
-
-
-	// Register the frame class
-	wc.style         = 0;
-	wc.lpfnWndProc   = (WNDPROC) WIN_MainWndProc;
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = sysplat.hInstance;
-//	wc.hIcon         = sysplat.hIcon;
-	wc.hIcon		 = ExtractIcon (sysplat.hInstance, Folder_Binary_URL(), 0);
-	wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
-	wc.hbrBackground = NULL;
-	wc.lpszMenuName  = 0;  // We can change this later
-	wc.lpszClassName = ENGINE_NAME;
-
-	if (!RegisterClass (&wc))
-		System_Error ("Couldn't register window class");
+	WIN_Vid_Init_Once_CreateClass (); // Class, icon, etc.
 
 }
-
 
 vmode_t VID_Local_GetDesktopProperties (void)
 {
-	DEVMODE	devmode;
-	vmode_t desktop = {0};
 
-	if (!EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
-	{
-		System_Error ("VID_UpdateDesktopProperties: EnumDisplaySettings failed");
-		return desktop;
-	}
+	return WIN_Vid_GetDesktopProperties ();  // Vid_Display_Properties_Get	
+}
 
-	desktop.type		=	MODE_FULLSCREEN;
-	desktop.width		=	devmode.dmPelsWidth;
-	desktop.height		=	devmode.dmPelsHeight;
-	desktop.bpp			=	devmode.dmBitsPerPel;
 
-	return desktop;
+//
+// vsync
+//
+
+void VID_Local_Vsync_f (cvar_t *var) 
+{
+	// Unsupported at the moment.
 }
 
 
 
+void VID_Local_Multisample_f (cvar_t *var) 
+{
+	// Unsupported
+}
 
 
 //
 // vid modes
 //
 
-
+// Sys_win?  NO.
 void VID_Local_AddFullscreenModes (void)
 {
 
@@ -96,9 +89,6 @@ void VID_Local_AddFullscreenModes (void)
 	while ( (stat = EnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
 		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
-/* Baker: No more!
-		cbool bpp_ok		= (devmode.dmBitsPerPel >= 16);
-*/
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
 		cbool width_ok	= in_range (MIN_MODE_WIDTH, devmode.dmPelsWidth, MAX_MODE_WIDTH);
 		cbool height_ok	= in_range (MIN_MODE_HEIGHT, devmode.dmPelsHeight, MAX_MODE_HEIGHT);
@@ -110,20 +100,49 @@ void VID_Local_AddFullscreenModes (void)
 		{
 			// Not a dup and test = ok ---> add it
 			memcpy (&vid.modelist[vid.nummodes++], &test, sizeof(vmode_t) );
-#if 0
-			Con_SafePrintf ("Added %i: %i x %i %i\n", vid.nummodes -1, vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
-#endif
+			logd ("Added %d: %d x %d %d", vid.nummodes -1, vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
 		}
 	}
 }
 
 
+// Baker: begin resize window on the fly
+void VID_BeginRendering_Resize_Think_Resize_Act (void)
+{
+	WINDOWINFO windowinfo;
+	windowinfo.cbSize = sizeof (WINDOWINFO);
+	GetWindowInfo (sysplat.mainwindow, &windowinfo); // Client screen
+
+	// Need to catch minimized scenario
+	// Fill in top left, bottom, right, center
+	vid.client_window.left = windowinfo.rcClient.left;
+	vid.client_window.right = windowinfo.rcClient.right;
+	vid.client_window.bottom = windowinfo.rcClient.bottom;
+	vid.client_window.top = windowinfo.rcClient.top;
+	vid.client_window.width = vid.client_window.right - vid.client_window.left;
+	vid.client_window.height = vid.client_window.bottom - vid.client_window.top;
+
+	if (1 /*COM_CheckParm ("-resizable")*/)
+	{
+		vid.screen.width = vid.client_window.width;
+		vid.screen.height = vid.client_window.height;
+		VID_WinQuake_AdjustBuffers (&vid.screen);
+	}
+
+}
+// End resize window on the fly
+
+// Move to sys_win?  Probably not.
 void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rect)
 {
 	const char *nm = ENGINE_NAME;
 
 	int x = window_rect.left, y = window_rect.top;
 	int w = RECT_WIDTH(window_rect), h = RECT_HEIGHT(window_rect);
+
+// Baker: begin resize window on the fly
+	VID_Resize_Check (2);
+// End resize window on the fly
 
 	if (sysplat.mainwindow)
 	{
@@ -138,50 +157,65 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 	if (!sysplat.mainwindow) System_Error ("Couldn't create DIB window");
 }
 
+
+// Move to sys_win?
 void WIN_Change_DisplaySettings (int modenum)
 {
 	// Change display settings
+	vmode_t *p = &vid.modelist[modenum];
 	sysplat.gdevmode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-	sysplat.gdevmode.dmPelsWidth = vid.modelist[modenum].width;
-	sysplat.gdevmode.dmPelsHeight = vid.modelist[modenum].height;
-	sysplat.gdevmode.dmBitsPerPel = vid.modelist[modenum].bpp;
+	sysplat.gdevmode.dmPelsWidth = p->width;
+	sysplat.gdevmode.dmPelsHeight = p->height;
+	sysplat.gdevmode.dmBitsPerPel = p->bpp;
 	sysplat.gdevmode.dmSize = sizeof (DEVMODE);
 
-		if (ChangeDisplaySettings (&sysplat.gdevmode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-		System_Error ("Couldn't set fullscreen mode %i x %i @ %i bpp", vid.modelist[modenum].width, vid.modelist[modenum].height, vid.modelist[modenum].bpp);
+	if (ChangeDisplaySettings (&sysplat.gdevmode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+		System_Error ("Couldn't set fullscreen mode %d x %d @ %d bpp", p->width, p->height, p->bpp);
 }
-
-static cbool VID_AllocBuffers (int width, int height);
-static void VID_CreateDIB (int width, int height, unsigned char *palette);
 
 cbool VID_Local_SetMode (int modenum)
 {
-	RECT client_rect	= {0,0,vid.modelist[modenum].width, vid.modelist[modenum].height};
+	vmode_t *p 			= &vid.modelist[modenum];	// vid.c sets vid.screen, so do not use that here.
+	RECT client_rect	= {0, 0, p->width, p->height};
 	RECT window_rect	= client_rect;
-	cbool bordered	= vid.modelist[modenum].type   == MODE_WINDOWED;/* &&
-						  (vid.modelist[modenum].width  != vid.desktop.width ||
-						  vid.modelist[modenum].height != vid.desktop.height); */
+	cbool bordered		= p->type == MODE_WINDOWED;/* &&
+						  (p->width  != vid.desktop.width ||
+						  p->height != vid.desktop.height); */
 
 	DWORD ExWindowStyle = 0;
 	DWORD WindowStyle	= bordered ? DW_BORDERED : DW_BORDERLESS;
-	cbool restart = (sysplat.mainwindow != NULL);
+	cbool restart		= (sysplat.mainwindow != NULL);
 
+// Baker: begin resize window on the fly
+	if (bordered &&  1 /* COM_CheckParm ("-resizable")*/)
+		WindowStyle = WindowStyle | WS_SIZEBOX;
+// End resize window on the fly
 
 	if (restart)
-		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT);
+		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
 
-	if (vid.modelist[modenum].type == MODE_FULLSCREEN)
+	if (p->type == MODE_FULLSCREEN)
 		WIN_Change_DisplaySettings (modenum);
 
 	AdjustWindowRectEx (&window_rect, WindowStyle, FALSE, ExWindowStyle);
 	WIN_AdjustRectToCenterScreen(&window_rect);
 
+	// Oh dear.  The Windows 8 workaround isn't here?
+	// What does that mean?
+#if 0 // Attempt Jan 8 - It didn't help.  At least not for the problem caused by unwanted ChangeDisplaySettings
+	// Windows 8 introduces chaos :(
+	if (restart && p->type != vid.screen.type)
+	{
+		DestroyWindow (sysplat.mainwindow);
+		sysplat.mainwindow = 0;
+	}
+#endif
+
 
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
-	if (vid.modelist[modenum].type == MODE_WINDOWED)
+	if (p->type == MODE_WINDOWED)
 		ChangeDisplaySettings (NULL, 0);
-
 
 	// Get focus if we can, get foreground, finish setup, pump messages.
 	// then sleep a little.
@@ -193,53 +227,7 @@ cbool VID_Local_SetMode (int modenum)
 
 	System_Process_Messages_Sleep_100 ();
 
-	// Find best integral factor, set both the x and the y.  This wants to be 1.  But a giant mode like 6000 x 2000 would generate 2.
-
-	for (vid.stretch_x = 1; vid.modelist[modenum].width  / vid.stretch_x > WINQUAKE_MAX_WIDTH_3000 ; vid.stretch_x ++);
-	for (vid.stretch_y = 1; vid.modelist[modenum].height / vid.stretch_y > WINQUAKE_MAX_HEIGHT_1080; vid.stretch_y ++);
-
-	vid.stretch_old_cvar_val = (int)vid_sw_stretch.value; // This isn't the actual stretch, but the cvar value attempted.
-	// Ok we need to validate this.
-	// Let's say I want 4.  I can't have 4 in 640x480.  /320  /240  highx = (int)(vid.modelist[modenum].width / 320);
-
-	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y); // Take the larger of the 2.  Lowest it can be.
-	{
-		int high_x   = (int)(vid.modelist[modenum].width  / 320);
-		int high_y   = (int)(vid.modelist[modenum].height / 240);
-		int high_any = c_min (high_x, high_y);
-
-		//int stretch_try = vid.stretch_old_cvar_val;
-		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
-		
-		switch (stretch_try) {
-		case 0:	stretch_try = 1; break;
-		case 2:	stretch_try = 9999; break;
-		case 1:	stretch_try = (int)(high_any / 2.0 + 0.5); break;
-		}
-
-		if (stretch_try > high_any)
-			stretch_try = high_any;
-
-		if (stretch_try < vid.stretch_x)
-			stretch_try = vid.stretch_x;
-
-		vid.stretch_x = vid.stretch_y = stretch_try;
-	}
-	
-	vid.conwidth  = vid.modelist[modenum].width  / vid.stretch_x;
-	vid.conheight  = vid.modelist[modenum].height  / vid.stretch_y;
-
-	vid.aspect = ((float) vid.conwidth / (float) vid.conheight) * (320.0 / 240.0); // toxic
-
-	VID_CreateDIB (vid.conwidth, vid.conheight, vid.curpal);
-
-	if (!VID_AllocBuffers (vid.conwidth, vid.conheight))
-	{
-		System_Error ("VID_AllocBuffers failed.");
-		return false;
-	}
-
-	D_InitCaches (vid.surfcache, vid.surfcachesize);
+	VID_WinQuake_AdjustBuffers (p);
 
 	return true;
 }
@@ -283,8 +271,9 @@ void VID_Local_Suspend (cbool bSuspend)
 // window setup
 //
 
+
 // Baker: Similar to GL Initial setup after window is constructed, needs to know palette
-void VID_CreateDIB (int width, int height, unsigned char *palette)
+void VID_CreateDIB (int width, int height, byte *palette)
 {
 	dibinfo_t   dibheader;
 	BITMAPINFO *pbmiDIB = (BITMAPINFO *) &dibheader;
@@ -294,8 +283,7 @@ void VID_CreateDIB (int width, int height, unsigned char *palette)
 	memset (&dibheader, 0, sizeof (dibheader));
 
 #if 1
-	if (width & 7) width = (width - (width & 7)) + 8;
-
+	width = roundup_8 (width); // if (width & 7) width = (width - (width & 7)) + 8; // Replace with roundup_8 ?
 #endif
 
 	// fill in the bitmap info
@@ -312,7 +300,7 @@ void VID_CreateDIB (int width, int height, unsigned char *palette)
 	pbmiDIB->bmiHeader.biClrImportant  = 256;
 
 	// fill in the palette
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < PALETTE_COLORS_256; i++)
 	{
 		// d_8to24table isn't filled in yet so this is just for testing
 		dibheader.acolors[i].rgbRed   = palette[i * 3];
@@ -352,23 +340,12 @@ void VID_CreateDIB (int width, int height, unsigned char *palette)
 		System_Error ("DIB_Init() - SelectObject failed");
 }
 
-void WIN_AdjustRectToCenterScreen (RECT *in_windowrect)
-{
-	vmode_t desktop = VID_Local_GetDesktopProperties ();
-	int nwidth  = in_windowrect->right - in_windowrect->left;
-	int nheight = in_windowrect->bottom - in_windowrect->top;
-
-	in_windowrect->left = 0 + (desktop.width - nwidth) / 2;
-	in_windowrect->top =  0 + (desktop.height - nheight) / 2;
-	in_windowrect->right = in_windowrect->left + nwidth;
-	in_windowrect->bottom = in_windowrect->top + nheight;
-}
 
 //
 // window teardown
 //
 
-void VID_Local_Window_Renderer_Teardown (int destroy)
+void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode)
 {
 // Baker: Shuts down the DIB.   Similar to GL_Teardown
 	{
@@ -399,51 +376,62 @@ void VID_Local_Window_Renderer_Teardown (int destroy)
 		DestroyWindow (sysplat.mainwindow);
 		sysplat.mainwindow = NULL;
 	}
-
-	ChangeDisplaySettings (NULL, 0);
+	
+	if (reset_video_mode)
+		ChangeDisplaySettings (NULL, 0);
 }
 
-
-
-/*
-================
-VID_AllocBuffers
-================
-*/
-// Baker: Allocates memory for surface cache, called only by setmode
-static cbool VID_AllocBuffers (int width, int height)
+static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 {
-	int		tsize, tbuffersize;
+	// Uses screen.
 
-	tbuffersize = width * height * sizeof (*d_pzbuffer);
-	tsize = D_SurfaceCacheForRes (width, height);
-	tbuffersize += tsize;
+	// If the following doesn't scream r_misc.c I don't know what does?
 
-	vid.surfcachesize = tsize;
+	// Find best integral factor, set both the x and the y.  This wants to be 1.  But a giant mode like 6000 x 2000 would generate 2.
 
-	if (d_pzbuffer)
+	for (vid.stretch_x = 1; p->width  / vid.stretch_x > WINQUAKE_MAX_WIDTH_3000 ; vid.stretch_x ++);
+	for (vid.stretch_y = 1; p->height / vid.stretch_y > WINQUAKE_MAX_HEIGHT_1080; vid.stretch_y ++);
+
+	vid.stretch_old_cvar_val = (int)vid_sw_stretch.value; // This isn't the actual stretch, but the cvar value attempted.
+	// Ok we need to validate this.
+	// Let's say I want 4.  I can't have 4 in 640x480.  /320  /240  highx = (int)(p->width / 320);
+
+	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y); // Take the larger of the 2.  Lowest it can be.
 	{
-		D_FlushCaches ();
-#if 1 // Easier to debug
-		free (d_pzbuffer); // change
-#else
-		Hunk_FreeToHighMark (vid.highhunkmark);
-#endif
-		d_pzbuffer = NULL;
+		int high_x   = (int)(p->width  / 320);
+		int high_y   = (int)(p->height / 240);
+		int high_any = c_min (high_x, high_y);
+
+		//int stretch_try = vid.stretch_old_cvar_val;
+		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
+		
+		switch (stretch_try) {
+		case 0:	stretch_try = 1; break;
+		case 2:	stretch_try = 9999; break;
+		case 1:	stretch_try = (int)(high_any / 2.0 + 0.5); break;
+		}
+
+		if (stretch_try > high_any)
+			stretch_try = high_any;
+
+		if (stretch_try < vid.stretch_x)
+			stretch_try = vid.stretch_x;
+
+		vid.stretch_x = vid.stretch_y = stretch_try;
 	}
+	
+	vid.conwidth  = p->width  / vid.stretch_x;
+	vid.conheight  = p->height  / vid.stretch_y;
 
-#if 1 // Easier to debug
-	d_pzbuffer = malloc (tbuffersize);//, "video");
-#else
-	vid.highhunkmark = Hunk_HighMark ();
-	d_pzbuffer = Hunk_HighAllocName (tbuffersize, "video");
-#endif
-	vid.surfcache = (byte *) d_pzbuffer + width * height * sizeof (*d_pzbuffer);
+	vid.aspect = ((float) vid.conwidth / (float) vid.conheight) * (320.0 / 240.0); // toxic
 
-	return true;
+	VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, false /*do not reset video mode*/); // restart the DIB
+
+	VID_CreateDIB (vid.conwidth, vid.conheight, vid.curpal);
+
+	VID_WinQuake_AllocBuffers_D_InitCaches (vid.conwidth, vid.conheight); // It never returns false. 
+
 }
-
-
 
 //
 //
@@ -502,74 +490,8 @@ void VID_Update (vrect_t *rects)
 //
 //
 
-#ifdef WINQUAKE_QBISM_ALPHAMAP
-/*
-===============
-BestColor - qb: from qlumpy
-===============
-*/
-static byte BestPalColor (int r, int g, int b, int start, int stop)
-{
-    int i;
-    int dr, dg, db;
-    int bestdistortion, distortion;
-    int bestcolor_pal_idx;
-    byte *pal;
 
-    r = CLAMP (0, r, 254);
-    g = CLAMP (0, g, 254);
-    b = CLAMP (0, b, 254);
-//
-// let any color go to 0 as a last resort
-//
-
-    bestdistortion =  ( (int)r*r + (int)g*g + (int)b*b )*2; //qb: option- ( (int)r + (int)g + (int)b )*2;
-    bestcolor_pal_idx = 0;
-
-    pal = vid.basepal + start * RGB_3;
-    for (i = start ; i <= stop ; i++) {
-        dr = abs(r - (int)pal[0]);
-        dg = abs(g - (int)pal[1]);
-        db = abs(b - (int)pal[2]);
-        pal += 3;
-        distortion = dr*dr + dg*dg + db*db; //qb: option, more weight on value- dr + dg + db;
-        if (distortion < bestdistortion)
-        {
-            if (!distortion)
-                return i;               // perfect match
-
-            bestdistortion = distortion;
-            bestcolor_pal_idx = i;
-        }
-    }
-
-	if (!in_range(0, bestcolor_pal_idx, 255))
-		System_Error ("BestPalColor: %d outsize 0-255 range", bestcolor_pal_idx);
-    return bestcolor_pal_idx;
-}
-
-
-static void Generate_Alpha50_Map (byte my_alpha50map[]) //qb: 50% / 50% alpha
-{
-    int color_a, color_b, r, g, b;
-    byte *colmap = my_alpha50map;
-
-    for (color_a = 0; color_a < PALETTE_COLORS_256; color_a ++) {
-        for (color_b = 0 ; color_b < PALETTE_COLORS_256 ; color_b ++) {
-            if (color_a == 255 || color_b == 255)
-                *colmap ++ = 255;
-            else {
-                r = (int)(((float)vid.basepal[color_a * 3 + 0] * 0.5)  + ((float)vid.basepal[color_b * 3 + 0] * 0.5));
-                g = (int)(((float)vid.basepal[color_a * 3 + 1] * 0.5)  + ((float)vid.basepal[color_b * 3 + 1] * 0.5));
-                b = (int)(((float)vid.basepal[color_a * 3 + 2] * 0.5)  + ((float)vid.basepal[color_b * 3 + 2] * 0.5));
-                *colmap ++ = BestPalColor(r, g, b, 0, 254); // High quality color tables get best color
-            }
-        }
-    }
-}
-#endif // WINQUAKE_QBISM_ALPHAMAP
-
-void VID_Local_Modify_Palette (unsigned char *palette)
+void VID_Local_Modify_Palette (byte *palette)
 {
 	int		i, bestmatch, bestmatchmetric, t, dr, dg, db;
 	byte	*ptmp;
@@ -602,15 +524,15 @@ void VID_Local_Modify_Palette (unsigned char *palette)
 	vid.altblack = bestmatch;
 
 #ifdef WINQUAKE_QBISM_ALPHAMAP
-	Generate_Alpha50_Map (vid.alpha50map);
+	R_WinQuake_Generate_Alpha50_Map (vid.alpha50map);
 #endif // WINQUAKE_QBISM_ALPHAMAP
 }
 
-void VID_Local_SetPalette (unsigned char *palette)
+void VID_Local_SetPalette (byte *palette)
 {
 	int			i;
 	RGBQUAD		colors[PALETTE_COLORS_256];
-	unsigned char *pal = palette;
+	byte *pal = palette;
 
 	if (tdibset.hdcDIBSection)
 	{
@@ -632,11 +554,10 @@ void VID_Local_SetPalette (unsigned char *palette)
 
 		if (SetDIBColorTable (tdibset.hdcDIBSection, 0, 256, colors) == 0)
 		{
-			Con_SafePrintf ("DIB_SetPalette() - SetDIBColorTable failed\n");
+			Con_SafePrintLinef ("DIB_SetPalette() - SetDIBColorTable failed");
 		}
 	}
 }
-
 
 
 //
@@ -646,26 +567,24 @@ void VID_Local_SetPalette (unsigned char *palette)
 
 void VID_Local_Set_Window_Caption (const char *text)
 {
+	const char *new_caption = text ? text : ENGINE_NAME;
+
 	if (!sysplat.mainwindow)
 		return;
 
-	if (!text)
-		SetWindowText (sysplat.mainwindow, ENGINE_NAME);
-	else
-		SetWindowText (sysplat.mainwindow, text);
+	#pragma message ("Let's slam this into vid.c and call vidco set window caption or something.  Please!")
+	SetWindowText (sysplat.mainwindow, new_caption);
+
 }
 
-// Unsupported
-void VID_Local_Multisample_f (cvar_t *var) {}
-void VID_Local_Vsync_f (cvar_t *var) {}
 
 void VID_Local_Shutdown (void)
 {
-
-	VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL);
+	VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL_1, true /*reset video mode*/);
 }
 
 
+// This function gets called before anything happens
 void VID_Local_Init (void)
 {
 // Early
@@ -675,3 +594,7 @@ void VID_Local_Init (void)
 
 
 }
+
+#endif // PLATFORM_WINDOWS
+#endif // !CORE_SDL + !CORE_GL /*win thru GL has GLQUAKE false but CORE_GL true*/
+#endif // !GLQUAKE - WinQuake Software renderer

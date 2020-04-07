@@ -54,7 +54,7 @@ void dzExtractFile (uInt filepos, int testing)
 
 	if (de->type >= TYPE_LAST)
 	{
-		error("%s is unknown type of file: %i", de->name, de->type);
+		error("%s is unknown type of file: %d", de->name, de->type);
 		return;
 	}
 	demomode = (de->type == TYPE_DEM || de->type == TYPE_NEHAHRA);

@@ -63,7 +63,7 @@ float View_CalcBob (void)
 // (don't count Z, or jumping messes it up)
 
 	bob = sqrt(cl.velocity[0] * cl.velocity[0] + cl.velocity[1] * cl.velocity[1]) * cl_bob.value;
-//Con_Printf ("speed: %5.1f\n", VectorLength(cl.velocity));
+//Con_PrintLinef ("speed: %5.1f", VectorLength(cl.velocity));
 	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
 
 	if (bob > 4)
@@ -101,7 +101,7 @@ float View_CalcBobSide (void)
 // (don't count Z, or jumping messes it up)
 
 	bobside = sqrt(cl.velocity[0] * cl.velocity[0] + cl.velocity[1] * cl.velocity[1]) * cl_bobside.value;
-//Con_Printf ("speed: %5.1f\n", VectorLength(cl.velocity));
+//Con_PrintLinef ("speed: %5.1f", VectorLength(cl.velocity));
 	bobside = bobside * 0.3 + bobside * 0.7 * sin(cycle);
 	if (bobside > 4)
 		bobside = 4;
@@ -191,7 +191,7 @@ void View_DriftPitch (void)
 	move = cl_frametime * cl.pitchvel;
 	cl.pitchvel += cl_frametime * v_centerspeed.value;
 
-	//Con_Printf ("move: %f (%f)\n", move, host_frametime);
+	//Con_PrintLinef ("move: %f (%f)", move, host_frametime);
 
 	if (delta > 0)
 	{
@@ -878,8 +878,7 @@ void View_CalcRefdef (void)
 	ent->angles[YAW] = cl.lerpangles[YAW];	// the model should face the view dir
 	ent->angles[PITCH] = -cl.lerpangles[PITCH];	// the model should face
 
-	if (cl_sidebobbing.value)
-		bobside = View_CalcBobSide ();
+	bobside = cl_sidebobbing.value ? View_CalcBobSide () : 0;
 	bob = View_CalcBob ();
 
 // refresh position
@@ -1071,5 +1070,4 @@ void View_Init (void)
 
 
 }
-
 

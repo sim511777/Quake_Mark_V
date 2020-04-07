@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -406,7 +408,7 @@ void R_SetupView (void)
 		int contents = cl.r_viewleaf->contents; // Baker was: Mod_PointInLeaf (r_origin, cl.worldmodel)->contents;
 		if (contents == CONTENTS_WATER || contents == CONTENTS_SLIME || contents == CONTENTS_LAVA)
 		{
-			if (r_waterwarp.value >= 2 && vid.direct3d !=8 ) // dx8 has no CopyTexSubImage, therefore cannot do WinQuake R_WATERWARP
+			if (r_waterwarp.value <=2 && vid.direct3d !=8 ) // dx8 has no CopyTexSubImage, therefore cannot do WinQuake R_WATERWARP
 				frame.do_glwarp = true;
 			else {	
 				//variance is a percentage of width, where width = 2 * tan(fov / 2) otherwise the effect is too dramatic at high FOV and too subtle at low FOV.  what a mess!
@@ -498,6 +500,13 @@ static void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
 			currententity->angles[0] *= 0.3;
 		//johnfitz
 
+
+		
+#if 1 // Baker: Rare.  Need to investigate relink entities and Nehahra support.  MODEL_CRUTCH
+		if  (currententity->model == NULL && currententity->modelindex)
+			currententity->model = cl.model_precache[currententity->baseline.modelindex];
+#endif
+
 		switch (currententity->model->type)
 		{
 			case mod_alias:
@@ -531,6 +540,11 @@ void R_DrawPlayerModel (entity_t *ent) //Baker --- for mirrors
 
 // Baker: Is this working with alpha?  I have no reason to think it doesn't but there is a comment I left here
 // Dec 2016: I'm pretty sure that it is.  Nothing undesirable has come up in testing.
+
+#if 1 // Baker: Rare.  Need to investigate relink entities and Nehahra support.  E1M5 occasional intermission crash due to player.mdl not being resolved.  MODEL_CRUTCH
+		if (currententity->model == NULL && currententity->modelindex)
+			currententity->model = cl.model_precache[currententity->baseline.modelindex];
+#endif 		
 
 	switch (currententity->model->type)
 	{
@@ -1161,7 +1175,7 @@ void R_DrawShadows (void)
 	if (!gl_shadows.value || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe)
 		return;
 
-	if (renderer.gl_stencilbits)
+	if (renderer.gl_stencilbits && vid.direct3d != 9 /*temp disable hack*/ )
 	{
 		eglClear(GL_STENCIL_BUFFER_BIT);
 		eglStencilFunc(GL_EQUAL, 0, ~0); // Stencil Sky Fix - 2015 April 13 Per Spike
@@ -1173,6 +1187,11 @@ void R_DrawShadows (void)
 	{
 		currententity = cl.visedicts[i];
 
+#if 1 // Baker: Rare.  Need to investigate relink entities and Nehahra support.  E1M5 occasional intermission crash due to player.mdl not being resolved.  MODEL_CRUTCH
+		if (currententity->model == NULL && currententity->modelindex)
+			currententity->model = cl.model_precache[currententity->baseline.modelindex];
+#endif 		
+
 		if (currententity->model->type != mod_alias)
 			continue;
 
@@ -1182,7 +1201,7 @@ void R_DrawShadows (void)
 		GL_DrawAliasShadow (currententity);
 	}
 
-	if (renderer.gl_stencilbits)
+	if (renderer.gl_stencilbits  && vid.direct3d != 9 /*temp disable hack*/)
 	{
 		eglDisable(GL_STENCIL_TEST);
 	}
@@ -1198,7 +1217,7 @@ cbool R_MirrorScan_SetMirrorAlpha (void)
 
 	frame.mirroralpha = 1;  //frame.has_mirror = false; // This is already set, we memset 0 it.
 
-	if (!renderer.gl_stencilbits) // For reasons unclear to me, Direct3D crashes.  In theory Direct3D should work, just with sky problems.  But it infinite loops.
+	if (!renderer.gl_stencilbits) // For reasons unclear to me, Direct3D 8 crashes.  In theory Direct3D 8 should work, just with sky problems.  But it infinite loops.  Update: MH said Direct3D 8 wrapper doesn't support
 		return false; // Or should we force the skybox to false?
 
 	if (!level.mirror)
@@ -1326,7 +1345,7 @@ void R_Mirror_RenderScene_Partial (void)
 //	Fog_EnableGFog (); //johnfitz
 //	Sky_FrameSetup (); // Baker
 	
-
+if (vid.direct3d != 9 /*temp disable hack*/) // we affect next line
 	Sky_Stencil_Draw (); // Baker, R_RenderScene has this later in the draw.
 	R_DrawWorld ();	// This uploads changed lightmaps.
 
@@ -1433,10 +1452,18 @@ float DotProductEx (const vec3_t vorg, const mplane_t *pplane)
 	return dot;
 }
 
+#if 0 // Security camera mock test
+void PlayNoise_f (void)
+{
+	Cbuf_AddText ("play misc/menu2.wav");
+
+}
+#endif
+
 void R_Mirror (void)
 {
 	if (!frame.has_mirror || frame.mirroralpha == 1.0) {
-//		Con_SafePrintf ("No mirror %d\n", cl.r_framecount); //RANDOM_FLOAT * 100);
+//		Con_SafePrintLinef ("No mirror %d", cl.r_framecount); //RANDOM_FLOAT * 100);
 //		Test indicates that it works right in determining whether to do any mirror stuff.  r_mirroralpha 1 = never, and if no mirror in frustum we don't either.
 		return;
 	}
@@ -1475,7 +1502,7 @@ void R_Mirror (void)
 		frame.in_mirror_overlay = false;
 	}
 
-//	Con_SafePrintf ("Mirror %d\n", cl.r_framecount) ;//RANDOM_FLOAT * 100);
+//	Con_SafePrintLinef ("Mirror %d", cl.r_framecount) ;//RANDOM_FLOAT * 100);
 
 	eglGetFloatv (GL_PROJECTION_MATRIX, frame.original_view.projection);	// Do these now.  Because gun kick or other stuff may have changed them a little.
 	eglGetFloatv (GL_MODELVIEW_MATRIX, frame.original_view.modelview);		//					Maybe???
@@ -1496,14 +1523,14 @@ void R_Mirror (void)
 	{
 		float dot;
 
-//Con_Printf ("Current org: %3.2f %3.2f %3.2f", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
+//Con_PrintLinef ("Current org: %3.2f %3.2f %3.2f", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
 
 		// This ... seems to make no difference
 		//dot = DotProduct (r_refdef.vieworg, frame.mirror_plane->normal) - frame.mirror_plane->dist;
 		dot = DotProductEx (r_refdef.vieworg, frame.mirror_plane); // - frame.mirror_plane->dist;
 		
 		VectorMA (r_refdef.vieworg, -2 * dot, frame.mirror_plane->normal, r_refdef.vieworg);
-//Con_Printf ("mir: %3.2f %3.2f %3.2f\n", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
+//Con_PrintLinef ("mir: %3.2f %3.2f %3.2f", r_refdef.vieworg[0], r_refdef.vieworg[1], r_refdef.vieworg[2] );
 
 		dot = DotProduct (/*frame.mirror_view.*/ vpn, frame.mirror_plane->normal);
 		//dot = DotProductEx (vpn, frame.mirror_plane);
@@ -1556,9 +1583,38 @@ void R_Mirror (void)
 //		switch {
 
 
-//Con_Printf ("mir: %3.2f %3.2f %3.2f\n", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
+//Con_PrintLinef ("mir: %3.2f %3.2f %3.2f", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
+#if 0 // Security camera mock test
+		switch ((int)pr_saved1.value) {
+		case 0:
+			VectorSet (r_refdef.vieworg, -322, -772, -125);
+			VectorSet (r_refdef.viewangles, 77,304 ,0);
+		
+			break;
+
+//Camera: (631 18 -61) 22 311 0
+//Viewpos: (631 18 -83) 22 311 0
+//Camera: (1055 288 -248) 42 317 0
+//Viewpos: (1055 288 -271) 42 317 0
+//]copy
+
+		case 1:
+//			VectorSet (r_refdef.vieworg, -209, -167, -136);
+//			VectorSet (r_refdef.viewangles, 64, 322, 0);
+			VectorSet (r_refdef.vieworg, 631, 18, -83);
+			VectorSet (r_refdef.viewangles, 22, 311, 0);
+			break;
+
+		case 2:
+//			VectorSet (r_refdef.vieworg, 2145, -25, -78);
+//			VectorSet (r_refdef.viewangles, 27, 219, 0);
+			VectorSet (r_refdef.vieworg, 1055, 288, -248);
+			VectorSet (r_refdef.viewangles, 42, 317, 0);
+			break;
+		}
 		
 
+#endif // SECURITY CAMERA MOCK
 
 		// These too ...
 		AngleVectors (r_refdef.viewangles, vpn, vright, vup); // Split it back out?  Must we negate these?
@@ -1755,7 +1811,7 @@ void R_RenderView (void)
 	//johnfitz -- modified r_speeds output
 	time2 = System_DoubleTime ();
 	if (r_speeds.value == 2)
-		Con_Printf ("%3i ms  %4i/%4i wpoly %4i/%4i epoly %3i lmap %4i/%4i sky %1.1f mtex\n",
+		Con_PrintLinef ("%3d ms  %4d/%4d wpoly %4d/%4d epoly %3d lmap %4d/%4d sky %1.1f mtex",
 					(int)((time2-time1)*1000),
 					rs_brushpolys,
 					rs_brushpasses,
@@ -1766,7 +1822,7 @@ void R_RenderView (void)
 					rs_skypasses,
 					TexMgr_FrameUsage ());
 	else if (r_speeds.value)
-		Con_Printf ("%3i ms  %4i wpoly %4i epoly %3i lmap\n",
+		Con_PrintLinef ("%3d ms  %4d wpoly %4d epoly %3d lmap",
 					(int)((time2-time1)*1000),
 					rs_brushpolys,
 					rs_aliaspolys,
@@ -1774,4 +1830,4 @@ void R_RenderView (void)
 	//johnfitz
 }
 
-
+#endif // GLQUAKE specific

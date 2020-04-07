@@ -121,8 +121,8 @@ void Sbar_LoadPics (void)
 
 	for (i=0 ; i<10 ; i++)
 	{
-		sb_nums[0][i] = Draw_PicFromWad (va("num_%i",i));
-		sb_nums[1][i] = Draw_PicFromWad (va("anum_%i",i));
+		sb_nums[0][i] = Draw_PicFromWad (va("num_%d",i));
+		sb_nums[1][i] = Draw_PicFromWad (va("anum_%d",i));
 	}
 
 	sb_nums[0][10] = Draw_PicFromWad ("num_minus");
@@ -149,13 +149,13 @@ void Sbar_LoadPics (void)
 
 	for (i=0 ; i<5 ; i++)
 	{
-		sb_weapons[2+i][0] = Draw_PicFromWad (va("inva%i_shotgun",i+1));
-		sb_weapons[2+i][1] = Draw_PicFromWad (va("inva%i_sshotgun",i+1));
-		sb_weapons[2+i][2] = Draw_PicFromWad (va("inva%i_nailgun",i+1));
-		sb_weapons[2+i][3] = Draw_PicFromWad (va("inva%i_snailgun",i+1));
-		sb_weapons[2+i][4] = Draw_PicFromWad (va("inva%i_rlaunch",i+1));
-		sb_weapons[2+i][5] = Draw_PicFromWad (va("inva%i_srlaunch",i+1));
-		sb_weapons[2+i][6] = Draw_PicFromWad (va("inva%i_lightng",i+1));
+		sb_weapons[2+i][0] = Draw_PicFromWad (va("inva%d_shotgun",i+1));
+		sb_weapons[2+i][1] = Draw_PicFromWad (va("inva%d_sshotgun",i+1));
+		sb_weapons[2+i][2] = Draw_PicFromWad (va("inva%d_nailgun",i+1));
+		sb_weapons[2+i][3] = Draw_PicFromWad (va("inva%d_snailgun",i+1));
+		sb_weapons[2+i][4] = Draw_PicFromWad (va("inva%d_rlaunch",i+1));
+		sb_weapons[2+i][5] = Draw_PicFromWad (va("inva%d_srlaunch",i+1));
+		sb_weapons[2+i][6] = Draw_PicFromWad (va("inva%d_lightng",i+1));
 	}
 
 	sb_ammo[0] = Draw_PicFromWad ("sb_shells");
@@ -216,11 +216,11 @@ void Sbar_LoadPics (void)
 
 	  for (i=0 ; i<5 ; i++)
 	  {
-		 hsb_weapons[2+i][0] = Draw_PicFromWad (va("inva%i_laser",i+1));
-		 hsb_weapons[2+i][1] = Draw_PicFromWad (va("inva%i_mjolnir",i+1));
-		 hsb_weapons[2+i][2] = Draw_PicFromWad (va("inva%i_gren_prox",i+1));
-		 hsb_weapons[2+i][3] = Draw_PicFromWad (va("inva%i_prox_gren",i+1));
-		 hsb_weapons[2+i][4] = Draw_PicFromWad (va("inva%i_prox",i+1));
+		 hsb_weapons[2+i][0] = Draw_PicFromWad (va("inva%d_laser",i+1));
+		 hsb_weapons[2+i][1] = Draw_PicFromWad (va("inva%d_mjolnir",i+1));
+		 hsb_weapons[2+i][2] = Draw_PicFromWad (va("inva%d_gren_prox",i+1));
+		 hsb_weapons[2+i][3] = Draw_PicFromWad (va("inva%d_prox_gren",i+1));
+		 hsb_weapons[2+i][4] = Draw_PicFromWad (va("inva%d_prox",i+1));
 	  }
 
 	  hsb_items[0] = Draw_PicFromWad ("sb_wsuit");
@@ -553,7 +553,7 @@ void Sbar_UpdateScoreboard (void)
 	{
 		k = fragsort[i];
 		s = &cl.scores[k];
-		c_snprintfc (&scoreboardtext[i][1], sizeof(scoreboardtext[i])-1, "%3i %s", s->frags, s->name);
+		c_snprintfc (&scoreboardtext[i][1], sizeof(scoreboardtext[i])-1, "%3d %s", s->frags, s->name);
 
 		top = s->colors & 240; //0xf0;
 		bottom = (s->colors & 15) * 16; // <<4; Make readable
@@ -599,7 +599,7 @@ void Sbar_DrawClock (void)
 					break;
 
 		case 2:		// Negative time ("the countdown")
-					c_snprintf (str, " -0:%02d", cl.pq_seconds - 128);
+					c_snprintf1 (str, " -0:%02d", cl.pq_seconds - 128);
 					break;
 
 		case 3:		// Match time
@@ -636,10 +636,10 @@ void Sbar_SoloScoreboard (void)
 	int		levelnamelen = strlen (cl.levelname);
 	char	str[256];
 
-	c_snprintf2 (str, "Kills: %i/%i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+	c_snprintf2 (str, "Kills: %d/%d", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
 	Sbar_DrawString (8, 12, str);
 
-	c_snprintf2 (str, "Secrets: %i/%i", cl.stats[STAT_SECRETS], cl.stats[STAT_TOTALSECRETS]);
+	c_snprintf2 (str, "Secrets: %d/%d", cl.stats[STAT_SECRETS], cl.stats[STAT_TOTALSECRETS]);
 	Sbar_DrawString (312 - strlen(str)*8, 12, str);
 
 	// If not displaying deathmatch scoreboard, show skill level if we know it.
@@ -659,7 +659,7 @@ void Sbar_SoloScoreboard (void)
 	{
 		float completed_amount_0_to_1 = (cls.demo_offset_current - cls.demo_offset_start)/(float)cls.demo_file_length;
 		int complete_pct_int = 100 - (int)(100 * completed_amount_0_to_1 + 0.5);
-		char *tempstring = va ("-%i%%", complete_pct_int);
+		char *tempstring = va ("-%d%%", complete_pct_int);
 		int len = strlen(tempstring), i;
 		int	leveldrawwidth = 320;
 
@@ -832,7 +832,7 @@ void Sbar_DrawInventory (void)
 // ammo counts (Baker: Note this location)
 	for (i=0 ; i<4 ; i++)
 	{
-		c_snprintf (num, "%3i", c_min(999,cl.stats[STAT_SHELLS+i])); //johnfitz -- cap displayed value to 999
+		c_snprintf1 (num, "%3d", c_min(999,cl.stats[STAT_SHELLS+i])); //johnfitz -- cap displayed value to 999
 		if (num[0] != ' ')
 			Sbar_DrawCharacter ( (6*i+1)*8 + 2, -24, 18 + num[0] - '0');
 		if (num[1] != ' ')
@@ -985,7 +985,7 @@ void Sbar_DrawFrags (void)
 		Draw_Fill (x + 10, 4, 28, 4, color, 1);
 
 	// number  // THIS IS ON HUD
-		c_snprintf (num, "%3d", frags);
+		c_snprintf1 (num, "%3d", frags);
 		Sbar_DrawCharacter (x + 12, -24, num[0]);
 		Sbar_DrawCharacter (x + 20, -24, num[1]);
 		Sbar_DrawCharacter (x + 28, -24, num[2]);
@@ -1041,7 +1041,7 @@ void Sbar_DrawFace (void)
 
 		// draw number
 		f = s->frags;
-		c_snprintf (num, "%3i",f);
+		c_snprintf1 (num, "%3d",f);
 
 		if (top==8)
 		{
@@ -1360,7 +1360,7 @@ void Sbar_DeathmatchOverlay (void)
 	if (scr_scoreboard_pings.value && cl.last_ping_time < cl.time - 5)
 	{
 		MSG_WriteByte (&cls.message, clc_stringcmd);
-		SZ_Print (&cls.message, "ping\n");
+		SZ_Print (&cls.message, "ping" NEWLINE);
 		cl.last_ping_time = cl.time;
 		cl.expecting_ping = true;
 	}
@@ -1415,7 +1415,7 @@ void Sbar_DeathmatchOverlay (void)
 		if (s->ping && scr_scoreboard_pings.value)
 		{
 			ping = 1;
-			c_snprintf(num, "%4d", s->ping);
+			c_snprintf1 (num, "%4d", s->ping);
 
 			for (j = 0 ; j < 4 ; j++)
 				Draw_Character(x-56+j*8, y, num[j]);
@@ -1423,7 +1423,7 @@ void Sbar_DeathmatchOverlay (void)
 
 	// draw number
 		f = s->frags;
-		c_snprintf (num, "%3d",f);
+		c_snprintf1 (num, "%3d",f);
 
 		Draw_Character ( x+8 , y, num[0]);
 		Draw_Character ( x+16 , y, num[1]);
@@ -1516,7 +1516,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 
 	// number
 		f = s->frags;
-		c_snprintf (num, "%3i",f);
+		c_snprintf1 (num, "%3d",f);
 
 		Draw_Character ( x+8 , y, num[0]);
 		Draw_Character ( x+16 , y, num[1]);

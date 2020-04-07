@@ -27,6 +27,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  CORE: Time functions
 ///////////////////////////////////////////////////////////////////////////////
 
+// Returns seconds since 1970
+double Time_Now (void)
+{
+	time_t t1 = time (NULL);
+	return (double) t1;
+}
 
 int Time_Minutes (int seconds)
 {
@@ -39,15 +45,6 @@ int Time_Seconds (int seconds)
 }
 
 
-double Time_Now (void)
-{
-	return System_Time ();
-}
-
-void Time_Sleep (unsigned long milliseconds)
-{
-	System_Sleep (milliseconds);
-}
 
 void Time_Wait (double seconds)
 {
@@ -55,7 +52,7 @@ void Time_Wait (double seconds)
 	
 	while (Time_Now() < end_time)
 	{
-		Time_Sleep (1);
+		Platform_Sleep_Milliseconds (1);
 	}
 }
 
@@ -103,16 +100,21 @@ int un_asctime(struct tm *timeptr, const char *buffer)
 
 static char *Time_To_Buffer_ (double seconds_since_1970, char *buf, size_t bufsize, cbool doGMT)
 {
-	const char *_timestamp;
+	if (seconds_since_1970 < 0) {
+		logd ("Invalid time < 0");
+		return NULL;
+	} else {
+		time_t secs = seconds_since_1970; //  time_t is a long.  on 32 bit this is going to be very short. Year 2038 problem.
+		struct tm *tm_info = doGMT ? gmtime (&secs) : localtime (&secs);
+		int len;
+			const char *_timestamp = asctime (tm_info); // asctime has static buffer, suffers from race conditions.
+		strlcpy (buf, _timestamp, bufsize); 
+		
+		len = strlen(buf);
+		if (len > 0 && buf[len - 1] == '\n')
+			buf[len - 1] = 0; // Sigh.  Why is new line in there?  Sheesh?
+	}
 
-	time_t secs = seconds_since_1970; //  time_t is a long.  on 32 bit this is going to be very short. Year 2038 problem.
-	struct tm* tm_info = doGMT ? gmtime (&secs) : localtime (&secs);
-	int len;
-	_timestamp = asctime (tm_info); // asctime has static buffer, suffers from race conditions.
-	strlcpy (buf, _timestamp, bufsize); 
-	len = strlen(buf);
-	if (len > 0 && buf[len - 1] == '\n')
-		buf[len - 1] = 0; // Sigh.  Why is new line in there?  Sheesh?
 	return buf;
 }
 
@@ -124,6 +126,20 @@ char *Time_To_Buffer (double seconds_since_1970, char *buf, size_t bufsize)
 char *Time_To_Buffer_GMT (double seconds_since_1970, char *buf, size_t bufsize)
 {
 	return Time_To_Buffer_ (seconds_since_1970, buf, bufsize, true /* wants gmt */);
+}
+
+char *Time_Now_To_String (void)
+{
+	static char buf[26];
+
+	return Time_To_Buffer (Time_Now(), buf, sizeof(buf));
+}
+
+char *Time_Now_To_String_GMT (void)
+{
+	static char buf[26];
+
+	return Time_To_Buffer_GMT (Time_Now(), buf, sizeof(buf));
 }
 
 char *Time_To_String (double seconds_since_1970)

@@ -64,7 +64,7 @@ void f (void)
 	build.video_avi_capture = true;
 #endif // SUPPORTS_AVI_CAPTURE -- Otherwise it is false
 
-#ifdef GLQUAKE_SUPPORTS_VSYNC
+#ifdef CORE_GL // GLQUAKE_SUPPORTS_VSYNC
 	build.video_vsync = true;
 #endif // GLQUAKE_SUPPORTS_VSYNC -- Otherwise it is false
 

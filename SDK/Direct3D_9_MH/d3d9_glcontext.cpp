@@ -93,7 +93,7 @@ void R_LoadD3DX (void)
 	for (i = 99; i > 23; i--)
 	{
 		// try to load this version
-		if (R_TryLoadD3DX (va ("d3dx9_%i.dll", i))) return;
+		if (R_TryLoadD3DX (va ("d3dx9_%d.dll", i))) return;
 
 		// unload if it didn't
 		R_UnloadD3DX ();
@@ -565,7 +565,7 @@ void context_t::EndScene (void)
 		/*
 		if (this->State.DrawCount)
 		{
-			Con_Printf ("%i draw call\n", this->State.DrawCount);
+			Con_Printf ("%d draw call\n", this->State.DrawCount);
 			this->State.DrawCount = 0;
 		}
 		*/

@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -339,3 +341,4 @@ void R_AliasClipTriangle (mtriangle_t *ptri)
 	}
 }
 
+#endif // !GLQUAKE - WinQuake Software renderer

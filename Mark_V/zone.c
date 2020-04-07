@@ -202,7 +202,7 @@ void *Z_Malloc (int size)
 Z_CheckHeap ();	// DEBUG
 	buf = Z_TagMalloc (size, 1);
 	if (!buf)
-		System_Error ("Z_Malloc: failed on allocation of %i bytes",size);
+		System_Error ("Z_Malloc: failed on allocation of %d bytes",size);
 	memset (buf, 0, size);
 
 	return buf;
@@ -235,7 +235,7 @@ void *Z_Realloc(void *ptr, int size)
 	Z_Free (ptr);
 	ptr = Z_TagMalloc (size, 1);
 	if (!ptr)
-		System_Error ("Z_Realloc: failed on allocation of %i bytes", size);
+		System_Error ("Z_Realloc: failed on allocation of %d bytes", size);
 
 	if (ptr != old_ptr)
 		memmove (ptr, old_ptr, c_min(old_size, size));
@@ -263,21 +263,21 @@ void Z_Print (memzone_t *zone)
 {
 	memblock_t	*block;
 
-	Con_Printf ("zone size: %i  location: %p\n",mainzone->size,mainzone);
+	Con_PrintLinef ("zone size: %d  location: %p",mainzone->size,mainzone);
 
 	for (block = zone->blocklist.next ; ; block = block->next)
 	{
-		Con_Printf ("block:%p    size:%7i    tag:%3i\n",
+		Con_PrintLinef ("block:%p    size:%7i    tag:%3d",
 			block, block->size, block->tag);
 
 		if (block->next == &zone->blocklist)
 			break;			// all blocks have been hit
 		if ( (byte *)block + block->size != (byte *)block->next)
-			Con_Printf ("ERROR: block size does not touch the next block\n");
+			Con_PrintLinef ("ERROR: block size does not touch the next block");
 		if ( block->next->prev != block)
-			Con_Printf ("ERROR: next block doesn't have proper back link\n");
+			Con_PrintLinef ("ERROR: next block doesn't have proper back link");
 		if (!block->tag && !block->next->tag)
-			Con_Printf ("ERROR: two consecutive free blocks\n");
+			Con_PrintLinef ("ERROR: two consecutive free blocks");
 	}
 }
 
@@ -347,8 +347,8 @@ void Hunk_Print (cbool all)
 	starthigh = (hunk_t *)(hunk_base + hunk_size - hunk_high_used);
 	endhigh = (hunk_t *)(hunk_base + hunk_size);
 
-	Con_Printf ("          :%8i total hunk size\n", hunk_size);
-	Con_Printf ("-------------------------\n");
+	Con_PrintLinef ("          :%8d total hunk size", hunk_size);
+	Con_PrintLinef ("-------------------------");
 
 	while (1)
 	{
@@ -357,9 +357,9 @@ void Hunk_Print (cbool all)
 	//
 		if ( h == endlow )
 		{
-			Con_Printf ("-------------------------\n");
-			Con_Printf ("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
-			Con_Printf ("-------------------------\n");
+			Con_PrintLinef ("-------------------------");
+			Con_PrintLinef ("          :%8d REMAINING", hunk_size - hunk_low_used - hunk_high_used);
+			Con_PrintLinef ("-------------------------");
 			h = starthigh;
 		}
 
@@ -387,7 +387,7 @@ void Hunk_Print (cbool all)
 	//
 		memcpy (name, h->name, HUNKNAME_LEN);
 		if (all)
-			Con_Printf ("%8p :%8i %8s\n",h, h->size, name);
+			Con_PrintLinef ("%8p :%8d %8s",h, h->size, name);
 
 	//
 	// print the total
@@ -396,7 +396,7 @@ void Hunk_Print (cbool all)
 		strncmp (h->name, next->name, HUNKNAME_LEN - 1) )
 		{
 			if (!all)
-				Con_Printf ("          :%8i %8s (TOTAL)\n",sum, name);
+				Con_PrintLinef ("          :%8d %8s (TOTAL)",sum, name);
 			count = 0;
 			sum = 0;
 		}
@@ -404,10 +404,10 @@ void Hunk_Print (cbool all)
 		h = next;
 	}
 
-	Con_Printf ("-------------------------\n");
-	Con_Printf ("%8i total blocks\n", totalblocks);
-	Con_Printf ("-------------------------\n");
-	Con_Printf ("Current mark %d\n", hunk_low_used);
+	Con_PrintLinef ("-------------------------");
+	Con_PrintLinef ("%8d total blocks", totalblocks);
+	Con_PrintLinef ("-------------------------");
+	Con_PrintLinef ("Current mark %d", hunk_low_used);
 }
 
 /*
@@ -437,12 +437,12 @@ void *Hunk_AllocName (int size, const char *name)
 #endif
 
 	if (size < 0)
-		System_Error ("Hunk_Alloc: bad size: %i", size);
+		System_Error ("Hunk_Alloc: bad size: %d", size);
 
 	size = sizeof(hunk_t) + ((size+15)&~15);
 
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
-		System_Error ("Hunk_Alloc: failed on %i bytes",size);
+		System_Error ("Hunk_Alloc: failed on %d bytes",size);
 
 	h = (hunk_t *)(hunk_base + hunk_low_used);
 	hunk_low_used += size;
@@ -476,7 +476,7 @@ int	Hunk_LowMark (void)
 void Hunk_FreeToLowMark (int mark)
 {
 	if (mark < 0 || mark > hunk_low_used)
-		System_Error ("Hunk_FreeToLowMark: bad mark %i", mark);
+		System_Error ("Hunk_FreeToLowMark: bad mark %d", mark);
 	memset (hunk_base + mark, 0, hunk_low_used - mark);
 	hunk_low_used = mark;
 }
@@ -500,7 +500,7 @@ void Hunk_FreeToHighMark (int mark)
 		Hunk_FreeToHighMark (hunk_tempmark);
 	}
 	if (mark < 0 || mark > hunk_high_used)
-		System_Error ("Hunk_FreeToHighMark: bad mark %i", mark);
+		System_Error ("Hunk_FreeToHighMark: bad mark %d", mark);
 	memset (hunk_base + hunk_size - hunk_high_used, 0, hunk_high_used - mark);
 	hunk_high_used = mark;
 }
@@ -516,7 +516,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 	hunk_t	*h;
 
 	if (size < 0)
-		System_Error ("Hunk_HighAllocName: bad size: %i", size);
+		System_Error ("Hunk_HighAllocName: bad size: %d", size);
 
 	if (hunk_tempactive)
 	{
@@ -532,7 +532,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 	{
-		Con_Printf ("Hunk_HighAlloc: failed on %i bytes\n",size);
+		Con_PrintLinef ("Hunk_HighAlloc: failed on %d bytes",size);
 		return NULL;
 	}
 
@@ -621,7 +621,7 @@ void Cache_Move ( cache_system_t *c)
 	new_cs = Cache_TryAlloc (c->size, true);
 	if (new_cs)
 	{
-//		Con_Printf ("cache_move ok\n");
+//		Con_PrintLinef ("cache_move ok");
 
 		memcpy ( new_cs+1, c+1, c->size - sizeof(cache_system_t) );
 		new_cs->user = c->user;
@@ -631,7 +631,7 @@ void Cache_Move ( cache_system_t *c)
 	}
 	else
 	{
-//		Con_Printf ("cache_move failed\n");
+//		Con_PrintLinef ("cache_move failed");
 
 		Cache_Free (c->user, true); // tough luck... //johnfitz -- added second argument
 	}
@@ -727,7 +727,7 @@ cache_system_t *Cache_TryAlloc (int size, cbool nobottom)
 	if (!nobottom && cache_head.prev == &cache_head)
 	{
 		if (hunk_size - hunk_high_used - hunk_low_used < size)
-			System_Error ("Cache_TryAlloc: %i is greater then free hunk", size);
+			System_Error ("Cache_TryAlloc: %d is greater then free hunk", size);
 
 		new_cs = (cache_system_t *) (hunk_base + hunk_low_used);
 		memset (new_cs, 0, sizeof(*new_cs));
@@ -816,7 +816,7 @@ void Cache_Print (void)
 
 	for (cd = cache_head.next ; cd != &cache_head ; cd = cd->next)
 	{
-		Con_Printf ("%8i : %s\n", cd->size, cd->name);
+		Con_PrintLinef ("%8d : %s", cd->size, cd->name);
 	}
 }
 
@@ -828,7 +828,7 @@ Cache_Report
 */
 void Cache_Report (void)
 {
-	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
+	Con_DPrintLinef ("%4.1f megabyte data cache", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
 }
 
 /*
@@ -915,7 +915,7 @@ void *Cache_Alloc (cache_user_t *c, int size, const char *name)
 		System_Error ("Cache_Alloc: already allocated");
 
 	if (size <= 0)
-		System_Error ("Cache_Alloc: size %i", size);
+		System_Error ("Cache_Alloc: size %d", size);
 
 	size = (size + sizeof(cache_system_t) + 15) & ~15;
 
@@ -1002,4 +1002,3 @@ void Memory_Init (void)
 
 	Cmd_AddCommands (Memory_Init);
 }
-

@@ -92,7 +92,7 @@ qsocket_t *Loop_Connect (const char *host)
 	{
 		if ((loop_client = NET_NewQSocket ()) == NULL)
 		{
-			Con_Printf("Loop_Connect: no qsocket available\n");
+			Con_PrintLinef ("Loop_Connect: no qsocket available");
 			return NULL;
 		}
 		c_strlcpy (loop_client->trueaddress, "localhost");
@@ -106,7 +106,7 @@ qsocket_t *Loop_Connect (const char *host)
 	{
 		if ((loop_server = NET_NewQSocket ()) == NULL)
 		{
-			Con_Printf("Loop_Connect: no qsocket available\n");
+			Con_PrintLinef ("Loop_Connect: no qsocket available");
 			return NULL;
 		}
 		c_strlcpy (loop_server->trueaddress, "LOCAL");
@@ -277,4 +277,3 @@ void Loop_Close (qsocket_t *sock)
 	else
 		loop_server = NULL;
 }
-

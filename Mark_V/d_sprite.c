@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -428,7 +430,7 @@ void D_DrawSprite (void)
 // Investigate these.
 	// Baker: Catch stupid sprite bug.
 	if (ymin < 0) {
-		Con_Printf ("Sprite draw with bad minimum < 0\n"); // Baker: Sprite ymin 
+		Con_PrintLinef ("Sprite draw with bad minimum (ymin) < 0"); // Baker: Sprite ymin 
 		return;
 	}
 //#endif // WINQUAKE_DEBUG
@@ -449,3 +451,4 @@ void D_DrawSprite (void)
 	D_SpriteDrawSpans (sprite_spans);
 }
 
+#endif // !GLQUAKE - WinQuake Software renderer

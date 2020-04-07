@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -83,7 +85,7 @@ void SubdividePolygon (int numverts, float *verts)
 	float	s, t;
 
 	if (numverts > 60)
-		Host_Error ("numverts = %i", numverts);
+		Host_Error ("numverts = %d", numverts);
 
 	BoundPoly (numverts, verts, mins, maxs);
 
@@ -290,7 +292,7 @@ void R_SetupView_UpdateWarpTextures (void)
 }
 
 #if 1 // UNDERWATER WARP  R_WATERWARP
-void GL_Warp_CalcUnderwaterCoords (float x, float y)
+static void GL_Warp_CalcUnderwaterCoords (float x, float y)
 {
 	// ripped this from vkQuake at https://github.com/Novum/vkQuake/blob/master/Shaders/screen_warp.comp
 	// our x and y coords are already incoming at 0..1 range so we don't need to rescale them.
@@ -360,4 +362,6 @@ void GL_WarpScreen (void)
 	// if viewsize is less than 100, we need to redraw the frame around the viewport
 	glquake_scr_tileclear_updates = 0;
 }
-#endif 
+#endif // 1
+
+#endif // GLQUAKE specific

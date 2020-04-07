@@ -41,6 +41,7 @@
 #define		strncasecmp			memicmp
 #define		strcasecmp			stricmp
 
+
 #else // Non Win32 : GCC Linux
 
 #include	<unistd.h>

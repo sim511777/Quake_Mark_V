@@ -349,7 +349,7 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		if (!l)
 		{
 		// my area got removed out from under me!
-			Con_Printf ("SV_TouchLinks: encountered NULL link!\n");
+			Con_PrintLinef ("SV_TouchLinks: encountered NULL link!");
 			break;
 		}
 
@@ -372,10 +372,10 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 			client_t *svr_player = &svs.clients[sv.coop_physics_clientnum - 1];
 			if (!strcmp(PR_GetString(touch->v.classname), "teledeath") ) {
 				const char *s = PR_GetString(touch->v.classname);
-//				Con_Printf ("Player \"%s\"is avoiding a telefrag\n", svr_player->name);
+//				Con_PrintLinef ("Player " QUOTED_S " is avoiding a telefrag", svr_player->name);
 				continue;
 			} //tdeath_touch
-//			Con_Printf ("Player #%d NOT avoiding a telefrag\n", NUM_FOR_EDICT(ent));
+//			Con_PrintLinef ("Player #%d NOT avoiding a telefrag", NUM_FOR_EDICT(ent));
 			//continue;  // We don't physically interact with telefrag
 		}
 
@@ -391,7 +391,7 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		//johnfitz -- the PR_ExecuteProgram above can alter the linked edicts -- fix from tyrquake
 		if (next != l->next && l->next)
 		{
-			Con_Printf ("SV_TouchLinks: next != l->next\n");
+			Con_PrintLinef ("SV_TouchLinks: next != l->next");
 			next = l->next;
 		}
 		//johnfitz
@@ -444,7 +444,7 @@ void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 		{
 			ent->num_leafs = MAX_MARK_V_ENT_LEAFS + 1;   // too many. mark it as such so we can trivially accept huge mega-big brush models.
 #if 0
-			Con_Printf ("VIS leafs limit % hit\n", MAX_MARK_V_ENT_LEAFS);
+			Con_PrintLinef ("VIS leafs limit % hit", MAX_MARK_V_ENT_LEAFS);
 #endif
 			return;
 
@@ -788,7 +788,7 @@ cbool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, const 
 	if (SV_HullPointContents (sv_hullmodel, mid, node->children[side])
 	== CONTENTS_SOLID)
 	{
-		Con_Printf ("mid PointInHullSolid\n");
+		Con_PrintLinef ("mid PointInHullSolid");
 		return false;
 	}
 #endif
@@ -823,7 +823,7 @@ cbool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, const 
 		{
 			trace->fraction = midf;
 			VectorCopy (mid, trace->endpos);
-			Con_DPrintf ("backup past 0\n");
+			Con_DPrintLinef ("backup past 0");
 			return false;
 		}
 		midf = p1f + (p2f - p1f)*frac;
@@ -1121,4 +1121,3 @@ trace_t SV_Move (const vec3_t start, const vec3_t mins, const vec3_t maxs, const
 
 	return clip.trace;
 }
-

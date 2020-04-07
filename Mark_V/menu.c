@@ -331,7 +331,7 @@ void M_Demos_Read (void)
 				c_strlcpy (qpath, item->demoname);
 				is_dzip = true;
 			}
-			else c_snprintf (qpath, "%s.dem", item->demoname);
+			else c_snprintf1 (qpath, "%s.dem", item->demoname);
 
 			//COM_FOpenFile (qpath, &f);
 			if (COM_OpenFile (qpath, &h) == -1)
@@ -347,11 +347,11 @@ void M_Demos_Read (void)
 				nowtime = Time_Now ();
 				age = (nowtime-filetime)/(24*60*60);
 
-				c_snprintf (item->age, "%i", (int)age);
+				c_snprintf1 (item->age, "%d", (int)age);
 
 			} else  c_strlcpy (item->age, "pak");
 
-			c_snprintf (item->kb, "%i", com_filesize / 1024);
+			c_snprintf1 (item->kb, "%d", com_filesize / 1024);
 
 			if (!is_dzip)
 			{
@@ -445,7 +445,7 @@ void M_Menu_Demos_f (void)
 
 	} // Of assess demos
 
-//	Con_Printf ("Out of there\n");
+//	Con_PrintLinef ("Out of there");
 }
 
 void M_Demos_Draw (void)
@@ -550,7 +550,7 @@ void M_Demos_Key (int key)
 		{
 			if (!strcmp(m_demos_list[demos_cursor].age, "pak"))
 			{
-				SCR_ModalMessage ("Can't explore to demo.\n\nIt is in a pak file!\n", 0, true);
+				SCR_ModalMessage ("Can't explore to demo." NEWLINE NEWLINE "It is in a pak file!", 0, true);
 				break;
 			}
 
@@ -563,7 +563,7 @@ void M_Demos_Key (int key)
 					c_strlcat (filebuf, ".dem");
 
 				Folder_Open_Highlight (filebuf);
-			} else SCR_ModalMessage ("Can't explore to file\nin full-screen mode.\nALT-ENTER toggles full-screen\nand windowed mode.\n", 0, true);
+			} else SCR_ModalMessage ("Can't explore to file" NEWLINE "in full-screen mode." NEWLINE "ALT-ENTER toggles full-screen" NEWLINE "and windowed mode.", 0, true);
 		}
 		break;
 
@@ -638,7 +638,7 @@ void M_Demos_Key (int key)
 	case K_ENTER:
 		if (demos_cursor < m_demos_menu_line_count && m_demos_list[demos_cursor].demoname[0] && m_demos_list[demos_cursor].kb[0])
 		{
-			Cbuf_AddText (va ("playdemo %s\n", m_demos_list[demos_cursor].demoname));
+			Cbuf_AddTextLinef ("playdemo %s", m_demos_list[demos_cursor].demoname);
 		}
 		Key_SetDest (key_game);
 		break;
@@ -720,7 +720,7 @@ void M_Main_Draw (void)
 
 	f = (int)(realtime * 10)%6;
 
-	M_DrawTransPic (54, 32 + m_main_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
+	M_DrawTransPic (54, 32 + m_main_cursor * 20,Draw_CachePic( va("gfx/menudot%d.lmp", f+1 ) ) );
 }
 
 
@@ -813,7 +813,7 @@ void M_SinglePlayer_Draw (void)
 	if (m_singleplayer_cursor >= SINGLEPLAYER_ITEMS)
 		m_singleplayer_cursor = 0;
 
-	M_DrawTransPic (54, 32 + m_singleplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
+	M_DrawTransPic (54, 32 + m_singleplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%d.lmp", f+1 ) ) );
 
 }
 
@@ -845,7 +845,7 @@ void M_SinglePlayer_Key (int key)
 		{
 		case 0:
 			if (sv.active)
-				if (!SCR_ModalMessage("Are you sure you want to\nstart a new game?\n", 0, false))
+				if (!SCR_ModalMessage("Are you sure you want to" NEWLINE "start a new game?", 0, false))
 					break;
 
 			if (sv.active)
@@ -855,12 +855,12 @@ void M_SinglePlayer_Key (int key)
 			Key_SetDest (key_game);
 			console1.visible_pct = 0;
 
-			Cbuf_AddText ("maxplayers 1\n");
-			Cbuf_AddText ("deathmatch 0\n"); //johnfitz
-			Cbuf_AddText ("coop 0\n"); //johnfitz
-			Cbuf_AddText ("resetcvar sv_progs\n"); //johnfitz
+			Cbuf_AddTextLine ("maxplayers 1");
+			Cbuf_AddTextLine ("deathmatch 0"); //johnfitz
+			Cbuf_AddTextLine ("coop 0"); //johnfitz
+			Cbuf_AddTextLine ("resetcvar sv_progs"); //johnfitz
 
-			Cbuf_AddText (va("map %s\n", game_startmap));
+			Cbuf_AddTextLinef ("map %s", game_startmap);
 			break;
 
 		case 1:
@@ -919,7 +919,7 @@ void M_Levels_Read (void)
 	if (!(m_levels_list && m_levels_read < m_levels_menu_line_count))
 		return;
 
-	//System_Alert ("Populating list ... %i of %i\n", m_levels_read, m_levels_menu_line_count);
+	//alert ("Populating list ... %d of %d", m_levels_read, m_levels_menu_line_count);
 
 	// Now walk the tree again for last time
 	for (
@@ -968,7 +968,7 @@ void M_Levels_Read (void)
 			char qpath[MAX_QPATH_64];
 			size_t filestart;
 
-			c_snprintf (qpath, "maps/%s.bsp", item->mapname);
+			c_snprintf1 (qpath, "maps/%s.bsp", item->mapname);
 			COM_FOpenFile (qpath, &f);
 
 			if (!f)
@@ -1029,7 +1029,7 @@ void M_Levels_Read (void)
 
 
 	m_levels_read = count;
-	//System_Alert ("Exit read %i of %i\n", m_levels_read, m_levels_menu_line_count);
+	//alert ("Exit read %d of %d", m_levels_read, m_levels_menu_line_count);
 }
 
 void M_Menu_Levels_f (void)
@@ -1080,7 +1080,7 @@ void M_Menu_Levels_f (void)
 
 	} // Of assess levels
 
-//	Con_Printf ("Out of there\n");
+//	Con_PrintLinef ("Out of there");
 }
 
 void M_Levels_Draw (void)
@@ -1224,9 +1224,9 @@ void M_Levels_Key (int key)
 		if (levels_cursor < m_levels_menu_line_count && m_levels_list[levels_cursor].mapname[0])
 		{
 			if (sv.active && cl.maxclients > 1)
-				Cbuf_AddText (va ("changelevel %s\n", m_levels_list[levels_cursor].mapname));
+				Cbuf_AddTextLinef ("changelevel %s", m_levels_list[levels_cursor].mapname);
 			else
-				Cbuf_AddText (va ("map %s\n", m_levels_list[levels_cursor].mapname));
+				Cbuf_AddTextLinef ("map %s", m_levels_list[levels_cursor].mapname);
 		}
 		Key_SetDest (key_game);
 		break;
@@ -1259,7 +1259,7 @@ void M_ScanSaves (cbool exclude_autosaves)
 	{
 		for (i = 0; i < AUTO_SAVE_COUNT; i ++)
 		{
-			FS_FullPath_From_QPath (name, va("a%i.sav", i));
+			FS_FullPath_From_QPath (name, va("a%d.sav", i));
 			if (File_Exists (name))
 				numautosaves ++;
 		}
@@ -1273,16 +1273,16 @@ void M_ScanSaves (cbool exclude_autosaves)
 
 		if (i >= (MAX_SAVEGAMES - numautosaves))
 		{
-			FS_FullPath_From_QPath (name, va("a%i.sav", n));
+			FS_FullPath_From_QPath (name, va("a%d.sav", n));
 			autosaved = true;
 			n++;
 		}
-		else FS_FullPath_From_QPath (name, va("s%i.sav", i));
+		else FS_FullPath_From_QPath (name, va("s%d.sav", i));
 
 		f = FS_fopen_read (name, "rb");
 		if (!f)
 			continue;
-		fscanf (f, "%i\n", &version);
+		fscanf (f, "%d\n", &version);
 		fscanf (f, "%79s\n", name);
 
 		if (autosaved)
@@ -1389,8 +1389,8 @@ void M_Load_Key (int k)
 
 	// issue the load command
 		if (load_cursor >= MAX_SAVEGAMES - numautosaves)
-			Cbuf_AddText (va ("load a%i\n", load_cursor - (MAX_SAVEGAMES - numautosaves)) );
-		else Cbuf_AddText (va ("load s%i\n", load_cursor) );
+			Cbuf_AddTextLinef ("load a%d", load_cursor - (MAX_SAVEGAMES - numautosaves) );
+		else Cbuf_AddTextLinef ("load s%d", load_cursor);
 
 		return;
 
@@ -1423,7 +1423,7 @@ void M_Save_Key (int k)
 
 	case K_ENTER:
 		Key_SetDest (key_game);
-		Cbuf_AddText (va("save s%i\n", load_cursor));
+		Cbuf_AddTextLinef ("save s%d", load_cursor);
 		return;
 
 	case K_UPARROW:
@@ -1484,7 +1484,7 @@ void M_MultiPlayer_Draw (void)
 	if (m_multiplayer_cursor >= MULTIPLAYER_ITEMS)
 		m_multiplayer_cursor = 0;
 
-	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
+	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%d.lmp", f+1 ) ) );
 
 	if (ipv4Available || ipv6Available)
 		return;
@@ -1646,14 +1646,14 @@ void M_Setup_Key (int k)
 			int setup_top = SETUP_TOP_COLOR, setup_bottom = SETUP_BOTTOM_COLOR;
 			setup_top --;
 			if (setup_top < 0) setup_top = 13;
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
+			Cbuf_AddTextLinef ("color %d %d", setup_top, setup_bottom);
 		}
 		if (setup_cursor == 3)
 		{
 			int setup_top = SETUP_TOP_COLOR, setup_bottom = SETUP_BOTTOM_COLOR;
 			setup_bottom --;
 			if (setup_bottom < 0) setup_bottom = 13;
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
+			Cbuf_AddTextLinef ("color %d %d", setup_top, setup_bottom);
 		}
 		break;
 	case K_RIGHTARROW:
@@ -1666,14 +1666,14 @@ forward:
 			int setup_top = SETUP_TOP_COLOR, setup_bottom = SETUP_BOTTOM_COLOR;
 			setup_top ++;
 			if (setup_top > 13) setup_top = 0;
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
+			Cbuf_AddTextLinef ("color %d %d", setup_top, setup_bottom);
 		}
 		if (setup_cursor == 3)
 		{
 			int setup_top = SETUP_TOP_COLOR, setup_bottom = SETUP_BOTTOM_COLOR;
 			setup_bottom ++;
 			if (setup_bottom > 13) setup_bottom = 0;
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
+			Cbuf_AddTextLinef ("color %d %d", setup_top, setup_bottom);
 		}
 		break;
 
@@ -1713,7 +1713,7 @@ forward:
 			{
 				SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 				stringbuf[buflen - 1] = 0;
-				Cbuf_AddText ( va ("name \"%s\"\n", stringbuf) );
+				Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 			}
 		}
 		break;
@@ -1746,7 +1746,7 @@ forward:
 			if ( (k == 'v' || k == 'V') && Key_Ctrl_Down())
 			{
 				if (strlen (Clipboard_Get_Text_Line ()))
-					Cbuf_AddText ( va ("name \"%s\"\n", Clipboard_Get_Text_Line()) );
+					Cbuf_AddTextLinef ("name " QUOTED_S, Clipboard_Get_Text_Line() );
 			}
 			else
 			if (l < 15)
@@ -1754,7 +1754,7 @@ forward:
 				SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 				stringbuf[buflen + 1] = 0;
 				stringbuf[buflen] = Key_Alt_Down() ? k | 128 : k;
-				Cbuf_AddText ( va ("name \"%s\"\n", stringbuf) );
+				Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 			}
 		}
 	}
@@ -1847,7 +1847,7 @@ void M_NameMaker_Key (int key)
 	case K_BACKSPACE:
 		SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 		stringbuf[buflen - 1] = 0;
-		Cbuf_AddText ( va ("name \"%s\"\n", stringbuf) );
+		Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 		break;
 /*
 	case K_MOUSECLICK_BUTTON1:
@@ -1907,7 +1907,7 @@ void M_NameMaker_Key (int key)
 //				if (newchar == 0 || (newchar <= 13))
 //					newchar = ' ';  // These characters cause too much chaos.
 				stringbuf[buflen] = newchar;
-				Cbuf_AddText ( va ("name \"%s\"\n", stringbuf) );
+				Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 			}
 //		}
 		break;
@@ -1920,7 +1920,7 @@ void M_NameMaker_Key (int key)
 		if ( (key == 'v' || key == 'V') && Key_Ctrl_Down())
 		{
 			if (strlen (Clipboard_Get_Text_Line ()))
-				Cbuf_AddText ( va ("name \"%s\"\n", Clipboard_Get_Text_Line()) );
+				Cbuf_AddTextLinef ("name " QUOTED_S, Clipboard_Get_Text_Line() );
 		}
 		else
 		if (l < 15)
@@ -1929,7 +1929,7 @@ void M_NameMaker_Key (int key)
 			SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 			stringbuf[buflen + 1] = 0;
 			stringbuf[buflen] = Key_Alt_Down() ? key | 128 : key;
-			Cbuf_AddText ( va ("name \"%s\"\n", stringbuf) );
+			Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 		}
 		break;
 	}
@@ -2000,7 +2000,7 @@ void M_Net_Draw (void)
 	M_Print (f, 128, net_helpMessage[m_net_cursor*4+3]);
 
 	f = (int)(realtime * 10)%6;
-	M_DrawTransPic (54, 32 + m_net_cursor * 20, Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
+	M_DrawTransPic (54, 32 + m_net_cursor * 20, Draw_CachePic( va("gfx/menudot%d.lmp", f+1 ) ) );
 }
 
 
@@ -2198,8 +2198,8 @@ void M_AdjustSliders (int options_cursor, int dir)
 
 			float newcvarval = myopt->cvar_eval->value +  unitamount * dir;
 #if 0
-			Con_Printf ("Unit amount is %g\n", unitamount);
-			Con_Printf ("Dir %i Cur value is %g and wanting to add %g so newval is %g\n",
+			Con_PrintLinef ("Unit amount is %g", unitamount);
+			Con_PrintLinef ("Dir %d Cur value is %g and wanting to add %g so newval is %g",
 					dir, myopt->cvar_eval->value, unitamount*dir, newcvarval);
 #endif
 			newcvarval = CLAMP (lowval, newcvarval, highval);
@@ -2348,11 +2348,11 @@ void M_Options_Key (int k)
 			Con_ToggleConsole_f (NULL);
 			break;
 		case opt_reset_02:
-			if (!SCR_ModalMessage("Are you sure you want to reset\nall keys and settings?", 0, false))
+			if (!SCR_ModalMessage("Are you sure you want to reset" NEWLINE "all keys and settings?", 0, false))
 					break;
 
-			Cbuf_AddText ("resetall\n"); //johnfitz
-			Cbuf_AddText ("exec default.cfg\n");
+			Cbuf_AddTextLine ("resetall"); //johnfitz
+			Cbuf_AddTextLine ("exec default.cfg");
 			break;
 		case opt_preferences_12b:
 			M_Menu_Preferences_f ();
@@ -2816,7 +2816,7 @@ void M_Preferences_Key (int k)
 		Cvar_ResetQuick (&r_viewmodel_ring);
 		Cvar_ResetQuick (&v_polyblend);
 		Cvar_ResetQuick (&v_polyblend_lite);
-		Cvar_ResetQuick (&r_waterwarp); // Was missing?
+		Cvar_SetValueQuick (&r_waterwarp, 2); // FitzQuake waterwarp is now 2.
 #ifdef GLQUAKE_FLASH_BLENDS
 		Cvar_ResetQuick (&gl_flashblend);
 #endif // GLQUAKE_FLASH_BLENDS
@@ -3047,7 +3047,7 @@ void M_Keys_Key (int k)
 		S_LocalSound ("misc/menu1.wav");
 		if ((k != K_ESCAPE) && (k != '`'))
 		{
-			c_snprintf2 (cmd, "bind \"%s\" \"%s\"\n", Key_KeynumToString (k, key_local_name), bindnames[keys_cursor][0]);
+			c_snprintf2 (cmd, "bind " QUOTED_S " " QUOTED_S NEWLINE, Key_KeynumToString (k, key_local_name), bindnames[keys_cursor][0]);
 // Change me to not use the command buffer?  Shouldn't be necessary.
 
 			Cbuf_InsertText (cmd);
@@ -3124,7 +3124,7 @@ void M_Help_Draw (void)
 	switch (help_page)
 	{
 	default:
-		M_DrawPic (0, 0, Draw_CachePic ( va("gfx/help%i.lmp", help_page)) );
+		M_DrawPic (0, 0, Draw_CachePic ( va("gfx/help%d.lmp", help_page)) );
 		break;
 	}
 }
@@ -3215,27 +3215,27 @@ void M_Quit_Draw (void)
 	}
 
 	M_DrawTextBox (0, -2, 38, 23);
-	M_PrintWhite (16, 10,  "  Quake version 1.09 by id Software\n\n");
-	M_PrintWhite (16, 26,  "Programming        Art \n");
-	M_Print (16, 34,  " John Carmack       Adrian Carmack\n");
-	M_Print (16, 42,  " Michael Abrash     Kevin Cloud\n");
-	M_Print (16, 50,  " John Cash          Paul Steed\n");
-	M_Print (16, 58,  " Dave 'Zoid' Kirsch\n");
-	M_PrintWhite (16, 66,  "Design             Biz\n");
-	M_Print (16, 74,  " John Romero        Jay Wilbur\n");
-	M_Print (16, 82,  " Sandy Petersen     Mike Wilson\n");
-	M_Print (16, 90,  " American McGee     Donna Jackson\n");
-	M_Print (16, 98,  " Tim Willits        Todd Hollenshead\n");
-	M_PrintWhite (16, 106, "Support            Projects\n");
-	M_Print (16, 114, " Barrett Alexander  Shawn Green\n");
-	M_PrintWhite (16, 122, "Sound Effects\n");
-	M_Print (16, 130, " Trent Reznor and Nine Inch Nails\n\n");
-	M_PrintWhite (16, 138, "Quake is a trademark of Id Software,\n");
-	M_PrintWhite (16, 146, "inc., (c)1996 Id Software, inc. All\n");
-	M_PrintWhite (16, 154, "rights reserved. NIN logo is a\n");
-	M_PrintWhite (16, 162, "registered trademark licensed to\n");
-	M_PrintWhite (16, 170, "Nothing Interactive, Inc. All rights\n");
-	M_PrintWhite (16, 178, "reserved. Press y to exit\n");
+	M_PrintWhite (16, 10,  "  Quake version 1.09 by id Software"); // These shouldn't need newlines, this isn't a print operation (there is no cursor involved, you set X, Y)
+	M_PrintWhite (16, 26,  "Programming        Art ");
+	M_Print (16, 34,  " John Carmack       Adrian Carmack");
+	M_Print (16, 42,  " Michael Abrash     Kevin Cloud");
+	M_Print (16, 50,  " John Cash          Paul Steed");
+	M_Print (16, 58,  " Dave 'Zoid' Kirsch");
+	M_PrintWhite (16, 66,  "Design             Biz");
+	M_Print (16, 74,  " John Romero        Jay Wilbur");
+	M_Print (16, 82,  " Sandy Petersen     Mike Wilson");
+	M_Print (16, 90,  " American McGee     Donna Jackson");
+	M_Print (16, 98,  " Tim Willits        Todd Hollenshead");
+	M_PrintWhite (16, 106, "Support            Projects");
+	M_Print (16, 114, " Barrett Alexander  Shawn Green");
+	M_PrintWhite (16, 122, "Sound Effects");
+	M_Print (16, 130, " Trent Reznor and Nine Inch Nails");
+	M_PrintWhite (16, 138, "Quake is a trademark of Id Software,");
+	M_PrintWhite (16, 146, "inc., (c)1996 Id Software, inc. All");
+	M_PrintWhite (16, 154, "rights reserved. NIN logo is a");
+	M_PrintWhite (16, 162, "registered trademark licensed to");
+	M_PrintWhite (16, 170, "Nothing Interactive, Inc. All rights");
+	M_PrintWhite (16, 178, "reserved. Press y to exit");
 }
 
 //=============================================================================
@@ -3260,7 +3260,7 @@ void M_Menu_LanConfig_f (void)
 	if (StartingGame && out_of_bounds(0, lanConfig_cursor, 1))
 		lanConfig_cursor = 1;
 	lanConfig_port = DEFAULTnet_hostport;
-	c_snprintf (lanConfig_portname, "%u", lanConfig_port);
+	c_snprintf1 (lanConfig_portname, "%u", lanConfig_port);
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
@@ -3382,7 +3382,7 @@ void M_LanConfig_Key (int key)
 						m_return_state = m_state;
 						m_return_onerror = true;
 						Key_SetDest (key_game);
-						Cbuf_AddText ( va ("connect \"%s\"\n", lanConfig_joinname) );
+						Cbuf_AddTextLinef ("connect " QUOTED_S, lanConfig_joinname);
 						break;
 			} // End cursor switch
 		} // End Starting Game vs. Joining game switch
@@ -3450,7 +3450,7 @@ void M_LanConfig_Key (int key)
 	lanConfig_port = in_range (0, port, 65535) ? port : DEFAULT_QPORT_26000;
 
 
-	c_snprintf (lanConfig_portname, "%u", lanConfig_port);
+	c_snprintf1 (lanConfig_portname, "%u", lanConfig_port);
 }
 
 //=============================================================================
@@ -3634,7 +3634,7 @@ void M_GameOptions_Draw (void)
 	y+=16;
 
 	M_Print (0, y, "      Max players");
-	M_Print (160, y, va("%i", maxplayers) );
+	M_Print (160, y, va("%d", maxplayers) );
 	y+=8;
 
 	M_Print (0, y, "           Public");
@@ -3697,14 +3697,14 @@ void M_GameOptions_Draw (void)
 	if (pr_fraglimit.value == 0)
 		M_Print (160, y, "none");
 	else
-		M_Print (160, y, va("%i frags", (int)pr_fraglimit.value));
+		M_Print (160, y, va("%d frags", (int)pr_fraglimit.value));
 	y+=8;
 
 	M_Print (0, y, "       Time Limit");
 	if (pr_timelimit.value == 0)
 		M_Print (160, y, "none");
 	else
-		M_Print (160, y, va("%i minutes", (int)pr_timelimit.value));
+		M_Print (160, y, va("%d minutes", (int)pr_timelimit.value));
 	y+=8;
 
 	y+=8;
@@ -3908,17 +3908,17 @@ void M_GameOptions_Key (int key)
 		if (gameoptions_cursor == 0)
 		{
 			if (sv.active)
-				Cbuf_AddText ("disconnect\n");
-			Cbuf_AddText ("listen 0\n");	// so host_netport will be re-examined
-			Cbuf_AddText ( va ("maxplayers %u\n", maxplayers) );
+				Cbuf_AddTextLine ("disconnect");
+			Cbuf_AddTextLine  ("listen 0");	// so host_netport will be re-examined
+			Cbuf_AddTextLinef ("maxplayers %d", maxplayers);
 			SCR_BeginLoadingPlaque ();
 
 			if (com_gametype == gametype_hipnotic)
-				Cbuf_AddText ( va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddTextLinef ("map %s", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name );
 			else if (com_gametype == gametype_rogue)
-				Cbuf_AddText ( va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddTextLinef ("map %s", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name );
 			else
-				Cbuf_AddText ( va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddTextLinef ("map %s", levels[episodes[startepisode].firstLevel + startlevel].name );
 
 			return;
 		}
@@ -4073,7 +4073,7 @@ void M_ServerList_Key (int k)
 		m_return_onerror = true;
 		slist_sorted = false;
 		Key_SetDest (key_game);
-		Cbuf_AddText ( va ("connect \"%s\"\n", NET_SlistPrintServerName(slist_cursor)) );
+		Cbuf_AddTextLinef ("connect " QUOTED_S, NET_SlistPrintServerName(slist_cursor) );
 		break;
 
 	default:
@@ -4224,7 +4224,7 @@ void M_Draw (void)
 
 void M_Keydown (int key)
 {
-	//Con_Queue_Printf ("Menu_Keydown: (rnd %3d) code = %d rep: '%c'\n", (int)(RANDOM_FLOAT * 100), key, key);
+	//Con_Queue_PrintLinef ("Menu_Keydown: (rnd %3d) code = %d rep: '%c'", (int)(RANDOM_FLOAT * 100), key, key);
 	switch (m_state)
 	{
 	case m_none:
@@ -4318,7 +4318,7 @@ void M_Keydown (int key)
 void M_ConfigureNetSubsystem(void)
 {
 // enable/disable net systems to match desired config
-	Cbuf_AddText ("stopdemo\n"); // Baker:  Ah, cute.
+	Cbuf_AddTextLine ("stopdemo"); // Baker:  Ah, cute.
 
 	//if (/*IPXConfig ||*/ TCPIPConfig)
 	net_hostport = lanConfig_port;
@@ -4504,7 +4504,7 @@ void M_Video_Key (int key)
 			VID_Menu_ChooseNextMode (-1);
 			break;
 		case VID_OPT_FULLSCREEN_1:
-			Cbuf_AddText ("toggle vid_fullscreen\n");
+			Cbuf_AddTextLine ("toggle vid_fullscreen");
 			break;
 #ifdef WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_STRETCH: {
@@ -4526,7 +4526,7 @@ void M_Video_Key (int key)
 			VID_Menu_ChooseNextMode (1);
 			break;
 		case VID_OPT_FULLSCREEN_1:
-			Cbuf_AddText ("toggle vid_fullscreen\n");
+			Cbuf_AddTextLine ("toggle vid_fullscreen");
 			break;
 #ifdef WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_STRETCH: {
@@ -4549,17 +4549,17 @@ void M_Video_Key (int key)
 			VID_Menu_ChooseNextMode (1);
 			break;
 		case VID_OPT_FULLSCREEN_1:
-			Cbuf_AddText ("toggle vid_fullscreen\n");
+			Cbuf_AddTextLine ("toggle vid_fullscreen");
 			break;
 #ifdef WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_STRETCH:
 			break;
 #endif //WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_TEST:
-			Cbuf_AddText ("vid_test\n");
+			Cbuf_AddTextLine ("vid_test");
 			break;
 		case VID_OPT_APPLY:
-			Cbuf_AddText ("vid_restart\n");
+			Cbuf_AddTextLine ("vid_restart");
 			break;
 		default:
 			break;
@@ -4603,7 +4603,12 @@ void M_Video_Draw (void)
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
 	M_Print (16, video_cursor_table[i], "           Stretch");
-	M_Print (184, video_cursor_table[i], (vid_sw_stretch.value >= 2) ? "320x240 nearest" : (vid_sw_stretch.value >= 1) ? "640x480 nearest" : "None");
+	#ifdef CORE_GL
+		// WinQuake GL -- keep users out of trouble
+		M_Print (184, video_cursor_table[i], (vid_sw_stretch.value >= 2) ? "320x240 nearest" : (vid_sw_stretch.value >= 1) ? "640x480 nearest" : "None (n/a WinQuake GL)");
+	#else
+		M_Print (184, video_cursor_table[i], (vid_sw_stretch.value >= 2) ? "320x240 nearest" : (vid_sw_stretch.value >= 1) ? "640x480 nearest" : "None");
+	#endif
 	i++;
 #endif // !WINQUAKE_RENDERER_SUPPORT
 
@@ -4637,5 +4642,3 @@ void M_Menu_Video_f (void)
 	//aspect ratio
 	VID_Menu_CalcAspectRatio ();
 }
-
-

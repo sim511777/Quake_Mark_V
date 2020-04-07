@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -37,10 +39,10 @@ byte	bottomalpha[128*131]; // Manoel Kasimier - translucent sky
 
 // Manoel Kasimier - skyboxes - begin
 // Code taken from the ToChriS engine - Author: Vic (vic@quakesrc.org) (http://hkitchen.quakesrc.org/)
-extern	mtexinfo_t		r_skytexinfo[6];
+extern	mtexinfo_t		r_skytexinfo[SKYBOX_SIDES_COUNT_6];
 //extern	cbool		r_drawskybox;
-byte					r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
-texture_t				r_skytextures[6];
+byte					r_skypixels[SKYBOX_SIDES_COUNT_6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
+texture_t				r_skytextures[SKYBOX_SIDES_COUNT_6];
 char					skybox_name[MAX_QPATH_64]; //name of current skybox, or "" if no skybox
 char					last_skybox_name[MAX_QPATH_64];
 
@@ -62,7 +64,7 @@ void Sky_LoadTexture (texture_t *mt)
 {
 	// Baker: Warn.
 	if (mt->width != 256 || mt->height != 128) // Leave this.
-		Con_Warning ("Standard sky texture %s expected to be 256 x 128 but is %d by %d \n", mt->name, mt->width, mt->height);
+		Con_WarningLinef ("Standard sky texture %s expected to be 256 x 128 but is %d by %d ", mt->name, mt->width, mt->height);
 
 	skyoverlay = (byte *)mt + mt->offsets[0]; // Manoel Kasimier - smooth sky
 	skyunderlay = skyoverlay+128; // Manoel Kasimier - smooth sky
@@ -141,8 +143,8 @@ cbool R_LoadSkybox (const char *name)
 	int		i;
 	char	pathname[MAX_QPATH_64];
 	byte	*pic;
-	char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-	int		r_skysideimage[6] = {5, 2, 4, 1, 0, 3};
+	char	*suf[SKYBOX_SIDES_COUNT_6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+	int		r_skysideimage[SKYBOX_SIDES_COUNT_6] = {5, 2, 4, 1, 0, 3};
 	int		width, height;
 	int		mark;
 
@@ -165,14 +167,14 @@ cbool R_LoadSkybox (const char *name)
 
 	Image_Quick_Palette_256_Alloc (vid.altblack);
 
-	for (i = 0 ; i < 6 ; i++)
+	for (i = 0 ; i < SKYBOX_SIDES_COUNT_6 ; i++)
 	{
 		c_snprintf2 (pathname, "gfx/env/%s%s", skybox_name, suf[r_skysideimage[i]]);
 		pic = Image_Load_Convert_RGBA_To_Palette (pathname, &width, &height, vid.basepal);
 
 		if (!pic)
 		{
-			Con_Printf ("Couldn't load %s\n", pathname);
+			Con_PrintLinef ("Couldn't load %s", pathname);
 			return false;
 		}
 		// Manoel Kasimier - hi-res skyboxes - begin
@@ -185,7 +187,7 @@ cbool R_LoadSkybox (const char *name)
 			break;
 		default:
 			// We aren't good
-			Con_Printf ("skybox width (%d) for %s must be 256, 512, 1024\n", width, pathname);
+			Con_PrintLinef ("skybox width (%d) for %s must be 256, 512, 1024", width, pathname);
 			Hunk_FreeToLowMark (mark);
 			return false;
 		}
@@ -198,7 +200,7 @@ cbool R_LoadSkybox (const char *name)
 			// We're good!
 			break;
 		default:
-			Con_Printf ("skybox height (%d) for %s must be 256, 512, 1024\n", height, pathname);
+			Con_PrintLinef ("skybox height (%d) for %s must be 256, 512, 1024", height, pathname);
 			Hunk_FreeToLowMark (mark);
 			return false;
 		}
@@ -211,9 +213,9 @@ cbool R_LoadSkybox (const char *name)
 
 		// Manoel Kasimier - hi-res skyboxes - begin
 		{
-			extern vec3_t box_vecs[6][2];
-			extern vec3_t box_bigvecs[6][2];
-			extern vec3_t box_bigbigvecs[6][2];
+			extern vec3_t box_vecs[SKYBOX_SIDES_COUNT_6][2];
+			extern vec3_t box_bigvecs[SKYBOX_SIDES_COUNT_6][2];
+			extern vec3_t box_bigbigvecs[SKYBOX_SIDES_COUNT_6][2];
 			extern msurface_t *r_skyfaces;
 
 			switch (width)
@@ -238,7 +240,7 @@ cbool R_LoadSkybox (const char *name)
 				r_skyfaces[i].extents[0] = width;
 				r_skyfaces[i].extents[1] = height;
 			} 
-			else Con_DPrintf ("Warning: No surface to load yet for WinQuake skybox\n");
+			else Con_DPrintLinef ("Warning: No surface to load yet for WinQuake skybox");
 
 		}
 		// Manoel Kasimier - hi-res skyboxes - end
@@ -275,4 +277,4 @@ void R_SetSkyFrame (void)
 	skytime = cl.ctime - ((int)(cl.ctime / temp) * temp);
 }
 
-
+#endif // !GLQUAKE - WinQuake Software renderer

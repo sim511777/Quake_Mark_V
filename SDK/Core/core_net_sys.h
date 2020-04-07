@@ -40,8 +40,21 @@
 
 /* unix includes and compatibility macros */
 #ifndef PLATFORM_WINDOWS
+    #if defined(PLATFORM_BSD) || defined(PLATFORM_OSX)
+		/* struct sockaddr has unsigned char sa_len as the first member in BSD
+		 * variants and the family member is also an unsigned char instead of an
+		 * unsigned short. This should matter only when PLATFORM_UNIX is defined,
+		 * however, checking for the offset of sa_family in every platform that
+		 * provide a struct sockaddr doesn't hurt either (see down below for the
+		 * compile time asserts.) */
+		/* FIXME : GET RID OF THIS ABOMINATION !!! */
 	#define	HAVE_SA_LEN	1
 	#define	SA_FAM_OFFSET	1
+    #else
+        #undef	HAVE_SA_LEN
+        #define	SA_FAM_OFFSET	0
+    #endif	/* BSD, sockaddr */
+
 
 	#include <sys/param.h>
 	#include <sys/ioctl.h>
@@ -71,12 +84,19 @@
 	#define	selectsocket	select
 	#define	IOCTLARG_P(x)	/* (char *) */ x
 
+    typedef int ioctl_uint32_t; // BSD sockets expect an int for ioctl, but Winsock wants u_long
+
 	#define	NET_EWOULDBLOCK		EWOULDBLOCK
 	#define	NET_ECONNREFUSED	ECONNREFUSED
 
 	#define	socketerror(x)	strerror((x))
 
 	/* Verify that we defined HAVE_SA_LEN correctly: */
+	//#if HAVE_SA_LEN == 1
+    //    #pragma message ("SA 1")
+    //#else
+    //    #pragma message ("SA 0")
+    //#endif
 	COMPILE_TIME_ASSERT(sockaddr, offsetof(struct sockaddr, sa_family) == SA_FAM_OFFSET);
 
 	#define	socketerror(x)	strerror((x))
@@ -116,6 +136,9 @@
 	#define	IOCTLARG_P(x)	/* (u_long *) */ x
 
 	#define	SOCKETERRNO	WSAGetLastError()
+
+	typedef u_long ioctl_uint32_t; // BSD sockets expect an int for ioctl, but Winsock wants u_long
+
 	#define	NET_EWOULDBLOCK		WSAEWOULDBLOCK
 	#define	NET_ECONNREFUSED	WSAECONNREFUSED
 	/* must #include "wsaerror.h" for this : */

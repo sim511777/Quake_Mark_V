@@ -50,24 +50,24 @@ void SV_Protocol_f (lparse_t *line)
 	switch (line->count)
 	{
 	case 1:
-		Con_Printf ("\"sv_protocol\" is \"%i\"\n", sv_protocol);
+		Con_PrintLinef (QUOTEDSTR("sv_protocol") " is " QUOTED_D, sv_protocol);
 		break;
 	case 2:
 		i = atoi(line->args[1]);
 
 		if (i != PROTOCOL_NETQUAKE && i != PROTOCOL_FITZQUAKE && i != PROTOCOL_FITZQUAKE_PLUS)
-			Con_Printf ("sv_protocol must be %i, %i or %i\n", PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS);
+			Con_PrintLinef ("sv_protocol must be %d, %d or %d", PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS);
 		else
 		{
 			sv_protocol = i;
 
 			if (sv.active)
-				Con_Printf ("changes will not take effect until the next map load.\n");
+				Con_PrintLinef ("changes will not take effect until the next map load.");
 		}
 
 		break;
 	default:
-		Con_SafePrintf ("usage: sv_protocol <protocol>\n");
+		Con_SafePrintLinef ("usage: sv_protocol <protocol>");
 		break;
 	}
 }
@@ -78,7 +78,7 @@ void SV_Protocol_f (lparse_t *line)
 void SV_Cheats_f (cvar_t *var)
 {
 	if (sv.active)
-		Con_Printf ("sv_cheats change will take effect on map restart/change.\n");
+		Con_PrintLinef ("sv_cheats change will take effect on map restart/change.");
 
 }
 
@@ -94,10 +94,10 @@ void SV_Init (void)
 	Cmd_AddCommands (SV_Init);
 
 	for (i=0 ; i<MAX_FITZQUAKE_MODELS ; i++)
-		c_snprintf (localmodels[i], "*%i", i); // Inline model names for precache
+		c_snprintf1 (localmodels[i], "*%d", i); // Inline model names for precache
 
-	Con_SafePrintf ("Exe: "__TIME__" "__DATE__"\n");
-	Con_SafePrintf ("%4.1f megabyte heap\n", host_parms.memsize / (1024 * 1024.0)); // Baker: Funny, not 2009 SI MB
+	Con_SafePrintLinef ("Exe: "__TIME__" "__DATE__"");
+	Con_SafePrintLinef ("%4.1f megabyte heap", host_parms.memsize / (1024 * 1024.0)); // Baker: Funny, not 2009 SI MB
 }
 
 /*
@@ -165,13 +165,13 @@ void SV_StartSound (edict_t *entity, int channel, const char *sample, int volume
     int 		i, field_mask;
 
 	if (volume < 0 || volume > 255)
-		Host_Error ("SV_StartSound: volume = %i", volume);
+		Host_Error ("SV_StartSound: volume = %d", volume);
 
 	if (attenuation < 0 || attenuation > 4)
 		Host_Error ("SV_StartSound: attenuation = %f", attenuation);
 
 	if (channel < 0 || channel > 7)
-		Host_Error ("SV_StartSound: channel = %i", channel);
+		Host_Error ("SV_StartSound: channel = %d", channel);
 
 #ifdef SUPPORTS_SERVER_PROTOCOL_15
 	if (sv.datagram.cursize > host_protocol_datagram_maxsize - 16)
@@ -187,7 +187,7 @@ void SV_StartSound (edict_t *entity, int channel, const char *sample, int volume
 
     if ( sound_num == MAX_FITZQUAKE_SOUNDS || !sv.sound_precache[sound_num] )
     {
-        Con_Printf ("SV_StartSound: %s not precacheed\n", sample);
+        Con_PrintLinef ("SV_StartSound: %s not precacheed", sample);
         return;
     }
 
@@ -266,15 +266,15 @@ void SV_Hints_List_f (lparse_t *unused)
 	hint_type_t hint_num;
 	if (sv.active)
 	{
-		Con_Printf ("Server hints:\n");
+		Con_PrintLinef ("Server hints:");
 		for (hint_num = 0; hint_num < MAX_NUM_HINTS; hint_num ++)
 		{
 			const char *hintname = hintnames[hint_num].keystring;
 			const char *hintvalue = sv.hintstrings[hint_num];
 
-			Con_Printf ("%-10s: %s\n", hintname, hintvalue);
+			Con_PrintLinef ("%-10s: %s", hintname, hintvalue);
 		}
-	} else Con_Printf ("no active server\n");
+	} else Con_PrintLinef ("no active server");
 }
 
 static void SV_HintStrings_NewMap (void)
@@ -317,7 +317,7 @@ static void SV_InsertHints (client_t *client, cbool early)
 	int hstart = 0, hlast_plus_one = MAX_NUM_HINTS;
 
 	hint_type_t hint_num;
-	Con_DPrintf_Net ("Send hints ... Early? = %d\n", early);
+	Con_DPrintLinef_Net ("Send hints ... Early? = %d", early);
 
 	// Must send gamedir change very early.
 	// Other hints must occur AFTER
@@ -331,8 +331,8 @@ static void SV_InsertHints (client_t *client, cbool early)
 			continue; // omitted
 
 		// Issue a commented out svc_stufftext like "//hint game warp -quoth"
-		sv_hint_string = va("%s%s %s\n", HINT_MESSAGE_PREIX, hintnames[hint_num].keystring, &sv.hintstrings[hint_num][0]);
-		Con_DPrintf_Net ("Sending: %s", sv_hint_string); // No newline, hint_string already has one
+		sv_hint_string = va("%s%s %s" NEWLINE, HINT_MESSAGE_PREIX, hintnames[hint_num].keystring, &sv.hintstrings[hint_num][0]);
+		Con_DPrintLinef_Net ("Sending: %s", sv_hint_string); // No newline, hint_string already has one
 		MSG_WriteByte (&client->message, svc_stufftext);
 		MSG_WriteString (&client->message, sv_hint_string);
 	}
@@ -391,7 +391,7 @@ void SV_SendServerinfo (client_t *client)
 	MSG_WriteShort (&client->message, NUM_FOR_EDICT(client->edict));
 
 // send late hints
-	Con_DPrintf ("Ready to send late hints\n");
+	Con_DPrintLinef ("Ready to send late hints");
 	SV_InsertHints (client, false /* late hints */); // Baker -- throw some extra hints to client here.
 
 
@@ -421,7 +421,7 @@ void SV_ConnectClient (int clientnum)
 
 	client = svs.clients + clientnum;
 
-	Con_DPrintf ("Client %s connected\n", NET_QSocketGetTrueAddressString(client->netconnection));
+	Con_DPrintLinef ("Client %s connected", NET_QSocketGetTrueAddressString(client->netconnection));
 
 	edictnum = clientnum+1;
 
@@ -720,7 +720,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 							break;
 					if (i == ent->num_leafs)
 						continue;		// not visible
-				} // else Con_Printf ("Trivial accept %i\n", e); // Else Trivial accept
+				} // else Con_PrintLinef ("Trivial accept %d", e); // Else Trivial accept
 			}
 
 			if (sv_cullentities.value) // 1 = players.  2 = everything.
@@ -745,7 +745,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 			//johnfitz -- less spammy overflow message
 			if (!dev_overflows.packetsize || dev_overflows.packetsize + CONSOLE_RESPAM_TIME < realtime )
 			{
-				Con_Printf ("Packet overflow!\n");
+				Con_PrintLinef ("Packet overflow!");
 				dev_overflows.packetsize = realtime;
 			}
 
@@ -870,7 +870,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 	//johnfitz -- devstats
 stats:
 	if (msg->cursize > MAX_WINQUAKE_DATAGRAM /*1024*/ && dev_peakstats.packetsize <= MAX_WINQUAKE_DATAGRAM /*1024*/)
-		Con_DWarning ("%i byte packet exceeds standard limit of %d.\n", msg->cursize, MAX_WINQUAKE_DATAGRAM /*1024*/);
+		Con_DWarningLine ("%d byte packet exceeds standard limit of %d.", msg->cursize, MAX_WINQUAKE_DATAGRAM /*1024*/);
 	dev_stats.packetsize = msg->cursize;
 	dev_peakstats.packetsize = c_max(msg->cursize, dev_peakstats.packetsize);
 	//johnfitz
@@ -1269,7 +1269,7 @@ void SV_Autosave_Think (void)
 
 	// Determine if auto-save should occur
 //#pragma comment("Baker: I disagree with this next line for a very technical reason.   A listen server with maxplayers = 1 can it load saves?  I think not.")
-//#pragma comment ("Baker: But it's not very important\n")
+//#pragma comment ("Baker: But it's not very important")
 	// Should be svs.listening ?
 	if (svs.maxclients_internal > 1) // Because the cap can change at any time now.  But 1 is still special for internal and means single player.
 		return;
@@ -1300,7 +1300,7 @@ void SV_Autosave_Think (void)
 		((int)svs.clients[0].edict->v.flags & FL_NOTARGET) ||
 		svs.clients[0].edict->v.movetype == MOVETYPE_NOCLIP || sv.frozen)
 	{
-//		Con_Printf ("Didn't autosave because of a cheat\n");
+//		Con_PrintLinef ("Didn't autosave because of a cheat");
 		return;
 	}
 */
@@ -1325,7 +1325,7 @@ void SV_Autosave_Think (void)
 	}
 
 	Host_Savegame (AUTOSAVE_BASENAME "0", false);
-	Con_DPrintf ("Autosaved %d:%02d\n", Time_Minutes((int)sv.time), Time_Seconds((int)sv.time) );
+	Con_DPrintLinef ("Autosaved %d:%02d", Time_Minutes((int)sv.time), Time_Seconds((int)sv.time) );
 
 	// Set the next auto save time
 	sv.auto_save_time = sv.time + AUTO_SAVE_INTERVAL;
@@ -1372,7 +1372,7 @@ void SV_Host_Frame_UpdateServer (double frametime)
 				active++;
 		}
 		if (active > MAX_WINQUAKE_EDICTS && dev_peakstats.edicts <= MAX_WINQUAKE_EDICTS)
-			Con_DWarning ("%i edicts exceeds standard limit of %d.\n", active, MAX_WINQUAKE_EDICTS); // 600
+			Con_DWarningLine ("%d edicts exceeds standard limit of %d.", active, MAX_WINQUAKE_EDICTS); // 600
 		dev_stats.edicts = active;
 		dev_peakstats.edicts = c_max(active, dev_peakstats.edicts);
 	}
@@ -1530,11 +1530,11 @@ void SV_SendReconnect (void)
 	msg.maxsize = sizeof(data);
 
 	MSG_WriteChar (&msg, svc_stufftext);
-	MSG_WriteString (&msg, "reconnect\n");
+	MSG_WriteString (&msg, "reconnect" NEWLINE);
 	NET_SendToAll (&msg, 5.0);
 
 	if (!isDedicated)
-		Cmd_ExecuteString ("reconnect\n", src_command);
+		Cmd_ExecuteString ("reconnect" NEWLINE, src_command); // I do not believe the newline is required.
 }
 
 
@@ -1618,7 +1618,7 @@ static char *MapPatch (const char *modelname, char *entstring)
 
 	map_patches_t* map_patch;
 
-	Con_DPrintf ("Map patch check\n");
+	Con_DPrintLinef ("Map patch check");
 	for (map_patch = &map_patches[0]; map_patch->modelname; map_patch++)
 	{
 		if (strcasecmp (map_patch->modelname, modelname) != 0)
@@ -1651,7 +1651,7 @@ static char *MapPatch (const char *modelname, char *entstring)
 				free (patched_entstring);
 
 			entstring = patched_entstring = newbuf;
-//			Con_DPrintf ("Patch performed\n");
+//			Con_DPrintLinef ("Patch performed");
 		}
 	}
 
@@ -1669,7 +1669,7 @@ void SV_SpawnServer (const char *server)
 	if (hostname.string[0] == 0)
 		Cvar_SetQuick (&hostname, "UNNAMED");
 
-	Con_DPrintf ("SpawnServer: %s\n",server);
+	Con_DPrintLinef ("SpawnServer: %s",server);
 	svs.changelevel_issued = false;		// now safe to issue another
 
 // tell all connected clients that we are going to a new level
@@ -1730,9 +1730,9 @@ void SV_SpawnServer (const char *server)
 	}
 
 #if 0
-	Con_Printf ("sv.datagram.maxsize is %d\n", sv.datagram.maxsize);
-	Con_Printf ("sv.signon.maxsize is %d\n", sv.signon.maxsize);
-	Con_Printf ("sv_protocol is %d\n", sv_protocol);
+	Con_PrintLinef ("sv.datagram.maxsize is %d", sv.datagram.maxsize);
+	Con_PrintLinef ("sv.signon.maxsize is %d", sv.signon.maxsize);
+	Con_PrintLinef ("sv_protocol is %d", sv_protocol);
 #endif
 	sv.datagram.cursize = 0;
 	sv.datagram.data = sv.datagram_buf;
@@ -1747,7 +1747,7 @@ void SV_SpawnServer (const char *server)
 
 
 	c_strlcpy (sv.name, server);
-	c_snprintf (sv.modelname, "maps/%s.bsp", server);
+	c_snprintf1 (sv.modelname, "maps/%s.bsp", server);
 	sv.worldmodel = Mod_ForName (sv.modelname, false);
 	if (!sv.worldmodel || sv.worldmodel->type != mod_brush) // Spike added: sv.worldmodel->type != mod_brush
 	{
@@ -1757,7 +1757,7 @@ void SV_SpawnServer (const char *server)
 		// In single player, this isn't setting ca_disconnected or signons to 0.
 		// Isn't setting key_dest to console.
 #pragma message ("This sv map not found couldn't spawn server needs love")
-		Con_Printf ("Couldn't spawn server %s\n", sv.modelname);
+		Con_PrintLinef ("Couldn't spawn server %s", sv.modelname);
 		SCR_EndLoadingPlaque (); // Baker: any disconnect state should end the loading plague, right?
 		sv.active = false;
 		return;
@@ -1780,7 +1780,7 @@ void SV_SpawnServer (const char *server)
 			entity_string = Hunk_Strdup (patched, "ent patch string");
 
 			free (patched);
-			Con_DPrintf ("Map entity string patched.\n");
+			Con_DPrintLinef ("Map entity string patched.");
 		}
 	}
 
@@ -1801,18 +1801,18 @@ void SV_SpawnServer (const char *server)
 			int classname_count = String_Count_String (entity_string, "classname");
 			int	predicted_count = classname_count * 1.5;
 
-			Con_DPrintf ("MAX_EDICTS: Predict %d on classname count of %i\n", predicted_count, classname_count);
+			Con_DPrintLinef ("MAX_EDICTS: Predict %d on classname count of %d", predicted_count, classname_count);
 
 			if (host_max_edicts.value < 0) // -2048 = force 2048 max_edicts
 				sv.max_edicts = abs(host_max_edicts.value);
 			else if (host_max_edicts.value == 0 || host_max_edicts.value < predicted_count)
 			{
 				sv.max_edicts = predicted_count;
-				Con_DPrintf ("Setting server edicts maximum to %i edicts on classname count of %i\n", sv.max_edicts, classname_count);
+				Con_DPrintLinef ("Setting server edicts maximum to %d edicts on classname count of %d", sv.max_edicts, classname_count);
 			}
 			else sv.max_edicts = host_max_edicts.value;
 			sv.max_edicts = CLAMP(MIN_SANE_EDICTS_512, sv.max_edicts, MAX_SANE_EDICTS_8192);
-			Con_DPrintf ("MAX_EDICTS: After clamp, server edicts set %d edicts\n", sv.max_edicts);
+			Con_DPrintLinef ("MAX_EDICTS: After clamp, server edicts set %d edicts", sv.max_edicts);
 		}
 #endif
 		break;
@@ -1844,10 +1844,10 @@ void SV_SpawnServer (const char *server)
 	for (i = 1 ; i < sv.worldmodel->numsubmodels ; i++)
 	{
 		if (i >= MAX_FITZQUAKE_MODELS)
-			Host_Error ("World submodels > MAX_FITZQUAKE_MODELS (%i)\n", MAX_FITZQUAKE_MODELS);
+			Host_Error ("World submodels > MAX_FITZQUAKE_MODELS (%d)", MAX_FITZQUAKE_MODELS);
 
 		if (sv.protocol == PROTOCOL_NETQUAKE && i >= MAX_WINQUAKE_MODELS)
-			Host_Error ("Too many models for protocol 15, limit %i", MAX_WINQUAKE_MODELS);
+			Host_Error ("Too many models for protocol 15, limit %d", MAX_WINQUAKE_MODELS);
 
 		sv.model_precache[i + 1] = localmodels[i];
 		sv.models[i+1] = Mod_ForName (localmodels[i], false);
@@ -1892,10 +1892,10 @@ void SV_SpawnServer (const char *server)
 	SV_CreateBaseline ();
 	Admin_Game_Files_List_Update_Server ();
 	//johnfitz -- warn if signon buffer larger than standard server can handle
-//	Con_Printf ("Signon size is %i\n", sv.signon.cursize);
+//	Con_PrintLinef ("Signon size is %d", sv.signon.cursize);
 	if (sv.signon.cursize > (MAX_WINQUAKE_MSGLEN /*8000*/ - 2) ) //max size that will fit into 8000-sized client->message buffer with 2 extra bytes on the end
-//		Con_DWarning ("%i byte signon buffer exceeds standard limit of 7998.\n", sv.signon.cursize);
-		Con_DWarning ("%i byte signon buffer exceeds standard limit of %d.\n", sv.signon.cursize, (MAX_WINQUAKE_MSGLEN /*8000*/ -2 ));
+//		Con_DWarningLine ("%d byte signon buffer exceeds standard limit of 7998.", sv.signon.cursize);
+		Con_DWarningLine ("%d byte signon buffer exceeds standard limit of %d.", sv.signon.cursize, (MAX_WINQUAKE_MSGLEN /*8000*/ -2 ));
 	//johnfitz
 
 // send serverinfo to all connected clients
@@ -1903,7 +1903,6 @@ void SV_SpawnServer (const char *server)
 		if (host_client->active)
 			SV_SendServerinfo (host_client);
 
-	Con_DPrintf ("Server spawned.\n");
+	Con_DPrintLinef ("Server spawned.");
 	in_load_game = false;
 }
-

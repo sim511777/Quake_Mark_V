@@ -80,7 +80,7 @@ void AVI_LoadLibrary (void)
 
 	if (!(avi_handle = LoadLibrary("avifil32.dll")))
 	{
-		Con_Warning ("Avi capturing module not found\n");
+		Con_WarningLinef ("Avi capturing module not found");
 		goto fail;
 	}
 
@@ -100,11 +100,11 @@ void AVI_LoadLibrary (void)
 
 	if (!avi_loaded)
 	{
-		Con_SafePrintf ("Avi capturing module not initialized\n");
+		Con_SafePrintLinef ("Avi capturing module not initialized");
 		goto fail;
 	}
 
-	Con_SafePrintf ("Avi capturing module initialized\n");
+	Con_SafePrintLinef ("Avi capturing module initialized");
 	return;
 
 fail:
@@ -121,7 +121,7 @@ void ACM_LoadLibrary (void)
 
 	if (!(acm_handle = LoadLibrary("msacm32.dll")))
 	{
-		Con_Warning ("ACM module not found\n");
+		Con_WarningLinef ("ACM module not found");
 		goto fail;
 	}
 
@@ -144,11 +144,11 @@ void ACM_LoadLibrary (void)
 
 	if (!acm_loaded)
 	{
-		Con_SafePrintf ("ACM module not initialized\n");
+		Con_SafePrintLinef ("ACM module not initialized");
 		goto fail;
 	}
 
-	Con_SafePrintf ("ACM module initialized\n");
+	Con_SafePrintLinef ("ACM module initialized");
 	return;
 
 fail:
@@ -188,7 +188,7 @@ BOOL CALLBACK acmDriverEnumCallback (HACMDRIVERID mp3_driver_id, DWORD dwInstanc
 			{
 				MMRESULT	mmr;
 
-				Con_DPrintf ("MP3-capable ACM codec found: %s\n", drvDetails.szLongName);
+				Con_DPrintLinef ("MP3-capable ACM codec found: %s", drvDetails.szLongName);
 
 				m_mp3_stream = NULL;
 				if ((mmr = qacmStreamOpen(&m_mp3_stream, m_mp3_driver, &m_wave_format, &m_mp3_format.wfx, NULL, 0, 0, 0)))
@@ -196,15 +196,15 @@ BOOL CALLBACK acmDriverEnumCallback (HACMDRIVERID mp3_driver_id, DWORD dwInstanc
 					switch (mmr)
 					{
 					case MMSYSERR_INVALPARAM:
-						Con_DPrintf ("ERROR: Invalid parameters passed to acmStreamOpen\n");
+						Con_DPrintLinef ("ERROR: Invalid parameters passed to acmStreamOpen");
 						break;
 
 					case ACMERR_NOTPOSSIBLE:
-						Con_DPrintf ("ERROR: No ACM filter found capable of encoding MP3\n");
+						Con_DPrintLinef ("ERROR: No ACM filter found capable of encoding MP3");
 						break;
 
 					default:
-						Con_DPrintf ("ERROR: Couldn't open ACM encoding stream\n");
+						Con_DPrintLinef ("ERROR: Couldn't open ACM encoding stream");
 						break;
 					}
 					continue;
@@ -243,7 +243,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 	if (FAILED(hr))
 	{
 		if (!silentish)
-			Con_Printf ("ERROR: Couldn't open AVI file for writing\n");
+			Con_PrintLinef ("ERROR: Couldn't open AVI file for writing");
 		return -1;
 
 	}
@@ -275,7 +275,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 	if (FAILED(hr))
 	{
 		if (!silentish)
-			Con_Printf ("ERROR: Couldn't create video stream\n");
+			Con_PrintLinef ("ERROR: Couldn't create video stream");
 		return -2;
 	}
 
@@ -292,7 +292,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 		if (FAILED(hr))
 		{
 			if (!silentish)
-				Con_Printf ("ERROR: Couldn't make compressed video stream\n");
+				Con_PrintLinef ("ERROR: Couldn't make compressed video stream");
 			return -3;
 		}
 	}
@@ -300,7 +300,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 	hr = qAVIStreamSetFormat (Capture_VideoStream(), 0, &bitmap_info_header, bitmap_info_header.biSize);
 	if (FAILED(hr))
 	{
-		Con_Printf ("ERROR: Couldn't set video stream format\n");
+		Con_PrintLinef ("ERROR: Couldn't set video stream format");
 		return false;
 	}
 
@@ -322,7 +322,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 	hr = qAVIFileCreateStream (m_file, &m_audio_stream, &stream_header);
 	if (FAILED(hr))
 	{
-		Con_Printf ("ERROR: Couldn't create audio stream\n");
+		Con_PrintLinef ("ERROR: Couldn't create audio stream");
 		return false;
 	}
 
@@ -348,14 +348,14 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 		qacmDriverEnum (acmDriverEnumCallback, 0, 0);
 		if (!mp3_encoder_exists)
 		{
-			Con_Printf ("ERROR: Couldn't find any MP3 encoder\n");
+			Con_PrintLinef ("ERROR: Couldn't find any MP3 encoder");
 			return false;
 		}
 
 		hr = qAVIStreamSetFormat (m_audio_stream, 0, &m_mp3_format, sizeof(MPEGLAYER3WAVEFORMAT));
 		if (FAILED(hr))
 		{
-			Con_Printf ("ERROR: Couldn't set audio stream format\n");
+			Con_PrintLinef ("ERROR: Couldn't set audio stream format");
 			return false;
 		}
 	}
@@ -364,7 +364,7 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 		hr = qAVIStreamSetFormat (m_audio_stream, 0, &m_wave_format, sizeof(WAVEFORMATEX));
 		if (FAILED(hr))
 		{
-			Con_Printf ("ERROR: Couldn't set audio stream format\n");
+			Con_PrintLinef ("ERROR: Couldn't set audio stream format");
 			return false;
 		}
 	}
@@ -399,20 +399,20 @@ void Capture_WriteVideo (byte *pixel_buffer)
 	// check frame size (TODO: other things too?) hasn't changed
 	if (m_video_frame_size != size)
 	{
-		Con_Printf ("ERROR: Frame size changed: new %d old %d\n", size, m_video_frame_size);
+		Con_PrintLinef ("ERROR: Frame size changed: new %d old %d", size, m_video_frame_size);
 		return;
 	}
 
 	if (!Capture_VideoStream())
 	{
-		Con_Printf ("ERROR: Video stream is NULL\n");
+		Con_PrintLinef ("ERROR: Video stream is NULL");
 		return;
 	}
 
 	hr = qAVIStreamWrite (Capture_VideoStream(), m_video_frame_counter++, 1, pixel_buffer, m_video_frame_size, AVIIF_KEYFRAME, NULL, NULL);
 	if (FAILED(hr))
 	{
-		Con_Printf ("ERROR: Couldn't write video stream\n");
+		Con_PrintLinef ("ERROR: Couldn't write video stream");
 		return;
 	}
 }
@@ -424,7 +424,7 @@ void Capture_WriteAudio (int samples, byte *sample_buffer)
 
 	if (!m_audio_stream)
 	{
-		Con_Printf ("ERROR: Audio stream is NULL\n");
+		Con_PrintLinef ("ERROR: Audio stream is NULL");
 		return;
 	}
 
@@ -437,12 +437,12 @@ void Capture_WriteAudio (int samples, byte *sample_buffer)
 
 		if ((mmr = qacmStreamSize(m_mp3_stream, sample_bufsize, &mp3_bufsize, ACM_STREAMSIZEF_SOURCE)))
 		{
-			Con_Printf ("ERROR: Couldn't get mp3bufsize\n");
+			Con_PrintLinef ("ERROR: Couldn't get mp3bufsize");
 			return;
 		}
 		if (!mp3_bufsize)
 		{
-			Con_Printf ("ERROR: mp3bufsize is zero\n");
+			Con_PrintLinef ("ERROR: mp3bufsize is zero");
 			return;
 		}
 		mp3_buffer = calloc (mp3_bufsize, 1);
@@ -456,14 +456,14 @@ void Capture_WriteAudio (int samples, byte *sample_buffer)
 
 		if ((mmr = qacmStreamPrepareHeader(m_mp3_stream, &m_mp3_stream_header, 0)))
 		{
-			Con_Printf ("ERROR: Couldn't prepare header\n");
+			Con_PrintLinef ("ERROR: Couldn't prepare header");
 			free (mp3_buffer);
 			return;
 		}
 
 		if ((mmr = qacmStreamConvert(m_mp3_stream, &m_mp3_stream_header, ACM_STREAMCONVERTF_BLOCKALIGN)))
 		{
-			Con_Printf ("ERROR: Couldn't convert audio stream\n");
+			Con_PrintLinef ("ERROR: Couldn't convert audio stream");
 			goto clean;
 		}
 
@@ -472,7 +472,7 @@ void Capture_WriteAudio (int samples, byte *sample_buffer)
 clean:
 		if ((mmr = qacmStreamUnprepareHeader(m_mp3_stream, &m_mp3_stream_header, 0)))
 		{
-			Con_Printf ("ERROR: Couldn't unprepare header\n");
+			Con_PrintLinef ("ERROR: Couldn't unprepare header");
 			free (mp3_buffer);
 			return;
 		}
@@ -485,9 +485,8 @@ clean:
 	}
 	if (FAILED(hr))
 	{
-		Con_Printf ("ERROR: Couldn't write audio stream\n");
+		Con_PrintLinef ("ERROR: Couldn't write audio stream");
 		return;
 	}
 }
 #endif // Baker change +
-

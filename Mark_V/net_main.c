@@ -195,7 +195,7 @@ void NET_Listen_f (lparse_t *line)
 {
 	if (line->count != 2)
 	{
-		Con_Printf ("\"listen\" is \"%d\"\n", svs.listening ? 1 : 0);
+		Con_PrintLinef (QUOTEDSTR("listen") " is " QUOTED_D "", svs.listening ? 1 : 0);
 		return;
 	}
 
@@ -216,14 +216,14 @@ void MaxPlayers_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("\"maxplayers\" is \"%d\"\n", svs.maxclients_public); // This is a place that the public limit should be used.
+		Con_PrintLinef (QUOTEDSTR("maxplayers") " is " QUOTED_D, svs.maxclients_public); // This is a place that the public limit should be used.
 		return;
 	}
 
 	// For now, we are keeping this in effect.  But in practice if n < svs.maxclients_internal, we would be fine.
 	if (sv.active)
 	{
-		Con_Printf ("maxplayers can not be changed while a server is running.\n");
+		Con_PrintLinef ("maxplayers can not be changed while a server is running.");
 		return;
 	}
 
@@ -233,14 +233,14 @@ void MaxPlayers_f (lparse_t *line)
 	if (n > svs.maxclientslimit)
 	{
 		n = svs.maxclientslimit;
-		Con_Printf ("\"maxplayers\" set to \"%d\"\n", n);
+		Con_PrintLinef (QUOTEDSTR("maxplayer") " set to " QUOTED_D, n);
 	}
 
 	if ((n == 1) && svs.listening)
-		Cbuf_AddText ("listen 0\n");
+		Cbuf_AddTextLine ("listen 0");
 
 	if ((n > 1) && (!svs.listening))
-		Cbuf_AddText ("listen 1\n");
+		Cbuf_AddTextLine ("listen 1");
 
 	svs.maxclients_internal = n != 1 ? svs.maxclientslimit : 1; // Single player still means something.  Should take effect on map change
 	svs.maxclients_public = n;
@@ -257,14 +257,14 @@ void NET_Port_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("\"port\" is \"%d\"\n", net_hostport);
+		Con_PrintLinef (QUOTEDSTR("port") " is " QUOTED_D, net_hostport);
 		return;
 	}
 
 	n = atoi(line->args[1]);
 	if (n < 1 || n > 65534)
 	{
-		Con_Printf ("Bad value, must be between 1 and 65534\n");
+		Con_PrintLinef ("Bad value, must be between 1 and 65534");
 		return;
 	}
 
@@ -274,16 +274,16 @@ void NET_Port_f (lparse_t *line)
 	if (svs.listening)
 	{
 		// force a change to the new port
-		Cbuf_AddText ("listen 0\n");
-		Cbuf_AddText ("listen 1\n");
+		Cbuf_AddTextLine ("listen 0");
+		Cbuf_AddTextLine ("listen 1");
 	}
 }
 
 
 static void PrintSlistHeader(void)
 {
-	Con_Printf ("Server          Map             Users\n");
-	Con_Printf ("--------------- --------------- -----\n");
+	Con_PrintLinef ("Server          Map             Users");
+	Con_PrintLinef ("--------------- --------------- -----");
 	slistLastShown = 0;
 }
 
@@ -295,9 +295,9 @@ static void PrintSlist(void)
 	for (n = slistLastShown; n < hostCacheCount; n++)
 	{
 		if (hostcache[n].maxusers)
-			Con_Printf("%-15.15s %-15.15s %2u/%2u\n", hostcache[n].name, hostcache[n].map, hostcache[n].users, hostcache[n].maxusers);
+			Con_PrintLinef ("%-15.15s %-15.15s %2u/%2u", hostcache[n].name, hostcache[n].map, hostcache[n].users, hostcache[n].maxusers);
 		else
-			Con_Printf("%-15.15s %-15.15s\n", hostcache[n].name, hostcache[n].map);
+			Con_PrintLinef ("%-15.15s %-15.15s", hostcache[n].name, hostcache[n].map);
 	}
 	slistLastShown = n;
 }
@@ -306,9 +306,9 @@ static void PrintSlist(void)
 static void PrintSlistTrailer(void)
 {
 	if (hostCacheCount)
-		Con_Printf("== end list ==\n\n");
+		Con_PrintLinef ("== end list ==" NEWLINE);
 	else
-		Con_Printf("No Quake servers found.\n\n");
+		Con_PrintLinef ("No Quake servers found." NEWLINE);
 }
 
 
@@ -319,7 +319,7 @@ void NET_Slist_f (lparse_t *unused)
 
 	if (! slistSilent)
 	{
-		Con_Printf("Looking for Quake servers...\n");
+		Con_PrintLinef ("Looking for Quake servers...");
 		PrintSlistHeader();
 	}
 
@@ -467,12 +467,12 @@ qsocket_t *NET_Connect (const char *host)
 				NET_Poll();
 
 			if (hostCacheCount == 0) {
-				Con_SafePrintf ("No LAN Quake servers found\n");
+				Con_SafePrintLinef ("No LAN Quake servers found");
 				return NULL;
 			}
 
 			host = hostcache[hostCacheCount - 1].cname;
-			Con_SafePrintf ("Connecting to LAN %s\n", host);
+			Con_SafePrintLinef ("Connecting to LAN %s", host);
 			
 			// Otherwise ...
 		}
@@ -506,7 +506,7 @@ qsocket_t *NET_Connect (const char *host)
 		if (hostCacheCount != 1)
 			return NULL;
 		host = hostcache[0].cname;
-		Con_Printf("Connecting to...\n%s @ %s\n\n", hostcache[0].name, host);
+		Con_PrintLinef ("Connecting to..." NEWLINE "%s @ %s" NEWLINE, hostcache[0].name, host);
 	}
 
 #if 0 // Baker no server lookup without reason
@@ -536,7 +536,7 @@ JustDoIt:
 #if 0 // Baker: No
 	if (host)
 	{
-		Con_Printf("\n");
+		Con_PrintLine ();
 		PrintSlistHeader();
 		PrintSlist();
 		PrintSlistTrailer();
@@ -618,7 +618,7 @@ int	NET_GetMessage (qsocket_t *sock)
 
 	if (sock->disconnected)
 	{
-		Con_Printf("NET_GetMessage: disconnected socket\n");
+		Con_PrintLinef ("NET_GetMessage: disconnected socket");
 		return -1;
 	}
 
@@ -636,7 +636,7 @@ int	NET_GetMessage (qsocket_t *sock)
 	{
 		if (net_time - sock->lastMessageTime > net_messagetimeout.value)
 		{
-			Con_Printf ("Disconnecting client due to net_messagetimeout %g\n", net_messagetimeout.value);
+			Con_PrintLinef ("Disconnecting client due to net_messagetimeout %g", net_messagetimeout.value);
 			NET_Close(sock);
 			return -1;
 		}
@@ -644,7 +644,7 @@ int	NET_GetMessage (qsocket_t *sock)
 		if (net_connecttimeout.value && net_time - sock->lastMessageTime > net_connecttimeout.value && sv.active &&
 			host_client && sock == host_client->netconnection && !strcmp(host_client->name, "unconnected"))
 		{
-			Con_Printf ("Disconnecting client due to net_connecttimeout %g\n", net_connecttimeout.value);
+			Con_PrintLinef ("Disconnecting client due to net_connecttimeout %g", net_connecttimeout.value);
 			NET_Close(sock);
 			return -1;
 		}
@@ -716,7 +716,7 @@ int NET_SendMessage (qsocket_t *sock, sizebuf_t *data)
 
 	if (sock->disconnected)
 	{
-		Con_Printf("NET_SendMessage: disconnected socket\n");
+		Con_PrintLinef ("NET_SendMessage: disconnected socket");
 		return -1;
 	}
 
@@ -738,7 +738,7 @@ int NET_SendUnreliableMessage (qsocket_t *sock, sizebuf_t *data)
 
 	if (sock->disconnected)
 	{
-		Con_Printf("NET_SendMessage: disconnected socket\n");
+		Con_PrintLinef ("NET_SendMessage: disconnected socket");
 		return -1;
 	}
 
@@ -907,10 +907,10 @@ void NET_Init (void)
 		System_Error ("Network not available!");
 
 	if (*my_ipv4_address)
-		Con_DPrintf("IPv4 address %s\n", my_ipv4_address);
+		Con_DPrintLinef ("IPv4 address %s", my_ipv4_address);
 
 	if (*my_ipv6_address)
-		Con_DPrintf("IPv6 address %s\n", my_ipv6_address);
+		Con_DPrintLinef ("IPv6 address %s", my_ipv6_address);
 }
 
 /*
@@ -982,4 +982,3 @@ void SchedulePollProcedure(PollProcedure *proc, double timeOffset)
 	proc->next = pp;
 	prev->next = proc;
 }
-

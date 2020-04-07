@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -274,7 +276,7 @@ void R_DrawAliasModel (entity_t *e)
 {
 	aliashdr_t	*paliashdr;
 	int			anim, skinnum;
-	gltexture_t	*tx, *fb;
+	gltexture_t	*tx, *fb = NULL;
 	lerpdata_t	lerpdata;
 	
 	//
@@ -367,7 +369,7 @@ void R_DrawAliasModel (entity_t *e)
 	skinnum = e->skinnum;
 	if ((skinnum >= paliashdr->numskins) || (skinnum < 0))
 	{
-		Con_DPrintf ("R_DrawAliasModel: no such skin # %d\n", skinnum);
+		Con_DPrintLinef ("R_DrawAliasModel: no such skin # %d", skinnum);
 		skinnum = 0;
 	}
 	tx = paliashdr->gltextures[skinnum][anim];
@@ -727,4 +729,4 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 	eglPopMatrix ();
 }
 
-
+#endif // GLQUAKE specific

@@ -88,9 +88,9 @@ void Chase_Mode_f (lparse_t *line) // overhead, rpg, side, classic, classic
 		chase_type = &chase_side;
 
 	if (chase_type)
-		Con_DPrintf ("chase_mode %s\n", chase_type->description);
+		Con_DPrintLinef ("chase_mode %s", chase_type->description);
 	else
-		Con_DPrintf ("chase_mode toggle\n");
+		Con_DPrintLinef ("chase_mode toggle");
 }
 
 
@@ -293,4 +293,3 @@ void Chase_UpdateForDrawing (void)
 	else Chase_Active_1 ();
 
 }
-

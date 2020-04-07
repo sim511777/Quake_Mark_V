@@ -48,7 +48,7 @@ int SNDDMA_Init(void)
 	snd_inited = 0;
 
 	/* Set up the desired format */
-	desired.freq = sndspeed.value;
+	desired.freq = sound_rate_hz; // sndspeed.value;
 
     if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
         desired.format = AUDIO_S16MSB;
@@ -60,7 +60,7 @@ int SNDDMA_Init(void)
 
 	/* Open the audio device */
 	if ( SDL_OpenAudio(&desired, &obtained) < 0 ) {
-        	Con_Printf("Couldn't open SDL audio: %s\n", SDL_GetError());
+        	Con_PrintLinef ("Couldn't open SDL audio: %s", SDL_GetError());
 		return 0;
 	}
 
@@ -84,7 +84,7 @@ int SNDDMA_Init(void)
 			/* Not supported -- force SDL to do our bidding */
 			SDL_CloseAudio();
 			if ( SDL_OpenAudio(&desired, NULL) < 0 ) {
-        			Con_Printf("Couldn't open SDL audio: %s\n",
+        			Con_PrintLinef ("Couldn't open SDL audio: %s",
 							SDL_GetError());
 				return 0;
 			}
@@ -104,8 +104,10 @@ int SNDDMA_Init(void)
 	shm->submission_chunk = 1;
 	shm->buffer = NULL;
 
+    sound_rate_hz = obtained.freq; // Right?
+
 	snd_inited = 1;
-	Con_SafePrintf ("SDL Sound Initialized\n");
+	Con_SafePrintLinef ("SDL Sound Initialized");
 	return 1;
 }
 

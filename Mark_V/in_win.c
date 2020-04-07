@@ -1,3 +1,8 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
+
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2012 John Fitzgibbons and others
@@ -31,34 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ///////////////////////////////////////////////////////////////////////////////
 
 
-
-
-// getshiftbits
-static int shiftbits (void)
-{
-	int shifted = Flag_Check (GetKeyState(VK_LSHIFT),    0x8000) || Flag_Check (GetKeyState(VK_RSHIFT),   0x8000);
-	int ctrled	= Flag_Check (GetKeyState(VK_LCONTROL),  0x8000) || Flag_Check (GetKeyState(VK_RCONTROL), 0x8000);
-	int alted	= Flag_Check (GetKeyState(VK_LMENU),     0x8000) || Flag_Check (GetKeyState(VK_RMENU),    0x8000);
-
-	return shifted + ctrled * 2 + alted * 4;
-}
-
-
-// getmousebits
-#define required
-static void getmousebits (WPARAM wparam, LPARAM lparam, required int *button_bits, required int *shift_bits, required int *x, required int *y)
-{
-	int m1 = Flag_Check (wparam, MK_LBUTTON);
-	int m2 = Flag_Check (wparam, MK_RBUTTON);
-	int m3 = Flag_Check (wparam, MK_MBUTTON);
-	int m4 = Flag_Check (wparam, MK_XBUTTON1);
-	int m5 = Flag_Check (wparam, MK_XBUTTON2);
-	*shift_bits = shiftbits();
-	*button_bits =	m1 * 1 + m2 * 2 + m3 * 4 + m4 * 8 + m5 * 16;
-	*x = GET_X_LPARAM(lparam);
-	*y = GET_Y_LPARAM(lparam);
-}
-
 int Input_Local_Capture_Mouse (cbool bDoCapture)
 {
 	static cbool captured = false;
@@ -67,7 +44,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 	{
 		ShowCursor (FALSE); // Hides mouse cursor
 		SetCapture (sysplat.mainwindow);	// Captures mouse events
-		Con_DPrintf ("Mouse Captured\n");
+		Con_DPrintLinef ("Mouse Captured");
 		captured = true;
 	}
 
@@ -76,7 +53,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		ShowCursor (TRUE); // Hides mouse cursor
 		ReleaseCapture ();
 		ClipCursor (NULL); // Can't hurt
-		Con_DPrintf ("Mouse Released\n");
+		Con_DPrintLinef ("Mouse Released");
 		captured = false;
 	}
 
@@ -114,198 +91,16 @@ void Input_Local_Mouse_Cursor_SetPos (int x, int y)
 	SetCursorPos (x, y);
 }
 
-void Input_Local_Mouse_Cursor_GetPos (int *x, int *y)
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py)
 {
 	POINT current_pos;
 	GetCursorPos (&current_pos);
 
-	*x = current_pos.x;
-	*y = current_pos.y;
+	REQUIRED_ASSIGN (px, current_pos.x);
+	REQUIRED_ASSIGN (py, current_pos.y);
 }
 
 
-STICKYKEYS StartupStickyKeys = {sizeof (STICKYKEYS), 0};
-TOGGLEKEYS StartupToggleKeys = {sizeof (TOGGLEKEYS), 0};
-FILTERKEYS StartupFilterKeys = {sizeof (FILTERKEYS), 0};
-
-
-void AllowAccessibilityShortcutKeys (cbool bAllowKeys)
-{
-	static cbool initialized = false;
-
-	if (!initialized)
-	{	// Save the current sticky/toggle/filter key settings so they can be restored them later
-		SystemParametersInfo (SPI_GETSTICKYKEYS, sizeof (STICKYKEYS), &StartupStickyKeys, 0);
-		SystemParametersInfo (SPI_GETTOGGLEKEYS, sizeof (TOGGLEKEYS), &StartupToggleKeys, 0);
-		SystemParametersInfo (SPI_GETFILTERKEYS, sizeof (FILTERKEYS), &StartupFilterKeys, 0);
-		Con_DPrintf ("Accessibility key startup settings saved\n");
-		initialized = true;
-	}
-
-	if (bAllowKeys)
-	{
-		// Restore StickyKeys/etc to original state
-		// (note that this function is called "allow", not "enable"; if they were previously
-		// disabled it will put them back that way too, it doesn't force them to be enabled.)
-		SystemParametersInfo (SPI_SETSTICKYKEYS, sizeof (STICKYKEYS), &StartupStickyKeys, 0);
-		SystemParametersInfo (SPI_SETTOGGLEKEYS, sizeof (TOGGLEKEYS), &StartupToggleKeys, 0);
-		SystemParametersInfo (SPI_SETFILTERKEYS, sizeof (FILTERKEYS), &StartupFilterKeys, 0);
-
-		Con_DPrintf ("Accessibility keys enabled\n");
-	}
-	else
-	{
-		// Disable StickyKeys/etc shortcuts but if the accessibility feature is on,
-		// then leave the settings alone as its probably being usefully used
-		STICKYKEYS skOff = StartupStickyKeys;
-		TOGGLEKEYS tkOff = StartupToggleKeys;
-		FILTERKEYS fkOff = StartupFilterKeys;
-
-		if ((skOff.dwFlags & SKF_STICKYKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			skOff.dwFlags &= ~SKF_HOTKEYACTIVE;
-			skOff.dwFlags &= ~SKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETSTICKYKEYS, sizeof (STICKYKEYS), &skOff, 0);
-		}
-
-		if ((tkOff.dwFlags & TKF_TOGGLEKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			tkOff.dwFlags &= ~TKF_HOTKEYACTIVE;
-			tkOff.dwFlags &= ~TKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETTOGGLEKEYS, sizeof (TOGGLEKEYS), &tkOff, 0);
-		}
-
-		if ((fkOff.dwFlags & FKF_FILTERKEYSON) == 0)
-		{
-			// Disable the hotkey and the confirmation
-			fkOff.dwFlags &= ~FKF_HOTKEYACTIVE;
-			fkOff.dwFlags &= ~FKF_CONFIRMHOTKEY;
-
-			SystemParametersInfo (SPI_SETFILTERKEYS, sizeof (FILTERKEYS), &fkOff, 0);
-		}
-
-		Con_DPrintf ("Accessibility keys disabled\n");
-	}
-}
-
-
-
-LRESULT CALLBACK LLWinKeyHook(int Code, WPARAM wParam, LPARAM lParam)
-{
-	PKBDLLHOOKSTRUCT p;
-	p = (PKBDLLHOOKSTRUCT) lParam;
-
-	if (vid.ActiveApp)
-	{
-		switch(p->vkCode)
-		{
-		case VK_LWIN:	// Left Windows Key
-		case VK_RWIN:	// Right Windows key
-		case VK_APPS: 	// Context Menu key
-
-			return 1; // Ignore these keys
-		}
-	}
-
-	return CallNextHookEx(NULL, Code, wParam, lParam);
-}
-
-
-
-void AllowWindowsShortcutKeys (cbool bAllowKeys)
-{
-	static cbool WinKeyHook_isActive = false;
-	static HHOOK WinKeyHook;
-	
-	if (!bAllowKeys)
-	{
-		// Disable if not already disabled
-		if (!WinKeyHook_isActive)
-		{
-			if (!(WinKeyHook = SetWindowsHookEx(13, LLWinKeyHook, sysplat.hInstance, 0)))
-			{
-				Con_Printf("Failed to install winkey hook.\n");
-				Con_Printf("Microsoft Windows NT 4.0, 2000 or XP is required.\n");
-				return;
-			}
-
-			WinKeyHook_isActive = true;
-			Con_DPrintf ("Windows and context menu key disabled\n");
-		}
-	}
-
-	if (bAllowKeys)
-	{	// Keys allowed .. stop hook
-		if (WinKeyHook_isActive)
-		{
-			UnhookWindowsHookEx(WinKeyHook);
-			WinKeyHook_isActive = false;
-			Con_DPrintf ("Windows and context menu key enabled\n");
-		}
-	}
-}
-
-void Input_Local_Keyboard_Disable_Sticky_Keys (cbool bDoDisable)
-{
-	if (bDoDisable)
-	{
-		AllowAccessibilityShortcutKeys (false);
-	}
-	else
-	{
-		AllowAccessibilityShortcutKeys (true);
-	}
-}
-
-void Input_Local_Keyboard_Disable_Windows_Key (cbool bDoDisable)
-{
-	if (bDoDisable)
-	{
-		AllowWindowsShortcutKeys (false);
-	}
-	else
-	{
-		AllowWindowsShortcutKeys (true);
-	}
-}
-
-// ericw
-void WIN_ResetDeadKeys()
-{
-    /*
-    if a deadkey has been typed, but not the next character (which the deadkey might modify), 
-    this tries to undo the effect pressing the deadkey.
-    see: http://archives.miloush.net/michkap/archive/2006/09/10/748775.html
-    */
-
-    BYTE keyboardState[256];
-    WCHAR buffer[16];
-    int keycode, scancode, result, i;
-
-    GetKeyboardState(keyboardState);
-
-    keycode = VK_SPACE;
-    scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
-    if (scancode == 0)
-    {
-        /* the keyboard doesn't have this key */
-        return;
-    }
-
-    for (i = 0; i < 5; i++)
-    {
-        result = ToUnicode(keycode, scancode, keyboardState, (LPWSTR)buffer, 16, 0);
-        if (result > 0)
-        {
-            /* success */
-            return;
-        }
-    }
-}
 
 static holy_key = 0;
 cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -323,7 +118,7 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 // Keyboard character emission
 	case WM_CHAR:
 //		if (holy_key) {
-//			Con_DPrintf ("Rejected a scan code %c %d\n", in_range(32, wparam, 126) ? wparam : 0, wparam);
+//			Con_DPrintLinef ("Rejected a scan code %c %d", in_range(32, wparam, 126) ? wparam : 0, wparam);
 //		}
 //		else 
 		{
@@ -348,11 +143,11 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		if (in_keymap.value /* off = no*/) { // 1005
 			// Looking for 96.
 			int key = ((int) lparam >> 16) & 255;
-//			Con_Printf ("lparam %d key %d\n", lparam, key);
+//			Con_PrintLinef ("lparam %d key %d", lparam, key);
 			// Top position, right?
 			if (key == 41) {
 				Key_Event_Ex (NO_WINDOW_NULL, (KEYMAP_COUNT_512 - 1), down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits());
-				WIN_ResetDeadKeys ();
+				Shell_Input_ResetDeadKeys ();
 				holy_key = true;
 				return true;
 			}
@@ -409,13 +204,8 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 	case WM_MOUSEWHEEL:
 		if (1) {
-#if 1
 			cbool direction = (short)HIWORD(wparam) > 0; // short.  Not int.
 			key_scancode_e scancode = direction ? K_MOUSEWHEELUP : K_MOUSEWHEELDOWN;
-#else
-			cbool direction = (int)HIWORD(wparam) < 0; // Must convert to signed type since wparam is unsigned.  >0 is up, <0 is down.
-			key_scancode_e scancode = direction ? K_MOUSEWHEELDOWN : K_MOUSEWHEELUP;
-#endif
 			// Can't remember if we are supposed to send the ascii or not for something with no ascii
 			// I think NO, but not 100%
 			// Figure out the right way make the function fatal error if receives something out of line
@@ -440,7 +230,6 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 			int buttons, shift, x, y;
 			
 			getmousebits (wparam, lparam, &buttons, &shift, &x, &y);
-			//mainus.event.mouseaction_fn (ptr, buttons, shift, x, y);
 			Input_Mouse_Button_Event (buttons);
 		}
 		return true; // handled
@@ -541,7 +330,7 @@ void Input_Local_Joy_AdvancedUpdate_f (lparse_t *unused)
 		if (strcmp (joy_name.string, "joystick"))
 		{
 			// notify user of advanced controller
-			Con_Printf ("\n%s configured\n\n", joy_name.string);
+			Con_PrintLinef (NEWLINE "%s configured" NEWLINE, joy_name.string);
 		}
 
 		// advanced initialization here
@@ -584,12 +373,12 @@ cbool Input_Local_Joystick_Startup (void)
 	// verify joystick driver is present
 	if ((numdevs = joyGetNumDevs ()) == 0)
 	{
-		Con_Printf ("\njoystick not found -- driver not present\n\n");
+		Con_PrintLinef (NEWLINE "joystick not found -- driver not present" NEWLINE);
 		return false;
 	}
 
 	// cycle through the joystick ids for the first valid one
-	for (joy_id = 0 ; joy_id < numdevs ; joy_id++)
+	for (mmr = -1, joy_id = 0 ; joy_id < numdevs ; joy_id++)
 	{
 		memset (&ji, 0, sizeof(ji));
 		ji.dwSize = sizeof(ji);
@@ -602,7 +391,7 @@ cbool Input_Local_Joystick_Startup (void)
 	// abort startup if we didn't find a valid joystick
 	if (mmr != JOYERR_NOERROR)
 	{
-		Con_Printf ("joystick not found -- no valid joysticks (%x)\n", mmr);
+		Con_PrintLinef ("joystick not found -- no valid joysticks (%x)", mmr);
 		return false;
 	}
 
@@ -611,7 +400,7 @@ cbool Input_Local_Joystick_Startup (void)
 	memset (&jc, 0, sizeof(jc));
 	if ((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
 	{
-		Con_Printf ("joystick not found -- invalid joystick capabilities (%x)\n", mmr);
+		Con_PrintLinef ("joystick not found -- invalid joystick capabilities (%x)", mmr);
 		return false;
 	}
 
@@ -629,7 +418,7 @@ cbool Input_Local_Joystick_Startup (void)
 #pragma message ("Command rogues")
 	Cmd_AddCommands ((voidfunc_t)Input_Local_Joystick_Startup); // Warning because Input_Local_Joystick_Startup is cbool return not void
 
-	Con_Printf ("\njoystick detected\n\n");
+	Con_PrintLinef (NEWLINE "joystick detected" NEWLINE);
 	return true;
 }
 
@@ -717,7 +506,7 @@ cbool Input_Local_Joystick_Read (void)
 		// read error occurred
 		// turning off the joystick seems too harsh for 1 read error,\
 		// but what should be done?
-		// Con_Printf ("IN_ReadJoystick: no response\n");
+		// Con_PrintLinef ("IN_ReadJoystick: no response");
 		// joy_avail = false;
 		return false;
 	}
@@ -769,3 +558,6 @@ void Input_Local_Deactivate (void)
 
 }
 
+#endif // PLATFORM_WINDOWS
+
+#endif // !CORE_SDL

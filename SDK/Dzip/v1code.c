@@ -230,7 +230,7 @@ void dzUncompressV1 (int testing)
 			demomode = 0;
 		else
 		{
-			error("%s has invalid type %i", de->name, de->type);
+			error("%s has invalid type %d", de->name, de->type);
 			break;
 		}
 

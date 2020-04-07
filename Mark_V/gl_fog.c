@@ -213,27 +213,29 @@ void Fog_FogExCommand_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("usage:\n");
-		Con_Printf("   fogex <fade>\n");
-		Con_Printf("   fogex <start> <end>\n");
-		Con_Printf("   fogex <red> <green> <blue>\n");
-		Con_Printf("   fogex <fade> <red> <green> <blue>\n");
-		Con_Printf("   fogex <start> <end> <red> <green> <blue>\n");
-		Con_Printf("   fogex <start> <end> <red> <green> <blue> <fade>\n");
+		Con_PrintLinef ("usage:");
+		Con_PrintLinef ("   fogex <fade>");
+		Con_PrintLinef ("   fogex <start> <end>");
+		Con_PrintLinef ("   fogex <red> <green> <blue>");
+		Con_PrintLinef ("   fogex <fade> <red> <green> <blue>");
+		Con_PrintLinef ("   fogex <start> <end> <red> <green> <blue>");
+		Con_PrintLinef ("   fogex <start> <end> <red> <green> <blue> <fade>");
 		if (fogex)
 		{
-			Con_Printf("current values:\n");
-			Con_Printf("   \"start\" is \"%f\"\n", fogex_start);
-			Con_Printf("   \"end\" is \"%f\"\n", fogex_end);
-			Con_Printf("   \"red\" is \"%f\"\n", fog_red);
-			Con_Printf("   \"green\" is \"%f\"\n", fog_green);
-			Con_Printf("   \"blue\" is \"%f\"\n", fog_blue);
-			Con_Printf("   \"fade\" is \"%f\"\n", fade_time);
-		} Con_Printf ("Current fog mode is \"classic fog\" (fog).\n");
-/*		Con_Printf ("Note: For backwards compatibility:\n"
-					"In worldspawn <density> <red> <green> <blue> <start> <end>\n"
-					"fogex does not use density, but a non-supporting client\n"
-					"will use this\n" ); */
+			Con_PrintLinef ("current values:");
+			Con_PrintLinef ("   " QUOTEDSTR("start") " is " QUOTED_F, fogex_start);
+			Con_PrintLinef ("   " QUOTEDSTR("end") " is " QUOTED_F, fogex_end);
+			Con_PrintLinef ("   " QUOTEDSTR("red")" is " QUOTED_F, fog_red);
+			Con_PrintLinef ("   " QUOTEDSTR("green") " is " QUOTED_F, fog_green);
+			Con_PrintLinef ("   " QUOTEDSTR("blue") " is " QUOTED_F, fog_blue);
+			Con_PrintLinef ("   " QUOTEDSTR("fade") " is " QUOTED_F, fade_time);
+		} Con_PrintLinef ("Current fog mode is " QUOTEDSTR("classic fog") " (fog).");
+/*		Con_PrintLinef ("Note: For backwards compatibility:"
+		Con_PrintLinef ("In worldspawn <density> <red> <green> <blue> <start> <end>"
+		Con_PrintLinef ("fogex does not use density, but a non-supporting client"
+		Con_PrintLinef ("will use this" ); 
+		Con_PrintLine ();
+					*/
 		break;
 	case 2: //TEST
 		FogEx_Update(fogex_start,
@@ -295,21 +297,21 @@ void Fog_FogCommand_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("usage:\n");
-		Con_Printf("   fog <density>\n");
-		Con_Printf("   fog <red> <green> <blue>\n");
-		Con_Printf("   fog <density> <red> <green> <blue>\n");
+		Con_PrintLinef ("usage:");
+		Con_PrintLinef ("   fog <density>");
+		Con_PrintLinef ("   fog <red> <green> <blue>");
+		Con_PrintLinef ("   fog <density> <red> <green> <blue>");
 #if 1 // FogEx
 		if (!fogex)
 		{
 #endif
-			Con_Printf("current values:\n");
-			Con_Printf("   \"density\" is \"%f\"\n", fog_density);
-			Con_Printf("   \"red\" is \"%f\"\n", fog_red);
-			Con_Printf("   \"green\" is \"%f\"\n", fog_green);
-			Con_Printf("   \"blue\" is \"%f\"\n", fog_blue);
+			Con_PrintLinef ("current values:");
+			Con_PrintLinef ("   " QUOTEDSTR("density") " is " QUOTED_F, fog_density);
+			Con_PrintLinef ("   " QUOTEDSTR("red") " is " QUOTED_F, fog_red);
+			Con_PrintLinef ("   " QUOTEDSTR("green") " is " QUOTED_F, fog_green);
+			Con_PrintLinef ("   " QUOTEDSTR("blue") " is " QUOTED_F, fog_blue);
 #if 1 // FogEx
-		} else Con_Printf ("current fog mode is \"extended fog\" (fogex).\n");
+		} else Con_PrintLinef ("current fog mode is " QUOTEDSTR("extended fog") " (fogex).");
 #endif
 		break;
 	case 2:
@@ -506,7 +508,7 @@ void Fog_SetupFrame (void)
 		eglFogi(GL_FOG_MODE, GL_LINEAR);
 		eglFogf(GL_FOG_START, startfogdist);
 		eglFogf(GL_FOG_END, endfogdist);
-//	Con_Printf ("se %g %g\n", startfogdist, endfogdist);
+//	Con_PrintLinef ("se %g %g", startfogdist, endfogdist);
 /*
 		eglFogf(GL_FOG_START, fogex_start);
 		eglFogf(GL_FOG_END, fogex_end);
@@ -644,4 +646,4 @@ void Fog_Init (void)
 }
 
 
-#endif // GLQUAKE // Build level define
+#endif // GLQUAKE specific

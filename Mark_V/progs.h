@@ -60,7 +60,7 @@ typedef struct edict_s
 	/* other fields from progs come immediately after */
 } edict_t;
 
-#define	STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - (int)&(((t *)0)->m)))
+#define	STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - (int)&(((t *)0)->m))) // Size diff?
 #define	EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l,edict_t,area)
 
 #define	GETEDICTFIELDVALUE(ed, fieldoffset) (fieldoffset ? (eval_t *)((byte *)&(ed)->v + fieldoffset) : NULL)

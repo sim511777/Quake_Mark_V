@@ -67,9 +67,9 @@ void Sound_Toggle_Mute_f (void)
 	muted = !muted;
 
 	if (muted)
-		Con_SafePrintf ("Mute: ON  --- ALT-M to Toggle\n");
+		Con_SafePrintLinef ("Mute: ON  --- ALT-M to Toggle");
 	else
-		Con_SafePrintf ("Mute: OFF --- ALT-M to Toggle\n");
+		Con_SafePrintLinef ("Mute: OFF --- ALT-M to Toggle");
 
 
 }
@@ -108,7 +108,7 @@ void S_TransferStereo16 (int endtime)
 		{
 			if (hresult != DSERR_BUFFERLOST)
 			{
-				Con_Printf ("S_TransferStereo16: DS::Lock Sound Buffer Failed\n");
+				Con_PrintLinef ("S_TransferStereo16: DS::Lock Sound Buffer Failed");
 				S_Shutdown ();
 				S_Startup ();
 				return;
@@ -116,7 +116,7 @@ void S_TransferStereo16 (int endtime)
 
 			if (++reps > 10000)
 			{
-				Con_Printf ("S_TransferStereo16: DS: couldn't restore buffer\n");
+				Con_PrintLinef ("S_TransferStereo16: DS: couldn't restore buffer");
 				S_Shutdown ();
 				S_Startup ();
 				return;
@@ -204,7 +204,7 @@ static void S_TransferPaintBuffer(int endtime)
 		{
 			if (hresult != DSERR_BUFFERLOST)
 			{
-				Con_Printf ("S_TransferPaintBuffer: DS::Lock Sound Buffer Failed\n");
+				Con_PrintLinef ("S_TransferPaintBuffer: DS::Lock Sound Buffer Failed");
 				S_Shutdown ();
 				S_Startup ();
 				return;
@@ -212,7 +212,7 @@ static void S_TransferPaintBuffer(int endtime)
 
 			if (++reps > 10000)
 			{
-				Con_Printf ("S_TransferPaintBuffer: DS: couldn't restore buffer\n");
+				Con_PrintLinef ("S_TransferPaintBuffer: DS: couldn't restore buffer");
 				S_Shutdown ();
 				S_Startup ();
 				return;
@@ -272,7 +272,7 @@ static void S_TransferPaintBuffer(int endtime)
 		IDirectSoundBuffer_GetCurrentPosition (pDSBuf, &dwNewpos, &dwWrite);
 
 //		if ((dwNewpos >= il) && (dwNewpos <= ir))
-//			Con_Printf("%d-%d p %d c\n", il, ir, dwNewpos);
+//			Con_PrintLinef ("%d-%d p %d c", il, ir, dwNewpos);
 	}
 #endif // DIRECT_SOUND_QUAKE
 }
@@ -424,4 +424,3 @@ static void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, int count)
 
 	ch->pos += count;
 }
-

@@ -319,7 +319,7 @@ void dem_temp_entity(void)
 			return;
 		}
 		if (entitytype > 17) /* this should be a bailout */
-			error("entitytype is %i", entitytype);
+			error("entitytype is %d", entitytype);
 	}
 	copy_msg(te_size[entitytype]);
 }

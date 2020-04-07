@@ -92,7 +92,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	} *PKBDLLHOOKSTRUCT;
 
 	#define WM_MOUSEWHEEL                   0x020A // winuser.h, unsure how not defined
-	#define MAPVK_VK_TO_VSC 0
 #endif // ! __WINDOWS_VC6_BANDAGES__
 
 // Vsync
@@ -186,6 +185,37 @@ typedef int (APIENTRY * GETSWAPFUNC) (void);
 #define VK_NONAME					0xFC
 #define VK_PA1						0xFD
 #define VK_OEM_CLEAR				0xFE
+
+
+/* Determine if run from command line.
+#if       _WIN32_WINNT < 0x0500
+#pragma message ("Redef")
+  #undef  _WIN32_WINNT
+  #define _WIN32_WINNT   0x0500
+#endif
+#include <stdio.h>
+#include <windows.h>
+//#include "Wincon.h"
+
+//int main(int argc, char *argv[])
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) // wWinMain is unicode, this is ANSI
+{
+    HWND consoleWnd = GetConsoleWindow();
+    DWORD dwProcessId;
+    int result = GetWindowThreadProcessId(consoleWnd, &dwProcessId);
+	int is_own_console = result && GetCurrentProcessId()== dwProcessId ? 1 : 0;
+    const char *text = is_own_console ? "I have my own console, press enter to exit." : "This console is not mine";
+#ifdef _CONSOLE
+	printf (text);
+	getchar ();
+#else
+	// If it is a SUBSYSTEM:WINDOWS (i.e. not a console terminal app) it always say "This console is not mine" -- so it's useless.
+	MessageBoxA (NULL, text, "Alert!", MB_OK);
+#endif
+
+    return 0;
+}
+*/
 
 #endif // !__CORE_WINDOWS_H__
 

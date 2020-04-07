@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -286,7 +288,7 @@ static void BuildTris (void)
 	commands[numcommands++] = 0;		// end of list marker
 
 // Baker: This spams too much
-//Con_DPrintf ("%3i tri %3i vert %3i cmd\n", pheader->numtris, numorder, numcommands);
+//Con_DPrintLinef ("%3d tri %3d vert %3d cmd", pheader->numtris, numorder, numcommands);
 
 	allverts += numorder;
 	alltris += pheader->numtris;
@@ -317,7 +319,7 @@ void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr)
 	paliashdr = hdr;	// (aliashdr_t *)Mod_Extradata (m);
 
 //johnfitz -- generate meshes
-//	Con_DPrintf ("meshing %s...\n",m->name);
+//	Con_DPrintLinef ("meshing %s...",m->name);
 	BuildTris ();
 
 	// save the data out
@@ -380,4 +382,4 @@ void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr)
 			*verts++ = poseverts[i][vertexorder[j]];
 }
 
-
+#endif // GLQUAKE specific

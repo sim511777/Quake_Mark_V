@@ -84,23 +84,23 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 	{
 		if (!isDedicated)
 		{
-			System_MessageBox ("Quake Not Detected", "Your Quake folder should contain a "
-							"folder named id1 with pak0.pak and pak1.pak.\n\nOpening folder ...");
+			msgbox ("Quake Not Detected", "Your Quake folder should contain a "
+							"folder named id1 with pak0.pak and pak1.pak." NEWLINE NEWLINE "Opening folder ...");
 
 			Folder_Open_Highlight_Binary ();
 		}
 
-		System_Error ( "W_LoadWadFile: couldn't load %s\n\n"
+		System_Error ( "W_LoadWadFile: couldn't load %s" NEWLINE NEWLINE
 					"Game data files are required to run; "
-					"usually this means you need Quake shareware or registered version.\n\n"
-					"Is %s in the proper folder?\n\n(%s)", filename, ENGINE_FAMILY_NAME, com_basedir);
+					"usually this means you need Quake shareware or registered version." NEWLINE NEWLINE
+					"Is %s in the proper folder?" NEWLINE NEWLINE "(%s)", filename, ENGINE_FAMILY_NAME, com_basedir);
 	}
 
 	header = (wadinfo_t *)wad_base;
 
 	if (header->identification[0] != 'W' || header->identification[1] != 'A'
 	|| header->identification[2] != 'D' || header->identification[3] != '2')
-		System_Error ("Wad file %s doesn't have WAD2 id\n",filename);
+		System_Error ("Wad file %s doesn't have WAD2 id",filename);
 
 	wad_numlumps = LittleLong(header->numlumps);
 	infotableofs = LittleLong(header->infotableofs);
@@ -136,7 +136,7 @@ lumpinfo_t	*W_GetLumpinfo (const char *name)
 			return lump_p;
 	}
 
-	Con_SafePrintf ("W_GetLumpinfo: %s not found\n", name); //johnfitz -- was System_Error
+	Con_SafePrintLinef ("W_GetLumpinfo: %s not found", name); //johnfitz -- was System_Error
 	return NULL;
 }
 
@@ -156,7 +156,7 @@ void *W_GetLumpNum (int num)
 	lumpinfo_t	*lump;
 
 	if (num < 0 || num > wad_numlumps)
-		System_Error ("W_GetLumpNum: bad number: %i", num);
+		System_Error ("W_GetLumpNum: bad number: %d", num);
 
 	lump = wad_lumps + num;
 
@@ -176,5 +176,4 @@ void SwapPic (qpic_t *pic)
 	pic->width = LittleLong(pic->width);
 	pic->height = LittleLong(pic->height);
 }
-
 

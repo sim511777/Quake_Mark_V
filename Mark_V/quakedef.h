@@ -30,12 +30,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // quakedef.h -- primary header for client
 #include <core.h>
 
+#if !defined(GLQUAKE) && defined(CORE_GL)
+	#define WINQUAKE_GL
+#endif // !GLQUAKE + CORE_GL
+
 //#define	QUAKE_GAME			// as opposed to utilities .. Baker: Moved to project level define
 
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.23
-#define	ENGINE_BUILD			1023			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_VERSION			1.25
+#define	ENGINE_BUILD			1025			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -43,8 +47,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PROQUAKE_CLIENT_VERSION_5_00	5.00
 #define MAX_EFFECTIVE_WEAPON_COUNT_25	25
 
+#define	MAXPRINTMSG_4096		4096
+
 #define DEFAULT_QPORT_26000		26000
-#define	GAMENAME				"id1"					// directory to look in by default
+#define	GAMENAME_ID1				"id1"					// directory to look in by default
 #define	DEFAULT_PROGS_DAT_NAME	"progs.dat"				// directory to look in by default
 #define	CONFIG_CFG				"config.cfg"			// config name
 #define	DEFAULT_CFG				"default.cfg"			// config name
@@ -76,10 +82,12 @@ extern fn_set_t qfunction_set;
 #endif // Baker: I'm ignoring NDEBUG for now.
 
 // Baker: Determine sleep time
-#define QUAKE_SLEEP_TIME 1 // Milliseconds
+#define QUAKE_DEDICATED_SLEEP_TIME_MILLISECONDS_1 1
+
+#define QUAKE_SLEEP_TIME_MILLISECONDS 1 // Milliseconds
 #if !defined (GLQUAKE) && !defined(_WIN32)
-	#undef QUAKE_SLEEP_TIME
-	#define QUAKE_SLEEP_TIME 50 // Baker: Software renderer without asm can eat up cpu
+	#undef QUAKE_SLEEP_TIME_MILLISECONDS
+	#define QUAKE_SLEEP_TIME_MILLISECONDS 50 // Baker: Software renderer without asm can eat up cpu
 #endif
 
 #ifdef DIRECT3D9_WRAPPER // dx9 - engine name (DirectX 9)
@@ -92,15 +100,27 @@ extern fn_set_t qfunction_set;
 	#define TEMP_BASE_NAME ENGINE_FAMILY_NAME
 	#define ENGINE_SHOT_PREFIX "mark_v_"
 #else
-	#define TEMP_BASE_NAME "WinQuake " ENGINE_FAMILY_NAME  // Prefix it WinQuake
+	#if defined(CORE_GL) && !defined(PLATFORM_LINUX) // Let's not confuse the Linux users, as this may be the only WinQuake build ever made for Linux (i.e. no Non-GL build)
+		#define TEMP_BASE_NAME "WinQuake-GL " ENGINE_FAMILY_NAME  // Prefix it WinQuake
+	#else
+		#define TEMP_BASE_NAME "WinQuake " ENGINE_FAMILY_NAME  // Prefix it WinQuake
+	#endif
 	#define ENGINE_SHOT_PREFIX "winquake_mark_v_"
 #endif
 
 // ENGINE_NAME:
 #ifdef _DEBUG
-	#define ENGINE_NAME	  TEMP_BASE_NAME " Debug"			// Suffix it "Debug"
+    #ifdef CORE_SDL
+        #define ENGINE_NAME	  TEMP_BASE_NAME " SDL Debug"			// Suffix it "Debug"
+    #else
+		#define ENGINE_NAME	  TEMP_BASE_NAME " Debug"			// Suffix it "Debug"
+    #endif
 #else
-	#define ENGINE_NAME	  TEMP_BASE_NAME
+    #ifdef CORE_SDL
+        #define ENGINE_NAME	  TEMP_BASE_NAME " SDL"			// Suffix it "Debug"
+	#else
+		#define ENGINE_NAME	  TEMP_BASE_NAME
+	#endif
 #endif
 
 #ifdef DIRECT3D9_WRAPPER // dx9 - renderer name (DX9)
@@ -149,6 +169,8 @@ extern fn_set_t qfunction_set;
 #define BUGFIX_DEMO_RECORD_BEFORE_CONNECTED_FIX		// Baker: Quite a bit of demo recording flexibility now.
 #define BUGFIX_DEMO_RECORD_NOTHING_FIX				// Baker: A demo that didn't play a map would hang the rendering.
 
+#define SUPPORTS_RESIZABLE_WINDOW // No DX8 right now and No Mac
+
 #ifdef GLQUAKE
 	#define GLQUAKE_ALPHA_DRAWING
 	#define GLQUAKE_CAPTIONS_AND_HIGHLIGHTS
@@ -162,12 +184,12 @@ extern fn_set_t qfunction_set;
 	#define GLQUAKE_FLASH_BLENDS
 	#define GLQUAKE_FOG
 	#define GLQUAKE_RENDERER_SUPPORT
-	#define GLQUAKE_RESIZABLE_WINDOW
 	#define GLQUAKE_TEXTUREMODES
 	#define GLQUAKE_TEXTURE_MANAGER
 	#define GLQUAKE_TEXTURE_POINTER
 	#define GLQUAKE_VIDBUFFER_ACCESS
 	#define GLQUAKE_VIEW_BLENDS
+
 #ifndef DIRECT3D9_WRAPPER // dx9 - we don't have texture gamma integrated
 	#define GLQUAKE_TEXTUREGAMMA_SUPPORT
 #endif // DIRECT3D9_WRAPPER
@@ -258,14 +280,14 @@ extern cbool in_load_game;
 		#pragma message ("Hardware gamma not implemented")
 		#undef SUPPORTS_CD // Lazy ... not supported yet.
 		#undef GLQUAKE_HARDWARE_GAMMA
-		#undef GLQUAKE_RESIZABLE_WINDOW
+		#undef SUPPORTS_RESIZABLE_WINDOW
 		#pragma message ("Baker: GLQUAKE_HARDWARE_GAMMA will need restored")
 	#endif
 #endif // PLATFORM_OSX
 
 #ifdef CORE_SDL
     #undef SUPPORTS_CD // Lazy ... not supported yet.
-    #undef GLQUAKE_RESIZABLE_WINDOW // SDL 1.2 doesn't seem to have a method to make this very possible.
+//    #undef SUPPORTS_RESIZABLE_WINDOW // SDL 1.2 doesn't seem to have a method to make this very possible.
 	#undef SUPPORTS_MP3_MUSIC
 	#undef SUPPORTS_AVI_CAPTURE // Must disable AVI capture :(
 #endif
@@ -513,9 +535,15 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop);
 #include "q_music.h"
 
 #ifdef GLQUAKE
-	#include "glquake.h"
 	#include "gl_renderer.h"
+	#include "glquake.h"
 #else
+	#ifdef CORE_GL
+		//#include "glquake.h"
+		#include "core_opengl.h"
+		#include "gl_renderer.h"
+	#endif
+
 	#include "r_local.h"
 	#include "d_local.h"
 #endif
@@ -578,7 +606,7 @@ void Host_Changelevel_Required_Msg (cvar_t *var);
 void Host_Pause_f (lparse_t *unused);
 void _Host_Connect (const char *name); // Common between connect and reconnect.
 void Host_Version_f (lparse_t *line);
-void Host_Version_Print (print_fn_t print_fn);
+void Host_Version_Print (printline_fn_t my_printline);
 void HD_Folder_f (lparse_t *line);
 cbool HD_Folder_Ok (char *s);
 int Host_ActiveWeapon_0_to_24_or_Neg1 (void);

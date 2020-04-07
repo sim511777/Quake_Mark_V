@@ -20,6 +20,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // music_cd_win.c - cd player
 
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS
+#ifndef __GNUC__ // No MinGW at this time
+
 #include "core.h"
 #include "core_windows.h"
 
@@ -57,7 +61,7 @@ static void Pause (mobj_t *me);
 static void Resume (mobj_t *me);
 static void sCDError (mobj_t *me, const char *fmt, ...);
 
-#define FAILED_SETUP(_s) { Core_DPrintf ("%s: %s\n", _tag, _s); return false; }
+#define FAILED_SETUP(_s) { logd ("%s: %s", _tag, _s); return false; }
 static cbool sGetAudioDiskInfo (mobj_t *me)
 {
 	MLOCAL(m);
@@ -68,7 +72,7 @@ static cbool sGetAudioDiskInfo (mobj_t *me)
 		FAILED_SETUP ("drive ready test - get status failed");
 
 	if (!mciStatusParms.dwReturn)
-		FAILED_SETUP ("drive not ready\n");
+		FAILED_SETUP ("drive not ready");
 
 	mciStatusParms.dwItem = MCI_STATUS_NUMBER_OF_TRACKS;
 	if ((dwReturn = mciSendCommand(m->wDeviceID, MCI_STATUS, MCI_STATUS_ITEM | MCI_WAIT, (DWORD) (LPVOID) &mciStatusParms)))
@@ -105,7 +109,7 @@ static void sRefreshVolume (mobj_t *me)
 			break;
 		}
 		me->volumepct = volumepct;
-		Core_DPrintf ("%s: refresh volume\n", _tag);
+		logd ("%s: refresh volume", _tag);
 	}
 }
 
@@ -125,9 +129,9 @@ static void Stop (mobj_t *me)
 		me->paused = false;
 
 		if ((dwReturn = mciSendCommand(m->wDeviceID, MCI_STOP, 0, (DWORD)NULL)))
-			sCDError (me, "MCI_STOP failed (%i)", dwReturn);
+			sCDError (me, "MCI_STOP failed (%d)", dwReturn);
 
-		Core_DPrintf ("%s: stop\n", _tag);
+		logd ("%s: stop", _tag);
 	}
 }
 
@@ -147,7 +151,7 @@ static void Update (mobj_t *me)
 	if (me->getvolumepct && *(me->getvolumepct) != me->volumepct)
 	{
 		sRefreshVolume (me);
-		Core_DPrintf ("%s: volume is %g\n", _tag, me->volumepct);
+		logd ("%s: volume is %g", _tag, me->volumepct);
 	}
 }
 
@@ -157,9 +161,9 @@ static void Update (mobj_t *me)
 
 static void sCDError (mobj_t *me, const char *fmt, ...)
 {
-	VA_EXPAND (msg, 1024, fmt);
+	VA_EXPAND (msg, SYSTEM_STRING_SIZE_1024, fmt);
 
-	Core_Printf ("%s\n", msg);
+	log_debug ("%s", msg);
 	// More error handling?  Shutdown?
 }
 
@@ -188,7 +192,7 @@ static void sSetPause (mobj_t *me, cbool setpause)
 			if (!dwReturn /* success = 0 */) break;
 
 			// Error
-			sCDError (me, "MCI_PAUSE failed (%i)", dwReturn);
+			sCDError (me, "MCI_PAUSE failed (%d)", dwReturn);
 			return;
 
 		case false:
@@ -197,12 +201,13 @@ static void sSetPause (mobj_t *me, cbool setpause)
 			if (!dwReturn /* success = 0 */) break;
 
 			// Error
-			sCDError (me, "%s: MCI_PLAY failed (%i)", _tag, dwReturn);
+			sCDError (me, "%s: MCI_PLAY failed (%d)", _tag, dwReturn);
 			return;
 		}
 
 		me->paused = setpause;
-		Core_DPrintf ("%s: %s\n", _tag, me->paused ? "paused" : "resumed");
+
+		log_debug ("%s: %s", _tag, me->paused ? "paused" : "resumed");
 	}
 }
 
@@ -242,7 +247,7 @@ static cbool Play (mobj_t *me, const char *path_to_file, cbool looping)
 #pragma message ("I was always under the impression track 0 with first one?")
 	if (tracknum < 1 || tracknum > m->maxtrack)
 	{
-		Core_DPrintf("CDAudio: Bad track number %u.\n", tracknum);
+		log_debug ("CDAudio: Bad track number %d.", (int)tracknum);
 		return false;
 	}
 
@@ -253,13 +258,13 @@ static cbool Play (mobj_t *me, const char *path_to_file, cbool looping)
 
 	if (dwReturn)
 	{
-		Core_DPrintf ("MCI_STATUS failed (%i)\n", dwReturn);
+		log_debug ("MCI_STATUS failed (%d)", dwReturn);
 		return false;
 	}
 
 	if (mciStatusParms.dwReturn != MCI_CDA_TRACK_AUDIO)
 	{
-		Core_Printf ("%s: track %i is not audio\n", _tag, tracknum);
+		log_debug ("%s: track %d is not audio", _tag, tracknum);
 //		return false;
 	}
 
@@ -270,7 +275,7 @@ static cbool Play (mobj_t *me, const char *path_to_file, cbool looping)
 
 	if (dwReturn)
 	{
-		Core_DPrintf ("%s: MCI_STATUS failed (%i)\n", _tag, dwReturn);
+		log_debug ("%s: MCI_STATUS failed (%d)", _tag, dwReturn);
 		return false;
 	}
 
@@ -284,7 +289,7 @@ static cbool Play (mobj_t *me, const char *path_to_file, cbool looping)
 
 		if (dwReturn)
 		{
-			Core_DPrintf ("%s: MCI_PLAY failed (%i)\n", _tag, dwReturn);
+			log_debug ("%s: MCI_PLAY failed (%d)", _tag, dwReturn);
 			return false;
 		}
 	}
@@ -296,7 +301,7 @@ static cbool Play (mobj_t *me, const char *path_to_file, cbool looping)
 	me->looping = looping;
 	sRefreshVolume (me);
 
-	Core_DPrintf ("%s: playing\n", _tag);
+	log_debug ("%s: playing", _tag);
 	return true;
 }
 
@@ -319,7 +324,7 @@ int WIN_CD_Message (mobj_t *me, WPARAM wParam, LPARAM lParam)
 		if (me->looping)
 		{
 			 Play (me, me->filename, true);
-			Core_DPrintf ("%s: looped\n", _tag);
+			log_debug ("%s: looped", _tag);
 		}
 		break;
 
@@ -328,13 +333,13 @@ int WIN_CD_Message (mobj_t *me, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case MCI_NOTIFY_FAILURE:
-		Core_DPrintf ("MCI_NOTIFY_FAILURE\n");
+		log_debug ("MCI_NOTIFY_FAILURE");
 		Stop (me);
 		m->cd_valid = false;
 		break;
 
 	default:
-		Core_DPrintf ("Unexpected MM_MCINOTIFY type (%i)\n", wParam);
+		log_debug ("Unexpected MM_MCINOTIFY type (%d)", wParam);
 		return 1;
 	}
 	return 0;
@@ -352,7 +357,7 @@ static cbool Initialize (mobj_t *me)
 
 	if ((dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE, (DWORD) (LPVOID) &mciOpenParms)))
 	{
-		Core_Printf ("CDAudio_Init: MCI_OPEN failed (%i)\n", dwReturn);
+		logd ("CDAudio_Init: MCI_OPEN failed (%d)", dwReturn);
 		return false;
 	}
 
@@ -361,15 +366,15 @@ static cbool Initialize (mobj_t *me)
 
     if ((dwReturn = mciSendCommand(m->wDeviceID, MCI_SET, MCI_SET_TIME_FORMAT, (DWORD)(LPVOID) &mciSetParms)))
     {
-		Core_Printf ("MCI_SET_TIME_FORMAT failed (%i)\n", dwReturn);
+		logd ("MCI_SET_TIME_FORMAT failed (%d)", dwReturn);
         mciSendCommand(m->wDeviceID, MCI_CLOSE, 0, (DWORD)NULL);
 		return false;
     }
 
 	if (sGetAudioDiskInfo(me))
-		Core_Printf ("%s: init - No CD in player.\n", _tag);
+		log_debug ("%s: init - No CD in player.", _tag);
 
-	Core_Printf ("CD Audio Initialized\n");
+	log_debug ("CD Audio Initialized");
 	return true;
 }
 
@@ -386,7 +391,7 @@ static void *Shutdown (mobj_t *me)
 	Stop (me);
 
 	if (mciSendCommand(m->wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)NULL))
-		Core_DPrintf ("%s: MCI_CLOSE failed\n", _tag);
+		log_debug ("%s: MCI_CLOSE failed", _tag);
 
 	core_free (me->_local);
 	core_free (me);
@@ -430,6 +435,8 @@ mobj_t *CD_Instance (void)
 #undef mobj_t
 #undef mlocal
 
+#endif // !__GNUC__ // No MinGW at this time
+#endif // PLATFORM_WINDOWS
 
 
 

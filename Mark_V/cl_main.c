@@ -45,7 +45,7 @@ void CL_ClearState (unsigned int protocol_num)
 {
 	int			i;
 
-	Con_DPrintf ("Host_ClearMemory\n");
+	Con_DPrintLinef ("Host_ClearMemory");
 
 	if (!sv.active)
 		Host_ClearMemory ();
@@ -116,7 +116,7 @@ void CL_Disconnect (void)
 
 	if (cls.state == ca_connected)
 	{
-		Con_DPrintf ("Sending clc_disconnect\n");
+		Con_DPrintLinef ("Sending clc_disconnect");
 		SZ_Clear (&cls.message);
 		MSG_WriteByte (&cls.message, clc_disconnect);
 		NET_SendUnreliableMessage (cls.netcon, &cls.message);
@@ -201,7 +201,7 @@ void CL_EstablishConnection (const char *host)
 
 	if (!host) {
 		if (!lasthost[0]) {
-			Con_Printf ("No server to reconnect!\n");
+			Con_PrintLinef ("No server to reconnect!");
 			return;
 		}
 		host = lasthost;
@@ -222,12 +222,12 @@ void CL_EstablishConnection (const char *host)
 		const char *extra = "";
 		if (net_hostport != DEFAULT_QPORT_26000)
 			extra = va ("\nTry using port %d\n", DEFAULT_QPORT_26000); //r00k added
-		Host_Error ("connect failed\n%s", extra);
+		Host_Error ("connect failed" NEWLINE "%s", extra);
 	}
-	Con_DPrintf ("CL_EstablishConnection: connected to %s\n", host);
+	Con_DPrintLinef ("CL_EstablishConnection: connected to %s", host);
 
 	if (NET_QSocketIsProQuakeServer(cls.netcon))
-		Con_Printf("%c%cConnected to %s server%c\n", 2, 29, "ProQuake", 31); // char 2 means bronze it.
+		Con_PrintLinef ("%c%cConnected to %s server%c", 2, 29, "ProQuake", 31); // char 2 means bronze it.
 
 	cls.demonum = -1;			// not in the demo loop now
 	cls.state = ca_connected;
@@ -244,9 +244,9 @@ An svc_signonnum has been received, perform a client side setup
 */
 void CL_SignonReply (void)
 {
-	char 	str[8192];
+//	char str[8192]; // 8192 is somewhat bigly.
 
-	Con_DPrintf ("CL_SignonReply: %i\n", cls.signon);
+	Con_DPrintLinef ("CL_SignonReply: %d", cls.signon);
 
 	switch (cls.signon)
 	{
@@ -257,14 +257,19 @@ void CL_SignonReply (void)
 
 	case 2:
 		MSG_WriteByte (&cls.message, clc_stringcmd);
-		MSG_WriteString (&cls.message, va("name \"%s\"\n", cl_name.string));
+		MSG_WriteStringf (&cls.message, "name " QUOTED_S NEWLINE, cl_name.string);
 
 		MSG_WriteByte (&cls.message, clc_stringcmd);
-		MSG_WriteString (&cls.message, va("color %i %i\n", ((int)cl_color.value)>>4, ((int)cl_color.value)&15));
+		MSG_WriteStringf (&cls.message, "color %d %d" NEWLINE, ((int)cl_color.value) >> 4, ((int)cl_color.value) & 15);
 
 		MSG_WriteByte (&cls.message, clc_stringcmd);
-		c_snprintf (str, "spawn %s", cls.spawnparms);
+#if 0
+		c_snprintf1 (str, "spawn %s", cls.spawnparms); // Note the lack of newline here.  Interesting
 		MSG_WriteString (&cls.message, str);
+#else
+		// Baker - Dec 30 2016
+		MSG_WriteStringf (&cls.message, "spawn %s", cls.spawnparms);
+#endif
 		break;
 
 	case 3:
@@ -278,7 +283,7 @@ void CL_SignonReply (void)
 		if (cl_autodemo.value && !cls.demoplayback && !cls.demorecording && (cl_autodemo.value >= 2 || host_maxfps.value == 72))
 		{
 			// Baker: host_maxfps > 72 will lead to really big demos.
-			Cmd_ExecuteString ("record " AUTO_DEMO_NAME "\n", src_command);
+			Cmd_ExecuteString ("record " AUTO_DEMO_NAME NEWLINE, src_command); // AFAIK newline is superfluous
 		}
 		break;
 	}
@@ -298,13 +303,13 @@ void CL_NextDemo (void)
 	if (cls.demonum == -1)
 		return;		// don't play demos
 
-	if (!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS)
+	if (!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS_32)
 	{
 		cls.demonum = 0;
 
 		if (!cls.demos[cls.demonum][0])
 		{
-			Con_Printf ("No demos listed with startdemos\n");
+			Con_PrintLinef ("No demos listed with startdemos");
 			cls.demonum = -1;
 			CL_Disconnect ();
 			return;
@@ -313,8 +318,9 @@ void CL_NextDemo (void)
 
 	SCR_BeginLoadingPlaque_Force_NoTransition ();
 
-	c_snprintf (str, "nextstartdemo %s\n", cls.demos[cls.demonum]);
+	c_snprintf1 (str, "nextstartdemo %s" NEWLINE, cls.demos[cls.demonum]);
 	Cbuf_InsertText (str);
+	
 	cls.demonum++;
 }
 
@@ -330,17 +336,17 @@ void CL_PrintEntities_f (lparse_t *unused)
 
 	for (i = 0, ent = cl_entities ; i < cl.num_entities ; i++, ent++)
 	{
-		Con_Printf ("%3i:",i);
+		Con_PrintContf ("%3d:", i);
 
 		if (!ent->model)
 		{
-			Con_Printf ("EMPTY\n");
+			Con_PrintLinef ("EMPTY");
 			continue;
 		}
 
-		Con_Printf
+		Con_PrintLinef
 		(
-			"%s:%2i  (%5.1f,%5.1f,%5.1f) [%5.1f %5.1f %5.1f]\n",
+			"%s:%2d  (%5.1f,%5.1f,%5.1f) [%5.1f %5.1f %5.1f]",
 			ent->model->name,ent->frame,
 			ent->origin[0], ent->origin[1], ent->origin[2],
 			ent->angles[0], ent->angles[1], ent->angles[2]
@@ -830,11 +836,11 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 
 	#ifdef SUPPORTS_CUTSCENE_PROTECTION
 		if (found_server_command)
-			Cbuf_AddText (va("\n%c\n", CUTSCENE_CHAR_END_6));
+			Cbuf_AddTextLinef (NEWLINE "%c", CUTSCENE_CHAR_END_6);
 	#endif // SUPPORTS_CUTSCENE_PROTECTION
 
 		if (cl_shownet.value)
-			Con_Printf ("\n");
+			Con_PrintLine ();
 
 #pragma message ("This stuff has to be moved out")
 #pragma message ("This stuff has to be moved out")
@@ -852,13 +858,13 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 
 		//visedicts
 		if (cl.numvisedicts > MAX_WINQUAKE_VISEDICTS && dev_peakstats.visedicts <= MAX_WINQUAKE_VISEDICTS)
-			Con_DWarning ("%i visedicts exceeds standard limit of %d.\n", cl.numvisedicts, MAX_WINQUAKE_VISEDICTS); // 256
+			Con_DWarningLine ("%d visedicts exceeds standard limit of %d.", cl.numvisedicts, MAX_WINQUAKE_VISEDICTS); // 256
 		dev_stats.visedicts = cl.numvisedicts;
 		dev_peakstats.visedicts = c_max(cl.numvisedicts, dev_peakstats.visedicts);
 
 		//temp entities
 		if (cl.num_temp_entities > 64 && dev_peakstats.tempents <= 64)
-			Con_DWarning ("%i tempentities exceeds standard limit of 64.\n", cl.num_temp_entities);
+			Con_DWarningLine ("%d tempentities exceeds standard limit of 64.", cl.num_temp_entities);
 		dev_stats.tempents = cl.num_temp_entities;
 		dev_peakstats.tempents = c_max(cl.num_temp_entities, dev_peakstats.tempents);
 
@@ -867,7 +873,7 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 			if (b->model && b->endtime >= cl.time)
 				num_beams++;
 		if (num_beams > MAX_WINQUAKE_BEAMS && dev_peakstats.beams <= MAX_WINQUAKE_BEAMS)
-			Con_DWarning ("%i beams exceeded standard limit of %d.\n", num_beams, MAX_WINQUAKE_BEAMS);
+			Con_DWarningLine ("%d beams exceeded standard limit of %d.", num_beams, MAX_WINQUAKE_BEAMS);
 		dev_stats.beams = num_beams;
 		dev_peakstats.beams = c_max(num_beams, dev_peakstats.beams);
 
@@ -876,7 +882,7 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 			if (l->die >= cl.time && l->radius)
 				num_dlights++;
 		if (num_dlights > MAX_WINQUAKE_DLIGHTS && dev_peakstats.dlights <= MAX_WINQUAKE_DLIGHTS)
-			Con_DWarning ("%i dlights exceeded standard limit of %i.\n", num_dlights, MAX_WINQUAKE_DLIGHTS); // 32
+			Con_DWarningLine ("%d dlights exceeded standard limit of %d.", num_dlights, MAX_WINQUAKE_DLIGHTS); // 32
 		dev_stats.dlights = num_dlights;
 		dev_peakstats.dlights = c_max(num_dlights, dev_peakstats.dlights);
 
@@ -977,7 +983,7 @@ void CL_SendCmd (void)
 
 	if (!NET_CanSendMessage (cls.netcon))
 	{
-		Con_DPrintf ("CL_SendCmd: can't send\n");
+		Con_DPrintLinef ("CL_SendCmd: can't send");
 		return;
 	}
 
@@ -1003,9 +1009,9 @@ void CL_Tracepos_f (void)
 	TraceLine(r_refdef.vieworg, v, w);
 
 	if (VectorLength (w) == 0)
-		Con_Printf ("Tracepos: trace didn't hit anything\n");
+		Con_PrintLinef ("Tracepos: trace didn't hit anything");
 	else
-		Con_Printf ("Tracepos: (%i %i %i)\n", (int)w[0], (int)w[1], (int)w[2]);
+		Con_PrintLinef ("Tracepos: (%d %d %d)", (int)w[0], (int)w[1], (int)w[2]);
 }
 
 /*
@@ -1021,9 +1027,9 @@ Add velocity nuking like Quakespasm.
 void CL_Setpos_f (lparse_t *line)
 {
 	if (!sv.active) 
-		Con_Printf ("Server not active\n");
+		Con_PrintLinef ("Server not active");
 	if (!cl.worldmodel || !sv.worldmodel) 
-		Con_Printf ("No map active\n");
+		Con_PrintLinef ("No map active");
 	else
 	{
 		edict_t *player = EDICT_NUM (1);
@@ -1033,7 +1039,7 @@ void CL_Setpos_f (lparse_t *line)
 		{
 			if (!cl.stored_set)
 			{
-				Con_Printf ("No stored point set.  Type viewpos to store a location.\n");
+				Con_PrintLinef ("No stored point set.  Type viewpos to store a location.");
 				return;
 			}
 			VectorCopy (cl.stored_origin, origin);
@@ -1057,9 +1063,9 @@ void CL_Setpos_f (lparse_t *line)
 		}
 		else
 		{
-			Con_Printf("usage:\n");
-			Con_Printf("   setpos <x> <y> <z>\n");
-			Con_Printf("   setpos <x> <y> <z> <pitch> <yaw> <roll>\n");
+			Con_PrintLinef ("usage:");
+			Con_PrintLinef ("   setpos <x> <y> <z>");
+			Con_PrintLinef ("   setpos <x> <y> <z> <pitch> <yaw> <roll>");
 			return;
 		}
 
@@ -1069,7 +1075,7 @@ void CL_Setpos_f (lparse_t *line)
 				if (cont == CONTENTS_SOLID) {
 					cl.noclip_anglehack = true;
 					player->v.movetype = MOVETYPE_NOCLIP;
-					Con_Printf ("noclip ON\n");
+					Con_PrintLinef ("noclip ON");
 					
 				}
 			}
@@ -1087,13 +1093,13 @@ void CL_Setpos_f (lparse_t *line)
 
 void CL_RPos_Legacy_f (lparse_t *line)
 {
-	Con_Printf ("Use 'scr_showpos' instead.\n");
+	Con_PrintLinef ("Use 'scr_showpos' instead.");
 }
 
 void CL_Viewpos_f (lparse_t *line)
 {
 	//camera position
-	Con_Printf ("Camera: (%i %i %i) %i %i %i\n",
+	Con_PrintLinef ("Camera: (%d %d %d) %d %d %d",
 		(int)r_refdef.vieworg[0],
 		(int)r_refdef.vieworg[1],
 		(int)r_refdef.vieworg[2],
@@ -1101,7 +1107,7 @@ void CL_Viewpos_f (lparse_t *line)
 		(int)r_refdef.viewangles[YAW],
 		(int)r_refdef.viewangles[ROLL]);
 	//player position
-	Con_Printf ("Viewpos: (%i %i %i) %i %i %i\n",
+	Con_PrintLinef ("Viewpos: (%d %d %d) %d %d %d",
 		(int)cl_entities[cl.viewentity_player].origin[0],
 		(int)cl_entities[cl.viewentity_player].origin[1],
 		(int)cl_entities[cl.viewentity_player].origin[2],
@@ -1139,4 +1145,3 @@ void CL_Init (void)
 
 	Cmd_AddCommands (CL_Init);
 }
-

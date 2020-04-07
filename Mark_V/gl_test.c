@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -95,9 +97,9 @@ void Test_Spawn (vec3_t origin)
 	VectorCopy (origin, p->origin);
 	VectorCopy (plane->normal, p->normal);
 
-	CrossProduct (incoming, p->normal, p->up);
+	VectorCrossProduct (incoming, p->normal, p->up);
 
-	CrossProduct (p->up, p->normal, p->right);
+	VectorCrossProduct (p->up, p->normal, p->right);
 
 	p->length = 8;
 }
@@ -186,3 +188,4 @@ void Test_Draw (void)
 #endif // GLTEST
 
 
+#endif // GLQUAKE specific

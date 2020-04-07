@@ -84,13 +84,14 @@ void VID_Local_AddFullscreenModes (void)
             // Not a dup and test = ok ---> add it
             memcpy (&vid.modelist[vid.nummodes++], &test, sizeof(vmode_t) );
 #if 0
-            Con_SafePrintf ("Added %i: %i x %i %i\n", vid.nummodes -1, vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
+            Con_SafePrintLinef ("Added %d: %d x %d %d", vid.nummodes -1, vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
 #endif
         }
     }
 }
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
+// Exclusively called by sVID_Local_SetMode_GetBuffers
 static void sVID_GetBuffers_InitializeTexture (int newwidth, int newheight)
 {
     if (vid.texture_initialized)
@@ -202,15 +203,16 @@ void VID_ResizeHandler (id view, void* pContext)
 }
 
 
-
+// Exclusively called VID_Local_SetMode and only once
 static void sVID_Local_SetMode_GetBuffers (int newwidth, int newheight)
 {
+// We are similar to VID_WinQuake_AllocBuffers.
     const size_t    col32Bytes      = newwidth * newheight * sizeof (unsigned int);
     const size_t    colorBytes      = newwidth * newheight * sizeof (byte);
     const size_t    depthBytes      = newwidth * newheight * sizeof (short);
     const size_t    cacheBytes      = D_SurfaceCacheForRes (newwidth, newheight);
     const size_t    totalBytes      = col32Bytes + colorBytes + depthBytes + cacheBytes;
-    void*           pBuffer         = malloc (totalBytes);
+    void *          pBuffer         = malloc (totalBytes);
     
     if (pBuffer == NULL)
         System_Error("Not enough memory for video buffers left!");
@@ -281,7 +283,7 @@ void VID_Local_Suspend (cbool doSuspend)
 
 
 void VID_SetOriginalMode (void);
-void VID_Local_Window_Renderer_Teardown (int destroy)
+void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode)
 {
     VID_FlushBuffers ();
     VID_SetOriginalMode ();
@@ -313,9 +315,9 @@ void VID_Local_Vsync (void)
 
     if (enable == result)
     {
-        Con_DPrintf ("video wait successfully %s!\n", enable ? "enabled" : "disabled");
+        Con_DPrintLinef ("video wait successfully %s!", enable ? "enabled" : "disabled");
     }
-    else Con_Printf ("Error while trying to change video wait!\n");
+    else Con_PrintLinef ("Error while trying to change video wait!");
 }
 
 void VID_Local_Vsync_f (cvar_t *var)
@@ -330,8 +332,8 @@ void VID_Local_Vsync_f (cvar_t *var)
 cbool VID_Local_SetMode (int modenum)
 {
 #if 0    
-    Con_Printf("Setting mode #%i\n", modenum);
-    Con_Printf ("Switching to: %dx%d...\n", vid.modelist[mode].width, vid.modelist[mode].height);
+    Con_PrintLinef ("Setting mode #%d", modenum);
+    Con_PrintLinef ("Switching to: %dx%d...", vid.modelist[mode].width, vid.modelist[mode].height);
 #endif
     
     // free all buffers:
@@ -403,38 +405,38 @@ cbool VID_Local_SetMode (int modenum)
 	for (vid.stretch_x = 1; vid.modelist[modenum].width  / vid.stretch_x > WINQUAKE_MAX_WIDTH_3000 ; vid.stretch_x ++);
 	for (vid.stretch_y = 1; vid.modelist[modenum].height / vid.stretch_y > WINQUAKE_MAX_HEIGHT_1080; vid.stretch_y ++);
 
-#if 1 // Too much of hassle for right now.
-	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y);
+	#if 1 // Too much of hassle for right now.
+		vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y);
 
-#else
-	vid.stretch_old_cvar_val = (int)vid_sw_stretch.value; // This isn't the actual stretch, but the cvar value attempted.
-	// Ok we need to validate this.
-	// Let's say I want 4.  I can't have 4 in 640x480.  /320  /240  highx = (int)(vid.modelist[modenum].width / 320);
+	#else
+		vid.stretch_old_cvar_val = (int)vid_sw_stretch.value; // This isn't the actual stretch, but the cvar value attempted.
+		// Ok we need to validate this.
+		// Let's say I want 4.  I can't have 4 in 640x480.  /320  /240  highx = (int)(vid.modelist[modenum].width / 320);
 
-	vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y); // Take the larger of the 2.  Lowest it can be.
-	{
-		int high_x   = (int)(vid.modelist[modenum].width  / 320);
-		int high_y   = (int)(vid.modelist[modenum].height / 240);
-		int high_any = c_min (high_x, high_y);
+		vid.stretch_x = vid.stretch_y = c_max (vid.stretch_x, vid.stretch_y); // Take the larger of the 2.  Lowest it can be.
+		{
+			int high_x   = (int)(vid.modelist[modenum].width  / 320);
+			int high_y   = (int)(vid.modelist[modenum].height / 240);
+			int high_any = c_min (high_x, high_y);
 
-		//int stretch_try = vid.stretch_old_cvar_val;
-		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
-		
-		switch (stretch_try) {
-		case 0:	stretch_try = 1; break;
-		case 2:	stretch_try = 9999; break;
-		case 1:	stretch_try = (int)(high_any / 2.0 + 0.5); break;
+			//int stretch_try = vid.stretch_old_cvar_val;
+			int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
+			
+			switch (stretch_try) {
+			case 0:	stretch_try = 1; break;
+			case 2:	stretch_try = 9999; break;
+			case 1:	stretch_try = (int)(high_any / 2.0 + 0.5); break;
+			}
+
+			if (stretch_try > high_any)
+				stretch_try = high_any;
+
+			if (stretch_try < vid.stretch_x)
+				stretch_try = vid.stretch_x;
+
+			vid.stretch_x = vid.stretch_y = stretch_try;
 		}
-
-		if (stretch_try > high_any)
-			stretch_try = high_any;
-
-		if (stretch_try < vid.stretch_x)
-			stretch_try = vid.stretch_x;
-
-		vid.stretch_x = vid.stretch_y = stretch_try;
-	}
-#endif
+	#endif
 	vid.conwidth  = vid.modelist[modenum].width  / vid.stretch_x;
 	vid.conheight  = vid.modelist[modenum].height  / vid.stretch_y;
 
@@ -457,13 +459,17 @@ cbool VID_Local_SetMode (int modenum)
 	return false; // UNABLE TO REUSE CONTEXT, REUPLOAD TEXTURES
 }
 
+void VID_BeginRendering_Resize_Think_Resize_Act (void)
+{
+}
 
 void VID_Local_Multisample_f (cvar_t* var)
 {
 #ifdef GLQUAKE_RENDERER_SUPPORT
-	if (host_initialized) // This is run early, don't warn
-		Con_Printf ("%s set to \"%s\".  Will take effect on next video mode change (i.e. press of ALT-ENTER, etc.) .\n"
-				    "Note settings are: 2, 4, 8 and 0\n", var->name, var->string);
+	if (host_initialized) { // This is run early, don't warn
+		Con_PrintLinef ("%s set to " QUOTED_S ".  Will take effect on next video mode change (i.e. press of ALT-ENTER, etc.) .", var->name, var->string);
+		Con_PrintLinef ("Note settings are: 2, 4, 8 and 0");
+	}
 #endif // GLQUAKE_RENDERER_SUPPORT
 }
 
@@ -512,14 +518,14 @@ void VID_Local_SwapBuffers (void) // GLQuake uses
 //
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-void VID_Local_Modify_Palette (unsigned char *palette)
+void VID_Local_Modify_Palette (byte *palette)
 {
 // The OS X style implementation doesn't need to do anything here
 }
 
-void VID_Local_SetPalette (unsigned char *palette)
+void VID_Local_SetPalette (byte *palette)
 {
-    for (unsigned int i = 0; i < 256; ++i)
+    for (unsigned int i = 0; PALETTE_COLORS_256 < 256; ++i)
     {
         const UInt  red     = palette[i * 3 + 0];
         const UInt  green   = palette[i * 3 + 1];
@@ -560,5 +566,5 @@ void VID_Local_Init (void)
 
 void VID_Local_Shutdown (void)
 {
-	VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL);
+	VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL_1, true /*reset video mode*/);
 }

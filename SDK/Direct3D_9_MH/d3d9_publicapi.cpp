@@ -152,9 +152,10 @@ BOOL Direct3D9_SetupGammaAndContrast (float gamma, float contrast)
 	return d3d_Context->SetupGammaAndContrast (gamma, contrast);
 }
 
-void Direct3D9_SwapBuffers (void)
+BOOL WINAPI Direct3D9_SwapBuffers (HDC unused)
 {
 	d3d_Context->EndScene ();
+	return TRUE; // ALWAYS
 }
 
 HGLRC WINAPI Direct3D9_wglCreateContext (HDC hdc)
@@ -775,7 +776,7 @@ void APIENTRY d3d9mh_glReadPixels (GLint x, GLint y, GLsizei width, GLsizei heig
 {
 	if ((format != GL_RGB && format != GL_RGBA && format != GL_BGR_EXT && format != GL_BGRA_EXT) || type != GL_UNSIGNED_BYTE)
 	{
-		Con_Printf ("glReadPixels: unimplemented format or type\n");
+		Con_PrintLinef ("glReadPixels: unimplemented format or type");
 		return;
 	}
 

@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -245,7 +247,7 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		// FIXME: share the clip edge by having a winding direction flag?
 			if (numbedges >= (MAX_BMODEL_EDGES - 1))
 			{
-				Con_Printf ("Out of edges for bmodel\n");
+				Con_PrintLinef ("Out of edges for bmodel");
 				return;
 			}
 
@@ -291,7 +293,7 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 	{
 		if (numbedges >= (MAX_BMODEL_EDGES - 2))
 		{
-			Con_Printf ("Out of edges for bmodel\n");
+			Con_PrintLinef ("Out of edges for bmodel");
 			return;
 		}
 
@@ -470,7 +472,7 @@ void Liquid_Think (cbool underwater)
 	{
 		if (!frame.nearwaterportal && !r_novis.value)
 		{
-			Con_DPrintf ("AUTO WATER VIS:  Level is vised!\n");
+			Con_DPrintLinef ("AUTO WATER VIS:  Level is vised!");
 			level.water_vis_known = true;
 			level.water_vis = true;
 		}
@@ -655,4 +657,4 @@ void R_RenderWorld (void)
 
 }
 
-
+#endif // !GLQUAKE - WinQuake Software renderer

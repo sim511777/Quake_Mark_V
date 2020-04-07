@@ -27,17 +27,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int Download_Query (const char *www_url);
 
 // Downloads to file, returns true or false 
-//cbool Download_To_File (const char *www_url, const char *path_to_file, progress_fn_t update_fn, print_fn_t print_fn, int *setsize);
+//cbool Download_To_File (const char *www_url, const char *path_to_file, progress_fn_t update_fn, printline_fn_t my_printline, int *setsize);
 
 typedef void  (*eventfunc_t ) (int event, int code, void *id, void *data); // Event num and extra data
 
 void Download_Http_Async_To_Memory (const char *user_agent, const char *www_url, cbool *async_cancellator, eventfunc_t finish_event_fn, int finish_code, void *id); // Threaded (non-Blocking)
-void *Download_To_Memory_Alloc (const char *user_agent, const char *www_url, progress_fn_t update_fn, print_fn_t print_fn, int *pset_size, int *pexit_code);
-cbool Download_To_File (const char *user_agent, const char *www_url, const char *path_to_file, progress_fn_t update_fn, print_fn_t print_fn, int *pset_size, int *pexit_code);
+void *Download_To_Memory_Alloc (const char *user_agent, const char *www_url, progress_fn_t update_fn, printline_fn_t my_printline, int *pset_size, int *pexit_code);
+cbool Download_To_File (const char *user_agent, const char *www_url, const char *path_to_file, progress_fn_t update_fn, printline_fn_t my_printline, int *pset_size, int *pexit_code);
 
 
 // Downloads to memory
-//byte *Download_To_Memory_Alloc (const char *www_url, const char *useragent, int *len, progress_fn_t updatefn);
+//byte *Download_To_Memory_Alloc (const char *www_url, const char *useragent, int *len, progress_fn_t updatefn) alert ("need EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1");;
 
 //cbool Download_Set_User_Agent (const char *user_agent_text);
 

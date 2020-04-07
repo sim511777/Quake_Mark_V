@@ -328,6 +328,7 @@ local void tr_static_init()
       ((i) == (last)? "\n};\n\n" :    \
        ((i) % (width) == (width)-1 ? ",\n" : ", "))
 
+// newline care block
 void gen_trees_header()
 {
     FILE *header = fopen("trees.h", "w");
@@ -1107,7 +1108,7 @@ local void compress_block(s, ltree, dtree)
         } /* literal or match pair ? */
 
         /* Check that the overlay between pending_buf and d_buf+l_buf is ok: */
-        Assert(s->pending < s->lit_bufsize + 2*lx, "pendingBuf overflow");
+        Assert(s->pending < (int)(s->lit_bufsize + 2 * lx), "pendingBuf overflow");
 
     } while (lx < s->last_lit);
 

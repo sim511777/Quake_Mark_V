@@ -43,7 +43,7 @@ int Main_Central_Loop ()
 
 			while (time < sys_ticrate.value )
 			{
-				System_Sleep(1);
+				System_Sleep_Milliseconds (QUAKE_DEDICATED_SLEEP_TIME_MILLISECONDS_1 /* 1 */);
 				newtime = System_DoubleTime ();
 				time = newtime - oldtime;
 			}
@@ -94,7 +94,7 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 
 	// Baker: On Windows if a user makes a shortcut and doesn't set the "Start In" directory, it won't find the pak files
 	// we will help by silently checking for situation and correcting the directory
-	//	System_Alert ("Current basedir is \"%s\".", host_parms._basedir);
+	//	alert ("Current basedir is " QUOTED_S ".", host_parms._basedir);
 	
 	if (!File_Exists (va ("%s/id1/pak0.pak", host_parms._basedir)) && File_Exists (va ("%s/id1/pak0.pak", executable_directory)) ) {
 		// Copy exe_dir to cwd}
@@ -111,7 +111,7 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 
 	COM_InitArgv (host_parms.argc, host_parms.argv);
 
-	//	System_Alert ("Current final is \"%s\".", host_parms.basedir);
+	//	alert ("Current final is " QUOTED_S ".", host_parms.basedir);
 
 
 	Memory_Init ();

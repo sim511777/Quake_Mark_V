@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <core_windows.h>
 
-#pragma comment(lib, "winmm.lib") // cd_win (mci ..), in_win (joy_Get ...), snd_win (waveOut ...)
+#pragma comment (lib, "winmm.lib") // cd_win (mci ..), in_win (joy_Get ...), snd_win (waveOut ...)
 
 
 ////////////////////////////////////////////////////////////////////
@@ -52,8 +52,10 @@ typedef struct
 	int			multisamples;
 	int			forcePixelFormat;
 
-	PIXELFORMATDESCRIPTOR pfd;
 #endif // GLQUAKE_RENDERER_SUPPORT
+#ifdef CORE_GL
+	PIXELFORMATDESCRIPTOR pfd;
+#endif // CORE_GL ... At least on windows.
 
 
 // Baker: Dedicated console
@@ -92,7 +94,7 @@ void WIN_Change_DisplaySettings (int modenum);
 void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rect);
 // Various functions passed around.
 
-LRESULT CALLBACK WIN_MainWndProc (HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK Session_Windows_Dispatch (HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 BOOL WIN_SetupPixelFormat(HDC hDC);
 LONG WIN_CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam); // WinQuake
@@ -161,5 +163,20 @@ to limitations of CodeBlocks/MinGW32 using their own slightly incompatible Windo
 ..\sdk\dxsdk\sdk8\include					// dxsdk
 
 */
+
+int Platform_Windows_Input_GetShiftBits (void);
+void Platform_Windows_Input_GetMouseBits (WPARAM wparam, LPARAM lparam, required int *button_bits, required int *shift_bits, required int *x, required int *y);
+
+#define shiftbits Platform_Windows_Input_GetShiftBits
+#define getmousebits Platform_Windows_Input_GetMouseBits
+
+// sys_win.c rogues
+
+void WIN_Vid_Init_Once_CreateClass (void);
+vmode_t WIN_Vid_GetDesktopProperties (void);
+void WIN_AdjustRectToCenterScreen (RECT *in_windowrect);
+
+void Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int depthbits, int stencilbits);
+
 
 #endif // __WINQUAKE_H__

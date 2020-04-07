@@ -42,12 +42,19 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 #ifdef _MSC_VER  // Baker: modified to disable warning on VC6
 	#pragma warning( disable : 4761 ) // Baker: vc6 integral size mismatch in argument; conversion supplied
 	
+	// Environment.h isn't a dependency for lodepng.h
 	#if  (_MSC_VER >= 1310) // Visual Studio: A few warning types are not desired here.
 		#pragma warning( disable : 4244 ) // implicit conversions: not warned by gcc -Wall -Wextra and requires too much casts		
 		#pragma warning( disable : 4996 ) // VS does not like fopen, but fopen_s is not standard C so unusable here
 	#endif // _MSC_VER >= 1310
-	
 #endif // ! MSC_VER
+	
+#ifdef __clang__
+	#pragma clang diagnostic ignored "-Wconversion"  // Not needed right?  WRONG  unsigned long to unsigned int (size_t)
+	#pragma clang diagnostic ignored "-Wmissing-prototypes" // Yes, this is killing me.
+
+	//-Wshorten-64-to-32
+#endif // __clang__
 
 /*
 This source file is built up in the following large parts. The code sections

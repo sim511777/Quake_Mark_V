@@ -286,6 +286,7 @@ void SV_SetIdealPitch (void); // SV_WriteClientdataToMessage, which is called fr
 //void SV_AddClientToServer (struct qsocket_s *ret);  // R.I.P.
 
 int SV_ClientPrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // Many places like.
+int SV_ClientPrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // Many places like.
 int SV_BroadcastPrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // A few places like "paused the game", "unpaused the game", "deathmatch changed to 1"
 
 void SV_Physics (double frametime); // SV_SpawnServer and "SV_Host_Frame_UpdateServer"

@@ -50,7 +50,7 @@ void CDAudio_AddTracks2List (NSString* mountPath, NSArray* extensions, NSConditi
         NSUInteger  extensionCount  = [extensions count];
         NSString*   filePath        = nil;
 
-        Con_Printf ("%s\n", "Scanning for audio tracks. Be patient!");
+        Con_PrintLinef ("%s", "Scanning for audio tracks. Be patient!");
         
         while ((filePath = [dirEnum nextObject]))
         {
@@ -73,7 +73,7 @@ void CDAudio_AddTracks2List (NSString* mountPath, NSArray* extensions, NSConditi
                 if ([[filePath pathExtension] isEqualToString: [extensions objectAtIndex: i]])
                 {
                     NSString*   fullPath = [mountPath stringByAppendingPathComponent: filePath];
-                    System_Alert (va("%i: Adding %s to tracks list", (int)i, [fullPath cStringUsingEncoding: NSASCIIStringEncoding]));
+                    alert ("%d: Adding %s to tracks list", (int)i, [fullPath cStringUsingEncoding: NSASCIIStringEncoding]);
                     [sCDAudioTrackList addObject: [NSURL fileURLWithPath: fullPath]];
                 }
             }
@@ -149,7 +149,7 @@ BOOL CDAudio_ScanForMedia (NSString* mediaFolder, NSConditionLock* stopCondition
     {
         [sCDAudioTrackList release];
         sCDAudioTrackList = nil;
-        Con_Printf ("%s\n", "CDAudio: No audio tracks found!");
+        Con_PrintLinef ("%s", "CDAudio: No audio tracks found!");
         using_cd_tracks = -2; // There aren't any of any kind.
         return NO;
     }
@@ -181,14 +181,14 @@ void CDAudio_Play (byte track, cbool looping)
 
     CDAudio_Stop();
     
-    const char *track_file = va("music/track%02i.mp3", track);
+    const char *track_file = va("music/track%02d.mp3", track);
     const char *absolute_filename = COM_FindFile_NoPak (track_file);
 
     if (!absolute_filename)
     {
-        Con_Printf ("Track: %s not found\n", track_file);
+        Con_PrintLinef ("Track: %s not found", track_file);
         return;
-    } else Con_Printf ("Current music track: %s\n", track_file);
+    } else Con_PrintLinef ("Current music track: %s", track_file);
     
     
     if ([sCDAudio startFile: absolute_filename loop: (looping != false)])
@@ -197,7 +197,7 @@ void CDAudio_Play (byte track, cbool looping)
     }
     else
     {
-        Con_Printf ("%s\n", "CDAudio: Failed to start playback!");
+        Con_PrintLinef ("%s", "CDAudio: Failed to start playback!");
     }
 
 #if 0
@@ -217,7 +217,7 @@ void CDAudio_Play (byte track, cbool looping)
             }
             else
             {
-                Con_Printf ("%s\n", "CDAudio: Failed to start playback!");
+                Con_PrintLinef ("%s", "CDAudio: Failed to start playback!");
             }
         }
     }
@@ -265,10 +265,11 @@ void CD_f (lparse_t* line)
 
     if (line->count < 2)
     {
-        Con_Printf ("Usage: %s {play|stop|on|off|info|pause|resume} [filename]\n", line->args[0]);
-        Con_Printf ("  Note: music files should be in gamedir/music\n");
-        Con_Printf ("Example: quake/id1/music/track04.mp3 \n");
-        Con_Printf ("\n%s is set to \"%s\" and if set to 0, will prohibit music.\n", external_music.name, external_music.string);
+        Con_PrintLinef ("Usage: %s {play|stop|on|off|info|pause|resume} [filename]", line->args[0]);
+        Con_PrintLinef ("  Note: music files should be in gamedir/music");
+        Con_PrintLinef ("Example: quake/id1/music/track04.mp3 ");
+        Con_PrintLine ();
+        Con_PrintLinef ("%s is set to " QUOTED_S " and if set to 0, will prohibit music.", external_music.name, external_music.string);
 
         return;
     }
@@ -325,7 +326,7 @@ void CD_f (lparse_t* line)
             {
                 Con_Printf ("%s", "Audio files");
             }
-            Con_Printf (" found. %i tracks.\n", (int)numTracks);
+            Con_PrintLinef (" found. %d tracks.", (int)numTracks);
         }
         
         return;
@@ -395,12 +396,12 @@ void CD_f (lparse_t* line)
             
             if (![[NSWorkspace sharedWorkspace] unmountAndEjectDeviceAtURL: url error: &err])
             {
-                Con_Printf ("CDAudio: Failed to eject media!");
+                Con_PrintLinef ("CDAudio: Failed to eject media!");
             }
         }
         else
         {
-            Con_Printf ("CDAudio: No media mounted!");
+            Con_PrintLinef ("CDAudio: No media mounted!");
         }
 
         return;
@@ -411,7 +412,7 @@ void CD_f (lparse_t* line)
     {
         if (sCDAudioTrackList == nil)
         {
-            Con_Printf ("%s\n", "CDAudio: No audio tracks found!");
+            Con_PrintLinef ("%s", "CDAudio: No audio tracks found!");
         }
         else
         {
@@ -420,14 +421,14 @@ void CD_f (lparse_t* line)
             
             if ([sCDAudio isPlaying] == YES)
             {
-                Con_Printf ("Playing track %d of %d (\"%s\").\n", (int)sCDAudioTrack, (int)numTracks, mountPath);
+                Con_PrintLinef ("Playing track %d of %d (" QUOTED_S ").", (int)sCDAudioTrack, (int)numTracks, mountPath);
             }
             else
             {
-                Con_Printf ("Not playing. Tracks: %d (\"%s\").\n", (int)numTracks, mountPath);
+                Con_PrintLinef ("Not playing. Tracks: %d (" QUOTED_S ").", (int)numTracks, mountPath);
             }
  
-            Con_Printf ("CD volume is: %.2f.\n", bgmvolume.value);
+            Con_PrintLinef ("CD volume is: %.2f.", bgmvolume.value);
         }
         
         return;
@@ -500,7 +501,7 @@ void CDAudio_Init (void)
         command_line_disabled = true;
     
     if (command_line_disabled)
-        Con_Printf ("CD disabled by command line\n");
+        Con_PrintLinef ("CD disabled by command line");
 //    else Cmd_AddCommand ("cd", CD_f);
     
 	Cmd_AddCommands (CDAudio_Init);
@@ -516,16 +517,16 @@ void CDAudio_Init (void)
         {
             if (sCDAudioTrackList == nil)
             {
-                Con_SafePrintf ("%s\n", "CD driver: no audio tracks!");
+                Con_SafePrintLinef ("%s", "CD driver: no audio tracks!");
             }
             
-            Con_SafePrintf ("%s\n", "CD Audio Initialized");
+            Con_SafePrintLinef ("%s", "CD Audio Initialized");
             
             success = 1;
         }
         else
         {
-            Con_SafePrintf ("%s\n", "Failed to initialize CD driver!");
+            Con_SafePrintLinef ("%s", "Failed to initialize CD driver!");
             
         }
     }
@@ -541,4 +542,3 @@ void CDAudio_Shutdown (void)
     sCDAudioMountPath   = nil;
     sCDAudioTrackList   = nil;
 }
-

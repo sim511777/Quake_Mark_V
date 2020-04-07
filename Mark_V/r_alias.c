@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2010 MH - Frame Interpolation
@@ -117,7 +119,7 @@ void R_FinalizeAliasVerts (void)
 	r_auxverts = (auxvert_t *) Hunk_Alloc (r_maxaliasverts * sizeof (auxvert_t));
 	r_finalverts = (finalvert_t *) Hunk_Alloc ((r_maxaliasverts + ((CACHE_SIZE - 1) / sizeof (finalvert_t)) + 1) * sizeof (finalvert_t));
 
-	Con_DPrintf ("%i alias verts\n", r_maxaliasverts);
+	Con_DPrintLinef ("%d alias verts", r_maxaliasverts);
 }
 
 
@@ -153,7 +155,7 @@ cbool R_AliasCheckBBox (void)
 // TODO: don't repeat this check when drawing?
 	if ((frame >= pmdl->numframes) || (frame < 0))
 	{
-		Con_DPrintf ("No such frame %d %s\n", frame,
+		Con_DPrintLinef ("No such frame %d %s", frame,
 			pmodel->name);
 		frame = 0;
 	}
@@ -733,7 +735,7 @@ void R_AliasSetupSkin (void)
 	skinnum = currententity->skinnum;
 	if ((skinnum >= pmdl->numskins) || (skinnum < 0))
 	{
-		Con_DPrintf ("R_AliasSetupSkin: no such skin # %d\n", skinnum);
+		Con_DPrintLinef ("R_AliasSetupSkin: no such skin # %d", skinnum);
 		skinnum = 0;
 	}
 
@@ -866,7 +868,7 @@ void R_AliasSetupFrameMH (entity_t *ent)
 
 	if ((frame >= pmdl->numframes) || (frame < 0))
 	{
-		Con_DPrintf ("R_AliasSetupFrameMH: no such frame %d\n", frame);
+		Con_DPrintLinef ("R_AliasSetupFrameMH: no such frame %d", frame);
 		frame = 0;
 	}
 
@@ -971,6 +973,5 @@ void R_AliasDrawModelMH (alight_t *plighting)
 		R_AliasPreparePoints ();
 }
 
-
-
+#endif // !GLQUAKE - WinQuake Software renderer
 

@@ -55,10 +55,11 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_DX8Quake/"
 				ObjectFile=".\Object_Files\Release_MSVC_2008_DX8Quake/"
@@ -157,10 +158,11 @@
 				EnableIntrinsicFunctions="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;id386=1;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;id386=1;WIN32;_WINDOWS;QUAKE_GAME;PTW32_STATIC_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_WinQuake/"
 				ObjectFile=".\Object_Files\Release_MSVC_2008_WinQuake/"
@@ -255,10 +257,11 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_GLQuake/"
 				ObjectFile=".\Object_Files\Release_MSVC_2008_GLQuake/"
@@ -285,7 +288,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"
-				DelayLoadDLLs="libcurl.dll"
+				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -355,6 +358,7 @@
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
 				PreprocessorDefinitions="_DEBUG;id386=0;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuake/"
 				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuake/"
@@ -415,6 +419,105 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="WinQuake GL Debug|Win32"
+			OutputDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
+				PreprocessorDefinitions="_DEBUG;id386=0;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_GL"
+				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="true"
+				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\mark_v_winquake_gl_debug_vs2008.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
+				DelayLoadDLLs="libcurl.dll"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/mark_v_winquake_debug.pdb"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="DX8 Debug|Win32"
 			OutputDirectory=".\Object_Files\Debug_MSVC_2008_DX8Quake"
 			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_DX8Quake"
@@ -451,8 +554,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
 				ObjectFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
@@ -551,8 +655,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="false"
 				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_GLQuake/"
 				ObjectFile=".\Object_Files\Debug_MSVC_2008_GLQuake/"
@@ -580,7 +685,7 @@
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
-				DelayLoadDLLs="libcurl.dll"
+				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
@@ -613,9 +718,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="SDL Debug|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			Name="SDL GL Debug|Win32"
+			OutputDirectory=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake"
+			IntermediateDirectory=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -642,19 +747,20 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_SDLQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
 				RuntimeLibrary="2"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_SDLQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_SDLQuake/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_SDLQuake/"
+				DefaultCharIsUnsigned="true"
+				PrecompiledHeaderFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
+				ObjectFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
+				ProgramDataBaseFileName=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -677,10 +783,10 @@
 				OutputFile="c:\quake\mark_v_sdl_debug_vs2008.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.3-mingw/SDL2-2.0.3/lib/x86"
-				DelayLoadDLLs="libcurl.dll"
+				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
+				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_SDLQuake/mark_v_debug.pdb"
+				ProgramDatabaseFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -698,7 +804,106 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_SDLQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="SDL WinQuake GL Debug|Win32"
+			OutputDirectory=".\Object_Files\SDL_Debug_MSVC_2008_Winquake"
+			IntermediateDirectory=".\Object_Files\SDL_Debug_MSVC_2008_Winquake"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include"
+				PreprocessorDefinitions="_DEBUG;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
+				RuntimeLibrary="2"
+				DefaultCharIsUnsigned="true"
+				PrecompiledHeaderFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
+				ObjectFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
+				ProgramDataBaseFileName=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\mark_v_sdl_winquake_debug_vs2008.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
+				DelayLoadDLLs="libcurl.dll;opengl32.dll"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/mark_v_debug.pdb"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -747,8 +952,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
 				ObjectFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
@@ -848,10 +1054,11 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_DX9Quake/"
 				ObjectFile=".\Object_Files\Release_MSVC_2008_DX9Quake/"
@@ -910,6 +1117,107 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="WinQuake GL Release|Win32"
+			OutputDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="0"
+				EnableIntrinsicFunctions="false"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
+				PreprocessorDefinitions="NDEBUG;id386=1;WIN32;_WINDOWS;CORE_GL;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				DefaultCharIsUnsigned="true"
+				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				BrowseInformation="1"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\mark_v_winquake_gl.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"
+				DelayLoadDLLs="libcurl.dll;opengl32.dll"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -941,67 +1249,10 @@
 			<File
 				RelativePath=".\cd_sdl.c"
 				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\cd_win.c"
 				>
-				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="chase.c"
@@ -1061,7 +1312,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1128,7 +1388,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1195,7 +1464,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1262,7 +1540,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1329,7 +1616,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1396,7 +1692,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1467,7 +1772,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1546,7 +1860,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1617,7 +1940,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1688,7 +2020,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1759,7 +2100,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1838,8 +2188,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1852,8 +2210,70 @@
 				RelativePath="dedicated_win.h"
 				>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="DX8 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="GL Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX8 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -1922,7 +2342,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1989,7 +2418,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2056,7 +2494,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2068,54 +2515,6 @@
 			<File
 				RelativePath=".\in_sdl.c"
 				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="in_win.c"
@@ -2175,8 +2574,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2243,7 +2650,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2314,7 +2730,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2385,7 +2810,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2468,7 +2902,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2539,7 +2982,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2614,7 +3066,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2685,7 +3146,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2752,7 +3222,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2843,7 +3322,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2914,7 +3402,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2985,7 +3482,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3068,7 +3574,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3139,7 +3654,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3206,7 +3730,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3285,7 +3818,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3356,7 +3898,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3427,7 +3978,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3518,7 +4078,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3585,7 +4154,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3652,7 +4230,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3719,7 +4306,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3810,7 +4406,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3889,7 +4494,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3960,7 +4574,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -3976,61 +4599,12 @@
 			<File
 				RelativePath=".\sdl_main.c"
 				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\sdlquake.h"
 				>
 				<FileConfiguration
 					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4038,7 +4612,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4046,7 +4619,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4054,7 +4626,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4062,7 +4633,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4070,7 +4640,34 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -4080,6 +4677,76 @@
 			<File
 				RelativePath="server.h"
 				>
+				<FileConfiguration
+					Name="DX8 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="GL Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX8 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DX9 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="snd_dma.c"
@@ -4139,7 +4806,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4206,7 +4882,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4273,7 +4958,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4285,54 +4979,6 @@
 			<File
 				RelativePath=".\snd_sdl.c"
 				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="snd_win.c"
@@ -4392,8 +5038,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4472,7 +5126,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4539,7 +5202,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4606,7 +5278,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4673,7 +5354,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4689,54 +5379,6 @@
 			<File
 				RelativePath=".\sys_sdl.c"
 				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="sys_win.c"
@@ -4796,8 +5438,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4864,7 +5514,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4977,7 +5636,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5066,7 +5734,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5153,7 +5830,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5228,7 +5914,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5240,58 +5935,6 @@
 			<File
 				RelativePath="vid.h"
 				>
-			</File>
-			<File
-				RelativePath=".\vid_sdlgl.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="view.c"
@@ -5351,7 +5994,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5422,7 +6074,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5497,7 +6158,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5572,7 +6242,16 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -5608,6 +6287,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5624,7 +6311,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -5641,6 +6336,21 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -5683,6 +6393,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5699,11 +6417,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5720,6 +6446,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5758,6 +6499,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5774,11 +6523,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5795,6 +6552,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5833,6 +6605,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5849,11 +6629,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5870,6 +6658,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5908,6 +6711,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5924,11 +6735,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -5945,6 +6764,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -5983,6 +6817,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5999,11 +6841,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6020,6 +6870,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6058,6 +6923,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6074,11 +6947,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6095,6 +6976,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6133,6 +7029,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6149,11 +7053,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6170,6 +7082,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6193,6 +7120,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6209,7 +7144,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -6226,6 +7169,21 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -6268,6 +7226,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6284,11 +7250,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6305,6 +7279,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6343,6 +7332,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6359,11 +7356,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6380,6 +7385,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6418,6 +7438,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6434,11 +7462,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6455,6 +7491,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6493,6 +7544,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6509,11 +7568,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6530,6 +7597,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6568,6 +7650,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6584,11 +7674,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6605,6 +7703,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6643,6 +7756,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6659,11 +7780,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6680,6 +7809,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6718,6 +7862,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6734,11 +7886,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6755,6 +7915,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6793,6 +7968,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="DX8 Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6809,11 +7992,19 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL WinQuake GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -6830,6 +8021,21 @@
 						>
 						<Tool
 							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -6899,7 +8105,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -6922,6 +8128,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -6987,7 +8203,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7010,6 +8226,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7075,7 +8301,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7098,6 +8324,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7163,7 +8399,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7186,6 +8422,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7251,7 +8497,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7274,6 +8520,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7339,7 +8595,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7362,6 +8618,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7427,7 +8693,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7450,6 +8716,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7515,7 +8791,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7538,6 +8814,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7603,7 +8889,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7626,6 +8912,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7691,7 +8987,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7714,6 +9010,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7779,7 +9085,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7802,6 +9108,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7867,7 +9183,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -7890,6 +9206,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -7977,7 +9303,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8046,7 +9381,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8069,7 +9413,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8088,7 +9431,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8115,7 +9457,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8184,7 +9535,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8253,7 +9613,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8322,7 +9691,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8391,7 +9769,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8460,7 +9847,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8529,7 +9925,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8598,7 +10003,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8667,7 +10081,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8733,10 +10156,20 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							DefaultCharIsUnsigned="true"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8825,7 +10258,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8914,7 +10356,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8944,6 +10395,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\vid_sdlgl.c"
+					>
+				</File>
+				<File
 					RelativePath="vid_wgl.c"
 					>
 					<FileConfiguration
@@ -8957,7 +10412,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -8976,7 +10430,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -9003,8 +10456,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
-						ExcludedFromBuild="true"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -9017,8 +10478,70 @@
 					RelativePath="vid_wglext.h"
 					>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
-						ExcludedFromBuild="true"
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
@@ -9065,7 +10588,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9082,6 +10605,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9125,7 +10656,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9142,6 +10673,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9185,7 +10724,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9202,6 +10741,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9271,7 +10818,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9294,6 +10841,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9359,7 +10916,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9382,6 +10939,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9447,7 +11014,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9470,6 +11037,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9535,7 +11112,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9558,6 +11135,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9623,7 +11210,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9646,6 +11233,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9711,7 +11308,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9734,6 +11331,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9773,7 +11380,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9790,6 +11397,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9860,7 +11475,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9883,6 +11498,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -9948,7 +11573,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -9971,6 +11596,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -10010,7 +11645,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10027,6 +11662,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DX9 Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10096,7 +11739,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10119,6 +11762,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -10184,7 +11837,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10207,6 +11860,16 @@
 						>
 						<Tool
 							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
 				</File>
@@ -10272,7 +11935,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10297,6 +11960,20 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\vid_sdlwin.c"
+					>
 				</File>
 				<File
 					RelativePath="vid_wsoft.c"
@@ -10360,7 +12037,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10385,6 +12062,20 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\vid_wsoftgl.c"
+					>
 				</File>
 			</Filter>
 			<Filter
@@ -10448,7 +12139,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -10475,7 +12175,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -10494,7 +12193,6 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32"
-						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -10521,7 +12219,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -10590,7 +12297,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10650,7 +12365,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10710,7 +12433,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10770,7 +12501,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10830,7 +12569,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10890,7 +12637,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -10950,7 +12705,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -11010,7 +12773,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -11070,7 +12841,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -11130,7 +12909,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -11190,7 +12977,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -11208,6 +13003,26 @@
 				</File>
 				<File
 					RelativePath="..\SDK\Core\base64.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\clip.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\clip.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\color.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\color.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\color_html_colors.enum.h"
 					>
 				</File>
 				<File
@@ -11268,7 +13083,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11290,71 +13114,8 @@
 					>
 				</File>
 				<File
-					RelativePath="..\SDK\core\core_win.c"
+					RelativePath="..\SDK\Core\core_sdl.h"
 					>
-					<FileConfiguration
-						Name="DX8 Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="GL Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DX8 Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="GL Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="SDL Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\SDK\core\core_windows.h"
@@ -11418,7 +13179,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11493,7 +13263,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11584,7 +13363,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11595,6 +13383,10 @@
 				</File>
 				<File
 					RelativePath="..\SDK\core\file.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\file_system.c"
 					>
 				</File>
 				<File
@@ -11656,10 +13448,20 @@
 							Name="VCCLCompilerTool"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
+							DefaultCharIsUnsigned="false"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11730,7 +13532,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11801,7 +13612,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11872,7 +13692,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -11951,7 +13780,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -12022,7 +13860,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -12033,6 +13880,14 @@
 				</File>
 				<File
 					RelativePath="..\SDK\core\math_vector.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\memstick.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\memstick.h"
 					>
 				</File>
 				<File
@@ -12105,7 +13960,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -12120,6 +13984,34 @@
 				</File>
 				<File
 					RelativePath="..\SDK\Core\pthreads_core.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\shell_android.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\shell_ios.m"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\shell_linux.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\shell_osx.m"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\shell_win.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\stick.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\stick.h"
 					>
 				</File>
 				<File
@@ -12180,7 +14072,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -12207,6 +14108,34 @@
 				</File>
 				<File
 					RelativePath="..\SDK\core\unzip_win.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco.h"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco_console.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco_ios.m"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco_osx.m"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco_sdl.c"
+					>
+				</File>
+				<File
+					RelativePath="..\SDK\Core\vidco_win.c"
 					>
 				</File>
 				<File
@@ -12267,7 +14196,16 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="SDL Debug|Win32"
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -12888,6 +14826,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="WinQuake GL Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="DX8 Debug|Win32"
 					>
 					<Tool
@@ -12904,7 +14850,31 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL WinQuake GL Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="WinQuake GL Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
 					>
 					<Tool
 						Name="VCResourceCompilerTool"
@@ -12972,7 +14942,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="SDL Debug|Win32"
+					Name="SDL GL Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -12994,6 +14964,15 @@
 					>
 					<Tool
 						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="SDL Win Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -13050,7 +15029,15 @@
 				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="SDL Debug|Win32"
+				Name="SDL GL Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="SDL Win Debug|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool
@@ -13118,7 +15105,15 @@
 				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="SDL Debug|Win32"
+				Name="SDL GL Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="SDL Win Debug|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool

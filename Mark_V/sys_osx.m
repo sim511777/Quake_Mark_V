@@ -52,41 +52,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #import "macquake.h"
 
 
-
-
-
 sysplat_t sysplat;
 
 
-///////////////////////////////////////////////////////////////////////////////
-//  CLOCK: Baker
-///////////////////////////////////////////////////////////////////////////////
-
-// Double self-initializes now
-double System_DoubleTime (void)
-{
-    static uint64_t start_time   = 0;
-    static double   scale       = 0.0;
-    const uint64_t  time        = mach_absolute_time();
-
-    if (start_time == 0)
-    {
-        mach_timebase_info_data_t   info = { 0 };
-
-        if (mach_timebase_info (&info) != 0)
-        {
-            System_Error ("Failed to read timebase!");
-        }
-
-        scale       = 1e-9 * ((double) info.numer) / ((double) info.denom);
-        start_time   = time;
-    }
-
-    return (double) (time - start_time) * scale;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
-//  FILE IO: Baker
+//  FILE IO: Baker ... I'd love to kill these, but it can wait - 2016 Dec
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -130,7 +101,7 @@ int System_FileOpenRead (const char *path_to_file, int *pHandle)
 
     if (fstat (*pHandle, &fileStat) == -1)
     {
-        System_Error ("Can\'t open file \"%s\", reason: \"%s\".", path_to_file, strerror (errno));
+        System_Error ("Can\'t open file " QUOTED_S ", reason: " QUOTED_S ".", path_to_file, strerror (errno));
     }
 
     return (int) fileStat.st_size;
@@ -148,7 +119,7 @@ int System_FileOpenWrite (const char *path_to_file)
 
     if (handle == -1)
     {
-        System_Error ("Can\'t open file \"%s\" for writing, reason: \"%s\".", path_to_file, strerror (errno));
+        System_Error ("Can\'t open file " QUOTED_S " for writing, reason: " QUOTED_S ".", path_to_file, strerror (errno));
     }
 
     return handle;
@@ -210,23 +181,19 @@ void System_MakeCodeWriteable (unsigned long startaddr, unsigned long len)
 
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //  SYSTEM ERROR: Baker
 ///////////////////////////////////////////////////////////////////////////////
 
 
-void System_Error (const char *fmt, ...)
+int System_Error (const char *fmt, ...)
 {
-    char        text[SYSTEM_STRING_SIZE_1024];
-	va_list     argptr;
+	
+	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
     fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
 
-    va_start (argptr, fmt);
-    c_vsnprintf (text, sizeof(text), fmt, argptr);
-    va_end (argptr);
+
 
 #ifdef SERVER_ONLY
 
@@ -246,6 +213,9 @@ void System_Error (const char *fmt, ...)
 
 
     exit (1);
+#ifndef __GNUC__ // Return silence
+    return 1; // No return as an attribute isn't universally available.
+#endif // __GNUC__	// Make GCC not complain about return
 }
 
 
@@ -260,7 +230,7 @@ void System_Error (const char *fmt, ...)
 //
 //
 //
-//
+// Called by Modal Message, Download, Install, NotifyBox
 void System_SendKeyEvents (void)
 {
     // will only be called if in modal loop
@@ -278,10 +248,8 @@ void System_SendKeyEvents (void)
 }
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
-//  SYSTEM MAIN LOOP
+//  SYSTEM QUIT, INIT
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -298,12 +266,37 @@ void System_Quit (void)
     exit (0);
 }
 
+
 void System_Init (void)
 {
     signal (SIGFPE, SIG_IGN); // Baker: Ignore floating point exceptions.  WinQuake.
 }
 
+
+//
+//
+//
+//
+//
+//
+//
+//
+
+//
+//
+//
+//
+//
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////
+//  SYSTEM MAIN LOOP
+///////////////////////////////////////////////////////////////////////////////
+
+
 cbool stdin_ready;
+
 int main (int argc, const char **pArgv)
 {
 #ifdef SERVER_ONLY
@@ -339,9 +332,52 @@ int main (int argc, const char **pArgv)
 }
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
-//  CONSOLE:  OS X project doesn't have the equivalent file of conproc.h/conproc.c
+//  SYSTEM DISPATCH
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//
+
+//
+//
+//
+//
+
+// Mac doesn't do dispatch in the same way
+
+
+void System_SleepUntilInput (int time)
+{
+	// Nothing?
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////
+//  CONSOLE:  
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -360,7 +396,7 @@ const char *Dedicated_ConsoleInput (void)
 
         if (length > 0)
         {
-//			Con_Printf ("%i\n",(int)length);
+//			Con_PrintLinef ("%d",(int)length);
             text[length - 1]    = '\0';
             pText               = &(text[0]);
         }
@@ -371,6 +407,7 @@ const char *Dedicated_ConsoleInput (void)
 
     return pText;
 }
+
 #ifdef SERVER_ONLY // Restore me at some point for or fix me.  Baker Nov 2016
 void Dedicated_Local_Print (const char *text)
 {
@@ -396,10 +433,6 @@ void Dedicated_Local_Print (const char *text)
 #endif // ! SERVER_ONLY
 }
 #endif // SERVER_ONLY
-void System_SleepUntilInput (int time)
-{
-	// Nothing?
-}
 
 
 #import <Cocoa/Cocoa.h>
@@ -413,6 +446,5 @@ void System_SleepUntilInput (int time)
 
 @implementation QApplication
 @end
-
 
 

@@ -110,7 +110,7 @@ void Key_SetBinding (int keynum, const char *binding);
 const char *Key_KeynumToString (int keynum, enum keyname_s nametype);
 void Key_WriteBindings (FILE *f);
 void Key_SetDest (keydest_e newdest);
-
+void Keys_Flush_ServerBinds (void);
 
 extern cbool chat_team;
 
@@ -119,6 +119,12 @@ extern cbool Key_Alt_Down (void);
 extern cbool Key_Ctrl_Down (void);
 
 const char *Key_ListExport (void); // Baker
+
+// Meh ...
+void Partial_Reset (void);
+void Con_Undo_Clear (void);
+
+
 #endif // QUAKE_GAME
 
 

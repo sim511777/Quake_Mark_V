@@ -24,19 +24,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "core_net_sys.h"
 #include "net_simple.h"
 
+// Meh ...
+int Con_Queue_Printf (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
+int Con_Queue_PrintLinef (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
+
+int Con_Printf (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
+int Con_PrintLinef (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
+
+char *IPv4_String_Validated (char *buf, size_t bufsiz, const char *s);
+// End meh
+
+
 #ifdef _WIN32
 #define c_sockerrno WSAGetLastError()
 #else
 #define c_sockerrno errno
 #endif
 
-void NonSocket_Error (print_fn_t print_fn, const char *errString)
+void NonSocket_Error (printline_fn_t my_printline, const char *errString)
 {
-	print_fn (errString);
+	my_printline ("%s", errString);
 }
 
 
-void Socket_Error (print_fn_t print_fn, const char *eventString, int errCode)
+void Socket_Error (printline_fn_t printline_fn, const char *eventString, int errCode)
 {
 #ifdef _WIN32
 //	int errCode = WSAGetLastError();
@@ -62,16 +73,20 @@ void Socket_Error (print_fn_t print_fn, const char *eventString, int errCode)
 							// http://msdn.microsoft.com/en-us/library/ms679351(VS.85).aspx
 		 0,                 // min size for buffer
 		 0 );               // 0, since getting message from system tables
-	//printf( "Error code %d:  %s\n\nMessage was %d bytes, in case you cared to know this.\n\n", errCode, errString, size ) ;
+	//printf( "Error code %d:  %s",  errCode, errString)
+	//printline ();
+	//printline ();
+	// "Message was %d bytes, in case you cared to know this.", size);
+	//printline ();
 
-	print_fn ("Socket Error %d: %s (action = %s)\n", errCode, errString, eventString);
+	printline_fn ("Socket Error %d: %s (action = %s)", errCode, errString, eventString);
 	LocalFree( errString ) ; // if you don't do this, you will get an
 	// ever so slight memory leak, since we asked
 	// FormatMessage to FORMAT_MESSAGE_ALLOCATE_BUFFER,
 	// and it does so using LocalAlloc
 	// Gotcha!  I guess.
 #else
-	print_fn ("Socket Error %d: %s (action = %s)\n", errCode, strerror(errCode), eventString);
+	printline_fn ("Socket Error %d: %s (action = %s)", errCode, strerror(errCode), eventString);
 
 #endif
 
@@ -97,7 +112,7 @@ void Socket_Address_From_String (struct sockaddr_in *sa, const char *ipstring, i
 	sa->sin_family = AF_INET, sa->sin_addr.s_addr = inet_addr (ipstring), sa->sin_port = htons ((unsigned short)port);
 }
 
-const char *IPv4_Get_Local_IP (print_fn_t print_fn, char *buf, size_t bufsiz)
+const char *IPv4_Get_Local_IP (printline_fn_t my_printline, char *buf, size_t bufsiz)
 {
 	const char *invalid = "0.0.0.0";
 //	static char tmp[IPV4_STRING_MAX_22] = {0};
@@ -106,7 +121,7 @@ const char *IPv4_Get_Local_IP (print_fn_t print_fn, char *buf, size_t bufsiz)
 	in_addr_t addr; // Which is a u_long
 
 	if (gethostname(namebuff, sizeof(namebuff)) == SOCKET_ERROR) {
-		Socket_Error (print_fn, "gethostname", c_sockerrno);
+		Socket_Error (my_printline, "gethostname", c_sockerrno);
 		return invalid;
 	}
 	else {
@@ -114,12 +129,12 @@ const char *IPv4_Get_Local_IP (print_fn_t print_fn, char *buf, size_t bufsiz)
 		namebuff[sizeof(namebuff) - 1] = 0; // NULL terminate it.
 
 		if ( (local = gethostbyname(namebuff)) == NULL) {
-			Socket_Error (print_fn, "gethostbyname", c_sockerrno);
+			Socket_Error (my_printline, "gethostbyname", c_sockerrno);
 			return invalid;
 		}
 
 		if (local->h_addrtype != AF_INET) {
-			NonSocket_Error (print_fn, "gethostbyname address type not AF_INET (ipv4)");
+			NonSocket_Error (my_printline, "gethostbyname address type not AF_INET (ipv4)");
 			return invalid;
 		}
 
@@ -129,7 +144,7 @@ const char *IPv4_Get_Local_IP (print_fn_t print_fn, char *buf, size_t bufsiz)
 
 	// We have a valid address
 
-	c_snprintfc (buf, bufsiz, "%ld.%ld.%ld.%ld", (addr >> 24) & 0xff, (addr >> 16) & 0xff, (addr >> 8) & 0xff, addr & 0xff);
+	c_snprintfc (buf, bufsiz, "%d.%d.%d.%d", (int)((addr >> 24) & 0xff), (int)((addr >> 16) & 0xff), (int)((addr >> 8) & 0xff), (int)(addr & 0xff));
 	return buf;
 }
 
@@ -139,14 +154,14 @@ const char *IPv4_Get_Local_IP (print_fn_t print_fn, char *buf, size_t bufsiz)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-socket_info_t *SocketA_Destroy (print_fn_t print_fn, socket_info_t *socka)
+socket_info_t *SocketA_Destroy (printline_fn_t my_printline, socket_info_t *socka)
 {
 	closesocket (socka->socket);
 	socka->socket = INVALID_SOCKET; // Yeah sure we're freeing it next ...
 	return (socka = core_free (socka));
 }
 
-socket_info_t *SocketA_Create (print_fn_t print_fn, const char *ipstring, int port)
+socket_info_t *SocketA_Create (printline_fn_t my_printline, const char *ipstring, int port)
 {
 	socket_info_t info = { INVALID_SOCKET, IPV4_STRING_MAX_22 };
 
@@ -156,21 +171,21 @@ socket_info_t *SocketA_Create (print_fn_t print_fn, const char *ipstring, int po
 	Socket_Address_From_String (&info.addrinfo, info.ipstring, info.port);
 
 	if ( (info.socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
-		Socket_Error (print_fn, "socket", c_sockerrno);
+		Socket_Error (my_printline, "socket", c_sockerrno);
 		return NULL;
 	}
 
-	return c_memdup (&info, sizeof(info));
+	return core_memdup (&info, sizeof(info));
 }
 
 // Only difference between client and server is that server binds to the socket
-socket_info_t *SocketA_Create_TCP_Listen (print_fn_t print_fn, const char *ipstring, int port)
+socket_info_t *SocketA_Create_TCP_Listen (printline_fn_t my_printline, const char *ipstring, int port)
 {
-	socket_info_t *out = SocketA_Create (print_fn, ipstring, port);
+	socket_info_t *out = SocketA_Create (my_printline, ipstring, port);
 
 	if (out && bind (out->socket, (struct sockaddr *) &out->addrinfo, sizeof(out->addrinfo) ) ) {
-		Socket_Error (print_fn, "bind", c_sockerrno);
-		out = SocketA_Destroy (print_fn, out);  // Release
+		Socket_Error (my_printline, "bind", c_sockerrno);
+		out = SocketA_Destroy (my_printline, out);  // Release
 	}
 	return out;
 }
@@ -194,17 +209,17 @@ int Receive (connection_t *con)
 
 	// We will read up to 65535 at a time.
 	if ( (socka->readlen = recv (socka->socket, socka->readbuffer, sizeof(socka->readbuffer) - 1, 0 /*flgs*/)) == SOCKET_ERROR) {
-		Socket_Error (con->print_fn, "recv", c_sockerrno);
+		Socket_Error (con->printline_fn, "recv", c_sockerrno);
 		return 0;
 	}
 
 	// TCP: A zero-sized packet means the client disconnected.
 	if (socka->readlen == 0) {
-		con->print_fn ("Client disconnected\n");
+		con->printline_fn ("Client disconnected");
 		return 0;
 	}
 
-//	Con_Queue_Printf ("Read len %i\n", socka->readlen);
+//	Con_Queue_PrintLinef ("Read len %d", socka->readlen);
 
 	socka->readbuffer[socka->readlen] = 0;
 
@@ -213,7 +228,7 @@ int Receive (connection_t *con)
 	socka->readtype = socka->readbuffer[0];
 
 	if ( !(socka->readtype == 'b' || socka->readtype == 's' ) ) {
-		con->print_fn ("Received data of unknown encoding %c, expected 'b' or 's'", socka->readtype);
+		con->printline_fn ("Received data of unknown encoding %c, expected 'b' or 's'", socka->readtype);
 		return 0; // Unknown type
 	}
 
@@ -234,12 +249,12 @@ int Receive (connection_t *con)
 	}
 
 	if (!datalen) {
-		con->print_fn ("Illegible encoding specifies no size", socka->readtype);
+		con->printline_fn ("Illegible encoding specifies no size"); //, socka->readtype);
 		return 0; // Illegible message.
 	}
 
 	if (datalen > socka->readlen - n) {
-		con->print_fn ("Data length %d is longer than message length %d less offet %d = %d\n", datalen, socka->readlen, n, socka->readlen - n);
+		con->printline_fn ("Data length %d is longer than message length %d less offet %d = %d", datalen, socka->readlen, n, socka->readlen - n);
 		return 0; // Says data is longer than our message.
 	}
 
@@ -259,10 +274,12 @@ int Receive_String (connection_t *con)
 	if (!ok)
 		return 0;
 
-	if (!con->socka->readtype == 's') {
-		con->print_fn ("Expected a string, received non-string\n");
+	if (con->socka->readtype != 's') {
+		con->printline_fn ("Expected a string, received non-string");
 		return 0;
 	}
+
+	return 1; // I guess?  Alternative is to return "ok".
 }
 
 int Send_String (connection_t *con, const char *s)
@@ -270,8 +287,8 @@ int Send_String (connection_t *con, const char *s)
 	char outbuffer[65536];
 	size_t slen = strlen(s);
 
-	c_snprintf2 (outbuffer, "s%i:%s", slen, s);	// s5:frogs
-	Con_Printf ("I Sent: %s\n",  outbuffer);
+	c_snprintf2 (outbuffer, "s%d:%s", (int)slen, s);	// s5:frogs
+	Con_PrintLinef ("I Sent: %s",  outbuffer);
 	return send (con->socka->socket, outbuffer, strlen(outbuffer), 0);
 }
 
@@ -284,7 +301,7 @@ int Send_String (connection_t *con, const char *s)
 void *Server_Connection_Async (void *con_)
 {
     connection_t *con = con_; // gcc complained
-	con->print_fn ("Client connected: %p %s %d\n", con, con->socka->ipstring, (int)con->socka->port);
+	con->printline_fn ("Client connected: %p %s %d", con, con->socka->ipstring, (int)con->socka->port);
 //	recv
 
 	while (Receive_String (con))
@@ -292,13 +309,13 @@ void *Server_Connection_Async (void *con_)
 		if (!con->socka->readtype == 's')
 			break; // Expecting string
 
-		Con_Queue_Printf ("Received: %s\n", con->socka->readbuffer);
+		Con_Queue_PrintLinef ("Received: %s", con->socka->readbuffer);
 
 		/// Send // Something.
 	}
 
-	Con_Queue_Printf ("Closing connection %p\n", con);
-	con->socka = SocketA_Destroy (con->print_fn, con->socka);
+	Con_Queue_PrintLinef ("Closing connection %p", con);
+	con->socka = SocketA_Destroy (con->printline_fn, con->socka);
 	con = core_free (con);
 	return NULL;
 }
@@ -317,7 +334,7 @@ void *Server_Async (void *con_)
 		new_socka.socket = accept(con->socka->socket, (struct sockaddr *)&new_socka.addrinfo, &new_socka.addrsize );  // int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 		if (new_socka.socket == INVALID_SOCKET) {
-			Socket_Error (con->print_fn, "accept", c_sockerrno);
+			Socket_Error (con->printline_fn, "accept", c_sockerrno);
 			break; // Let's break out
 		}
 
@@ -331,20 +348,20 @@ void *Server_Async (void *con_)
 			// 192, 127, 169, 10 addresses won't be checked, since validation doesn't pass
 			if (IPv4_String_Validated (prepared_ip_string, sizeof(prepared_ip_string), new_socka.ipstring)) {
 				if (con->whitelist_fn && !con->whitelist_fn (new_socka.ipstring)) {
-					con->print_fn ("Rejected new connection %s because not on approved list\n", prepared_ip_string);
+					con->printline_fn ("Rejected new connection %s because not on approved list", prepared_ip_string);
 					closesocket (new_socka.socket); // Don't know who you are.
 					continue;
 				}
 			}
 
-			Con_Queue_Printf ("Accepted\n");
+			Con_Queue_PrintLinef ("Accepted");
 
 
 			// Thread will be responsible for freeing both of these.
-			forked_connection = c_memdup (con, sizeof(*con));
-			forked_connection->socka = c_memdup (&new_socka, sizeof(new_socka) );
+			forked_connection = core_memdup (con, sizeof(*con));
+			forked_connection->socka = core_memdup (&new_socka, sizeof(new_socka) );
 
-			con->print_fn ("Socket %i port %i:  New conn %p on %i port %i\n", con->socka->socket, (int) con->socka->port, forked_connection->socka,
+			con->printline_fn ("Socket %d port %d:  New conn %p on %d port %d", con->socka->socket, (int) con->socka->port, forked_connection->socka,
 				forked_connection->socka->socket, (int) forked_connection->socka->port);
 			pthread_create (&client_thread, NULL /* no attributes */, Server_Connection_Async, (void *)forked_connection );
 
@@ -356,9 +373,9 @@ void *Server_Async (void *con_)
 
 	if (con->notify_socket)
 		*(con->notify_socket) = INVALID_SOCKET; // Notify main thread.
-	con->print_fn ("Server closing\n");
+	con->printline_fn ("Server closing");
 
-	con->socka = SocketA_Destroy (con->print_fn, con->socka);
+	con->socka = SocketA_Destroy (con->printline_fn, con->socka);
 	con = core_free (con);
 	return NULL; //
 }
@@ -370,31 +387,31 @@ void Net_Simple_Server_Force_Shutdown (sys_socket_t notify_socket)
 	// Hope!
 }
 
-cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *basedir, error_fn_t error_fn, print_fn_t print_fn, print_fn_t dprint_fn, whitelist_fn_t whitelist_fn, volatile sys_socket_t *notify_socket)
+cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *basedir, errorline_fn_t error_fn, printline_fn_t printline_fn, printline_fn_t dprint_fn, whitelist_fn_t whitelist_fn, volatile sys_socket_t *notify_socket)
 {
 	char localipbuf[IPV4_STRING_MAX_22];
-	const char *ipstring = _ipstring ? _ipstring : IPv4_Get_Local_IP (print_fn, localipbuf, sizeof(localipbuf));
-	socket_info_t *socka = SocketA_Create_TCP_Listen (print_fn, ipstring, port);
-	connection_t con_ = {socka, error_fn, print_fn, dprint_fn, whitelist_fn, notify_socket};
+	const char *ipstring = _ipstring ? _ipstring : IPv4_Get_Local_IP (printline_fn, localipbuf, sizeof(localipbuf));
+	socket_info_t *socka = SocketA_Create_TCP_Listen (printline_fn, ipstring, port);
+	connection_t con_ = {socka, error_fn, printline_fn, dprint_fn, whitelist_fn, notify_socket};
 	pthread_t server_thread;
 
     if (!socka)
 		return false;
 
 	if (listen (socka->socket, SOMAXCONN /*MAX_CLIENTS_NUM_16*/) == SOCKET_ERROR) {
-		Socket_Error (print_fn,  "listen", c_sockerrno);
-        socka = SocketA_Destroy (print_fn, socka);
+		Socket_Error (printline_fn,  "listen", c_sockerrno);
+        socka = SocketA_Destroy (printline_fn, socka);
 		return false;
 	}
 
 	//IPv4_Get_Local_IP_Temp ();
 	Socket_Address_To_String (&socka->addrinfo, NULL, 0, NULL);
 
-	print_fn ("Created server @ %s port %i\n", ipstring, port);
+	printline_fn ("Created server @ %s port %d", ipstring, port);
 
 	// Spin us up a thread ...
 	c_strlcpy (con_.basedir, basedir);
-	pthread_create (&server_thread, NULL /* no attributes */, Server_Async, (void *)c_memdup (&con_, sizeof(con_) )   );
+	pthread_create (&server_thread, NULL /* no attributes */, Server_Async, (void *)core_memdup (&con_, sizeof(con_) )   );
 
 	return socka->socket;
 }
@@ -403,12 +420,12 @@ cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *base
 //  Client ... foreground only right now.
 ///////////////////////////////////////////////////////////////////////////////
 
-cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, error_fn_t error_fn, print_fn_t print_fn, print_fn_t dprint_fn)
+cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, errorline_fn_t errorline_fn, printline_fn_t my_printline, printline_fn_t dprintline_fn)
 {
 	//char localipbuf[IPV4_STRING_MAX_22];
-	const char *ipstring = _ipstring ? _ipstring : "0.0.0.0"; // IPv4_Get_Local_IP (print_fn, localipbuf, sizeof(localipbuf)); // "0.0.0.0";
-	socket_info_t *socka = SocketA_Create (print_fn, ipstring, 0); //IPv4_Get_Local_IP(print_fn, localipbuf, sizeof(localipbuf)) /*  ipstring*/, 0 /*port*/);
-	connection_t con_ = {socka, error_fn, print_fn, dprint_fn, NULL, NULL};
+	const char *ipstring = _ipstring ? _ipstring : "0.0.0.0"; // IPv4_Get_Local_IP (my_printline, localipbuf, sizeof(localipbuf)); // "0.0.0.0";
+	socket_info_t *socka = SocketA_Create (my_printline, ipstring, 0); //IPv4_Get_Local_IP(my_printline, localipbuf, sizeof(localipbuf)) /*  ipstring*/, 0 /*port*/);
+	connection_t con_ = {socka, errorline_fn, my_printline, dprintline_fn, NULL, NULL};
 	//pthread_t client_thread;
 
     if (!socka)
@@ -419,8 +436,8 @@ cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, e
 	Socket_Address_To_String (&socka->addrinfo, NULL, 0, NULL);
 
 	if (connect (socka->socket, (struct sockaddr *) &socka->addrinfo, sizeof(socka->addrinfo) ) == SOCKET_ERROR) {
-		Socket_Error (print_fn,  "connect", c_sockerrno);
-		socka = SocketA_Destroy (print_fn, socka);
+		Socket_Error (my_printline,  "connect", c_sockerrno);
+		socka = SocketA_Destroy (my_printline, socka);
 		return false;
 	}
 
@@ -434,13 +451,10 @@ cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, e
 		for (i = 0; i < 4; i ++)
 		{
 			Send_String (&con_, "Hello");
-
-
-
 		}
 	}
 
-	socka = SocketA_Destroy (print_fn, socka);
+	socka = SocketA_Destroy (my_printline, socka);
 // What about rest of self-destruct
 	return true;
 }

@@ -41,7 +41,7 @@ void Host_Quit (void)
 void Host_Quit_f (lparse_t *unused)
 {
 	if (cmd_from_server)
-		Con_Warning ("Server send us a \"quit\" command.  Ignoring ...\n");
+		Con_WarningLinef ("Server send us a " QUOTEDSTR("quit") " command.  Ignoring ...");
 	// Force shareware sell screen?
 	Host_Quit ();
 }
@@ -110,7 +110,7 @@ typedef enum
 // returns 0 if everything is ok
 gamedir_fail_t game_available (const char *dir, gametype_t gm)
 {
-	cbool custom_game = !!strcasecmp (dir, GAMENAME /* "id1*/);
+	cbool custom_game = !!strcasecmp (dir, GAMENAME_ID1 /* "id1*/);
 
 	if (static_registered == false && (custom_game || gm != gametype_standard))
 		return game_fail_shareware; // shareware and modified gamedir
@@ -169,15 +169,16 @@ void HD_Folder_f (lparse_t *line)
 	int result;
 
 	if (line->count !=2) {
-		Con_SafePrintf ("Set high content resolution folder.  Set to \"\" for none.\n"); // Con_SafePrintf ("Pak files in a hd folder will not be read, only free standing files will.\n", hd_folder.description);
-		Con_SafePrintf ("Pak files in a hd folder will not be read, only free standing files will.\n");
-		Con_SafePrintf ("\02Current HD folder is set to \"%s\".\n", hd_folder.string);
+		Con_SafePrintLinef ("Set high content resolution folder.  Set to " QUOTEDSTR("") " for none."); // Con_SafePrintLinef ("Pak files in a hd folder will not be read, only free standing files will.", hd_folder.description);
+		Con_SafePrintLinef ("Pak files in a hd folder will not be read, only free standing files will.");
+		Con_SafePrintLine ();
+		Con_SafePrintLinef ("\02Current HD folder is set to " QUOTED_S ".", hd_folder.string);
 		return;
 	}
 
 #if 0
 	if (sv.active || cls.state == ca_connected) {
-		Con_SafePrintf ("Disconnect first.\n");
+		Con_SafePrintLinef ("Disconnect first.");
 		return;
 	}
 #endif
@@ -190,13 +191,14 @@ void HD_Folder_f (lparse_t *line)
 		FS_FullPath_From_Basedir (folder_url, new_basepath);
 
 		if (!HD_Folder_Ok (/* yes we edit it*/ (char *)new_basepath)) {
-			Con_SafePrintf ("Folder \"%s\" contains illegal characters.\n"
-							"Alphanumeric and underscore is ok.\n", new_basepath);
+			Con_SafePrintLinef ("Folder " QUOTED_S " contains illegal characters.", new_basepath);
+			Con_SafePrintLinef ("Alphanumeric and underscore is ok.");
+			Con_SafePrintLine ();
 			return;
 		}
 #if 0
 		if (!File_Exists (folder_url) || !File_Is_Folder(folder_url)) {
-			Con_SafePrintf ("Folder \"%s\" does not exist.\n", new_basepath);
+			Con_SafePrintLinef ("Folder " QUOTED_S " does not exist.", new_basepath);
 			return;
 		}
 #endif
@@ -204,7 +206,7 @@ void HD_Folder_f (lparse_t *line)
 	} while (0);
 
 	Cvar_SetQuick (&hd_folder, new_basepath);
-	Con_SafePrintf ("HD folder set to \"%s\".\n", hd_folder.string);
+	Con_SafePrintLinef ("HD folder set to " QUOTED_S ".", hd_folder.string);
 
 	in_hdfolder_cmd = true;
 	{
@@ -212,17 +214,17 @@ void HD_Folder_f (lparse_t *line)
 		c_strlcpy (samedir_as_current, File_URL_SkipPath(com_gamedir));
 		result = Host_Gamedir_Change (samedir_as_current, "" /*hud type skipped*/, false /*not liveswitch*/, &fail_string, true /*force*/);
 		if (result == -1 /*fail*/)
-			Con_SafePrintf ("A problem occurred when trying to reset the gamedir.  (%s)\n", fail_string);
+			Con_SafePrintLinef ("A problem occurred when trying to reset the gamedir.  (%s)", fail_string);
 
 	}
 	in_hdfolder_cmd = false;
-	//Con_SafePrintf ("Game is %s\n", com_gamedir);
+	//Con_SafePrintLinef ("Game is %s", com_gamedir);
 }
 
 int Host_Gamedir_Change (const char *gamedir_new, const char *new_hud_typestr, cbool liveswitch, const char** info_string, cbool force)
 {
 	gametype_t	new_gametype	= gametype_eval (new_hud_typestr);
-	cbool		is_custom		= !!strcasecmp(gamedir_new, GAMENAME); // GAMENAME is "id1"
+	cbool		is_custom		= !!strcasecmp(gamedir_new, GAMENAME_ID1); // GAMENAME_ID1 is "id1"
 
 	cbool		gamedir_change	= !!strcasecmp (gamedir_shortname(), gamedir_new );
 	cbool		gametype_change	= (new_gametype != com_gametype);
@@ -236,19 +238,19 @@ int Host_Gamedir_Change (const char *gamedir_new, const char *new_hud_typestr, c
 
 	if (any_change == false)
 	{
-		Con_DPrintf ("Gamedir change is no change\n");
+		Con_DPrintLinef ("Gamedir change is no change");
 		return game_no_change;
 	}
 
 	if (change_fail)
 	{
 		*info_string = fail_reason_strings[change_fail];
-		Con_DPrintf ("%s\n", *info_string);
+		Con_DPrintLinef ("%s", *info_string);
 		return game_change_fail;
 	}
 
 	// Everything ok now ....
-	Con_DPrintf ("New game and/or hud style requested\n");
+	Con_DPrintLinef ("New game and/or hud style requested");
 
 	com_gametype = new_gametype;
 
@@ -308,7 +310,7 @@ force_only:
 			else {
 				extern cbool in_hdfolder_cmd;
 				if (in_hdfolder_cmd)
-					Con_SafePrintf ("Folder \"%s\" does not exist.\n", folder_url);
+					Con_SafePrintLinef ("Folder " QUOTED_S " does not exist.", folder_url);
 			}
 
 		}
@@ -386,13 +388,13 @@ void Host_Game_f (lparse_t *line)
 		switch (result)
 		{
 		case game_change_fail:
-			Con_Printf ("%s\n", feedback_string);
+			Con_PrintLinef ("%s", feedback_string);
 			break;
 		case game_no_change:
-			Con_Printf ("Game already set!\n");
+			Con_PrintLinef ("Game already set!");
 			break;
 		case game_change_success:
-			Con_Printf("\"game\" changed to \"%s\"\n", feedback_string);
+			Con_PrintLinef (QUOTEDSTR("game") " changed to " QUOTED_S, feedback_string);
 			break;
 		}
 		break;
@@ -400,11 +402,11 @@ void Host_Game_f (lparse_t *line)
 	default:
 		//Diplay the current gamedir
 		gametypename = Gamedir_TypeName ();
-		Con_Printf("\"game\" is \"%s%s\"\n", gamedir_shortname(), gametypename[0] ?
+		Con_PrintLinef (QUOTEDSTR("game") " is " QUOTEDSTR("%s%s"), gamedir_shortname(), gametypename[0] ?
 					va(" %s", gametypename) : "" );
 		if (hd_folder.string[0])
-			Con_Printf ("HD Folder = \"%s\"\n", hd_folder.string);
-		Con_Printf("Start map is %s\n", game_startmap);
+			Con_PrintLinef ("HD Folder = " QUOTED_S, hd_folder.string);
+		Con_PrintLinef ("Start map is %s", game_startmap);
 		break;
 	}
 
@@ -420,17 +422,17 @@ void Host_Mapname_f (void)
 {
 	if (sv.active)
 	{
-		Con_Printf ("\"mapname\" is \"%s\"\n", sv.name);
+		Con_PrintLinef (QUOTEDSTR ("mapname") " is " QUOTED_S, sv.name);
 		return;
 	}
 
 	if (cls.state == ca_connected)
 	{
-		Con_Printf ("\"mapname\" is \"%s\"\n", cl.worldname);
+		Con_PrintLinef (QUOTEDSTR ("mapname") " is " QUOTED_S, cl.worldname);
 		return;
 	}
 
-	Con_Printf ("no map loaded\n");
+	Con_PrintLinef ("no map loaded");
 }
 #endif // Fare thee well, "mapname" command.  "map" does this well now.
 
@@ -447,7 +449,7 @@ void Host_Status_f (lparse_t *line)
 	int			minutes;
 	int			hours = 0;
 	int			j;
-	int		    (*print_fn) (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+	int		    (*printline_fn) (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
 
 	if (cmd_source == src_command)
 	{
@@ -456,21 +458,21 @@ void Host_Status_f (lparse_t *line)
 			Cmd_ForwardToServer (line);
 			return;
 		}
-		print_fn = Con_Printf;
+		printline_fn = Con_PrintLinef;
 	}
 	else
-		print_fn = SV_ClientPrintf;
+		printline_fn = SV_ClientPrintLinef;
 
-	print_fn ("host:    %s\n", Cvar_VariableString ("hostname"));
-	print_fn ("version: %1.2f build %d\n", (float)QUAKE_VERSION, (int)ENGINE_BUILD);
+	printline_fn ("host:    %s", hostname.string); // Cvar_VariableString ("hostname"));
+	printline_fn ("version: %1.2f build %d", (float)QUAKE_VERSION, (int)ENGINE_BUILD);
 	if (svs.listening) {
-		if (ipv4Available) print_fn ("ipv4:    %s:%d\n", my_ipv4_address, net_hostport);
-		if (ipv6Available)	print_fn ("ipv6:    %s:%d\n", my_ipv6_address, net_hostport);
+		if (ipv4Available) printline_fn ("ipv4:    %s:%d", my_ipv4_address, net_hostport);
+		if (ipv6Available) printline_fn ("ipv6:    %s:%d", my_ipv6_address, net_hostport);
 	}
 
-	print_fn ("map:     %s\n", sv.name);
-	print_fn ("players: %d active (%d max)\n\n", net_activeconnections, svs.maxclients_public); // Because we are telling them the cap
-	for (j=0, client = svs.clients ; j < svs.maxclients_internal ; j++, client++) // Because we can now change the cap in-game.
+	printline_fn ("map:     %s", sv.name);
+	printline_fn ("players: %d active (%d max)" NEWLINE, net_activeconnections, svs.maxclients_public); // Because we are telling them the cap
+	for (j = 0, client = svs.clients ; j < svs.maxclients_internal ; j++, client++) // Because we can now change the cap in-game.
 	{
 		if (!client->active)
 			continue;
@@ -486,14 +488,14 @@ void Host_Status_f (lparse_t *line)
 		else
 			hours = 0;
 
-		print_fn ("#%-2u %-16.16s  %3i  %2i:%02i:%02i\n", j+1, client->name, (int)client->edict->v.frags, hours, minutes, seconds);
+		printline_fn ("#%-2d %-16.16s  %3d  %2d:%02d:%02d", j + 1, client->name, (int)client->edict->v.frags, hours, minutes, seconds);
 		//print_fn ("   %s\n", NET_QSocketGetAddressString(client->netconnection));
 
 		if (cmd_source == src_command || !pq_privacy_ipmasking.value)
-			print_fn ("   %s\n", NET_QSocketGetTrueAddressString(client->netconnection));
+			printline_fn ("   %s", NET_QSocketGetTrueAddressString(client->netconnection));
 		else if (pq_privacy_ipmasking.value ==1)
-			print_fn ("   %s\n", NET_QSocketGetMaskedAddressString(client->netconnection));
-		else print_fn ("   private\n");
+			printline_fn ("   %s", NET_QSocketGetMaskedAddressString(client->netconnection));
+		else printline_fn ("   private");
 	}
 }
 
@@ -518,7 +520,7 @@ void Host_God_f (lparse_t *line)
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
@@ -528,24 +530,24 @@ void Host_God_f (lparse_t *line)
 	case 1:
 		sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 		if (!((int)sv_player->v.flags & FL_GODMODE) )
-			SV_ClientPrintf ("godmode OFF\n");
+			SV_ClientPrintLinef ("godmode OFF");
 		else
-			SV_ClientPrintf ("godmode ON\n");
+			SV_ClientPrintLinef ("godmode ON");
 		break;
 	case 2:
 		if (atof(line->args[1]))
 		{
 			sv_player->v.flags = (int)sv_player->v.flags | FL_GODMODE;
-			SV_ClientPrintf ("godmode ON\n");
+			SV_ClientPrintLinef ("godmode ON");
 		}
 		else
 		{
 			sv_player->v.flags = (int)sv_player->v.flags & ~FL_GODMODE;
-			SV_ClientPrintf ("godmode OFF\n");
+			SV_ClientPrintLinef ("godmode OFF");
 		}
 		break;
 	default:
-		Con_Printf("god [value] : toggle god mode. values: 0 = off, 1 = on\n");
+		Con_PrintLinef ("god [value] : toggle god mode. values: 0 = off, 1 = on");
 		break;
 	}
 	//johnfitz
@@ -569,7 +571,7 @@ void Host_Notarget_f (lparse_t *line)
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
@@ -579,24 +581,24 @@ void Host_Notarget_f (lparse_t *line)
 	case 1:
 		sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
 		if (!((int)sv_player->v.flags & FL_NOTARGET) )
-			SV_ClientPrintf ("notarget OFF\n");
+			SV_ClientPrintLinef ("notarget OFF");
 		else
-			SV_ClientPrintf ("notarget ON\n");
+			SV_ClientPrintLinef ("notarget ON");
 		break;
 	case 2:
 		if (atof(line->args[1]))
 		{
 			sv_player->v.flags = (int)sv_player->v.flags | FL_NOTARGET;
-			SV_ClientPrintf ("notarget ON\n");
+			SV_ClientPrintLinef ("notarget ON");
 		}
 		else
 		{
 			sv_player->v.flags = (int)sv_player->v.flags & ~FL_NOTARGET;
-			SV_ClientPrintf ("notarget OFF\n");
+			SV_ClientPrintLinef ("notarget OFF");
 		}
 		break;
 	default:
-		Con_Printf("notarget [value] : toggle notarget mode. values: 0 = off, 1 = on\n");
+		Con_PrintLinef ("notarget [value] : toggle notarget mode. values: 0 = off, 1 = on");
 		break;
 	}
 	//johnfitz
@@ -621,7 +623,7 @@ void Host_Noclip_f (lparse_t *line)
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
@@ -633,13 +635,13 @@ void Host_Noclip_f (lparse_t *line)
 		{
 			cl.noclip_anglehack = true;
 			sv_player->v.movetype = MOVETYPE_NOCLIP;
-			SV_ClientPrintf ("noclip ON\n");
+			SV_ClientPrintLinef ("noclip ON");
 		}
 		else
 		{
 			cl.noclip_anglehack = false;
 			sv_player->v.movetype = MOVETYPE_WALK;
-			SV_ClientPrintf ("noclip OFF\n");
+			SV_ClientPrintLinef ("noclip OFF");
 		}
 		break;
 	case 2:
@@ -647,17 +649,17 @@ void Host_Noclip_f (lparse_t *line)
 		{
 			cl.noclip_anglehack = true;
 			sv_player->v.movetype = MOVETYPE_NOCLIP;
-			SV_ClientPrintf ("noclip ON\n");
+			SV_ClientPrintLinef ("noclip ON");
 		}
 		else
 		{
 			cl.noclip_anglehack = false;
 			sv_player->v.movetype = MOVETYPE_WALK;
-			SV_ClientPrintf ("noclip OFF\n");
+			SV_ClientPrintLinef ("noclip OFF");
 		}
 		break;
 	default:
-		Con_Printf("noclip [value] : toggle noclip mode. values: 0 = off, 1 = on\n");
+		Con_PrintLinef ("noclip [value] : toggle noclip mode. values: 0 = off, 1 = on");
 		break;
 	}
 	//johnfitz
@@ -684,7 +686,7 @@ void Host_Fly_f (lparse_t *line)
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
@@ -695,28 +697,28 @@ void Host_Fly_f (lparse_t *line)
 		if (sv_player->v.movetype != MOVETYPE_FLY)
 		{
 			sv_player->v.movetype = MOVETYPE_FLY;
-			SV_ClientPrintf ("flymode ON\n");
+			SV_ClientPrintLinef ("flymode ON");
 		}
 		else
 		{
 			sv_player->v.movetype = MOVETYPE_WALK;
-			SV_ClientPrintf ("flymode OFF\n");
+			SV_ClientPrintLinef ("flymode OFF");
 		}
 		break;
 	case 2:
 		if (atof(line->args[1]))
 		{
 			sv_player->v.movetype = MOVETYPE_FLY;
-			SV_ClientPrintf ("flymode ON\n");
+			SV_ClientPrintLinef ("flymode ON");
 		}
 		else
 		{
 			sv_player->v.movetype = MOVETYPE_WALK;
-			SV_ClientPrintf ("flymode OFF\n");
+			SV_ClientPrintLinef ("flymode OFF");
 		}
 		break;
 	default:
-		Con_Printf("fly [value] : toggle fly mode. values: 0 = off, 1 = on\n");
+		Con_PrintLinef ("fly [value] : toggle fly mode. values: 0 = off, 1 = on");
 		break;
 	}
 	//johnfitz
@@ -724,12 +726,12 @@ void Host_Fly_f (lparse_t *line)
 
 void Host_Legacy_FreezeAll_f (lparse_t *unused)
 {
-	Con_Printf ("Use 'freezeall' instead of sv_freezenonclients.  It is shorter.\n");
+	Con_PrintLinef ("Use 'freezeall' instead of sv_freezenonclients.  It is shorter.");
 }
 
 void Host_Apropos_f (lparse_t *line)
 {
-	Con_Printf ("Use 'find' instead of apropos.  It is shorter.\n");
+	Con_PrintLinef ("Use 'find' instead of apropos.  It is shorter.");
 }
 
 
@@ -751,7 +753,7 @@ void Host_Freezeall_f (lparse_t *line)
 
 	if (sv.disallow_major_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
@@ -761,25 +763,25 @@ void Host_Freezeall_f (lparse_t *line)
 		sv.frozen = !sv.frozen;
 
 		if (sv.frozen)
-			SV_ClientPrintf ("freeze mode ON\n");
+			SV_ClientPrintLinef ("freeze mode ON");
 		else
-			SV_ClientPrintf ("freeze mode OFF\n");
+			SV_ClientPrintLinef ("freeze mode OFF");
 
 		break;
 	case 2:
 		if (atof(line->args[1]))
 		{
 			sv.frozen = true;
-			SV_ClientPrintf ("freeze mode ON\n");
+			SV_ClientPrintLinef ("freeze mode ON");
 		}
 		else
 		{
 			sv.frozen = false;
-			SV_ClientPrintf ("freeze mode OFF\n");
+			SV_ClientPrintLinef ("freeze mode OFF");
 		}
 		break;
 	default:
-		Con_Printf("freezeall [value] : toggle freeze mode. values: 0 = off, 1 = on\n");
+		Con_PrintLinef ("freezeall [value] : toggle freeze mode. values: 0 = off, 1 = on");
 		break;
 	}
 
@@ -803,7 +805,7 @@ void Host_Ping_f (lparse_t *line)
 		return;
 	}
 
-	SV_ClientPrintf ("Client ping times:\n");
+	SV_ClientPrintLinef ("Client ping times:");
 	for (i=0, client = svs.clients ; i<svs.maxclients_internal ; i++, client++) // Because we can now change the cap in game.
 	{
 		if (!client->active)
@@ -816,7 +818,7 @@ void Host_Ping_f (lparse_t *line)
 		ping_display = (int)(total*1000);
 		if (pq_ping_rounding.value)
 			ping_display = CLAMP(40, c_rint(ping_display / 40) * 40, 999);
-		SV_ClientPrintf ("%4i %s\n", ping_display, client->name);
+		SV_ClientPrintLinef ("%4d %s", ping_display, client->name);
 	}
 }
 
@@ -824,7 +826,7 @@ void Host_Ping_f (lparse_t *line)
 void Host_Changelevel_Required_Msg (cvar_t* var)
 {
 	if (host_post_initialized)
-		Con_Printf ("%s change takes effect on map restart/change.\n", var->name);
+		Con_PrintLinef ("%s change takes effect on map restart/change.", var->name);
 }
 
 
@@ -840,14 +842,14 @@ int Host_ActiveWeapon_0_to_24_or_Neg1 (void)
 {
 	int active_weapon = cl.stats[STAT_ACTIVEWEAPON];
 	int weapon_number = -1;
-	
+
 	// active_weapon 0 = axe
 	if (!active_weapon)
 		return (weapon_number = 0);
 	else {
 		int j;  for (j = 0; j < MAX_EFFECTIVE_WEAPON_COUNT_25 - 1 ; j ++) {
 			int thisweap = ( 1 << j );
-			if (active_weapon == ( 1 << j ) ) 
+			if (active_weapon == ( 1 << j ) )
 				return (weapon_number = j + 1);
 		}
 		return weapon_number; // Which is -1
@@ -874,35 +876,38 @@ void Host_Map_f (lparse_t *line)
 		if (isDedicated)
 		{
 			if (sv.active)
-				Con_Printf ("Current map: %s\n", sv.name);
+				Con_PrintLinef ("Current map: %s", sv.name);
 			else
-				Con_Printf ("Server not active\n");
+				Con_PrintLinef ("Server not active");
 		}
 		else if (cls.state == ca_connected)
 		{
 			char buf[32] = {0};
 
-			Con_Printf ("\nCurrent map: %s (title: %s)\n", cl.worldname, cl.levelname);
-			Con_Printf ("\n");
-			Con_Printf ("Sky key:         %s\n", level.sky_key);
-			Con_Printf ("Fog key:	      %s\n", level.fog_key);
+			Con_PrintLine ();
+			Con_PrintLinef ("Current map: %s (title: %s)", cl.worldname, cl.levelname);
+			Con_PrintLine ();
+			Con_PrintLinef ("Sky key:         %s", level.sky_key);
+			Con_PrintLinef ("Fog key:	      %s", level.fog_key);
 
-			Con_Printf ("Skyfog key:      %s\n", level.is_skyfog		? String_Write_NiceFloatString(buf, sizeof(buf), level.skyfog)		: "" );
-			Con_Printf ("Lava key:        %s\n", level.is_lavaalpha	? String_Write_NiceFloatString(buf, sizeof(buf), level.lavaalpha)	: "" );
-			Con_Printf ("Slime key:       %s\n", level.is_slimealpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.slimealpha)	: "" );
-//			Con_Printf ("Teleport key:    %s\n", level.is_telealpha	? String_Write_NiceFloatString(buf, sizeof(buf), level.telealpha)	: "" );
-			Con_Printf ("Water key:       %s\n", level.is_wateralpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.wateralpha)	: "" );
-			Con_Printf ("\n");
-			Con_Printf ("Water-vised:     %s\n", level.water_vis_known ? (level.water_vis ? "Yes" : "No") : "Not determined yet" );
-			
-			Con_Printf ("\n");
-			Con_Printf ("Active Weapon #: %d\n", Host_ActiveWeapon_0_to_24_or_Neg1() + 1 );
+			Con_PrintLinef ("Skyfog key:      %s", level.is_skyfog		? String_Write_NiceFloatString(buf, sizeof(buf), level.skyfog)		: "" );
+			Con_PrintLinef ("Lava key:        %s", level.is_lavaalpha	? String_Write_NiceFloatString(buf, sizeof(buf), level.lavaalpha)	: "" );
+			Con_PrintLinef ("Slime key:       %s", level.is_slimealpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.slimealpha)	: "" );
+//			Con_PrintLinef ("Teleport key:    %s", level.is_telealpha	? String_Write_NiceFloatString(buf, sizeof(buf), level.telealpha)	: "" );
+			Con_PrintLinef ("Water key:       %s", level.is_wateralpha ? String_Write_NiceFloatString(buf, sizeof(buf), level.wateralpha)	: "" );
+			Con_PrintLinef ("Sound clip dist: %s", level.is_sound_nominal_clip_dist ? String_Write_NiceFloatString(buf, sizeof(buf), level.sound_nominal_clip_dist) : "" );
+			Con_PrintLine ();
+			Con_PrintLinef ("Water-vised:     %s", level.water_vis_known ? (level.water_vis ? "Yes" : "No") : "Not determined yet" );
 
-			Con_Printf ("\nType \"copy ents\" to copy entities to clipboard\n\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Active Weapon #: %d", Host_ActiveWeapon_0_to_24_or_Neg1() + 1 );
+			Con_PrintLine ();
+			Con_PrintLinef ("Type " QUOTEDSTR ("copy ents") " to copy entities to clipboard");
+			Con_PrintLine ();
 		}
 		else
 		{
-			Con_Printf ("map <levelname>: start a new server\n");
+			Con_PrintLinef ("map <levelname>: start a new server");
 		}
 		return;
 	}
@@ -969,17 +974,17 @@ void Host_Changelevel_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("changelevel <levelname> : continue game on a new level\n");
+		Con_PrintLinef ("changelevel <levelname> : continue game on a new level");
 		return;
 	}
 	if (!sv.active || cls.demoplayback)
 	{
-		Con_Printf ("Only the server may changelevel\n");
+		Con_PrintLinef ("Only the server may changelevel");
 		return;
 	}
 
 	//johnfitz -- check for client having map before anything else
-	c_snprintf (newlevel, "maps/%s.bsp", line->args[1]);
+	c_snprintf1 (newlevel, "maps/%s.bsp", line->args[1]);
 	if (COM_OpenFile (newlevel, &i) == -1)
 		Host_Error ("cannot find map %s", newlevel);
 
@@ -1055,7 +1060,7 @@ void Host_Reconnect_f (lparse_t *unused)
 
 	if (cls.demoplayback)
 	{
-		Con_DPrintf("Demo playing; ignoring reconnect\n");
+		Con_DPrintLinef ("Demo playing; ignoring reconnect");
 		SCR_EndLoadingPlaque (); // reconnect happens before signon reply #4
 		return;
 	}// Fixes? else if (cls.state == ca_disconnected)
@@ -1157,7 +1162,7 @@ static const char *Host_Savegame_Comment (void)
 		comment[i] = ' ';
 
 	memcpy (comment, cl.levelname, c_min(strlen(cl.levelname),22)); //johnfitz -- only copy 22 chars.
-	c_snprintf2 (kills, "kills:%3i/%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+	c_snprintf2 (kills, "kills:%3d/%3d", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
 	memcpy (comment + 22, kills, strlen(kills));
 
 	// convert space to _ to make stdio happy
@@ -1187,12 +1192,12 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 	File_URL_Edit_Force_Extension (savegame_name, ".sav", sizeof(savegame_name));
 
 	if (user_initiated)
-		Con_Printf ("Saving game to %s...\n", savegame_name);
+		Con_PrintLinef ("Saving game to %s...", savegame_name);
 
 	f = FS_fopen_write (savegame_name, "w"); // Would need to add 'b' for binary here.
 	if (!f)
 	{
-		Con_Printf ("ERROR: couldn't open save file for writing.\n");
+		Con_PrintLinef ("ERROR: couldn't open save file for writing.");
 		return NULL;
 	}
 
@@ -1230,7 +1235,7 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 
 	fprintf (f, "%d\n", sv.current_skill);
 	fprintf (f, "%s\n", sv.name);
-	fprintf (f, "%f\n",sv.time);
+	fprintf (f, "%f\n", sv.time);
 
 // write the light styles
 	{
@@ -1252,6 +1257,8 @@ const char *Host_Savegame (const char *in_savename, cbool user_initiated)
 	}
 
 	FS_fclose (f);
+
+	Lists_Update_Savelist (); // Update the list - johnny.
 	return savegame_name;
 }
 
@@ -1271,33 +1278,33 @@ void Host_Savegame_f (lparse_t *line)
 
 	if (!sv.active)
 	{
-		Con_Printf ("Not playing a local game.\n");
+		Con_PrintLinef ("Not playing a local game.");
 		return;
 	}
 
 	if (cl.intermission)
 	{
-		Con_Printf ("Can't save in intermission.\n");
+		Con_PrintLinef ("Can't save in intermission.");
 		return;
 	}
 
 #ifndef SUPPORTS_MULTIPLAYER_SAVES
 	if (svs.maxclients_internal != 1)	// Because internal will still be set to 1 in single player.
 	{
-		Con_Printf ("Can't save multiplayer games.\n");
+		Con_PrintLinef ("Can't save multiplayer games.");
 		return;
 	}
 #endif // !SUPPORTS_MULTIPLAYER_SAVES
 
 	if (line->count != 2)
 	{
-		Con_Printf ("save <savename> : save a game\n");
+		Con_PrintLinef ("save <savename> : save a game");
 		return;
 	}
 
 	if (strstr(line->args[1], ".."))
 	{
-		Con_Printf ("Relative pathnames are not allowed.\n");
+		Con_PrintLinef ("Relative pathnames are not allowed.");
 		return;
 	}
 
@@ -1305,7 +1312,7 @@ void Host_Savegame_f (lparse_t *line)
 	{
 		if (svs.clients[i].active && (svs.clients[i].edict->v.health <= 0) )
 		{
-			Con_Printf ("Can't savegame with a dead player\n");
+			Con_PrintLinef ("Can't savegame with a dead player");
 			return;
 		}
 	}
@@ -1314,9 +1321,8 @@ void Host_Savegame_f (lparse_t *line)
 
 	if (saved_name)
 	{
-		Lists_Update_Savelist ();
 		Recent_File_Set_FullPath (saved_name);
-		Con_Printf ("done.\n");
+		Con_PrintLinef ("done.");
 	}
 }
 
@@ -1347,7 +1353,7 @@ void Host_Loadgame_f (lparse_t *line)
 
 	if (line->count != 2)
 	{
-		Con_Printf ("load <savename> : load a game\n");
+		Con_PrintLinef ("load <savename> : load a game");
 		return;
 	}
 
@@ -1360,22 +1366,22 @@ void Host_Loadgame_f (lparse_t *line)
 // been used.  The menu calls it before stuffing loadgame command
 //	SCR_BeginLoadingPlaque ();
 
-	Con_Printf ("Loading game from %s...\n", name);
+	Con_PrintLinef ("Loading game from %s...", name);
 #pragma message ("Aguirre has a read-binary fix for save games with special characters")
 	f = FS_fopen_read (name, "r"); // aguirRe: Use binary mode to avoid EOF issues in savegame files
 	// Baker changed back to "r" from "rb" because it adds extra new lines..
 	if (!f)
 	{
-		Con_Printf ("ERROR: couldn't open load file for reading.\n");
+		Con_PrintLinef ("ERROR: couldn't open load file for reading.");
 		SCR_EndLoadingPlaque ();
 		return;
 	}
 
-	fscanf (f, "%i\n", &version);
+	fscanf (f, "%d\n", &version);
 	if (version != SAVEGAME_VERSION && version != SAVEGAME_VERSION_6)
 	{
 		FS_fclose (f);
-		Con_Printf ("Savegame is version %d, not %d\n", version, SAVEGAME_VERSION);
+		Con_PrintLinef ("Savegame is version %d, not %d", version, SAVEGAME_VERSION);
 		SCR_EndLoadingPlaque ();
 		return;
 	}
@@ -1423,11 +1429,11 @@ void Host_Loadgame_f (lparse_t *line)
 						// This addresses the load multiplayer without multiplayer set.
 						if (!sv.active || svs.maxclients_internal != save_maxplayers) {
 							FS_fclose (f);
-							Con_Printf ("Multi-player load requires server started with correct maxplayers and all participants connected.\n"
-										"1) Disconnect and set \"maxplayers %d\".\n"
-										"2) Then start a map get all particpants connected.\n"
-										"3) Then load this game!\n"
-										, save_maxplayers);
+							Con_PrintLinef ("Multi-player load requires server started with correct maxplayers and all participants connected.");
+							Con_PrintLinef ("1) Disconnect and set " QUOTEDSTR ("maxplayers %d") ".", save_maxplayers);
+							Con_PrintLinef ("2) Then start a map get all particpants connected.");
+							Con_PrintLinef ("3) Then load this game!");
+
 							SCR_EndLoadingPlaque ();
 							return;
 						}
@@ -1492,7 +1498,7 @@ void Host_Loadgame_f (lparse_t *line)
 	if (!sv.active)
 	{
 		FS_fclose (f);
-		Con_Printf ("Couldn't load map\n");
+		Con_PrintLinef ("Couldn't load map");
 		SCR_EndLoadingPlaque ();
 		return;
 	}
@@ -1595,7 +1601,7 @@ void Host_Name_f (lparse_t *line)
 
 	if (line->count == 1)
 	{
-		Con_Printf ("\"name\" is \"%s\"\n", cl_name.string);
+		Con_PrintLinef (QUOTEDSTR ("name") " is " QUOTED_S, cl_name.string);
 		return;
 	}
 	if (line->count == 2)
@@ -1625,7 +1631,7 @@ void Host_Name_f (lparse_t *line)
 	if (host_client->name[0] && strcmp(host_client->name, "unconnected") )
 	{
 		if (strcmp(host_client->name, newName) != 0)
-			Con_Printf ("%s renamed to %s\n", host_client->name, newName);
+			Con_PrintLinef ("%s renamed to %s", host_client->name, newName);
 	}
 	c_strlcpy (host_client->name, newName);
 	host_client->edict->v.netname = PR_SetEngineString(host_client->name);
@@ -1786,7 +1792,7 @@ void Host_Say (lparse_t *line, cbool teamonly)
 
 		if (pq_chat_frags_to_talk.value && connected_time < 90 && host_client->old_frags < pq_chat_frags_to_talk.value)
 		{
-			SV_ClientPrintf ("Server: Play some and then you can talk\n");
+			SV_ClientPrintLinef ("Server: Play some and then you can talk");
 			return;
 		}
 
@@ -1812,19 +1818,19 @@ void Host_Say (lparse_t *line, cbool teamonly)
 			Dedicated_Printf ("(%s %s) #%d  ", NET_QSocketGetTrueAddressString(host_client->netconnection), text_filtered ? "word filtered": "", NUM_FOR_EDICT(host_client->edict)  );
 
 		if (pr_teamplay.value && teamonly) // JPG - added () for mm2
-			c_snprintf (text, "\001(%s): ", save->name);
-		else c_snprintf (text, "\001%s: ", save->name);
+			c_snprintf1 (text, "\001(%s): ", save->name);
+		else c_snprintf1 (text, "\001%s: ", save->name);
 
 	}
 	else
-		c_snprintf (text, "\001<%s> ", hostname.string);
+		c_snprintf1 (text, "\001<%s> ", hostname.string);
 
 	j = sizeof(text) - 2 - strlen(text);  // -2 for /n and null terminator
 	if ((int)strlen(p) > j)
 		p[j] = 0;
 
 	c_strlcat (text, p);
-	c_strlcat (text, "\n");
+	//c_strlcat (text, "\n");
 
 	for (j = 0, client = svs.clients; j < svs.maxclients_internal; j++, client++) // Because the cap can now change in-game
 	{
@@ -1833,14 +1839,14 @@ void Host_Say (lparse_t *line, cbool teamonly)
 		if (pr_teamplay.value && teamonly && client->edict->v.team != save->edict->v.team)
 			continue;
 		host_client = client;
-		SV_ClientPrintf("%s", text);
+		SV_ClientPrintLinef ("%s", text);
 	}
 	host_client = save;
 
 	// JPG 3.20 - optionally write player binds to server log
 	if (pq_chat_to_log.value)
-		Con_Printf ("(%s) %s", NET_QSocketGetTrueAddressString(host_client->netconnection),  &text[1]);
-	else Dedicated_Printf ("%s", &text[1]);
+		Con_PrintLinef ("(%s) %s", NET_QSocketGetTrueAddressString(host_client->netconnection),  &text[1]); // Because
+	else Dedicated_PrintLinef ("%s", &text[1]);
 }
 
 
@@ -1903,7 +1909,7 @@ void Host_Tell_f (lparse_t *line)
 		if (strcasecmp(client->name, line->args[1]))
 			continue;
 		host_client = client;
-		SV_ClientPrintf("%s", text);
+		SV_ClientPrintf ("%s", text);
 		break;
 	}
 	host_client = save;
@@ -1922,8 +1928,8 @@ void Host_Color_f (lparse_t *line)
 
 	if (line->count == 1)
 	{
-		Con_Printf ("\"color\" is \"%i %i\"\n", ((int)cl_color.value) >> 4, ((int)cl_color.value) & 0x0f);
-		Con_Printf ("color <0-13> [0-13]\n");
+		Con_PrintLinef (QUOTEDSTR ("color") " is " QUOTEDSTR ("%d %d"), ((int)cl_color.value) >> 4, ((int)cl_color.value) & 0x0f);
+		Con_PrintLinef ("color <0-13> [0-13]");
 		return;
 	}
 
@@ -1985,7 +1991,7 @@ void Host_Kill_f (lparse_t *line)
 
 	if (sv_player->v.health <= 0)
 	{
-		SV_ClientPrintf ("Can't suicide -- already dead!\n");
+		SV_ClientPrintLinef ("Can't suicide -- already dead!");
 		return;
 	}
 
@@ -2014,7 +2020,7 @@ void Host_Pause_f (lparse_t *line)
 	}
 
 	if (!sv_pausable.value)
-		SV_ClientPrintf ("Pause not allowed.\n");
+		SV_ClientPrintLinef ("Pause not allowed.");
 	else
 	{
 		// If not playing back a demo, we pause here
@@ -2024,11 +2030,11 @@ void Host_Pause_f (lparse_t *line)
 
 		if (sv.paused)
 		{
-			SV_BroadcastPrintf ("%s paused the game\n", PR_GetString( sv_player->v.netname));
+			SV_BroadcastPrintf ("%s paused the game" NEWLINE, PR_GetString( sv_player->v.netname));
 		}
 		else
 		{
-			SV_BroadcastPrintf ("%s unpaused the game\n",PR_GetString( sv_player->v.netname));
+			SV_BroadcastPrintf ("%s unpaused the game" NEWLINE, PR_GetString( sv_player->v.netname));
 		}
 
 	// send notification to all clients
@@ -2049,13 +2055,13 @@ void Host_PreSpawn_f (lparse_t *unused)
 {
 	if (cmd_source == src_command)
 	{
-		Con_Printf ("prespawn is not valid from the console\n");
+		Con_PrintLinef ("prespawn is not valid from the console");
 		return;
 	}
 
 	if (host_client->spawned)
 	{
-		Con_Printf ("prespawn not valid -- already spawned\n");	// JPG 3.02 already->already
+		Con_PrintLinef ("prespawn not valid -- already spawned");	// JPG 3.02 already->already
 		return;
 	}
 
@@ -2082,13 +2088,13 @@ void Host_Spawn_f (void)
 
 	if (cmd_source == src_command)
 	{
-		Con_Printf ("spawn is not valid from the console\n");
+		Con_PrintLinef ("spawn is not valid from the console");
 		return;
 	}
 
 	if (host_client->spawned)
 	{
-		Con_Printf ("Spawn not valid -- already spawned\n");	// JPG 3.02 already->already
+		Con_PrintLinef ("Spawn not valid -- already spawned");	// JPG 3.02 already->already
 		return;
 	}
 
@@ -2102,7 +2108,7 @@ void Host_Spawn_f (void)
 		// nehahra stuff
 	    if ((f = ED_FindFunction("RestoreGame"))) {
 			if ((RestoreGame = (func_t)(f - pr_functions))) {
-				Con_DPrintf ("Calling RestoreGame\n");
+				Con_DPrintLinef ("Calling RestoreGame");
 				pr_global_struct->time = sv.time;
 				pr_global_struct->self = EDICT_TO_PROG(sv_player);
 				PR_ExecuteProgram (RestoreGame);
@@ -2130,7 +2136,7 @@ void Host_Spawn_f (void)
 		PR_ExecuteProgram (pr_global_struct->ClientConnect);
 
 		if ((System_DoubleTime() - NET_QSocketGetTime(host_client->netconnection) ) <= sv.time)
-			Dedicated_Printf ("%s entered the game\n", host_client->name);
+			Dedicated_PrintLinef ("%s entered the game", host_client->name);
 
 		PR_ExecuteProgram (pr_global_struct->PutClientInServer);
 	}
@@ -2222,7 +2228,7 @@ void Host_Begin_f (void)
 {
 	if (cmd_source == src_command)
 	{
-		Con_Printf ("begin is not valid from the console\n");
+		Con_PrintLinef ("begin is not valid from the console");
 		return;
 	}
 
@@ -2312,9 +2318,9 @@ void Host_Kick_f (lparse_t *line)
 				message++;
 		}
 		if (message)
-			SV_ClientPrintf ("Kicked by %s: %s\n", who, message);
+			SV_ClientPrintLinef ("Kicked by %s: %s", who, message);
 		else
-			SV_ClientPrintf ("Kicked by %s\n", who);
+			SV_ClientPrintLinef ("Kicked by %s", who);
 		SV_DropClient (false);
 	}
 
@@ -2356,18 +2362,18 @@ void Host_Give_f (lparse_t *line)
 	// for cooperative play where a coop map might have too little ammo or health
 	if (sv.disallow_minor_cheats && !host_client->privileged)
 	{
-		SV_ClientPrintf ("No cheats allowed, use sv_cheats 1 and restart level to enable.\n");
+		SV_ClientPrintLinef ("No cheats allowed, use sv_cheats 1 and restart level to enable.");
 		return;
 	}
 
 	if (line->count == 1)
 	{
 		// Help
-		Con_Printf ("usage: give <item> <quantity>\n");
-		Con_Printf (" 1-8 = weapon, a = armor\n");
-		Con_Printf (" h = health, silverkey, goldkey\n");
-		Con_Printf (" s,n,r,c = ammo, rune1-rune4\n");
-		Con_Printf (" rune/key toggles if held\n");
+		Con_PrintLinef ("usage: give <item> <quantity>");
+		Con_PrintLinef (" 1-8 = weapon, a = armor");
+		Con_PrintLinef (" h = health, silverkey, goldkey");
+		Con_PrintLinef (" s,n,r,c = ammo, rune1-rune4");
+		Con_PrintLinef (" rune/key toggles if held");
 		return;
 	}
 
@@ -2407,7 +2413,7 @@ void Host_Give_f (lparse_t *line)
 			}
 			if (sigil)
 			{
-				SV_ClientPrintf ("may require 'changelevel start' or equivalent for intended effect.\n");
+				SV_ClientPrintLinef ("may require 'changelevel start' or equivalent for intended effect.");
 				pr_global_struct->serverflags = (int)pr_global_struct->serverflags ^ sigil;
 			}
 			break;
@@ -2643,7 +2649,7 @@ void Host_Startdemos_f (lparse_t *line)
 #pragma message ("Baker: Eliminate this somehow or automatically add 'map start' to dedicated server server BEFORE stuffcmds?")
 #pragma message ("If I start a dedicated server with +map dm6, what stops this from happening?  The sv.active?")
 		if (!sv.active)
-			Cbuf_AddText ("map start\n");
+			Cbuf_AddTextLine ("map start");
 		return;
 	}
 
@@ -2655,10 +2661,10 @@ void Host_Startdemos_f (lparse_t *line)
 		return;
 
 	c = line->count - 1;
-	if (c > MAX_DEMOS)
+	if (c > MAX_DEMOS_32)
 	{
-		Con_Printf ("Max %i demos in demoloop\n", MAX_DEMOS);
-		c = MAX_DEMOS;
+		Con_PrintLinef ("Max %d demos in demoloop", MAX_DEMOS_32);
+		c = MAX_DEMOS_32;
 	}
 
 	if (line->count != 1)
@@ -2666,18 +2672,18 @@ void Host_Startdemos_f (lparse_t *line)
 		cls.demonum = 0;
 
 	}
-	Con_Printf ("%i demo(s) in loop\n", c);
+	Con_PrintLinef ("%d demo(s) in loop", c);
 
 	for (i = 1 ; i < c + 1 ; i++)
 		c_strlcpy (cls.demos[i - 1], line->args[i]);
 
 	// LordHavoc: clear the remaining slots
-	for ( ; i <= MAX_DEMOS; i++)
+	for ( ; i <= MAX_DEMOS_32; i++)
 		cls.demos[i-1][0] = 0;
 /*
 	if (line->count == 0)
 	{
-		for (i = 1;i <= MAX_DEMOS;i++)
+		for (i = 1;i <= MAX_DEMOS_32;i++)
 		cls.demos[i-1][0] = 0;
 		CL_Clear_Demos_Queue ();
 		cls.demonum = -1;
@@ -2725,8 +2731,3 @@ void Host_Stopdemo_f (lparse_t *unused)
 }
 
 //=============================================================================
-
-
-
-
-

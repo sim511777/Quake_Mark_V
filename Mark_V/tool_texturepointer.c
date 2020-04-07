@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 2009-2013 Baker
 
@@ -46,7 +48,7 @@ void TexturePointer_ClipboardCopy (void)
 	if (texturepointer.glt)
 	{
 		TexMgr_Clipboard_Set (texturepointer.glt);
-	} else Con_Printf ("Could not copy %s to clipboard\n", texturepointer.explicit_name);
+	} else Con_PrintLinef ("Could not copy %s to clipboard", texturepointer.explicit_name);
 
 }
 
@@ -65,10 +67,10 @@ void TexturePointer_ClipboardPaste (void)
 
 			endmark = Hunk_LowMark ();
 			if (mark != endmark)
-				Con_DPrintf ("Mark changed was %i now %i", mark, endmark);
+				Con_DPrintLinef ("Mark changed was %d now %d", mark, endmark);
 			free (data);
-		} else Con_Printf ("Clipboard Paste: No 32-bit image data on clipboard\n");
-	} else Con_Printf ("No texture selected for replacement\n");
+		} else Con_PrintLinef ("Clipboard Paste: No 32-bit image data on clipboard");
+	} else Con_PrintLinef ("No texture selected for replacement");
 }
 
 void TexturePointer_CheckChange (texturepointer_t *test)
@@ -77,11 +79,11 @@ void TexturePointer_CheckChange (texturepointer_t *test)
 	if (test->surf && strcmp (test->surf->texinfo->texture->name, texturepointer.texturename) )
 	{
 		// Change of texture
-//		Con_Printf ("Texture changed from %s to %s\n", texturepointer.texturename, test->surf->texinfo->texture->name);
+//		Con_PrintLinef ("Texture changed from %s to %s", texturepointer.texturename, test->surf->texinfo->texture->name);
 		strlcpy (texturepointer.texturename, test->surf->texinfo->texture->name, 16 /* WAD sizeof name */ );
 		texturepointer.glt = test->surf->texinfo->texture->gltexture;
 
-		//Con_Printf ("surf dist %f %p\n", test->surf->plane->dist, test->surf);
+		//Con_PrintLinef ("surf dist %f %p", test->surf->plane->dist, test->surf);
 
 		// Is water or lava, redirect to that glt
 		if (!texturepointer.glt && test->surf->texinfo->texture->warpimage)
@@ -122,7 +124,7 @@ void Texture_Pointer_f (lparse_t *line)
 	}
 
 	TexturePointer_Reset ();
-	Con_Printf ("texture pointer is %s\n", texturepointer_on ? "ON" : "OFF");
+	Con_PrintLinef ("texture pointer is %s", texturepointer_on ? "ON" : "OFF");
 }
 
 static vec3_t collision_spot;
@@ -334,7 +336,7 @@ void TexturePointer_Draw (void)
 	if (texturepointer_on && cls.signon == SIGNONS && cl.worldmodel && texturepointer.surf)
 	{
 		const char *drawstring1 = va("\bTexture:\b %s", texturepointer.short_name);
-		const char *drawstring2 = va("\b  %i x %i px", texturepointer.width, texturepointer.height);
+		const char *drawstring2 = va("\b  %d x %d px", texturepointer.width, texturepointer.height);
 
 		//int len = strlen(drawstring);
 #pragma message ("You could canvas this, maybe it should be conscaled")
@@ -383,4 +385,4 @@ void TexturePointer_ClearCaches_NewMap (void)
 
 */
 
-
+#endif // GLQUAKE specific

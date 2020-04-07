@@ -30,10 +30,66 @@
 #include "quakedef.h"
 #include "net_defs.h"
 
-#if defined(__GNUC__) //&& !defined(PLATFORM_OSX) // Fuck you mingw headers
-//	#define FULLY_SUPPORTS_IPV6
-#else
-	#define FULLY_SUPPORTS_IPV6
+#if defined(__GNUC__) // && defined(_WIN32) //&& !defined(PLATFORM_OSX) // Fuck you mingw headers
+    #define WIN32_LEAN_AND_MEAN
+    #define IDE_COMES_WITH_GOOD_IPV6_HEADERS 0
+	#pragma message ("Hello IPV6 hax")
+    // Sadly, MinGW version that comes with CodeBlocks the headers are not good
+    // I want things to compile nice and easy out of the box, without errands and other foolishness.
+#ifndef ULONG
+	#define ULONG unsigned int
+#endif
+#ifndef USHORT
+	#define USHORT unsigned short
+#endif
+#ifndef UCHAR
+	#define UCHAR unsigned char
+#endif
+
+    typedef struct {
+        union {
+            struct {
+                ULONG Zone : 28;
+                ULONG Level : 4;
+            };
+            ULONG Value;
+        };
+    } SCOPE_ID, *PSCOPE_ID;
+
+//  // This is what comes with mingw for CodeBlocks 13.12
+//	struct sockaddr_in6_mingw {
+//	    short   sin6_family;        /* AF_INET6 */
+//	    u_short sin6_port;          /* Transport level port number */
+//	    u_long  sin6_flowinfo;      /* IPv6 flow information */
+//	    struct in6_addr sin6_addr;  /* IPv6 address */
+//	    u_long sin6_scope_id;       /* set of interfaces for a scope */
+//	};
+//
+
+
+    typedef struct in6_addr_correctly {
+        union {
+            UCHAR       Byte[16];
+            USHORT      Word[8];
+        } u;
+    } IN6_ADDR_EX; // , *PIN6_ADDR, FAR *LPIN6_ADDR;
+
+    struct sockaddr_in6_EX {
+        USHORT sin6_family; // AF_INET6.
+        USHORT sin6_port;           // Transport level port number.
+        ULONG  sin6_flowinfo;       // IPv6 flow information.
+        IN6_ADDR_EX sin6_addr;         // IPv6 address.
+        union {
+            ULONG sin6_scope_id;     // Set of interfaces for a scope.
+            SCOPE_ID sin6_scope_struct;
+        };
+    }; // SOCKADDR_IN6_LH, *PSOCKADDR_IN6_LH, FAR *LPSOCKADDR_IN6_LH;
+
+    #define sockaddr_in6_HAX sockaddr_in6_EX
+#else // !s6_addr
+
+	#define IDE_COMES_WITH_GOOD_IPV6_HEADERS 1
+	#define sockaddr_in6_HAX sockaddr_in6 // 'struct in6_addr' has no member named 'u'|
 #endif
 
 
@@ -73,7 +129,7 @@ static int UDP_Platform_Startup (void)
 		int err = WSAStartup(MAKEWORD(2,2), &winsockdata); // Let's try 2.2
 		if (err != 0)
 		{
-			Con_SafePrintf ("Winsock initialization failed (%s)\n", socketerror(err));
+			Con_SafePrintLinef ("Winsock initialization failed (%s)", socketerror(err));
 			return 0;
 		}
 	}
@@ -106,9 +162,9 @@ static in_addr_t UDP4_GetHostNameIP (char *namebuf, size_t namebuf_size, char * 
 {
 	char buff[MAXHOSTNAMELEN];
 
-	if (gethostname(buff, sizeof(buff)) == SOCKET_ERROR) {
+    if (gethostname(buff, sizeof(buff)) == SOCKET_ERROR) {
 		int err = SOCKETERRNO;
-		Con_SafePrintf ("UDP4_GetHostName: gethostname failed (%s)\n", socketerror(err));
+		Con_SafePrintLinef ("UDP4_GetHostName: gethostname failed (%s)", socketerror(err));
 		return 0;
 	}
 
@@ -119,11 +175,11 @@ static in_addr_t UDP4_GetHostNameIP (char *namebuf, size_t namebuf_size, char * 
 		in_addr_t netaddr;
 		if (local == NULL) {
 			int err = SOCKETERRNO;
-			Con_SafePrintf ("UDP4_GetHostName: gethostbyname failed (%s)\n", socketerror(err));
+			Con_SafePrintLinef ("UDP4_GetHostName: gethostbyname failed for hostname [%s](%s)", buff, socketerror(err)); // This probably never happens.
 			return 0;
 		}
 		else if (local->h_addrtype != AF_INET) {
-			Con_SafePrintf ("UDP4_GetHostName: address from gethostbyname not IPv4\n");
+			Con_SafePrintLinef ("UDP4_GetHostName: address from gethostbyname not IPv4");
 			return 0;
 		}
 
@@ -137,7 +193,7 @@ static in_addr_t UDP4_GetHostNameIP (char *namebuf, size_t namebuf_size, char * 
 
 		if (ipbuf) {
 			// If ip address, fill that in.
-	//		System_Alert ("%p: %d", ipbuf, (int)ipbuf_size);
+	//		alert ("%p: %d", ipbuf, (int)ipbuf_size);
 			in_addr_t	haddr = ntohl(netaddr); // Net byte order to host order
 			// int is the right tool for this job.
 			//c_snprintfc (ipbuf, ipbuf_size,  "%ld.%ld.%ld.%ld", (haddr >> 24) & 0xff, (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff);
@@ -232,7 +288,7 @@ sys_socket_t UDP4_Init (void)
 	// determine my name & address
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0) {
 		int err = SOCKETERRNO;
-		Con_SafePrintf("UDP4_Init: gethostname failed (%s)\n", socketerror(err));
+		Con_SafePrintLinef ("UDP4_Init: gethostname failed (%s)", socketerror(err));
 	}
 	else
 	{
@@ -266,7 +322,7 @@ sys_socket_t UDP4_Init (void)
 
 	if ((netv4_controlsocket = UDP4_OpenSocket(0)) == INVALID_SOCKET)
 	{
-		Con_SafePrintf ("UDP4_Init: Unable to open control socket, UDP disabled\n");
+		Con_SafePrintLinef ("UDP4_Init: Unable to open control socket, UDP disabled");
 		UDP_Platform_Cleanup ();
 		return INVALID_SOCKET;
 	}
@@ -284,7 +340,7 @@ sys_socket_t UDP4_Init (void)
 		*colon = 0;
 #endif
 
-	Con_SafePrintf ("UDP4 Initialized: %s, %s\n", my_ipv4_address, my_ipv4_server_address);
+	Con_SafePrintLinef ("UDP4 Initialized: %s, %s", my_ipv4_address, my_ipv4_server_address);
 	ipv4Available = true;
 
 	return netv4_controlsocket;
@@ -324,13 +380,13 @@ sys_socket_t UDP4_OpenSocket (int port)
 {
 	sys_socket_t newsocket;
 	struct sockaddr_in address;
-	int _true = 1;  // Spike uses this.  I'm rolling with it.
+	ioctl_uint32_t _true = 1;
 	int err;
 
 	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET)
 	{
 		err = SOCKETERRNO;
-		Con_SafePrintf ("UDP4_OpenSocket: %s\n", socketerror(err));
+		Con_SafePrintLinef ("UDP4_OpenSocket: %s", socketerror(err));
 		return INVALID_SOCKET;
 	}
 
@@ -346,8 +402,8 @@ sys_socket_t UDP4_OpenSocket (int port)
 	if (bind (newsocket, (struct sockaddr *)&address, sizeof(address)) == 0)
 	{
 		int newport = ((struct sockaddr_in*)&address)->sin_port;
-		//System_Alert ("Client port on the server is %d\n", newport);
-		//System_Alert (UDP_AddrToString (&address));
+		//alert ("Client port on the server is %d\n", newport);
+		//alert (UDP_AddrToString (&address));
 		return newsocket;
 	}
 
@@ -363,7 +419,7 @@ sys_socket_t UDP4_OpenSocket (int port)
 
 ErrorReturn:
 	err = SOCKETERRNO;
-	Con_SafePrintf ("UDP4_OpenSocket: %s\n", socketerror(err));
+	Con_SafePrintLinef ("UDP4_OpenSocket: %s", socketerror(err));
 	closesocket (newsocket);  // Spike changed to this in R4.  No need to shutdown broadcast on socket that we just opened.
 	return INVALID_SOCKET;
 }
@@ -462,17 +518,17 @@ int UDP_Read (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr)
 		int err = SOCKETERRNO;
 
 		if (err == NET_EWOULDBLOCK || err == NET_ECONNREFUSED) {
-			//Con_SafePrintf ("UDP_Read zero: %s\n", socketerror(err));
+			//Con_SafePrintLinef ("UDP_Read zero: %s", socketerror(err));
 			return 0; // This can happen as standard operating procedure
 		}
 		if (err ==  NET_ECONNRESET) {
 			// Spike says this is exploitable.
 			// A fix me would give them a second to get a valid message
 			// Before giving them the boot.
-			Con_DPrintf ("UDP_Read connection reset, recvfrom: %s\n", socketerror(err));
+			Con_DPrintLinef ("UDP_Read connection reset, recvfrom: %s", socketerror(err));
 			return -1; // Get out the boot and kick this connection.
 		}
-		Con_SafePrintf ("UDP_Read, recvfrom: %s\n", socketerror(err));
+		Con_SafePrintLinef ("UDP_Read, recvfrom: %s", socketerror(err));
 		return 0; // I guess we are forgiving and will let it slide this time.
 	}
 	return ret;
@@ -488,7 +544,7 @@ static int UDP_MakeSocketBroadcastCapable (sys_socket_t socketid)
 	if (setsockopt(socketid, SOL_SOCKET, SO_BROADCAST, (char *)&i, sizeof(i)) == SOCKET_ERROR)
 	{
 		int err = SOCKETERRNO;
-		Con_SafePrintf ("UDP, setsockopt: %s\n", socketerror(err));
+		Con_SafePrintLinef ("UDP, setsockopt: %s", socketerror(err));
 		return -1;
 	}
 	netv4_broadcastsocket = socketid;
@@ -510,7 +566,7 @@ int UDP4_Broadcast (sys_socket_t socketid, byte *buf, int len)
 		ret = UDP_MakeSocketBroadcastCapable (socketid);
 		if (ret == -1)
 		{
-			Con_SafePrintf ("Unable to make socket broadcast capable\n");
+			Con_SafePrintLinef ("Unable to make socket broadcast capable");
 			return ret;
 		}
 	}
@@ -530,22 +586,22 @@ int UDP_Write (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr
 	switch (addr->qsa_family) {
 	case AF_INET:		addrsize = sizeof(struct sockaddr_in); break;
 	case AF_INET6:		addrsize = sizeof(struct sockaddr_in6); break;
-	default:			Con_SafePrintf ("UDP_Write: unknown family\n");
+	default:			Con_SafePrintLinef ("UDP_Write: unknown family");
 						return -1;	//some kind of error. a few systems get pissy if the size doesn't exactly match the address family
 	}
 
 	ret = sendto (socketid, (const char *)buf, len, 0, (struct sockaddr *)addr, addrsize);
 	if (!addr->qsa_family) // Spike got rid of this in R4
-		Con_SafePrintf ("UDP_Write: family was cleared\n"); // Spike got rid of this in R4
+		Con_SafePrintLinef ("UDP_Write: family was cleared"); // Spike got rid of this in R4
 	if (ret == SOCKET_ERROR)
 	{
 		int err = SOCKETERRNO;
 		if (err == NET_EWOULDBLOCK)
 			return 0;
 //		if (err == ENETUNREACH) //  Spike does use this.
-//			Con_SafePrintf ("UDP_Write: %s (%s)\n", socketerror(err), UDP_AddrToString(addr));
+//			Con_SafePrintLinef ("UDP_Write: %s (%s)", socketerror(err), UDP_AddrToString(addr));
 		else
-		Con_SafePrintf ("UDP_Write, sendto: %s\n", socketerror(err));
+		Con_SafePrintLinef ("UDP_Write, sendto: %s", socketerror(err));
 	}
 	return ret;
 }
@@ -557,87 +613,46 @@ const char *UDP_AddrToString (struct qsockaddr *addr, cbool masked)
 	//static char buffer[22]; // 192.168.100.100:26001 is 21 chars
 	static char buffer[64];
 	int		haddr;
-//#ifndef s6_addr
-
-//struct in6_addr {
-//    union {
-//        u_char Byte[16];
-//        u_short Word[8];
-//    } u;
-//};
-
-//	#define in_addr6 in6_addr
-//	/*
-//	** Defines to match RFC 2553.
-//	*/
-//	#define _S6_un     u
-//	#define _S6_u8     Byte
-//	#define s6_addr    _S6_un._S6_u8
-//
-//	/*
-//	** Defines for our implementation.
-//	*/
-//	#define s6_bytes   u.Byte
-//	#define s6_words   u.Word
-//
-//	struct sockaddr_in6_fuck_you_mingw_headers {
-//	    short   sin6_family;        /* AF_INET6 */
-//	    u_short sin6_port;          /* Transport level port number */
-//	    u_long  sin6_flowinfo;      /* IPv6 flow information */
-//	    struct in6_addr sin6_addr;  /* IPv6 address */
-//	    u_long sin6_scope_id;       /* set of interfaces for a scope */
-//	};
-//
-//	#endif // !s6_addr
-//
-#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
 
 	if (addr->qsa_family == AF_INET6)
 	{
 		if (masked)
 		{
-
-
-//							ntohs( ((sockaddr_in6_fuck_you_mingw_headers)((struct sockaddr_in6 *)addr)->sin6_addr).u.Word[0]),
-//							ntohs( ((sockaddr_in6_fuck_you_mingw_headers)(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[1]),
-//							ntohs( ((sockaddr_in6_fuck_you_mingw_headers)(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[2]),
-//							ntohs( ((sockaddr_in6_fuck_you_mingw_headers)(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[3]));
-
-
 			c_snprintf4 (buffer, "[%x:%x:%x:%x::]/64",
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[0]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[1]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[2]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[3]));
+						ntohs((
+             (struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[0]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[1]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[2]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[3]));
 		}
 		else
 		{
 			if (((struct sockaddr_in6 *)addr)->sin6_scope_id)
 			{
-				c_snprintf10 (buffer, "[%x:%x:%x:%x:%x:%x:%x:%x%%%i]:%d",
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[0]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[1]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[2]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[3]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[4]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[5]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[6]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[7]),
-						(int)((struct sockaddr_in6 *)addr)->sin6_scope_id,
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_port));
+				c_snprintf10 (buffer, "[%x:%x:%x:%x:%x:%x:%x:%x%%%d]:%d",
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[0]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[1]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[2]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[3]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[4]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[5]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[6]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[7]),
+						(int)((struct sockaddr_in6_HAX *)addr)->sin6_scope_id,
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_port));
 			}
 			else
 			{
 				c_snprintf9 (buffer, "[%x:%x:%x:%x:%x:%x:%x:%x]:%d",
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[0]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[1]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[2]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[3]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[4]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[5]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[6]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_addr.u.Word[7]),
-						ntohs(((struct sockaddr_in6 *)addr)->sin6_port));
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[0]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[1]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[2]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[3]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[4]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[5]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[6]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_addr.u.Word[7]),
+						ntohs(((struct sockaddr_in6_HAX *)addr)->sin6_port));
 			}
 		}
 	}
@@ -656,7 +671,7 @@ const char *UDP_AddrToString (struct qsockaddr *addr, cbool masked)
 					  ntohs(((struct sockaddr_in *)addr)->sin_port));
 		}
 	}
-#endif // !__GNUC__
+
 	return buffer;
 }
 
@@ -696,7 +711,7 @@ int UDP_GetSocketAddr (sys_socket_t socketid, struct qsockaddr *addr)
 		if (a == 0 || a == htonl(INADDR_LOOPBACK))
 		((struct sockaddr_in *)addr)->sin_addr.s_addr = myAddrv4;
 	} else if (addr->qsa_family == AF_INET6) {
-		static const in_addr6_t in6addr_any = IN6ADDR_ANY_INIT;
+		static const in_addr6_t in6addr_any = {0}; // IN6ADDR_ANY_INIT;
 		if (!memcmp(&((struct sockaddr_in6 *)addr)->sin6_addr, &in6addr_any, sizeof(in_addr6_t)))
 			//memcpy(&((struct sockaddr_in6 *)addr)->sin6_addr, &myAddrv6, sizeof(in_addr6_t) /*sizeof(struct sockaddr_in6) ericw caught*/);
 			memcpy(&((struct sockaddr_in6 *)addr)->sin6_addr, &myAddrv6, sizeof(((struct sockaddr_in6 *)addr)->sin6_addr)); // Spike
@@ -830,8 +845,6 @@ int UDP_SetSocketPort (struct qsockaddr *addr, int port)
 
 static void UDP6_GetLocalAddress (void)
 {
-#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
-
 	char		buff[MAXHOSTNAMELEN];
 	struct addrinfo hints, *local = NULL;
 
@@ -841,7 +854,7 @@ static void UDP6_GetLocalAddress (void)
 	if (gethostname(buff, MAXHOSTNAMELEN) == SOCKET_ERROR)
 	{
 		int	err = SOCKETERRNO;
-		Con_SafePrintf("UDP6_GetLocalAddress: gethostname failed (%s)\n", socketerror(err));
+		Con_SafePrintLinef ("UDP6_GetLocalAddress: gethostname failed (%s)", socketerror(err));
 		return;
 	}
 	buff[MAXHOSTNAMELEN - 1] = 0;
@@ -862,21 +875,17 @@ static void UDP6_GetLocalAddress (void)
 
 	if (local == NULL) {
 		int	err = SOCKETERRNO;
-		Con_SafePrintf("UDP6_GetLocalAddress: gethostbyname failed (%s)\n", socketerror(err));
-		return;
+		if (err) { // Linux returns SOCKET_ERROR with error code 0 (success) for anything that resolves to 127.0.0.1
+            Con_SafePrintLinef ("UDP6_GetLocalAddress: gethostbyname failed (#%d: %s)", err, socketerror(err));
+            return;
+		}
 	}
-#endif // !__GNUC__
 }
 
 sys_socket_t UDP6_Init (void)
 {
 	char	buff[MAXHOSTNAMELEN];
 	int	t;
-
-#ifndef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
-
-	return INVALID_SOCKET;
-#endif // fuck you mingw headers
 
 	if (COM_CheckParm ("-noudp") || COM_CheckParm ("-noudp6"))
 		return INVALID_SOCKET;
@@ -887,7 +896,7 @@ sys_socket_t UDP6_Init (void)
 	// determine my name & address
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0) {
 		int err = SOCKETERRNO;
-		Con_SafePrintf("UDP6_Init: gethostname failed (%s)\n", socketerror(err));
+		Con_SafePrintLinef ("UDP6_Init: gethostname failed (%s)", socketerror(err));
 	}
 	else
 	{
@@ -923,20 +932,27 @@ sys_socket_t UDP6_Init (void)
 
 	if ((netv6_controlsocket = UDP6_OpenSocket(0)) == INVALID_SOCKET)
 	{
-		Con_SafePrintf("UDP6_Init: Unable to open control socket, UDPv6 disabled\n");
+		Con_SafePrintLinef ("UDP6_Init: Unable to open control socket, UDPv6 disabled");
 		UDP_Platform_Cleanup ();
 		return INVALID_SOCKET;
 	}
 
 	broadcastaddrv6.sin6_family = AF_INET6;
 	memset(&broadcastaddrv6.sin6_addr, 0, sizeof(broadcastaddrv6.sin6_addr));
-#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
-	broadcastaddrv6.sin6_addr.u.Byte[0] = 0xff;
-	broadcastaddrv6.sin6_addr.u.Byte[1] = 0x03;
-	broadcastaddrv6.sin6_addr.u.Byte[15] = 0x01;
-	broadcastaddrv6.sin6_port = htons((unsigned short)net_hostport);
-#endif // ! __GNUC__
-	Con_SafePrintf ("IPv6 Initialized: %s\n", my_ipv6_address);
+
+    {
+        struct sockaddr_in6_HAX *broadcaster = (struct sockaddr_in6_HAX *)&broadcastaddrv6;
+        broadcaster->sin6_addr.u.Byte[0] = 0xff;
+        broadcaster->sin6_addr.u.Byte[1] = 0x03;
+        broadcaster->sin6_addr.u.Byte[15] = 0x01;
+        broadcaster->sin6_port = htons((unsigned short)net_hostport);
+//        broadcastaddrv6.sin6_addr.u.Byte[0] = 0xff;
+//        broadcastaddrv6.sin6_addr.u.Byte[1] = 0x03;
+//        broadcastaddrv6.sin6_addr.u.Byte[15] = 0x01;
+//        broadcastaddrv6.sin6_port = htons((unsigned short)net_hostport);
+    }
+
+	Con_SafePrintLinef ("IPv6 Initialized: %s", my_ipv6_address);
 	ipv6Available = true;
 
 	return netv6_controlsocket;
@@ -976,13 +992,13 @@ sys_socket_t UDP6_OpenSocket (int port)
 {
 	sys_socket_t newsocket;
 	struct sockaddr_in6 address;
-	int _true = 1;
+	ioctl_uint32_t _true = 1;
 	int err;
 
 	if ((newsocket = socket (PF_INET6, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET)
 	{
 		err = SOCKETERRNO;
-		Con_SafePrintf ("UDP6_OpenSocket: %s\n", socketerror(err));
+		Con_SafePrintLinef ("UDP6_OpenSocket: %s", socketerror(err));
 		return INVALID_SOCKET;
 	}
 
@@ -993,7 +1009,7 @@ sys_socket_t UDP6_OpenSocket (int port)
 
 	memset(&address, 0, sizeof(address));
 	address.sin6_family = AF_INET6;
-#ifdef PLATFORM_OSX // Crusty Mac .. although is IPv6 issue
+#ifndef _WIN32 // PLATFORM_OSX // Crusty Mac .. although is IPv6 issue
 	memcpy (&address.sin6_addr, &bindAddrv6, sizeof(address.sin6_addr));
 #else
 	address.sin6_addr = bindAddrv6;
@@ -1023,7 +1039,7 @@ sys_socket_t UDP6_OpenSocket (int port)
 
 ErrorReturn:
 	err = SOCKETERRNO;
-	Con_SafePrintf ("UDP6_OpenSocket: %s\n", socketerror(err));
+	Con_SafePrintLinef ("UDP6_OpenSocket: %s", socketerror(err));
 	closesocket (newsocket);
 	return INVALID_SOCKET;
 }
@@ -1042,7 +1058,7 @@ int UDP6_Broadcast (sys_socket_t socketid, byte *buf, int len)
 
 int UDP6_StringToAddr (const char *string, struct qsockaddr *addr)
 {	//This is never actually called... (still ?)
-	// Con_SafePrintf ("UDP6_StringToAddr: %s\n", string);
+	// Con_SafePrintLinef ("UDP6_StringToAddr: %s", string);
 	return -1;
 }
 
@@ -1056,8 +1072,6 @@ int  UDP6_GetNameFromAddr (struct qsockaddr *addr, char *name, int len)
 // Return 0 on success, -1 on failure
 int UDP6_GetAddrFromName (const char *name, struct qsockaddr *addr)
 {
-#ifdef FULLY_SUPPORTS_IPV6 // __GNUC__ // sockaddr_in6_fuck_you_mingw_headers
-
 	struct addrinfo *addrinfo = NULL;
 	struct addrinfo *pos;
 	struct addrinfo udp6hint;
@@ -1140,9 +1154,8 @@ int UDP6_GetAddrFromName (const char *name, struct qsockaddr *addr)
 		}
 		return 0;
 	}
-#endif // ! __GNUC__
+
 	return -1;
 }
 
 //=============================================================================
-

@@ -107,12 +107,12 @@ cbool sMediaPlayer_Init (void)
 
 		if (FAILED (hr))
 		{
-			Con_Printf ("ERROR - Could not initialize COM library");
+			Con_PrintLinef ("ERROR - Could not initialize COM library");
 			return false;
 		}
 
 		Initialized = true;
-		Con_DPrintf ("Directshow Music initialized\n");
+		Con_DPrintLinef ("Directshow Music initialized");
 	}
 
 	return true;
@@ -123,7 +123,7 @@ void MediaPlayer_Shutdown (void)
 {
 	if (!Initialized) return;
 
-//	Con_DPrintf ("********************* SHUTDOWN MP3 TRACK *********************\n");
+//	Con_DPrintLinef ("********************* SHUTDOWN MP3 TRACK *********************");
 	// stop anything that's playing
 	if (Playing)
 	{
@@ -139,12 +139,12 @@ void MediaPlayer_Shutdown (void)
 
 		// nothing playing now
 		Playing = false;
-		Con_DPrintf ("MP3 Tracks: Stop\n");
+		Con_DPrintLinef ("MP3 Tracks: Stop");
 	}
 //	return;
 
 	CoUninitialize ();
-	Con_DPrintf ("MP3 Tracks: Shutdown\n");
+	Con_DPrintLinef ("MP3 Tracks: Shutdown");
 
 	// Reset stuff
 	pGraph = NULL;
@@ -171,7 +171,7 @@ void MediaPlayer_Pause (void)
     IMediaControl_Pause(pControl);
 
 	Paused = true;
-// Con_DPrintf ("MP3 Tracks: Pause\n");
+// Con_DPrintLinef ("MP3 Tracks: Pause");
 }
 
 void MediaPlayer_Resume (void)
@@ -184,7 +184,7 @@ void MediaPlayer_Resume (void)
     IMediaControl_Run(pControl);
 
 	Paused = false;
- // Con_DPrintf ("MP3 Tracks: Resume\n");
+ // Con_DPrintLinef ("MP3 Tracks: Resume");
 }
 
 void MediaPlayer_RefreshVolume (void)
@@ -202,7 +202,7 @@ void MediaPlayer_RefreshVolume (void)
 	else db = log10 (Volume_level) * 2000;
 
 	IBasicAudio_put_Volume	(pAudio, db);
-//	Con_DPrintf ("MP3 Tracks: Refresh volume\n");
+//	Con_DPrintLinef ("MP3 Tracks: Refresh volume");
 }
 
 
@@ -236,7 +236,7 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 		sMediaPlayer_Init (); // Try to turn it on
 		if (!Initialized)
 		{
-			Con_DPrintf ("MediaPlayer_Play: Couldn't turn it on\n");
+			Con_DPrintLinef ("MediaPlayer_Play: Couldn't turn it on");
 			return false; // Couldn't turn it on
 		}
 	}
@@ -245,7 +245,7 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 	{
 		extern cbool exec_silent;
 		exec_silent = true;
-		Cbuf_AddText (va("exec %s\n", SETMUSIC_CFG_FULL) );
+		Cbuf_AddTextLinef ("exec %s", SETMUSIC_CFG_FULL);
 		Cbuf_Execute (); // Will set exec_silent to false
 
 		cls.music_run  = true;
@@ -253,10 +253,10 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 
 	if (0 <= tracknum && tracknum < 100 && musicmaps[tracknum][0] && musicmaps[tracknum][0] != '.')
 	{
-		c_snprintf (track_file, "music/%s", &musicmaps[tracknum][0]);
+		c_snprintf1 (track_file, "music/%s", &musicmaps[tracknum][0]);
 		alt_track = true;
 	}
-	else c_snprintf (track_file, "music/track%02i", tracknum);
+	else c_snprintf1 (track_file, "music/track%02d", tracknum);
 
 	// Build relative file name
 
@@ -267,15 +267,15 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 
 	if (!absolute_filename)
 	{
-		Con_VerbosePrintf ("Track: %s not found\n", track_file);
+		Con_VerbosePrintLinef ("Track: %s not found", track_file);
 		MediaPlayer_Shutdown ();
 		return false; // Doesn't exist
 	}
 
 	c_strlcpy (last_track, absolute_filename);
 	if (alt_track)
-		Con_VerbosePrintf ("Current music track (%02i): %s\n", tracknum, track_file);
-	else Con_VerbosePrintf ("Current music track: %s\n", track_file);
+		Con_VerbosePrintLinef ("Current music track (%02d): %s", tracknum, track_file);
+	else Con_VerbosePrintLinef ("Current music track: %s", track_file);
 
 	// We could improve this a little as this function has the typical
 	// edge case issues
@@ -322,8 +322,8 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 	MediaPlayer_RefreshVolume ();
 	// examples in the SDK will wait for the event to complete here, but this is totally inappropriate for a game engine.
 
-	Con_DPrintf ("MP3 Tracks: Playing\n");
-//	Con_DPrintf ("********************* PLAYING MP3 TRACK *********************\n");
+	Con_DPrintLinef ("MP3 Tracks: Playing");
+//	Con_DPrintLinef ("********************* PLAYING MP3 TRACK *********************");
 	return Playing;
 
 }
@@ -339,7 +339,7 @@ void MediaPlayer_Update (void)
 		LONGLONG pos1, pos2;
 		k++;
 		IMediaSeeking_GetPositions (pSeek, &pos1, &pos2);
-		VID_Local_Set_Window_Caption (   va("%i - CD track position: pos1 %i pos2 %i", k, (int)pos1/10000000, (int)(pos2/10000000) ) );
+		VID_Local_Set_Window_Caption (   va("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1/10000000, (int)(pos2/10000000) ) );
 	}
 #endif
 }
@@ -358,7 +358,7 @@ cbool MediaPlayer_Force_On (void)
 
 	StayOff = false;
 	if (host_post_initialized)
-		Con_Printf ("MP3 Tracks: Forced on\n");
+		Con_PrintLinef ("MP3 Tracks: Forced on");
 	return true;
 }
 
@@ -367,7 +367,7 @@ void MediaPlayer_Force_Off (void)
 {
 	StayOff = true;
 	if (host_post_initialized)
-		Con_Printf ("MP3 Tracks: Forced off\n");
+		Con_PrintLinef ("MP3 Tracks: Forced off");
 }
 
 void MediaPlayer_ChangeVolume (float newvolume)
@@ -383,7 +383,7 @@ void MediaPlayer_ChangeVolume (float newvolume)
 	Volume_level = newvolume;
 	MediaPlayer_RefreshVolume ();
 
-//	Con_DPrintf ("MP3 Tracks: Effective volume is %f\n", newvolume);
+//	Con_DPrintLinef ("MP3 Tracks: Effective volume is %f", newvolume);
 }
 
 /*
@@ -409,7 +409,7 @@ void MediaPlayer_Message (int looping)
 		LONGLONG pos1, pos2;
 		k++;
 		IMediaSeeking_GetPositions (pSeek, &pos1, &pos2);
-		VID_Local_Set_Window_Caption (   va("%i - CD track position: pos1 %i pos2 %i", k, (int)pos1, (int)pos2 ) );
+		VID_Local_Set_Window_Caption (   va("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1, (int)pos2 ) );
 	}
 
 
@@ -429,7 +429,7 @@ void MediaPlayer_Message (int looping)
 
             // Reset to first frame of movie
 			 hr = IMediaSeeking_SetPositions(pSeek, &pos, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
-			 Con_DPrintf ("MP3 Tracks: Looped\n");
+			 Con_DPrintLinef ("MP3 Tracks: Looped");
         }
 		else if (evCode == EC_COMPLETE)
 		{

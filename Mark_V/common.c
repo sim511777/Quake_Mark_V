@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // common.c -- misc functions used in client and server
 
 #include "quakedef.h"
+#include "common.h" // courtesy
 #include <errno.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -264,7 +265,7 @@ void MSG_WriteString (sizebuf_t *sb, const char *s)
 
 void MSG_WriteStringf (sizebuf_t *sb, const char *fmt, ...) // __core_attribute__((__format__(__printf__,2,3)));
 {
-	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
+	VA_EXPAND (text, MAXPRINTMSG_4096, fmt); // cls.spawnparms is
 	MSG_WriteString (sb, text);
 }
 
@@ -796,7 +797,7 @@ static void COM_CheckRegistered (void)
 
 	if (h == -1)
 	{
-		Con_Printf ("Playing shareware version.\n");
+		Con_PrintLinef ("Playing shareware version.");
 		if (com_modified)
 			System_Error ("You must have the registered version to use modified games");
 		return;
@@ -820,7 +821,7 @@ static void COM_CheckRegistered (void)
 	Cvar_SetQuick (&cmdline, &com_cmdline[i]);
 	Cvar_SetValueQuick (&registered, 1);
 	static_registered = 1;
-	Con_SafePrintf ("Playing registered version.\n");
+	Con_SafePrintLinef ("Playing registered version.");
 }
 
 
@@ -857,7 +858,7 @@ void COM_InitArgv (int argc, char **argv)
 	// Remove trailing spaces
 	String_Edit_RemoveTrailingSpaces (com_cmdline);
 
-	Con_SafePrintf ("Command line: %s\n", com_cmdline);
+	Con_SafePrintLinef ("Command line: %s", com_cmdline);
 
 	for (com_argc = 0 ; (com_argc < MAX_NUM_Q_ARGVS_50) && (com_argc < argc) ; com_argc++)
 	{
@@ -908,6 +909,7 @@ void COM_InitArgv (int argc, char **argv)
 	build.video_avi_capture = true;
 #endif // SUPPORTS_AVI_CAPTURE -- Otherwise it is false
 
+
 #ifdef GLQUAKE_SUPPORTS_VSYNC
 	build.video_vsync = true;
 #endif // GLQUAKE_SUPPORTS_VSYNC -- Otherwise it is false
@@ -916,7 +918,9 @@ void COM_InitArgv (int argc, char **argv)
 	build.video_vsync = true;
 #endif // WINQUAKE_SUPPORTS_VSYNC -- Otherwise it is false
 
-
+#ifdef CORE_GL
+	build.video_vsync = true; // Cheesy
+#endif // CORE_GL
 
 	com_gametype = gametype_standard;
 
@@ -1107,15 +1111,15 @@ void COM_Path_f (void)
 {
 	searchpath_t    *s;
 
-	Con_Printf ("Current search path:\n");
+	Con_PrintLinef ("Current search path:");
 	for (s=com_searchpaths ; s ; s=s->next)
 	{
 		if (s->pack)
 		{
-			Con_Printf ("%s (%i files)\n", s->pack->filename, s->pack->numfiles);
+			Con_PrintLinef ("%s (%d files)", s->pack->filename, s->pack->numfiles);
 		}
 		else
-			Con_Printf ("%s\n", s->filename);
+			Con_PrintLinef ("%s", s->filename);
 	}
 }
 
@@ -1130,12 +1134,13 @@ void COM_Exists_f (lparse_t *line)
 		if (f)
 		{
 			FS_fclose (f);
-			Con_Printf ("File %s exists with size of %i\n", line->args[1], com_filesize);
-		} else Con_Printf ("%s does not exist\n", line->args[1]);
-	} else Con_Printf ("Exists: Indicates if a file exists in the path\n");
+			Con_PrintLinef ("File %s exists with size of %d", line->args[1], com_filesize);
+		} else Con_PrintLinef ("%s does not exist", line->args[1]);
+	} else Con_PrintLinef ("Exists: Indicates if a file exists in the path");
 }
 
 
+#if 0000 // Baker 16Dec2016
 /*
 ============
 COM_WriteFile
@@ -1158,10 +1163,12 @@ void COM_WriteFile (const char *filename, const void *data, int len)
 		return;
 	}
 
-	Dedicated_Printf ("COM_WriteFile: %s\n", name);
+	Dedicated_PrintLinef ("COM_WriteFile: %s", name);
 	System_FileWrite (handle, data, len);
 	System_FileClose (handle);
 }
+#endif
+
 
 // Return filename fullpath from successful open.  For mp3 music currently.
 char *COM_FindFile_NoPak (const char *file_to_find)
@@ -1182,10 +1189,10 @@ char *COM_FindFile_NoPak (const char *file_to_find)
 			if (f)
 			{
 				FS_fclose (f);
-				Con_DPrintf ("Located file '%s' in '%s'\n", file_to_find, search->filename);
+				Con_DPrintLinef ("Located file '%s' in '%s'", file_to_find, search->filename);
 				return namebuffer;
 			}
-			else Con_DPrintf ("Failed to locate file '%s' in '%s'\n", file_to_find, search->filename);
+			else Con_DPrintLinef ("Failed to locate file '%s' in '%s'", file_to_find, search->filename);
 		}
 	}
 
@@ -1314,7 +1321,7 @@ int COM_FindFile (const char *filename, int *handle, FILE **file, const char *me
 //					static int prevent = 0;
 
 //					prevent++;
-//					Con_SafePrintf ("Prevented %i on %s\n", prevent++, filename);
+//					Con_SafePrintLinef ("Prevented %d on %s", prevent++, filename);
 					break;	// There are no files with that extension class in the pak
 				}
 
@@ -1330,7 +1337,7 @@ int COM_FindFile (const char *filename, int *handle, FILE **file, const char *me
 						continue; // No match
 
 					// found it!
-//					Dedicated_Printf ("PackFile: %s : %s\n",pak->filename, filename);  // Baker: This spams!
+//					Dedicated_PrintLinef ("PackFile: %s : %s", pak->filename, filename);  // Baker: This spams!
 					if (handle)
 					{
 						*handle = pak->handle;
@@ -1380,7 +1387,7 @@ int COM_FindFile (const char *filename, int *handle, FILE **file, const char *me
 					continue;
 			}
 
-//			Dedicated_Printf ("FindFile: %s\n",netpath);  Baker: This spams
+//			Dedicated_PrintLinef ("FindFile: %s", netpath);  Baker: This spams
 			com_filesize = System_FileOpenRead (netpath, &i);
 			com_filesrcpak = 0;
 			if (handle)
@@ -1396,7 +1403,7 @@ int COM_FindFile (const char *filename, int *handle, FILE **file, const char *me
 	}
 
 	//if (developer.value > 1) // Baker: This spams too much
-	Con_DPrintf_Files ("FindFile: can't find %s\n", filename);
+	Con_DPrintLinef_Files ("FindFile: can't find %s", filename);
 
 	if (handle)
 		*handle = -1;
@@ -1625,7 +1632,7 @@ pack_t *COM_LoadPackFile (const char *packfile)
 	int                             numpackfiles;
 	pack_t                  *pack;
 	int                             packhandle;
-	dpackfile_t             info[MAX_FILES_IN_PACK];
+	dpackfile_t             info[MAX_FILES_IN_PACK_2048];
 	unsigned short          crc;
 
 	if (!File_Exists(packfile)) // Fail faster?  Added Nov 2016, shouldn't make any difference except place to set a breakpoint
@@ -1641,8 +1648,8 @@ pack_t *COM_LoadPackFile (const char *packfile)
 
 	numpackfiles = header.dirlen / sizeof(dpackfile_t);
 
-	if (numpackfiles > MAX_FILES_IN_PACK)
-		System_Error ("%s has %i files", packfile, numpackfiles);
+	if (numpackfiles > MAX_FILES_IN_PACK_2048)
+		System_Error ("%s has %d files", packfile, numpackfiles);
 
 	if (numpackfiles != PAK0_COUNT)
 		com_modified = true;    // not the original file
@@ -1702,7 +1709,7 @@ pack_t *COM_LoadPackFile (const char *packfile)
 	}
 
 
-	//Con_Printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	//Con_PrintLinef ("Added packfile %s (%d files)", packfile, numpackfiles);
 	return pack;
 }
 
@@ -1753,7 +1760,7 @@ void COM_AddGameDirectory (const char *relative_dir, cbool hd_only)
 		search->next = com_searchpaths;
 		com_searchpaths = search;
 	}
-	//	System_Alert ("Last pak file %s", pakfile);
+	//	alert ("Last pak file %s", pakfile);
 }
 
 
@@ -1768,7 +1775,7 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 	int i, j;
 
 #ifndef SERVER_ONLY
-	c_snprintf (com_safedir, "%s/__tempfiles", Folder_Caches_URL());
+	c_snprintf1 (com_safedir, "%s/__tempfiles", Folder_Caches_URL());
 	if (!isDedicated)
 	{
 		File_Mkdir_Recursive (com_safedir); // Ensure parent path exists
@@ -1806,8 +1813,8 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 	if (COM_CheckParm("-nehahra"))		com_gametype = gametype_nehahra;
 #endif // SUPPORTS_NEHAHRA
 
-	// start up with GAMENAME by default (id1)
-	COM_AddGameDirectory (GAMENAME, false /*not a hd only folder*/);
+	// start up with GAMENAME_ID1 by default (id1)
+	COM_AddGameDirectory (GAMENAME_ID1, false /*not a hd only folder*/);
 
 	// any set gamedirs will be freed up to here
 	com_base_searchpaths = com_searchpaths;
@@ -1836,7 +1843,7 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 		{
 			com_modified = true;
 			COM_AddGameDirectory (com_argv[i+1], false /*not a hd only folder*/);
-		} else Con_SafePrintf ("Relative gamedir not allowed\n");
+		} else Con_SafePrintLinef ("Relative gamedir not allowed");
 	}
 
 	c_strlcpy (game_startup_dir, com_gamedir);
@@ -1850,7 +1857,7 @@ void COM_Uppercase_Check (const char *in_name)
 {
 	const char *name = File_URL_SkipPath (in_name);
 	if (String_Does_Have_Uppercase (name))
-		Con_Warning ("Compatibility: filename \"%s\" contains uppercase\n", name);
+		Con_WarningLinef ("Compatibility: filename " QUOTED_S " contains uppercase", name);
 }
 
 
@@ -1868,7 +1875,7 @@ void COM_RemoveAllPaths (void)
 		next = com_searchpaths->next;
 		if (com_searchpaths->pack)
 		{
-			Con_DPrintf("Releasing %s ...\n", com_searchpaths->pack->filename);
+			Con_DPrintLinef ("Releasing %s ...", com_searchpaths->pack->filename);
 			System_FileClose (com_searchpaths->pack->handle);
 
 			Z_Free (com_searchpaths->pack->files);
@@ -1879,8 +1886,8 @@ void COM_RemoveAllPaths (void)
 
 		com_searchpaths = next;
 	}
-	FS_FullPath_From_Basedir (com_gamedir, GAMENAME );
-	Con_DPrintf("Release complete.\n\n");
+	FS_FullPath_From_Basedir (com_gamedir, GAMENAME_ID1 );
+	Con_PrintLinef ("Release complete." NEWLINE);
 }
 
 // Return the number of games in memory
@@ -2068,7 +2075,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 						{
 							// Baker: 2 character prefix to tell where it was found
 							// So levels menu can display
-							c_snprintf2 (filenamebuf, "%i:%s", !!depth, dir_t->d_name);
+							c_snprintf2 (filenamebuf, "%d:%s", !!depth, dir_t->d_name);
 						}
 						else c_strlcpy (filenamebuf, dir_t->d_name);
 
@@ -2078,7 +2085,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 							// length 7 - strip 6 = null @ 1 = strlen - 6 = 0
 							if (len > STRIP_LEN_6)
 								filenamebuf[len - STRIP_LEN_6] = 0;
-							else Con_Printf ("Couldn't strip filename\n");
+							else Con_PrintLinef ("Couldn't strip filename");
 						}
 						else
 						if ( (directives & SPECIAL_DONOT_STRIP_EXTENSION) == 0)
@@ -2115,7 +2122,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 			if ( (directives & SPECIAL_GAMEDIR_DIRECTORY_ONLY) )
 				continue;
 
-			if ( (directives & SPECIAL_NO_ID1_PAKFILE) && strstr(search->pack->filename, va("/%s/", GAMENAME)) )
+			if ( (directives & SPECIAL_NO_ID1_PAKFILE) && strstr(search->pack->filename, va("/%s/", GAMENAME_ID1)) )
 				continue;
 
 			for (i = 0, pak = search->pack; i < pak->numfiles ; i++)
@@ -2152,10 +2159,10 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 					if (current_filename == NULL)
 						current_filename = current_filename;
 
-					if (strstr(search->pack->filename, va("/%s/", GAMENAME)))
-						c_snprintf (filenamebuf, "Q:%s", current_filename);
+					if (strstr(search->pack->filename, va("/%s/", GAMENAME_ID1)))
+						c_snprintf1 (filenamebuf, "Q:%s", current_filename);
 					else
-						c_snprintf2 (filenamebuf, "%i:%s", !!depth, current_filename);
+						c_snprintf2 (filenamebuf, "%d:%s", !!depth, current_filename);
 				}
 				else c_strlcpy (filenamebuf, current_filename);
 
@@ -2165,7 +2172,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 					// length 7 - strip 6 = null @ 1 = strlen - 6 = 0
 					if (len > STRIP_LEN_6)
 						filenamebuf[len-STRIP_LEN_6] = 0;
-					else Con_Printf ("Couldn't strip filename\n");
+					else Con_PrintLinef ("Couldn't strip filename");
 				}
 				else
 				if ( (directives & SPECIAL_DONOT_STRIP_EXTENSION) == 0)
@@ -2223,14 +2230,14 @@ static void FS_RegisterClose (FILE* f)
 		if (cur->addy == f)
 		{
 			file_mgr.num_open --;
-//			Con_DPrintf ("FILECLOSE: %s found and closed\n", cur->filename);
-			//Con_Printf ("Files open is %d\n", file_mgr.num_open);
+//			Con_DPrintLinef ("FILECLOSE: %s found and closed", cur->filename);
+			//Con_PrintLinef ("Files open is %d", file_mgr.num_open);
 			cur->filename[0] = 0;
 			cur->addy = NULL;
 			return;
 		}
 	}
-	Con_DPrintf ("Couldn't reconcile closed file (%p)\n", f);
+	Con_DPrintLinef ("Couldn't reconcile closed file (%p)", f);
 }
 
 
@@ -2239,14 +2246,14 @@ static void FS_RegisterClose (FILE* f)
 void FS_List_Open_f (lparse_t *unused)
 {
 	int i;
-	Con_Printf ("Open files:\n");
+	Con_PrintLinef ("Open files:");
 	for (i = 0; i < MAX_HANDLES; i ++)
 	{
 		fs_handles_t* cur = &file_mgr.files[i];
 		if (cur->addy)
-			Con_Printf ("%i: %p %s\n", i, cur->addy, cur->filename);
+			Con_PrintLinef ("%d: %p %s", i, cur->addy, cur->filename);
 	}
-	Con_Printf ("\n");
+	Con_PrintLine ();
 }
 
 
@@ -2259,15 +2266,15 @@ static void FS_RegisterOpen (const char *filename, FILE* f)
 		fs_handles_t* cur = &file_mgr.files[i];
 		if (cur->filename[0] == 0)
 		{
-			c_snprintf (cur->filename, "%s", filename);
+			c_snprintf1 (cur->filename, "%s", filename);
 			cur->addy = f;
 			file_mgr.num_open ++;
 
-//			Con_DPrintf ("FS_fopen: %p -> %s\n", cur->addy, cur->filename);
+//			Con_DPrintLinef ("FS_fopen: %p -> %s", cur->addy, cur->filename);
 
 			if (file_mgr.num_open > 25)
 			{
-				Con_Warning ("Over 25 files open!\n");
+				Con_WarningLinef ("Over 25 files open!");
 				FS_List_Open_f (NULL);
 			}
 
@@ -2292,7 +2299,7 @@ FILE *FS_fopen_write (const char *path_to_file, const char *mode)
 
 	if (f)
 	{
-//		Con_Printf ("FOPEN_WRITE: File open for write: '%s' (%s) %s\n", filename, mode, f ? "" : "(couldn't find file)");
+//		Con_PrintLinef ("FOPEN_WRITE: File open for write: '%s' (%s) %s", filename, mode, f ? "" : "(couldn't find file)");
 		FS_RegisterOpen (path_to_file, f);
 	}
 
@@ -2308,7 +2315,7 @@ FILE *FS_fopen_write_create_path (const char *path_to_file, const char *mode)
 #if 0
 	// SECURITY: Compare all file writes to com_basedir
 	if (strlen(filename) < strlen(com_basedir) || strncasecmp (filename, com_basedir, strlen(com_basedir))!=0 || strstr(filename, "..") )
-		System_Error ("Security violation:  Attempted path is %s\n\nWrite access is limited to %s folder tree.", filename, com_basedir);
+		System_Error ("Security violation:  Attempted path is %s" NEWLINE NEWLINE "Write access is limited to %s folder tree.", filename, com_basedir);
 #endif
 
 	FILE *f = fopen (path_to_file, mode);
@@ -2334,7 +2341,7 @@ FILE *FS_fopen_read (const char *path_to_file, const char *mode)
 
 	if (f)
 	{
-//		Con_Printf ("FOPEN_READ: File open for read: '%s' (%s) %s\n", filename, mode, f ? "" : "(couldn't find file)");
+//		Con_PrintLinef ("FOPEN_READ: File open for read: '%s' (%s) %s", filename, mode, f ? "" : "(couldn't find file)");
 		FS_RegisterOpen (path_to_file, f);
 	}
 
@@ -2455,7 +2462,7 @@ void COM_DeQuake_String (char *s_edit)
 
 			*s_edit = dequake[ch];
 		}
-		//Con_Printf ("Before %s\nAfter %s\n", before, after);
+		//Con_PrintLinef ("Before %s" NEWLINE "After %s", before, after);
 		after =after=before;
 	}
 }
@@ -2598,7 +2605,7 @@ static clist_t *IPv4_List_From_Any_ (const char *unknown, cbool fromfile)
 	// Try to read
 	clist_t *new_list = NULL;
 
-	clist_t *textlines = fromfile ? FS_File_Lines_List_Alloc (unknown) : List_From_String_Lines (unknown);
+	clist_t *textlines = fromfile ? FS_File_Lines_List_Alloc (unknown) : List_From_String_Lines_Alloc (unknown);
 	clist_t *cur;
 	for (cur = textlines ; cur; cur = cur->next)
 	{
@@ -2648,7 +2655,7 @@ void Q_Thread_Event_Add (int event, int code, void *id, void *data)
 {
 	event_x_t eventa = {event, code, id, data, 0 /* zero pad*/}; // Download download_finished id
 
-	Con_Queue_Printf ("Event recorded event:%i code:%i id:%p data:%p \n", event, code, id, data); // Thread-safe, blocking.
+	Con_Queue_PrintLinef ("Event recorded event:%d code:%d id:%p data:%p ", event, code, id, data); // Thread-safe, blocking.
 	List_Add_Raw_Unsorted (&q_thread_events, &eventa, sizeof(eventa));
 	// Enure exclusive access to the list.
 	pthread_mutex_unlock (&q_thread_events_lock);
@@ -2701,14 +2708,21 @@ int Con_Queue_Printf (const char *fmt, ...)
 	return 0;
 }
 
-void Con_Queue_PrintRun (const char *url)
+int Con_Queue_PrintLinef (const char *fmt, ...)
+{
+	VA_EXPAND_NEWLINE (text, SYSTEM_STRING_SIZE_1024, fmt);
+	return Con_Queue_Printf ("%s", text);
+}
+
+
+void Con_Queue_PrintRun (void /*const char *url <--- huh? */)
 {
 	clist_t *cur;
 	// Enure exclusive access to the list.
 	pthread_mutex_lock (&queue_printf_mutex);
 
 	for (cur = con_queue_prints ; cur; cur = cur->next)
-		Con_SafePrintf (cur->name);  // Don't tie up time -- SafePrint doesn't SCR_Update like Con_Printf
+		Con_SafePrintContf ("%s", cur->name);  // Don't tie up time -- SafePrint doesn't SCR_Update like Con_Printf
 
 	List_Free (&con_queue_prints);
 
@@ -2737,22 +2751,22 @@ void *ReadList_Reader (void *pclist)
 	int	count;
 
 #if 0
-	Con_Queue_Printf ("Thread started\n"); // Thread-safe, blocking.
+	Con_Queue_PrintLinef ("Thread started"); // Thread-safe, blocking.
 #endif
 
 	// We don't need to lock anything here, we have exclusive access to the list by design
 	for (cur = file_read_list_urls, count = 0; cur && !read_list_cancel; cur = cur->next, count ++)
 	{
 		File_Read_Touch (cur->name);
-		// Con_Queue_Printf ("Touched %04i %s\n", count, cur->name); // Thread-safe, blocking.
+		// Con_Queue_PrintLinef ("Touched %04d %s", count, cur->name); // Thread-safe, blocking.
 	}
 
 	if (read_list_cancel)
-		Con_Queue_Printf ("Thread received stop signal\n", count, cur->name); // Thread-safe, blocking.
+		Con_Queue_PrintLinef ("Thread received stop signal %d %s", count, cur->name); // Thread-safe, blocking.
 
 	List_Free (&file_read_list_urls);
 #if 0
-	Con_Queue_Printf ("Thread ended\n"); // Thread-safe, blocking.
+	Con_Queue_PrintLinef ("Thread ended"); // Thread-safe, blocking.
 #endif
 	pthread_exit (NULL); // This is optional unless you want to return something for pthread_join to read.
 	return NULL;
@@ -2790,7 +2804,7 @@ void ReadList_NewGame (void)
 			c_strlcpy (tmp_path, search->filename);
 			new_files = File_List_Alloc (tmp_path, ".dz");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 			new_files = File_List_Alloc (tmp_path, ".dem");  List_Concat_Unsorted (&file_read_list_urls, new_files);
-			c_snprintf (tmp_path, "%s", search->filename);
+			c_snprintf1 (tmp_path, "%s", search->filename);
 			// Ok, this will return healthbox bsps and such, it's ok to touch those.
 			new_files = File_List_Alloc (tmp_path, ".bsp");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 		}
@@ -2806,4 +2820,3 @@ void ReadList_NewGame (void)
 
 
 #endif // CORE_PTHREADS
-

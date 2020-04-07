@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -418,7 +420,7 @@ void R_MarkLeaves (void)
 		// scenario.
 		if (level.ever_been_away_from_water_portal)
 		{
-			Con_DPrintf ("AUTO WATER VIS:  Level is NOT vised!\n");
+			Con_DPrintLinef ("AUTO WATER VIS:  Level is NOT vised!");
 			level.water_vis_known = true;
 			level.water_vis = false;
 		}
@@ -479,6 +481,11 @@ void R_DrawEntitiesOnList (void)
 				currententity->angles[0] *= 0.3;
 
 		}
+
+#if 1 // Baker: Rare.  Need to investigate relink entities and Nehahra support.  E1M5 occasional intermission crash due to player.mdl not being resolved.  MODEL_CRUTCH
+		if (currententity->model == NULL && currententity->modelindex)
+			currententity->model = cl.model_precache[currententity->baseline.modelindex];
+#endif 		
 
 		switch (currententity->model->type)
 		{
@@ -722,6 +729,11 @@ void R_DrawBEntitiesOnList (void)
 	{
 		currententity = cl.visedicts[i];
 
+#if 1 // Baker: Rare.  Need to investigate relink entities and Nehahra support.  E1M5 occasional intermission crash due to player.mdl not being resolved.  MODEL_CRUTCH
+		if (currententity->model == NULL && currententity->modelindex)
+			currententity->model = cl.model_precache[currententity->baseline.modelindex];
+#endif 		
+
 		if (currententity->model->type != mod_brush)
 			continue;
 
@@ -760,14 +772,14 @@ void R_DrawBEntitiesOnList (void)
 			entity_t* e = currententity;
 
 			// calculate entity local space for dlight transforms
-			GL_IdentityMatrix (&e->gl_matrix);
+			Mat4_Identity_Set (&e->gl_matrix);
 
 			// don't need to negate angles[0] as it's not going through the extra negation in R_RotateForEntity
-			if (e->angles[2]) GL_RotateMatrix (&e->gl_matrix, -e->angles[2], 1, 0, 0);
-			if (e->angles[0]) GL_RotateMatrix (&e->gl_matrix, -e->angles[0], 0, 1, 0);
-			if (e->angles[1]) GL_RotateMatrix (&e->gl_matrix, -e->angles[1], 0, 0, 1);
+			if (e->angles[2]) Mat4_Rotate (&e->gl_matrix, -e->angles[2], 1, 0, 0);
+			if (e->angles[0]) Mat4_Rotate (&e->gl_matrix, -e->angles[0], 0, 1, 0);
+			if (e->angles[1]) Mat4_Rotate (&e->gl_matrix, -e->angles[1], 0, 0, 1);
 
-			GL_TranslateMatrix (&e->gl_matrix, -e->origin[0], -e->origin[1], -e->origin[2]);
+			Mat4_Translate (&e->gl_matrix, -e->origin[0], -e->origin[1], -e->origin[2]);
 			R_PushDlights (e);
 
 
@@ -997,10 +1009,10 @@ void R_RenderView_ (void)
 		R_PrintDSpeeds ();
 
 	if (sw_r_reportsurfout.value && r_outofsurfaces)
-		Con_Printf ("Short %d surfaces\n", r_outofsurfaces);
+		Con_PrintLinef ("Short %d surfaces", r_outofsurfaces);
 
 	if (sw_r_reportedgeout.value && r_outofedges)
-		Con_Printf ("Short roughly %d edges\n", r_outofedges * 2 / 3);
+		Con_PrintLinef ("Short roughly %d edges", r_outofedges * 2 / 3);
 
 // back to high floating-point precision
 #if id386
@@ -1059,4 +1071,4 @@ void R_InitTurb (void)
 	}
 }
 
-
+#endif // !GLQUAKE - WinQuake Software renderer

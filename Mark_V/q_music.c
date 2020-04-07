@@ -45,60 +45,61 @@ void Set_Music_f (lparse_t *line)
 		FILE * f;
 		int tracknum, written, i;
 
-		c_snprintf (music_config_name_qpath, "music/%s", SETMUSIC_CFG);
+		c_snprintf1 (music_config_name_qpath, "music/%s", SETMUSIC_CFG);
 		FS_FullPath_From_QPath (music_config_name_url, music_config_name_qpath);
 
 		switch (cmd_num)
 		{
 		case arg_list: // list current mappings
-
-			Con_Printf ("\nsetmusic list:\n");
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("setmusic list:");
+			Con_PrintLine ();
 			for (i = 0; i < MAX_MUSIC_MAPS_100; i ++)
 			{
 				if (musicmaps[i][0])
-					Con_Printf ("%02i = %s\n", i, musicmaps[i]);
+					Con_PrintLinef ("%02d = %s", i, musicmaps[i]);
 			}
-			Con_Printf ("\n");
-			Con_Printf ("end of list\n");
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("end of list");
+			Con_PrintLine ();
 			return;
 
 		case arg_help: // extended help, not the normal help
 
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s <0-99> <yourfile.mp3>\nwhere yourfile.mp3 is in [gamedir]/music folder\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s list  - lists current mappings\n", line->args[0]);
-			Con_Printf ("Usage: %s reset - resets everything\n", line->args[0]);
-			Con_Printf ("Usage: %s write - writes to [gamedir]/%s\n", line->args[0], music_config_name_qpath);
-			Con_Printf ("Usage: %s read  - resets and loads from [gamedir]/%s\n", line->args[0], music_config_name_qpath);
-			Con_Printf ("\n");
-			Con_Printf ("Note: music files should be in gamedir/music\n");
-			Con_Printf ("\n");
-			Con_Printf ("Example: %s 0 quake.mp3\n", line->args[0]);
-			Con_Printf ("Would play quake/id1/music/quake.mp3 for track #0\n");
-			Con_Printf ("\n");
-			Con_Printf ("Example: %s 6 mymusic.mp3\n", line->args[0]);
-			Con_Printf ("Would play quake/id1/music/mymusic.mp3 for track #6\n");
-			Con_Printf ("\n");
-			Con_Printf ("Filenames should avoid spaces and only use alphanumeric\n");
-			Con_Printf ("characters and the underscore '_'.\n");
-			Con_Printf ("\n");
-			Con_Printf ("Type 'folder' to access current gamedir.\n");
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s <0-99> <yourfile.mp3>");
+			Con_PrintLinef ("where yourfile.mp3 is in [gamedir]/music folder", line->args[0]);
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s list  - lists current mappings", line->args[0]);
+			Con_PrintLinef ("Usage: %s reset - resets everything", line->args[0]);
+			Con_PrintLinef ("Usage: %s write - writes to [gamedir]/%s", line->args[0], music_config_name_qpath);
+			Con_PrintLinef ("Usage: %s read  - resets and loads from [gamedir]/%s", line->args[0], music_config_name_qpath);
+			Con_PrintLine ();
+			Con_PrintLinef ("Note: music files should be in gamedir/music");
+			Con_PrintLine ();
+			Con_PrintLinef ("Example: %s 0 quake.mp3", line->args[0]);
+			Con_PrintLinef ("Would play quake/id1/music/quake.mp3 for track #0");
+			Con_PrintLine ();
+			Con_PrintLinef ("Example: %s 6 mymusic.mp3", line->args[0]);
+			Con_PrintLinef ("Would play quake/id1/music/mymusic.mp3 for track #6");
+			Con_PrintLine ();
+			Con_PrintLinef ("Filenames should avoid spaces and only use alphanumeric");
+			Con_PrintLinef ("characters and the underscore '_'.");
+			Con_PrintLine ();
+			Con_PrintLinef ("Type 'folder' to access current gamedir.");
+			Con_PrintLine ();
 			return;
 
 		case arg_reset: // clear all the tracks
 
 			memset (musicmaps, 0, sizeof(musicmaps));
-			Con_Printf ("setmusic mappings have been reset\n");
+			Con_PrintLinef ("setmusic mappings have been reset");
 			return;
 
 		case arg_read: // clear all the tracks and load them
 
 			memset (musicmaps, 0, sizeof(musicmaps));
-			Cbuf_AddText ("exec " SETMUSIC_CFG_FULL);
+			Cbuf_AddTextLine ("exec " SETMUSIC_CFG_FULL);
 			return;
 
 		case arg_write:
@@ -107,23 +108,23 @@ void Set_Music_f (lparse_t *line)
 
 			if (!f)
 			{
-				Con_Printf ("Couldn't open %s for writing\n", music_config_name_url);
+				Con_PrintLinef ("Couldn't open %s for writing", music_config_name_url);
 				return;
 			}
 
-			Con_Printf ("Writing %s\n", music_config_name_qpath);
+			Con_PrintLinef ("Writing %s", music_config_name_qpath);
 
 			for (i = 0, written = 0; i < MAX_MUSIC_MAPS_100; i ++)
 			{
 				if (musicmaps[i][0])
 				{
-					fprintf (f, "setmusic %02i %s\n", i, musicmaps[i]);
+					fprintf (f, "setmusic %02d %s\n", i, musicmaps[i]);
 					written ++;
 				}
 			}
 
 			FS_fclose (f);
-			Con_Printf ("Wrote %i items.  Type 'showfile' to examine.\n", written);
+			Con_PrintLinef ("Wrote %d items.  Type 'showfile' to examine.", written);
 
 			Recent_File_Set_FullPath (music_config_name_url);
 			return;
@@ -140,7 +141,7 @@ void Set_Music_f (lparse_t *line)
 			// Set music mapping
 			c_strlcpy (musicmaps[tracknum], line->args[2]);
 
-			Con_Printf ("Track %02i: %s\n", tracknum, line->args[2]);
+			Con_PrintLinef ("Track %02d: %s", tracknum, line->args[2]);
 			return;
 
 		} // End of switch statement
@@ -148,11 +149,13 @@ void Set_Music_f (lparse_t *line)
 	} // End of args >= 2
 
 	// with no parameters or invalid parameters ends up displaying help
-	Con_Printf ("\n");
-	Con_Printf ("Usage: %s <0-99> <yourfile.mp3>\nwhere yourfile.mp3 is in [gamedir]/music folder\n\n", line->args[0]);
-	Con_Printf ("Usage: %s {help|list|reset|write|read}\n", line->args[0]);
-	Con_Printf ("Type '%s help' for examples and detail\n", line->args[0]);
-	Con_Printf ("\n");
+	Con_PrintLine ();
+	Con_PrintLinef ("Usage: %s <0-99> <yourfile.mp3>");
+	Con_PrintLinef ("where yourfile.mp3 is in [gamedir]/music folder", line->args[0]);
+	Con_PrintLine ();
+	Con_PrintLinef ("Usage: %s {help|list|reset|write|read}", line->args[0]);
+	Con_PrintLinef ("Type '%s help' for examples and detail", line->args[0]);
+	Con_PrintLine ();
 }
 
 #else // doesn't support ...
@@ -160,4 +163,3 @@ void Set_Music_f (lparse_t *line)
 void Set_Music_f (void) {}
 
 #endif // ! SUPPORTS_MP3_MUSIC
-

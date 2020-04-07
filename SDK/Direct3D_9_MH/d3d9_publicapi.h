@@ -1495,7 +1495,7 @@ LONG WINAPI Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags)
 //#endif
 
 // replacement for GDI SwapBuffers
-void Direct3D9_SwapBuffers (void);
+BOOL WINAPI Direct3D9_SwapBuffers (HDC unused);
 
 // replacement for mode resets
 void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);

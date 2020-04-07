@@ -456,7 +456,7 @@ qmodel_t *Mod_LoadModel (qmodel_t *mod, cbool crash)
 // allocate a new model
 //
 	COM_FileBase (mod->name, loadname, sizeof(loadname));
-//	Con_Printf ("Loadname is %s\n", loadname);
+//	Con_PrintLinef ("Loadname is %s", loadname);
 	loadmodel = mod;
 
 	// Update the path
@@ -946,7 +946,7 @@ void Mod_Brush_ReloadTextures (qmodel_t* mod)
 			// Now what?
 			Mod_Load_Brush_Model_Texture (mod, i, tx, tx_qpixels, tx_wad3_palette);
 		} else 
-			Con_DPrintf ("No texture %s # %d\n", mod->name, i);
+			Con_DPrintLinef ("No texture %s # %d", mod->name, i);
 	}
 }
 
@@ -1026,7 +1026,7 @@ static void Mod_LoadTextures (lump_t *l)
 	else
 	{
 		//johnfitz -- GL: don't return early if no textures; still need to create dummy texture
-		Con_Printf ("Mod_LoadTextures: no textures in bsp file\n");
+		Con_PrintLinef ("Mod_LoadTextures: no textures in bsp file");
 #ifdef WINQUAKE_RENDERER_SUPPORT
 		loadmodel->textures = NULL;
 		return;
@@ -1109,8 +1109,8 @@ static void Mod_LoadTextures (lump_t *l)
 			// Baker: so unnamed ones can have external textures
 			if (!tx->name[0])
 			{
-				c_snprintf (tx->name, "unnamed%d", i);
-				Con_DWarning ("unnamed texture in %s, renaming to %s\n", loadmodel->name, tx->name);
+				c_snprintf1 (tx->name, "unnamed%d", i);
+				Con_DWarningLine ("unnamed texture in %s, renaming to %s", loadmodel->name, tx->name);
 			}
 
 			// Fill in the data
@@ -1284,7 +1284,7 @@ static void Mod_LoadTextures (lump_t *l)
 		{
 			ptx2 = anims[j];
 			if (!ptx2)
-				Host_Error ("Mod_LoadTextures: Missing frame %i of %s",j, ptx->name);
+				Host_Error ("Mod_LoadTextures: Missing frame %d of %s",j, ptx->name);
 			ptx2->anim_total = maxanim * ANIM_CYCLE;
 			ptx2->anim_min = j * ANIM_CYCLE;
 			ptx2->anim_max = (j+1) * ANIM_CYCLE;
@@ -1297,7 +1297,7 @@ static void Mod_LoadTextures (lump_t *l)
 		{
 			ptx2 = altanims[j];
 			if (!ptx2)
-				Host_Error ("Mod_LoadTextures: Missing frame %i of %s",j, ptx->name);
+				Host_Error ("Mod_LoadTextures: Missing frame %d of %s",j, ptx->name);
 			ptx2->anim_total = altmax * ANIM_CYCLE;
 			ptx2->anim_min = j * ANIM_CYCLE;
 			ptx2->anim_max = (j+1) * ANIM_CYCLE;
@@ -1367,7 +1367,7 @@ static void Mod_LoadLighting (lump_t *l)
 			return; // Because we won't be checking for external lits with Half-Life, this is automatic fail
 
 		loadmodel->lightdata = Hunk_AllocName(l->filelen, loadname);
-		Con_Printf ("lighting data at %i with length\n", mod_base + l->fileofs, l->filelen);
+		Con_DPrintLinef ("lighting data at %p with length %d", mod_base + l->fileofs, l->filelen);
 		memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 		return;
 	}
@@ -1389,21 +1389,21 @@ static void Mod_LoadLighting (lump_t *l)
 		c_strlcat (litfilename, ".lit");
 
 		data = (byte*) COM_LoadHunkFile_Limited (litfilename, loadmodel->loadinfo.searchpath);
-//		Con_Printf ("com_filesize is %i", com_filesize);
+//		Con_PrintLinef ("com_filesize is %d", com_filesize);
 
 		if (!data)
 			break;
 
 		if (l->filelen && (com_filesize - 8) != l->filelen * 3)
 		{
-			//Con_Printf("Corrupt .lit file (old version?), ignoring\n");
-			Con_Printf("Invalid .lit file (data length mismatch against map), ignoring\n");
+			//Con_PrintLinef ("Corrupt .lit file (old version?), ignoring");
+			Con_PrintLinef ("Invalid .lit file (data length mismatch against map), ignoring");
 			break;
 		}
 
 		if (memcmp (data, "QLIT", 4) !=0 )
 		{
-			Con_Printf("Corrupt .lit file (old version?), ignoring\n");
+			Con_PrintLinef ("Corrupt .lit file (old version?), ignoring");
 			break;
 		}
 
@@ -1411,7 +1411,7 @@ static void Mod_LoadLighting (lump_t *l)
 		qlitversion = LittleLong(((int *)data)[1]);
 		if (qlitversion != 1)
 		{
-			Con_Printf("Unknown .lit file version (%d)\n", qlitversion);
+			Con_PrintLinef ("Unknown .lit file version (%d)", qlitversion);
 			break;
 		}
 
@@ -1494,7 +1494,7 @@ static void Mod_LoadVisibility (lump_t *l)
 {
 	if (!l->filelen)
 	{
-		Con_DPrintf ("No vis for model\n");
+		Con_DPrintLinef ("No vis for model");
 		loadmodel->visdata = NULL;
 		return;
 	}
@@ -1521,7 +1521,7 @@ static void Mod_LoadEntities (lump_t *l)
 		if ( (entstring = (char *)COM_LoadHunkFile_Limited (entfilename, loadmodel->loadinfo.searchpath )) )
 		{
 			loadmodel->entities = entstring;
-			Con_Printf ("External .ent found: %s\n", entfilename);
+			Con_PrintLinef ("External .ent found: %s", entfilename);
 			return;
 		}
 	}
@@ -1713,7 +1713,7 @@ static void Mod_LoadTexinfo (lump_t *l)
 
 	//johnfitz: report missing textures
 	if (missing && loadmodel->numtextures > 1)
-		Con_Printf ("Mod_LoadTexinfo: %d texture(s) missing from BSP file\n", missing);
+		Con_PrintLinef ("Mod_LoadTexinfo: %d texture(s) missing from BSP file", missing);
 
 	//johnfitz
 }
@@ -1780,7 +1780,7 @@ static void CalcSurfaceExtents (msurface_t *s)
 			Host_Error ("CalcSurfaceExtents: Bad surface extents %d (MAX: %d), texture is %s.", s->extents[i], MAX_FITZQUAKE_SURFACE_EXTENTS, tex->texture->name);
 
 		if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > MAX_WINQUAKE_SURFACE_EXTENTS /* 256*/ )
-			Con_DWarning ("%d surface extents exceed standard limit of %d.\n", s->extents[i], MAX_WINQUAKE_SURFACE_EXTENTS);
+			Con_DWarningLine ("%d surface extents exceed standard limit of %d.", s->extents[i], MAX_WINQUAKE_SURFACE_EXTENTS);
 
 	}
 
@@ -1913,10 +1913,10 @@ static void Mod_LoadFaces (lump_t *l, cbool bsp2)
 
 	//johnfitz -- warn mappers about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%d faces exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d faces exceeds standard limit of 32767.", count);
 
 	if (count > MAX_WINQUAKE_MAP_FACES && !bsp2)
-		Con_DWarning ("%d faces exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_FACES);
+		Con_DWarningLine ("%d faces exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_FACES);
 
 	//johnfitz
 
@@ -2093,10 +2093,10 @@ static void Mod_LoadNodes_S (lump_t *l)
 
 	//johnfitz -- warn mappers about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%i nodes exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d nodes exceeds standard limit of 32767.", count);
 
 	if (count > MAX_WINQUAKE_MAP_NODES)
-		Con_DWarning ("%i nodes exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_NODES);
+		Con_DWarningLine ("%d nodes exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_NODES);
 
 	//johnfitz
 
@@ -2130,7 +2130,7 @@ static void Mod_LoadNodes_S (lump_t *l)
 					out->children[j] = (mnode_t *)(loadmodel->leafs + p);
 				else
 				{
-					Con_Printf("Mod_LoadNodes: invalid leaf index %i (file has only %i leafs)\n", p, loadmodel->numleafs);
+					Con_PrintLinef ("Mod_LoadNodes: invalid leaf index %d (file has only %d leafs)", p, loadmodel->numleafs);
 					out->children[j] = (mnode_t *)(loadmodel->leafs); //map it to the solid leaf
 				}
 			}
@@ -2154,10 +2154,10 @@ static void Mod_LoadNodes_L1 (lump_t *l)
 
 	//johnfitz -- warn mappers about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%i nodes exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d nodes exceeds standard limit of 32767.", count);
 
 	if (count > MAX_WINQUAKE_MAP_NODES)
-		Con_DWarning ("%i nodes exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_NODES);
+		Con_DWarningLine ("%d nodes exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_NODES);
 
 	//johnfitz
 
@@ -2191,7 +2191,7 @@ static void Mod_LoadNodes_L1 (lump_t *l)
 					out->children[j] = (mnode_t *)(loadmodel->leafs + p);
 				else
 				{
-					Con_Printf("Mod_LoadNodes: invalid leaf index %i (file has only %i leafs)\n", p, loadmodel->numleafs);
+					Con_PrintLinef ("Mod_LoadNodes: invalid leaf index %d (file has only %d leafs)", p, loadmodel->numleafs);
 					out->children[j] = (mnode_t *)(loadmodel->leafs); //map it to the solid leaf
 				}
 			}
@@ -2215,10 +2215,10 @@ static void Mod_LoadNodes_L2 (lump_t *l)
 
 	//johnfitz -- warn mappers about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%i nodes exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d nodes exceeds standard limit of 32767.", count);
 
 	if (count > MAX_WINQUAKE_MAP_NODES)
-		Con_DWarning ("%i nodes exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_NODES);
+		Con_DWarningLine ("%d nodes exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_NODES);
 
 	//johnfitz
 
@@ -2252,7 +2252,7 @@ static void Mod_LoadNodes_L2 (lump_t *l)
 					out->children[j] = (mnode_t *)(loadmodel->leafs + p);
 				else
 				{
-					Con_Printf("Mod_LoadNodes: invalid leaf index %i (file has only %i leafs)\n", p, loadmodel->numleafs);
+					Con_PrintLinef ("Mod_LoadNodes: invalid leaf index %d (file has only %d leafs)", p, loadmodel->numleafs);
 					out->children[j] = (mnode_t *)(loadmodel->leafs); //map it to the solid leaf
 				}
 			}
@@ -2287,9 +2287,9 @@ static void Mod_ProcessLeafs_S (dsleaf_t *in, int filelen)
 
 
 	if (count > MAX_MAP_LEAFS)
-		Host_Error ("Mod_LoadLeafs: %i leafs exceeds limit of %i.", count, MAX_MAP_LEAFS);
+		Host_Error ("Mod_LoadLeafs: %d leafs exceeds limit of %d.", count, MAX_MAP_LEAFS);
 	if (count > MAX_WINQUAKE_MAP_LEAFS)
-		Con_DWarning ("Mod_LoadLeafs: %i leafs exceeds standard limit of %i.\n", count, MAX_WINQUAKE_MAP_LEAFS);
+		Con_DWarningLine ("Mod_LoadLeafs: %d leafs exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_LEAFS);
 
 	loadmodel->leafs		= out;
 	loadmodel->numleafs		= count;
@@ -2350,9 +2350,9 @@ static void Mod_ProcessLeafs_L1 (dl1leaf_t *in, int filelen)
 
 
 	if (count > MAX_MAP_LEAFS)
-		Host_Error ("Mod_LoadLeafs: %i leafs exceeds limit of %i.", count, MAX_MAP_LEAFS);
+		Host_Error ("Mod_LoadLeafs: %d leafs exceeds limit of %d.", count, MAX_MAP_LEAFS);
 	if (count > MAX_WINQUAKE_MAP_LEAFS)
-		Con_DWarning ("Mod_LoadLeafs: %i leafs exceeds standard limit of %i.\n", count, MAX_WINQUAKE_MAP_LEAFS);
+		Con_DWarningLine ("Mod_LoadLeafs: %d leafs exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_LEAFS);
 
 	loadmodel->leafs		= out;
 	loadmodel->numleafs		= count;
@@ -2412,9 +2412,9 @@ static void Mod_ProcessLeafs_L2 (dl2leaf_t *in, int filelen)
 
 
 	if (count > MAX_MAP_LEAFS)
-		Host_Error ("Mod_LoadLeafs: %i leafs exceeds limit of %i.", count, MAX_MAP_LEAFS);
+		Host_Error ("Mod_LoadLeafs: %d leafs exceeds limit of %d.", count, MAX_MAP_LEAFS);
 	if (count > MAX_WINQUAKE_MAP_LEAFS)
-		Con_DWarning ("Mod_LoadLeafs: %i leafs exceeds standard limit of %i.\n", count, MAX_WINQUAKE_MAP_LEAFS);
+		Con_DWarningLine ("Mod_LoadLeafs: %d leafs exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_LEAFS);
 
 	loadmodel->leafs		= out;
 	loadmodel->numleafs		= count;
@@ -2515,9 +2515,9 @@ static void Mod_LoadClipnodes (lump_t *l, cbool bsp2)
 
 	//johnfitz -- warn about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%i clipnodes exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d clipnodes exceeds standard limit of 32767.", count);
 	if (count > MAX_WINQUAKE_MAP_CLIPNODES && !bsp2)
-		Con_DWarning ("%i clipnodes exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_CLIPNODES);
+		Con_DWarningLine ("%d clipnodes exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_CLIPNODES);
 	//johnfitz
 
 	loadmodel->clipnodes = out;
@@ -2682,10 +2682,10 @@ static void Mod_LoadMarksurfaces (lump_t *l, int bsp2)
 
 		//johnfitz -- warn mappers about exceeding old limits
 	//	if (count > 32767)
-	//		Con_DWarning ("%i marksurfaces exceeds standard limit of 32767.\n", count);
+	//		Con_DWarningLine ("%d marksurfaces exceeds standard limit of 32767.", count);
 
 		if (count > MAX_WINQUAKE_MAP_MARKSURFACES && !bsp2)
-			Con_DWarning ("%i marksurfaces exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_MARKSURFACES);
+			Con_DWarningLine ("%d marksurfaces exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_MARKSURFACES);
 
 		//johnfitz
 
@@ -2712,10 +2712,10 @@ static void Mod_LoadMarksurfaces (lump_t *l, int bsp2)
 
 	//johnfitz -- warn mappers about exceeding old limits
 //	if (count > 32767)
-//		Con_DWarning ("%i marksurfaces exceeds standard limit of 32767.\n", count);
+//		Con_DWarningLine ("%d marksurfaces exceeds standard limit of 32767.", count);
 
 	if (count > MAX_WINQUAKE_MAP_MARKSURFACES)
-		Con_DWarning ("%i marksurfaces exceeds standard limit of %d.\n", count, MAX_WINQUAKE_MAP_MARKSURFACES);
+		Con_DWarningLine ("%d marksurfaces exceeds standard limit of %d.", count, MAX_WINQUAKE_MAP_MARKSURFACES);
 
 	//johnfitz
 
@@ -2815,7 +2815,7 @@ static void Mod_LoadVisibilityExternal (FILE **fhandle)
 	fread (&filelen, 1, 4, *fhandle);
 	filelen = LittleLong(filelen);
 
-	Con_DPrintf ("...%i bytes visibility data\n", (int)filelen);
+	Con_DPrintLinef ("...%d bytes visibility data", (int)filelen);
 
 	// load visibility data
 	if (!filelen)
@@ -2890,10 +2890,10 @@ static void Mod_LoadSubmodels (lump_t *l)
 		Host_Error ("Mod_LoadSubmodels: too many visleafs (%d, max = %d) in %s", out->visleafs, MAX_MAP_LEAFS, loadmodel->name);
 
 //	if (out->visleafs > 8192)
-//		Con_DWarning ("%i visleafs exceeds standard limit of 8192.\n", out->visleafs);
+//		Con_DWarningLine ("%d visleafs exceeds standard limit of 8192.", out->visleafs);
 
 	if (out->visleafs > MAX_WINQUAKE_MAP_LEAFS)
-		Con_DWarning ("%i visleafs exceeds standard limit of %i.\n", out->visleafs, MAX_WINQUAKE_MAP_LEAFS);
+		Con_DWarningLine ("%d visleafs exceeds standard limit of %d.", out->visleafs, MAX_WINQUAKE_MAP_LEAFS);
 
 	//johnfitz
 }
@@ -2914,7 +2914,7 @@ static void Mod_LoadLeafsExternal (FILE **fhandle)
 	fread (&filelen, 1, 4, *fhandle);
 	filelen = LittleLong(filelen);
 
-	Con_DPrintf("...%i bytes leaf data\n", (int)filelen);
+	Con_DPrintLinef ("...%d bytes leaf data", (int)filelen);
 
 	// load leaf data
 	if (!filelen)
@@ -2943,16 +2943,16 @@ typedef struct vispatch_s
 static cbool Mod_FindVisibilityExternal (FILE **filehandle)
 {
 	char		visfilename[MAX_QPATH_64];
-	c_snprintf (visfilename, "maps/%s.vis", loadname);
+	c_snprintf1 (visfilename, "maps/%s.vis", loadname);
 	COM_FOpenFile_Limited (visfilename, filehandle, loadmodel->loadinfo.searchpath); // COM_FOpenFile (name, &cls.demofile);
 
 	if (!*filehandle)
 	{
-		Con_VerbosePrintf ("Standard vis, %s not found\n", visfilename);
+		Con_VerbosePrintLinef ("Standard vis, %s not found", visfilename);
 		return false; // None
 	}
 
-	Con_VerbosePrintf ("External .vis found: %s\n", visfilename);
+	Con_VerbosePrintLinef ("External .vis found: %s", visfilename);
 	{
 		int			i, pos;
 		vispatch_t	header;
@@ -3072,16 +3072,16 @@ void Mod_LoadBrushModel (qmodel_t *mod, void *buffer)
 		bsp2 = 2;	//sanitised revision
 		break;
 	default:
-		Host_Error ("Mod_LoadBrushModel: %s has wrong version number (%i should be %i (Quake) or %i (HalfLife))", mod->name, mod->bspversion, BSPVERSION, BSPVERSION_HALFLIFE);
+		Host_Error ("Mod_LoadBrushModel: %s has wrong version number (%d should be %d (Quake) or %d (HalfLife))", mod->name, mod->bspversion, BSPVERSION, BSPVERSION_HALFLIFE);
 		break;
 	}
 
 	{// cl.worldmodel
 		cbool servermatch = sv.modelname[0] && !strcasecmp (loadname, sv.name);
 		cbool clientmatch = cl.worldname[0] && !strcasecmp (loadname, cl.worldname);
-		Con_DPrintf ("loadname     = \"%s\" \n", loadname);
-		Con_DPrintf ("sv.modelname = \"%s\" \n", sv.modelname);
-		Con_DPrintf ("cl.modelname = \"%s\" (this can be blank for first pass)\n", cl.worldname);
+		Con_DPrintLinef ("loadname     = " QUOTED_S " ", loadname);
+		Con_DPrintLinef ("sv.modelname = " QUOTED_S " ", sv.modelname);
+		Con_DPrintLinef ("cl.modelname = " QUOTED_S " (this can be blank for first pass)", cl.worldname);
 		loadmodel->isworldmodel = servermatch || clientmatch;
 	}
 
@@ -3113,12 +3113,12 @@ void Mod_LoadBrushModel (qmodel_t *mod, void *buffer)
 
 		if (loadmodel->isworldmodel && model_external_vis.value)
 		{
-			Con_DPrintf ("trying to open external vis file\n");
+			Con_DPrintLinef ("trying to open external vis file");
 
 			if (Mod_FindVisibilityExternal (&visfhandle /* We should be passing infos here &visfilehandle*/) )
 			{
 				// File exists, valid and open
-				Con_DPrintf ("found valid external .vis file for map\n");
+				Con_DPrintLinef ("found valid external .vis file for map");
 				Mod_LoadVisibilityExternal (&visfhandle);
 				Mod_LoadLeafsExternal (&visfhandle);
 
@@ -3128,7 +3128,7 @@ void Mod_LoadBrushModel (qmodel_t *mod, void *buffer)
 				{
 					break; // skip standard vis
 				}
-				Con_Printf("External VIS data are invalid! Doing standard vis.\n");
+				Con_PrintLinef ("External VIS data are invalid! Doing standard vis.");
 			}
 		}
 		// Extern vis didn't exist or was invalid ..
@@ -3205,7 +3205,7 @@ void Mod_LoadBrushModel (qmodel_t *mod, void *buffer)
 		{	// duplicate the basic information
 			char	name[10];
 
-			c_snprintf (name, "*%i", i + 1);
+			c_snprintf1 (name, "*%d", i + 1);
 			loadmodel = Mod_FindName (name);
 			*loadmodel = *mod;
 			c_strlcpy (loadmodel->name, name);
@@ -3551,7 +3551,7 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype, cbool is_alph
 	skin = (byte *)(pskintype + 1);
 
 	if (numskins < 1 || numskins > MAX_SKINS)
-		Host_Error ("Mod_LoadAliasModel: Invalid # of skins: %d\n", numskins);
+		Host_Error ("Mod_LoadAliasModel: Invalid # of skins: %d", numskins);
 
 	size = pheader->skinwidth * pheader->skinheight;
 
@@ -3567,10 +3567,10 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype, cbool is_alph
 			memcpy (texels, (byte *)(pskintype + 1), size);
 
 			//johnfitz -- rewritten
-			c_snprintf2 (name, "%s:frame%i", loadmodel->name, i);
+			c_snprintf2 (name, "%s:frame%d", loadmodel->name, i);
 			offset = (src_offset_t) (pskintype + 1) - (src_offset_t) mod_base;
-			c_snprintf2 (extname, "%s_%i", loadmodel->name, i);
-			c_snprintf2 (fbr_mask_name, "%s:frame%i_glow", loadmodel->name, i);
+			c_snprintf2 (extname, "%s_%d", loadmodel->name, i);
+			c_snprintf2 (fbr_mask_name, "%s:frame%d_glow", loadmodel->name, i);
 
 
 			Mod_LoadSkinTexture
@@ -3614,10 +3614,10 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype, cbool is_alph
 				}
 
 				//johnfitz -- rewritten
-				c_snprintf3 (name, "%s:frame%i_%i", loadmodel->name, i,j);
+				c_snprintf3 (name, "%s:frame%d_%d", loadmodel->name, i,j);
 				offset = (src_offset_t)(pskintype) - (src_offset_t)mod_base; //johnfitz
-				c_snprintf3 (extname, "%s_%i_%i", loadmodel->name, i, j);
-				c_snprintf3 (fbr_mask_name, "%s:frame%i_%i_glow", loadmodel->name, i, j);
+				c_snprintf3 (extname, "%s_%d_%d", loadmodel->name, i, j);
+				c_snprintf3 (fbr_mask_name, "%s:frame%d_%d_glow", loadmodel->name, i, j);
 
 				Mod_LoadSkinTexture
 				(
@@ -3701,7 +3701,7 @@ void Mod_CalcAliasBounds (aliashdr_t *a)
 	loadmodel->ymaxs[2] = loadmodel->maxs[2];
 
 /*
-	Con_Printf ("%s: radius %g rmins %g %g %g rmaxes %g %g %g ymins %g %g %g ymaxes %g %g %g\n",
+	Con_PrintLinef ("%s: radius %g rmins %g %g %g rmaxes %g %g %g ymins %g %g %g ymaxes %g %g %g",
 		loadmodel->name, radius,
 		loadmodel->rmins[0], loadmodel->rmins[1], loadmodel->rmins[2],
 		loadmodel->rmaxs[0], loadmodel->rmaxs[1], loadmodel->rmaxs[2],
@@ -3736,7 +3736,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 
 	version = LittleLong (pinmodel->version);
 	if (version != ALIAS_VERSION)
-		Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%i should be %i)",
+		Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%d should be %d)",
 				 mod->name, version, ALIAS_VERSION);
 
 #ifdef GLQUAKE_SUPPORTS_QMB
@@ -3781,12 +3781,12 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 		Host_Error ("Mod_LoadAliasModel: model %s has no triangles", mod->name);
 
 	if (pheader->numtris > MAXALIASTRIS) // Baker: This technically does not apply to WinQuake only GLQuake.
-		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)\n", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
+		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
 
 	pheader->numframes = LittleLong (pinmodel->numframes);
 	numframes = pheader->numframes;
 	if (numframes < 1)
-		Host_Error ("Mod_LoadAliasModel: Invalid # of frames: %d\n", numframes);
+		Host_Error ("Mod_LoadAliasModel: Invalid # of frames: %d", numframes);
 
 	pheader->size = LittleFloat (pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
 	mod->synctype = (synctype_t) LittleLong (pinmodel->synctype);
@@ -4150,7 +4150,7 @@ void Mod_CalcAliasBounds (aliashdr_t *a)
 	loadmodel->ymaxs[0] = loadmodel->ymaxs[1] = yawradius;
 	loadmodel->ymins[2] = loadmodel->mins[2];
 	loadmodel->ymaxs[2] = loadmodel->maxs[2];
-		Con_Printf ("%s: radius %g rmins %g %g %g rmaxes %g %g %g ymins %g %g %g ymaxes %g %g %g\n",
+		Con_PrintLinef ("%s: radius %g rmins %g %g %g rmaxes %g %g %g ymins %g %g %g ymaxes %g %g %g",
 		loadmodel->name, radius,
 		loadmodel->rmins[0], loadmodel->rmins[1], loadmodel->rmins[2],
 		loadmodel->rmaxs[0], loadmodel->rmaxs[1], loadmodel->rmaxs[2],
@@ -4189,7 +4189,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 
 	version = LittleLong (pinmodel->version);
 	if (version != ALIAS_VERSION)
-		Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%i should be %i)",
+		Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%d should be %d)",
 			mod->name, version, ALIAS_VERSION);
 
 //
@@ -4233,7 +4233,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 		Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS);	//WINQUAKE
 	
 	if (pheader->numtris > MAXALIASTRIS) // Baker: This technically does not apply to WinQuake only GLQuake ... but for consistency ...
-		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)\n", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
+		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
 
 	R_CheckAliasVerts (pmodel->numverts);
 
@@ -4245,7 +4245,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 
 	if (pheader->numtris > MAXALIASTRIS)
 	{	//Spike -- added this check, because I'm segfaulting out.
-		Host_Error ("model %s has too many triangles (%i > %i)\n", mod->name, pheader->numtris, MAXALIASTRIS);
+		Host_Error ("model %s has too many triangles (%d > %d)", mod->name, pheader->numtris, MAXALIASTRIS);
 	}
 
 
@@ -4254,7 +4254,7 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 
 	numframes = pheader->numframes;
 	if (numframes < 1)
-		Host_Error ("Mod_LoadAliasModel: Invalid # of frames: %d\n", numframes);
+		Host_Error ("Mod_LoadAliasModel: Invalid # of frames: %d", numframes);
 
 	pmodel->size =
 		pheader->size = LittleFloat (pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
@@ -4463,7 +4463,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 	pspriteframe->right = width + origin[0];
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-	c_snprintf2 (name, "%s:frame%i", loadmodel->name, framenum);
+	c_snprintf2 (name, "%s:frame%d", loadmodel->name, framenum);
 	offset = (src_offset_t)(pinframe+1) - (src_offset_t)mod_base; //johnfitz
 
 	if (!isDedicated && gl_external_textures.value)
@@ -4474,7 +4474,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 		char extload[MAX_OSPATH];
 		int extwidth, extheight;
 
-		c_snprintf2 (extload, "%s_%i", loadmodel->name, framenum);
+		c_snprintf2 (extload, "%s_%d", loadmodel->name, framenum);
 		extdata = Image_Load_Limited (extload, &extwidth, &extheight, loadmodel->loadinfo.searchpath);
 
 		if (extdata)
@@ -4599,7 +4599,7 @@ void Mod_LoadSpriteModel (qmodel_t *mod, void *buffer)
 	sprite_version = LittleLong (pin->version);
 
 	if (sprite_version != SPRITE_VERSION && sprite_version != SPRITE32_VERSION)
-		Host_Error ("Mod_LoadSpriteModel: %s has wrong version number (%i should be %i or %i)", mod->name, sprite_version, SPRITE_VERSION, SPRITE32_VERSION);
+		Host_Error ("Mod_LoadSpriteModel: %s has wrong version number (%d should be %d or %d)", mod->name, sprite_version, SPRITE_VERSION, SPRITE32_VERSION);
 
 
 	numframes = LittleLong (pin->numframes);
@@ -4685,23 +4685,23 @@ void Mod_Print (lparse_t *unused)
 	int		i;
 	qmodel_t	*mod;
 
-	Con_SafePrintf ("Cached models: (column 2 is modelindex)\n"); //johnfitz -- safeprint instead of print
+	Con_SafePrintLinef ("Cached models: (column 2 is modelindex)"); //johnfitz -- safeprint instead of print
 	for (i=0, mod=mod_known ; i < mod_numknown ; i++, mod++)
 	{
 #ifdef GLQUAKE_RENDERER_SUPPORT
-		Con_SafePrintf ("%8p %04d: %s %s\n", mod->cache.data, Mod_ModelIndex(mod->name), mod->name, mod->needload ? "(Need load)" : "");
+		Con_SafePrintLinef ("%8p %04d: %s %s", mod->cache.data, Mod_ModelIndex(mod->name), mod->name, mod->needload ? "(Need load)" : "");
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-		Con_SafePrintf ("%8p : %s", mod->cache.data, mod->name);
+		Con_SafePrintContf ("%8p : %s", mod->cache.data, mod->name);
 		if (mod->needload & NL_UNREFERENCED)
-			Con_SafePrintf (" (!R)");
+			Con_SafePrintContf (" (!R)");
 		if (mod->needload & NL_NEEDS_LOADED)
-			Con_SafePrintf (" (!P)");
-		Con_SafePrintf ("\n");
+			Con_SafePrintContf (" (!P)");
+		Con_SafePrintLine ();
 #endif // WINQUAKE_RENDERER_SUPPORT
 	}
-	Con_SafePrintf ("%i models\n",mod_numknown); //johnfitz -- print the total too
+	Con_SafePrintLinef ("%d models", mod_numknown); //johnfitz -- print the total too
 }
 
 
@@ -4715,7 +4715,7 @@ void Mod_PrintEx (lparse_t *unused)
 	int		i, count;
 	qmodel_t	*mod;
 
-	Con_SafePrintf ("Cached models:\n"); //johnfitz -- safeprint instead of print
+	Con_SafePrintLinef ("Cached models:"); //johnfitz -- safeprint instead of print
 	for (i = 0, mod = mod_known, count = 0 ; i < mod_numknown ; i++, mod++)
 	{
 		if (mod->cache.data == NULL)
@@ -4725,7 +4725,7 @@ void Mod_PrintEx (lparse_t *unused)
 			continue; // Don't list map submodels
 
 		count++;
-		Con_SafePrintf ("%-3i : %s\n", count, mod->name); //johnfitz -- safeprint instead of print
+		Con_SafePrintLinef ("%-3i : %s", count, mod->name); //johnfitz -- safeprint instead of print
 	}
 }
 
@@ -4754,4 +4754,3 @@ void Mod_Init (void)
 
 	Cmd_AddCommands (Mod_Init);
 }
-

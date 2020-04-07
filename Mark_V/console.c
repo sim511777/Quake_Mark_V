@@ -53,12 +53,15 @@ const char *Con_Quakebar (int len)
 		bar[i] = '\36';
 	bar[len-1] = '\37';
 
+#if 0 // Is this a buffer overflow scenario?  No because size 42 but still odd.
 	if (len < console1.buffer_columns)
 	{
 		bar[len] = '\n';
 		bar[len+1] = 0;
 	}
-	else bar[len] = 0;
+	else
+#endif
+		bar[len] = 0;
 
 	return bar;
 }
@@ -130,7 +133,7 @@ void Con_Dump_f (void)
 #else
 	if (line->count > 2)
 	{
-		Con_Printf ("usage: condump <filename>\n");
+		Con_PrintLinef ("usage: condump <filename>");
 		return;
 	}
 
@@ -138,7 +141,7 @@ void Con_Dump_f (void)
 	{
 		if (strstr(line->args[1], ".."))
 		{
-			Con_Printf ("Relative pathnames are not allowed.\n");
+			Con_PrintLinef ("Relative pathnames are not allowed.");
 			return;
 		}
 		FS_FullPath_From_QPath (name, line->args[1]);
@@ -151,7 +154,7 @@ void Con_Dump_f (void)
 	f = FS_fopen_write_create_path (name, "w");
 	if (!f)
 	{
-		Con_Printf ("ERROR: couldn't open file %s.\n", name);
+		Con_PrintLinef ("ERROR: couldn't open file %s.", name);
 		return;
 	}
 
@@ -188,7 +191,7 @@ void Con_Dump_f (void)
 
 	FS_fclose (f);
 	Recent_File_Set_FullPath (name);
-	Con_Printf ("Dumped console text to %s.\n", name);
+	Con_PrintLinef ("Dumped console text to %s.", name);
 }
 
 /*
@@ -212,13 +215,13 @@ void Con_Copy_f (lparse_t *line)
 			extern char *entity_string;
 			if (!sv.active || !entity_string)
 			{
-				Con_Printf ("copy ents: Not running a server or no entities");
+				Con_PrintLinef ("copy ents: Not running a server or no entities");
 				return;
 			}
 
 			Clipboard_Set_Text (entity_string);
 
-			Con_Printf ("Entities copied to the clipboard (%i bytes)\n", (int)strlen(entity_string));
+			Con_PrintLinef ("Entities copied to the clipboard (%d bytes)", (int)strlen(entity_string));
 			return;
 		}
 
@@ -234,12 +237,14 @@ void Con_Copy_f (lparse_t *line)
 		if (var)
 		{
 			Clipboard_Set_Text (var->string);
-			Con_Printf ("Cvar %s string copied to clipboard\n", line->args[1]);
+			Con_PrintLinef ("Cvar %s string copied to clipboard", line->args[1]);
 			return;
 		}
 
 		// Invalid args
-		Con_Printf ("Usage: %s [ents | screen | <cvar name>]: copies console to clipboard\n\"copy ents\" copies map entities to clipboard.\n\"copy screen\" copies screen to clipboard.", line->args[0]);
+		Con_PrintLinef ("Usage: %s [ents | screen | <cvar name>]: copies console to clipboard", line->args[0]);
+		Con_PrintLinef (QUOTEDSTR ("copy ents") " copies map entities to clipboard.");
+		Con_PrintLinef (QUOTEDSTR ("copy screen") " copies screen to clipboard.");
 		return;
 	}
 
@@ -276,7 +281,7 @@ void Con_Copy_f (lparse_t *line)
 
 	COM_DeQuake_String (outstring);
 	Clipboard_Set_Text (outstring);
-	Con_Printf ("Copied console to clipboard\n");
+	Con_PrintLinef ("Copied console to clipboard");
 }
 
 /*
@@ -378,13 +383,48 @@ void Con_CheckResize (void)
 
 /*
 ================
+Con_DebugLog
+================
+*/
+
+static int Con_DebugLog (const char *fmt, ...)
+{
+	if (con_debuglog) {
+		FILE *f;
+		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+
+		// Could cause it make the folder, but if the folder doesn't exist
+		// User already make some sort of mistake.  Let's not compound it.
+		f = FS_fopen_write (con_debuglog_url, "a"); // FS_fopen_write_create_path
+		if (f) {
+			fprintf (f, "%s", text);
+			FS_fclose(f);
+		}
+		return 0;
+	}
+	return 0; // Right? 0 is success.
+}
+
+
+int Con_DebugLogLine (const char *fmt, ...)
+{
+	if (con_debuglog) {
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
+		return Con_DebugLog ("%s", text);
+	}
+	return 0;
+}
+
+
+/*
+================
 Con_Init
 ================
 */
 void Con_Init (void)
 {
 	int i;
-	print_fn_t tech_print_fn = isDedicated ? Con_SafePrintf : Con_DebugLog; // Oct 2016 - formerly Con_Printf
+	printline_fn_t tech_printline_fn = isDedicated ? Con_SafePrintLinef : Con_DebugLogLine; // Oct 2016 - formerly Con_Printf
 	
 	cbool disabled_condebug = COM_CheckParm("-nocondebug");
 	con_debuglog = COM_CheckParm("-condebug");
@@ -417,7 +457,7 @@ void Con_Init (void)
 		}
 
 		File_URL_Edit_Force_Extension (con_debuglog_url, ".log", sizeof(con_debuglog_url));
-//		System_Alert (con_debuglog_url);
+//		alert (con_debuglog_url);
 
 		File_Delete (con_debuglog_url);
 	}
@@ -445,7 +485,7 @@ void Con_Init (void)
 	//johnfitz
 
 	Cmd_AddCommands (Con_Init);
-	Con_SafePrintf ("Console initialized.\n"); // This probably won't print now, but it's bloody obvious the console is initialized.
+	Con_SafePrintLinef ("Console initialized."); // This probably won't print now, but it's bloody obvious the console is initialized.
 
 
 dedicated_skips_true_console:
@@ -458,10 +498,10 @@ dedicated_skips_true_console:
 		
 		//Con_DebugLog
 		extern char	com_cmdline[MAX_CMD_256];
-		tech_print_fn ("Command line: [%s ]\n", com_cmdline); // Spacing is because first character will be a space
-		tech_print_fn ("Log file: %s\n", con_debuglog_url[0] ? con_debuglog_url : "(Logging disabled)");
-		tech_print_fn ("%s\n", Time_To_Buffer (nowtime, buf, sizeof(buf)));
-		Host_Version_Print (tech_print_fn); // Jam that in there
+		tech_printline_fn ("Command line: [%s ]", com_cmdline); // Spacing is because first character will be a space
+		tech_printline_fn ("Log file: %s", con_debuglog_url[0] ? con_debuglog_url : "(Logging disabled)");
+		tech_printline_fn ("%s", Time_To_Buffer (nowtime, buf, sizeof(buf)));
+		Host_Version_Print (tech_printline_fn); // Jam that in there
 	}
 
 }
@@ -490,14 +530,14 @@ static void Con_Linefeed (void)
 
 /*
 ================
-Con_Print
+Console_BufferPrint
 
 Handles cursor positioning, line wrapping, etc
 All console printing must go through this in order to be logged to disk
 If no console is visible, the notify window will pop up.
 ================
 */
-static void Con_Print (const char *txt)
+static void Console_BufferPrint (const char *txt)
 {
 	int		y;
 	int		c, l;
@@ -578,29 +618,6 @@ static void Con_Print (const char *txt)
 }
 
 
-/*
-================
-Con_DebugLog
-================
-*/
-
-int Con_DebugLog (const char *fmt, ...)
-{
-	if (con_debuglog) {
-		FILE *f;
-		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
-
-		// Could cause it make the folder, but if the folder doesn't exist
-		// User already make some sort of mistake.  Let's not compound it.
-		f = FS_fopen_write (con_debuglog_url, "a"); // FS_fopen_write_create_path
-		if (f) {
-			fprintf (f, "%s", text);
-			FS_fclose(f);
-		}
-		return 0;
-	}
-	return 0; // Maybe 1?
-}
 
 
 /*
@@ -610,9 +627,6 @@ Con_Printf
 Handles cursor positioning, line wrapping, etc
 ================
 */
-#define	MAXPRINTMSG_4096	4096
-
-
 
 int Con_Printf (const char *fmt, ...)
 {
@@ -633,7 +647,7 @@ int Con_Printf (const char *fmt, ...)
 		return 0;		// no graphics mode
 
 // write it to the scrollable buffer
-	Con_Print (text);
+	Console_BufferPrint (text);
 
 // update the screen if the console is displayed
 	if (cls.signon != SIGNONS && !scr_disabled_for_loading )
@@ -651,7 +665,16 @@ int Con_Printf (const char *fmt, ...)
     return 0;
 }
 
+int Con_PrintLinef (const char *fmt, ...)
+{
+	VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
+	return Con_PrintContf ("%s", text); // Ok verified static Con_Printf
+}
 
+int Con_PrintLine (void)
+{
+	return Con_PrintContf (NEWLINE); // Ok verified static Con_Printf
+}
 
 
 /*
@@ -659,11 +682,11 @@ int Con_Printf (const char *fmt, ...)
 Con_Warning -- johnfitz -- prints a warning to the console.  Always prints the warning.
 ================
 */
-int Con_Warning (const char *fmt, ...)
+int Con_WarningLinef (const char *fmt, ...)
 {
-	VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+	VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
 
-	Con_SafePrintf ("%sWarning: %s", isDedicated ? "": "\x02", text);
+	Con_SafePrintContf ("%sWarning: %s", isDedicated ? "": "\x02", text); // newline added above to text
 	return 0;
 }
 
@@ -674,18 +697,23 @@ Con_DPrintf
 A Con_Printf that only shows up if the "developer" cvar is set
 ================
 */
-int Con_VerbosePrintf (const char *fmt, ...)
+int Con_VerbosePrintLinef (const char *fmt, ...)
 {
 	// don't confuse non-developers with techie stuff...
 	if (developer.value) //if (isDedicated || con_verbose.value)
 	{
-		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%s", text); //johnfitz -- was Con_Printf
+		Con_SafePrintContf ("%s", text); // Baker: Verified continuator version
 	}
 	return 0;
 }
 
+int Con_DPrintLineLevel5f (const char *fmt, ...)
+{
+	// Strip the first five characters after VA_EXPAND?
+	return 0;
+}
 
 int Con_DPrintf (const char *fmt, ...)
 {
@@ -694,10 +722,23 @@ int Con_DPrintf (const char *fmt, ...)
 	{
 		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%s", text); //johnfitz -- was Con_Printf
+		Con_SafePrintContf ("%s", text); // Baker: Verified continuator version
 	}
 	return 0;
 }
+
+int Con_DPrintLinef (const char *fmt, ...)
+{
+	// don't confuse non-developers with techie stuff...
+	if (developer.value)
+	{
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
+
+		Con_SafePrintContf ("%s", text); // Baker: Verified continuator version
+	}
+	return 0;
+}
+
 
 // Developer 2 is everything.  Developer Net  Developer Textures Developer Map Developer Sys
 // Quakespasm has model warnings only print at level >=2
@@ -708,33 +749,33 @@ int Con_DPrintf (const char *fmt, ...)
 //			System.										"Input/Gamma/Wiring"
 
 // Limits version
-int Con_DWarning (const char *fmt, ...)
+int Con_DWarningLine (const char *fmt, ...)
 {
 	if (developer.value >= 2) {
-		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%sWarning: %s", isDedicated ? "": "\x02", text);
+		Con_SafePrintContf ("%sWarning: %s", isDedicated ? "": "\x02", text);
 	}
 	return 0;
 }
 
 
-int Con_DPrintf_Net (const char *fmt, ...)
+int Con_DPrintLinef_Net (const char *fmt, ...)
 {
 	if (developer.value >= 2 || developer.string[0] == 'N' || developer.string[0] == 'n') {
-		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%sWarning: %s", isDedicated ? "": "\x02", text);
+		Con_SafePrintContf ("%sWarning: %s", isDedicated ? "": "\x02", text);
 	}
 	return 0;
 }
 
-int Con_DPrintf_Files (const char *fmt, ...)
+int Con_DPrintLinef_Files (const char *fmt, ...)
 {
 	if (developer.value >= 2 || developer.string[0] == 'F' || developer.string[0] == 'f') {
-		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
+		VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%sWarning: %s", isDedicated ? "": "\x02", text);
+		Con_SafePrintContf ("%sWarning: %s", isDedicated ? "": "\x02", text);
 	}
 	return 0;
 }
@@ -744,7 +785,7 @@ int Con_DPrintf_System (const char *fmt, ...)
 	if (developer.value >= 2 || developer.string[0] == 'S' || developer.string[0] == 's') {
 		VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
 
-		Con_SafePrintf ("%sWarning: %s", isDedicated ? "": "\x02", text);
+		Con_SafePrintContf ("%sWarning: %s", isDedicated ? "": "\x02", text);
 	}
 	return 0;
 }
@@ -765,7 +806,27 @@ int Con_SafePrintf (const char *fmt, ...)
         VA_EXPAND (text, MAXPRINTMSG_4096, fmt);
         temp = scr_disabled_for_loading;
         scr_disabled_for_loading = true; // temped
-        Con_Printf ("%s", text);
+        Con_PrintContf ("%s", text); // Correct! Con_Printf
+        scr_disabled_for_loading = temp;
+	}
+	return 0;
+}
+
+void Con_SafePrintLine (void)
+{
+	Con_SafePrintContf ( NEWLINE );
+}
+
+int Con_SafePrintLinef (const char *fmt, ...)
+{
+
+	if (console1.initialized)
+	{
+        int			temp;
+        VA_EXPAND_NEWLINE (text, MAXPRINTMSG_4096, fmt);
+        temp = scr_disabled_for_loading;
+        scr_disabled_for_loading = true; // temped
+        Con_PrintContf ("%s", text); // Correct! Con_Printf
         scr_disabled_for_loading = temp;
 	}
 	return 0;
@@ -776,8 +837,9 @@ int Con_SafePrintf (const char *fmt, ...)
 Con_CenterPrintf -- johnfitz -- pad each line with spaces to make it appear centered
 ================
 */
-void Con_CenterPrintf (int linewidth, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
-void Con_CenterPrintf (int linewidth, const char *fmt, ...)
+// Baker: Only called by LogCenterPrint
+static void Con_CenterPrintf (int linewidth, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
+static void Con_CenterPrintf (int linewidth, const char *fmt, ...)
 {
 //	char	msg[MAXPRINTMSG_4096]; //the original message
 	char	line[MAXPRINTMSG_4096]; //one line from the message
@@ -802,10 +864,10 @@ void Con_CenterPrintf (int linewidth, const char *fmt, ...)
 			s = (linewidth-len)/2;
 			memset (spaces, ' ', s);
 			spaces[s] = 0;
-			Con_Printf ("%s%s\n", spaces, line);
+			Con_PrintLinef ("%s%s", spaces, line);
 		}
 		else
-			Con_Printf ("%s\n", line);
+			Con_PrintLinef ("%s", line);
 	}
 }
 
@@ -827,9 +889,9 @@ void Con_LogCenterPrint (const char *str)
 
 	if (scr_logcenterprint.value)
 	{
-		Con_Printf ("%s", Con_Quakebar(40));
-		Con_CenterPrintf (40, "%s\n", str);
-		Con_Printf ("%s", Con_Quakebar(40));
+		Con_PrintLinef ("%s", Con_Quakebar(40));
+		Con_CenterPrintf (40, "%s" NEWLINE, str); // Only existence!
+		Con_PrintLinef ("%s", Con_Quakebar(40));
 		Con_ClearNotify ();
 	}
 }
@@ -1062,12 +1124,12 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 					*complete_type = i;
 		}
 
-		Con_DPrintf ("Complete type is %s with extension %s\n", list_info[*complete_type].description, list_info[*complete_type].extension);
+		Con_DPrintLinef ("Complete type is %s with extension %s", list_info[*complete_type].description, list_info[*complete_type].extension);
 		first_time_through = true;
 	}
 
 
-//	System_Alert (partial_buffer); // What is in the partial buffer?  We may have a complete type, but we need the partial to know what to complete.
+//	alert (partial_buffer); // What is in the partial buffer?  We may have a complete type, but we need the partial to know what to complete.
 
 
 	// Right now we are inefficiently reconstructing the tab list each time.  First time through prints stuffs.
@@ -1081,7 +1143,7 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 
 		if (!mgtablist) // Print this every attempt, only takes 1 line.
 		{
-			Con_Printf ("No %s starting with %s%s\n", list_info[*complete_type].description, partial_buffer, (*complete_type == list_type_map) ? " in current gamedir" : "");
+			Con_PrintLinef ("No %s starting with %s%s", list_info[*complete_type].description, partial_buffer, (*complete_type == list_type_map) ? " in current gamedir" : "");
 			return 0;
 		}
 
@@ -1117,8 +1179,8 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 					}
 					else if (count < MAX_AUTOCOMPLETES_32) {
 						if (t->type[0]) // Type is a pointer to "command", "alias", "cvar"
-							Con_SafePrintf("   %s (%s)\n", t->name, t->type);
-						else Con_SafePrintf("   %s\n", t->name);
+							Con_SafePrintLinef ("   %s (%s)", t->name, t->type);
+						else Con_SafePrintLinef ("   %s", t->name);
 					}
 					count ++;
 				}
@@ -1130,8 +1192,8 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 				if ( t->next == mgtablist) // Can't be easily put in the for loop, we'd need a counter because a one-length wrapped list would trip.
 					break;
 			}
-			if (count >= MAX_AUTOCOMPLETES_32)
-				Con_SafePrintf("   (%d more ...)\n", count - MAX_AUTOCOMPLETES_32);
+			if (count > MAX_AUTOCOMPLETES_32) // Dec 29, changed from >= because was printing "0 more ..."
+				Con_SafePrintLinef ("   (%d more ...)", count - MAX_AUTOCOMPLETES_32);
 
 			// We have the new completion
 			Hunk_FreeToLowMark(mark); // it's okay to free it here because match doesn't point to the hunk
@@ -1303,7 +1365,7 @@ void Con_DrawConsole (float pct, cbool drawinput)
 	int				sb;
 	int				ytop = vid.conheight - 8;
 	const char	*text;
-	char			ver[32];
+	char			ver[36];
 
 	if (pct <= 0)
 		return; // Baker: This should never happen.  SCR_DrawConsole checks this.
@@ -1362,15 +1424,18 @@ void Con_DrawConsole (float pct, cbool drawinput)
 Con_NotifyBox
 ==================
 */
+// No one calls us!
 void Con_NotifyBox (const char *text)
 {
 	double		t1, t2;
 
 // during startup for sound / cd warnings
-	Con_Printf ("\n\n%s", Con_Quakebar(40)); //johnfitz
-	Con_Printf ("%s", text);
-	Con_Printf ("Press a key.\n");
-	Con_Printf ("%s", Con_Quakebar(40)); //johnfitz
+	Con_PrintLine ();
+	Con_PrintLine ();
+	Con_PrintLinef ("%s", Con_Quakebar(40)); //johnfitz
+	Con_PrintLinef ("%s", text);
+	Con_PrintLinef ("Press a key.");
+	Con_PrintLinef ("%s", Con_Quakebar(40)); //johnfitz
 
 	key_count = -2; // wait for a key down and up
 	Key_SetDest (key_console);
@@ -1384,8 +1449,7 @@ void Con_NotifyBox (const char *text)
 		realtime += t2 - t1; // make the cursor blink
 	} while (key_count < 0);
 
-	Con_Printf ("\n");
+	Con_PrintLine ();
 	Key_SetDest (key_game);
 	realtime = 0; // put the cursor back to invisible
 }
-

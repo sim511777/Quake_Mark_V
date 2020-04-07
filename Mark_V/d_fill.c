@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -90,3 +92,4 @@ void D_FillRect (vrect_t *rect, int color)
 	}
 }
 
+#endif // !GLQUAKE - WinQuake Software renderer

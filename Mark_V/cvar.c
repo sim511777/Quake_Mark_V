@@ -55,7 +55,7 @@ void _Help_f (lparse_t *line)
 
 	default:
 		// Your holding it wrong.
-		Con_Printf ("Usage: %s <text> - describe help for command or console variable.", line->args[0]);
+		Con_PrintLinef ("Usage: %s <text> - describe help for command or console variable.", line->args[0]);
 		return;
 	}
 
@@ -65,8 +65,8 @@ void _Help_f (lparse_t *line)
 		cmd_function_t *cmd;
 		for (cmd = cmd_functions ; cmd ; cmd = cmd->next) {
 			if (String_Does_Match_Caseless (cmd->name, scommandfind)) {
-				Con_Printf ("%cCommand:", 2); // Bronzy
-				Con_Printf (" %s\n", cmd->description);
+				Con_PrintContf ("%cCommand:", 2); // Bronzy
+				Con_PrintLinef (" %s", cmd->description);
 				return;
 			}
 		}
@@ -79,15 +79,15 @@ void _Help_f (lparse_t *line)
 				continue; // Not really available
 
 			if (String_Does_Match_Caseless (cvar->name, scommandfind)) {
-				Con_Printf ("%cConsole variable:", 2); // Bronzy
-				//Con_Printf (" %s\n%s\n", cvar->name, cvar->description);
-				Con_Printf (" %s\n", cvar->description);
+				Con_PrintContf ("%cConsole variable:", 2); // Bronzy
+				//Con_PrintLinef (" %s" NEWLINE "%s", cvar->name, cvar->description);
+				Con_PrintLinef (" %s", cvar->description);
 				return;
 			}
 		}
 	}
 
-	Con_Printf ("Command or console variable \"%s\" not found\n", scommandfind);
+	Con_PrintLinef ("Command or console variable " QUOTED_S " not found", scommandfind);
 }
 
 
@@ -115,7 +115,8 @@ void Cvar_Find_f (lparse_t *line)
 
 	// console1.buffer_columns
 	if (line->count != 2) {
-		Con_Printf ("Usage: %s <text> - find settings containing text in name or description\nType \"find all\" for everything", line->args[0]);
+		Con_PrintLinef ("Usage: %s <text> - find settings containing text in name or description", line->args[0]);
+		Con_PrintLinef ("Type " QUOTEDSTR("find all") " for everything");
 		return;
 	}
 
@@ -123,15 +124,15 @@ void Cvar_Find_f (lparse_t *line)
 		partial = NULL;
 	}
 
-	//Con_SafePrintf ("\nFind \"%s\"\n\n", partial);
+	//Con_SafePrintLinef (NEWLINE "Find " QUOTED_S, partial);
 
-	Con_SafePrintf ("%c\n%-*.*s %-*.*s %-*.*s\n", 2 /*bronzy*/,
+	Con_SafePrintLinef ("%c" NEWLINE "%-*.*s %-*.*s %-*.*s", 2 /*bronzy*/,
 		col_a_20, col_a_20, "Name",
 		col_b_8, col_b_8, "Value",
 		col_c_length, col_c_length, "Help");
 
-	//Con_SafePrintf ("%Name            Value    Help\n");//, 2 /*bronzy cheat*/ );
-	Con_SafePrintf ("%s %s %s\n", dashes1, dashes2, dashes3);
+	//Con_SafePrintLinef ("%Name            Value    Help");//, 2 /*bronzy cheat*/ );
+	Con_SafePrintLinef ("%s %s %s", dashes1, dashes2, dashes3);
 
 	if (1) { // Commands
 		extern cmd_function_t	*cmd_functions;
@@ -142,7 +143,7 @@ void Cvar_Find_f (lparse_t *line)
 			if (partial &&  !strcasestr(cmd->name, partial) && !strcasestr(cmd->description, partial))
 				continue;
 
-			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n",
+			Con_SafePrintLinef ("%-*.*s %-*.*s %-*.*s",
 				col_a_20, col_a_20, cmd->name,
 				col_b_8, col_b_8, "command",
 				col_c_length, col_c_length, cmd->description);
@@ -160,7 +161,7 @@ void Cvar_Find_f (lparse_t *line)
 			if (partial && !strcasestr(cvar->name, partial) && !strcasestr(cvar->description, partial))
 				continue;
 
-			Con_SafePrintf ("%-*.*s %-*.*s %-*.*s\n",
+			Con_SafePrintLinef ("%-*.*s %-*.*s %-*.*s",
 				col_a_20, col_a_20, cvar->name,
 				col_b_8, col_b_8, cvar->string,
 				col_c_length, col_c_length, cvar->description);
@@ -170,7 +171,7 @@ void Cvar_Find_f (lparse_t *line)
 
 
 
-	Con_SafePrintf ("\n%d matches related to \"%s\" -- type \"help <name>\" for full description.\n", count, line->args[1]);
+	Con_SafePrintLinef (NEWLINE "%d matches related to " QUOTED_S " -- type " QUOTEDSTR ("help <name>") " for full description.", count, line->args[1]);
 }
 
 
@@ -208,7 +209,7 @@ void Cvar_List_f (lparse_t *line)
 		{
 			continue;
 		}
-		Con_SafePrintf ("%s%s %s \"%s\"\n",
+		Con_SafePrintLinef ("%s%s %s " QUOTED_S,
 			(cvar->flags & CVAR_ARCHIVE) ? "*" : " ",
 			(cvar->flags & CVAR_NOTIFY)  ? "s" : " ",
 			cvar->name,
@@ -216,12 +217,12 @@ void Cvar_List_f (lparse_t *line)
 		count++;
 	}
 
-	Con_SafePrintf ("%i cvars", count);
+	Con_SafePrintContf ("%d cvars", count);
 	if (partial)
 	{
-		Con_SafePrintf (" beginning with \"%s\"", partial);
+		Con_SafePrintContf (" beginning with " QUOTED_S, partial);
 	}
-	Con_SafePrintf ("\n");
+	Con_SafePrintLine ();
 }
 
 /*
@@ -235,7 +236,7 @@ void Cvar_Inc_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("inc <cvar> [amount] : increment cvar\n");
+		Con_PrintLinef ("inc <cvar> [amount] : increment cvar");
 		break;
 	case 2:
 		Cvar_SetValueByName (line->args[1], Cvar_VariableValue(line->args[1]) + 1);
@@ -258,18 +259,18 @@ void Cvar_ValSave_f (lparse_t *line)
 	int slotnum;
 	switch (line->count) {
 	default:
-	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d> : Save a cvar value to slot\n", line->args[0], COUNT_10);
+	case 1: Con_PrintLinef ("Usage: %s <cvar> <slotnum 0 to %d> : Save a cvar value to slot", line->args[0], COUNT_10);
 			for (slotnum = 0; slotnum < COUNT_10; slotnum ++)
-				Con_Printf ("Slot %2d: %g\n", slotnum, saved_values[slotnum]  );
+				Con_PrintLinef ("Slot %2d: %g", slotnum, saved_values[slotnum]  );
 			break;
 	case 3: slotnum = atoi(line->args[2]);
 			if (!in_range(0, slotnum, COUNT_10)) {
-				Con_Printf ("Slotnum is invalid %d, must be 0 to %d", slotnum, COUNT_10);
+				Con_PrintLinef ("Slotnum is invalid %d, must be 0 to %d", slotnum, COUNT_10);
 				break;
 			}
 			var = Cvar_Find (line->args[1]);
 			if (!var) {
-				Con_Printf ("Cvar %s not found", line->args[1]);
+				Con_PrintLinef ("Cvar %s not found", line->args[1]);
 				break;
 			}
 
@@ -286,18 +287,18 @@ void Cvar_ValLoad_f (lparse_t *line)
 	int slotnum;
 	switch (line->count) {
 	default:
-	case 1: Con_Printf("Usage: %s <cvar> <slotnum 0 to %d>  : Set cvar value from slot value\n", line->args[0], COUNT_10);
+	case 1: Con_PrintLinef ("Usage: %s <cvar> <slotnum 0 to %d>  : Set cvar value from slot value", line->args[0], COUNT_10);
 			for (slotnum = 0; slotnum < COUNT_10; slotnum ++)
-				Con_Printf ("Slot %2d: %g\n", slotnum, saved_values[slotnum]  );
+				Con_PrintLinef ("Slot %2d: %g", slotnum, saved_values[slotnum]  );
 			break;
 	case 3: slotnum = atoi(line->args[2]);
 			if (!in_range(0, slotnum, COUNT_10)) {
-				Con_Printf ("Slotnum is invalid %d, must be 0 to %d", slotnum, COUNT_10);
+				Con_PrintLinef ("Slotnum is invalid %d, must be 0 to %d", slotnum, COUNT_10);
 				break;
 			}
 			var = Cvar_Find (line->args[1]);
 			if (!var) {
-				Con_Printf ("Cvar %s not found", line->args[1]);
+				Con_PrintLinef ("Cvar %s not found", line->args[1]);
 				break;
 			}
 			Cvar_SetValueByName (line->args[1], saved_values[slotnum]);
@@ -310,7 +311,7 @@ void Cvar_Multiply_f (lparse_t *line)
 {
 	switch (line->count) {
 	default:
-	case 1: Con_Printf("Usage: %s <cvar> [amount] : multiply cvar\n", line->args[0]);  break;
+	case 1: Con_PrintLinef ("Usage: %s <cvar> [amount] : multiply cvar", line->args[0]);  break;
 	case 3: Cvar_SetValueByName (line->args[1], Cvar_VariableValue(line->args[1]) * atof(line->args[2])); break;
 	}
 }
@@ -322,7 +323,7 @@ void Cvar_Dec_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("dec <cvar> [amount] : decrement cvar\n");
+		Con_PrintLinef ("dec <cvar> [amount] : decrement cvar");
 		break;
 	case 2:
 		Cvar_SetValueByName (line->args[1], Cvar_VariableValue(line->args[1]) - 1);
@@ -345,7 +346,7 @@ void Cvar_Toggle_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("toggle <cvar> : toggle cvar\n");
+		Con_PrintLinef ("toggle <cvar> : toggle cvar");
 		break;
 	case 2:
 		if (Cvar_VariableValue(line->args[1]))
@@ -367,7 +368,7 @@ void Cvar_Cycle_f (lparse_t *line)
 
 	if (line->count < 3)
 	{
-		Con_Printf("cycle <cvar> <value list>: cycle cvar through a list of values\n");
+		Con_PrintLinef ("cycle <cvar> <value list>: cycle cvar through a list of values");
 		return;
 	}
 
@@ -378,7 +379,7 @@ void Cvar_Cycle_f (lparse_t *line)
 	{
 		// Baker: Removed the float check.  String check should work fine in every circumstance
 		// The float check was superfluous.
-		if (!strcmp(line->args[i], Cvar_VariableString(line->args[1])))
+		if (!strcmp(line->args[i], Cvar_VariableString(line->args[1]))) // <--- Only user of Cvar_VariableString!
 			break;
 	}
 
@@ -401,7 +402,7 @@ void Cvar_Reset_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf ("reset <cvar> : reset cvar to default\n");
+		Con_PrintLinef ("reset <cvar> : reset cvar to default");
 		break;
 	case 2:
 		Cvar_Reset (line->args[1]);
@@ -533,7 +534,7 @@ float Cvar_VariableValue (const char *var_name)
 
 	var = Cvar_Find (var_name);
 	if (!var) {
-		Con_DPrintf ("Cvar %s not found", var_name);
+		Con_DPrintLinef  ("Cvar %s not found", var_name);
 		return 0;
 	}
 	return atof (var->string);
@@ -594,7 +595,7 @@ void Cvar_ResetQuick (cvar_t *var)
 	if (var->flags & CVAR_COURTESY)
 	{
 #ifdef _DEBUG
-		System_Alert ("Courtesy variable reset attempt");
+		alert ("Courtesy variable reset attempt");
 #endif
 		System_Error ("Tried to reset courtesy variable");
 	}
@@ -608,7 +609,7 @@ void Cvar_Reset (const char *name)
 
 	var = Cvar_Find (name);
 	if (!var)
-		Con_Printf ("variable \"%s\" not found\n", name);
+		Con_PrintLinef ("variable " QUOTED_S " not found", name);
 	else
 		Cvar_ResetQuick (var);
 }
@@ -628,7 +629,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 
 		if (!strcmp(var->string, value)) {
 			// Keep going so callback happens.  How often does this really happen that an exact duplicate is set. Let's find out.
-			// Con_DPrintf ("Identical set %s = \"%s\".\n", var->name, var->string);
+			// Con_DPrintLinef ("Identical set %s = " QUOTED_S ".", var->name, var->string);
 			// Have to otherwise we get recursive endless loop.  Sucks.
 			return;	// no change
 		}
@@ -656,7 +657,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 	//johnfitz -- during initialization, update default too
 	else if (!host_initialized)
 	{
-	//	Dedicated_Printf ("changing default of %s: %s -> %s\n",
+	//	Dedicated_PrintLinef ("changing default of %s: %s -> %s",
 	//		   var->name, var->default_string, var->string);
 		Z_Free ((void *)var->default_string);
 		var->default_string = Z_Strdup (var->string);
@@ -673,7 +674,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 		if (rcon_active && (rcon_message.cursize < rcon_message.maxsize - (int)strlen(var->name) - (int)strlen(var->string) - 64))
 		{
 			rcon_message.cursize--;
-			MSG_WriteString(&rcon_message, va("\"%s\" set to \"%s\"\n", var->name, var->string));
+			MSG_WriteStringf (&rcon_message, QUOTED_S " set to " QUOTED_S NEWLINE, var->name, var->string); // Should be good.
 		}
 	}
 }
@@ -699,7 +700,7 @@ void Cvar_SetByName (const char *var_name, const char *value)
 	var = Cvar_Find (var_name);
 	if (!var)
 	{	// there is an error in C code if this happens
-		Con_SafePrintf ("Cvar_Set: variable %s not found\n", var_name);
+		Con_SafePrintLinef ("Cvar_Set: variable %s not found", var_name);
 		return;
 	}
 
@@ -717,7 +718,7 @@ static void Cvar_SetValue_Untrusted (const char *var_name, float newvalue)
 	var = Cvar_Find (var_name);
 	if (!var)
 	{	// there is an error in C code if this happens
-		Con_Printf ("Cvar_Set: variable %s not found\n", var_name);
+		Con_PrintLinef ("Cvar_Set: variable %s not found", var_name);
 		return;
 	}
 
@@ -733,7 +734,7 @@ static void Cvar_SetValue_Untrusted (const char *var_name, float newvalue)
 		// Or at least not suspiciously
 		// So we won't firewall this cvar set.
 #ifdef CUTSCENE_DEBUG
-		Con_Printf ("Cvar_Set: Untrusted set of %s to %g but we are accepting as real\n", var->name, newvalue);
+		Con_PrintLinef ("Cvar_Set: Untrusted set of %s to %g but we are accepting as real", var->name, newvalue);
 #endif // CUTSCENE_DEBUG
 		Cvar_SetValueQuick (var, newvalue);
 		return;
@@ -753,7 +754,7 @@ static void Cvar_SetValue_Untrusted (const char *var_name, float newvalue)
 	var->flags |= CVAR_TAMPERED;
 	var->value = newvalue;
 #ifdef CUTSCENE_DEBUG
-	Con_Printf ("Cvar_Set: Untrusted set of %s to %g\n", var->name, newvalue);
+	Con_PrintLinef ("Cvar_Set: Untrusted set of %s to %g", var->name, newvalue);
 #endif // CUTSCENE_DEBUG
 }
 
@@ -765,7 +766,7 @@ void Cvar_Set_Untrusted (const char *var_name,  const char *newvaluestr)
 	float newvalue = atof (newvaluestr);
 	if (newvalue == 0 && !isdigit(newvaluestr[0]) && newvaluestr[0] )
 	{
-		Con_Printf ("Cvar_Set: Rejected request to set cvar %s to \"%s\"\n", var_name, newvaluestr);
+		Con_PrintLinef ("Cvar_Set: Rejected request to set cvar %s to " QUOTED_S, var_name, newvaluestr);
 		return;
 	}
 
@@ -782,7 +783,7 @@ void Cvar_Clear_Untrusted (void)
 		if ((var->flags & CVAR_TAMPERED))
 		{
 #ifdef CUTSCENE_DEBUG
-			Con_Printf ("Restoring %s to %g (untrusted value was %g)\n", var->name, var->user_value, var->value);
+			Con_PrintLinef ("Restoring %s to %g (untrusted value was %g)", var->name, var->user_value, var->value);
 #endif // CUTSCENE_DEBUG
 			var->value = var->user_value;
 			var->flags -= CVAR_TAMPERED;
@@ -790,7 +791,7 @@ void Cvar_Clear_Untrusted (void)
 		}
 	}
 #ifdef CUTSCENE_DEBUG
-	Con_Printf ("Cvar_Clear_Untrusted: %i untrusted cvar(s) restored\n", num_restored);
+	Con_PrintLinef ("Cvar_Clear_Untrusted: %d untrusted cvar(s) restored", num_restored);
 #endif // CUTSCENE_DEBUG
 }
 
@@ -836,7 +837,7 @@ void Cvar_UnregisterVariable (cvar_t *variable)
 
 	if (cursor == NULL)
 	{
-		Con_Printf ("Cvar_UnregisterVariable: Couldn't find variable %s\n", variable->name);
+		Con_PrintLinef ("Cvar_UnregisterVariable: Couldn't find variable %s", variable->name);
 		return;
 	}
 
@@ -869,14 +870,14 @@ void Cvar_Register (cvar_t *variable)
 // first check to see if it has already been defined
 	if (Cvar_Find (variable->name))
 	{
-		Con_SafePrintf ("Can't register variable %s, already defined\n", variable->name);
+		Con_SafePrintLinef ("Can't register variable %s, already defined", variable->name);
 		return;
 	}
 
 // check for overlap with a command
 	if (Cmd_Exists (variable->name))
 	{
-		Con_SafePrintf ("Cvar_RegisterVariable: %s is a command\n", variable->name);
+		Con_SafePrintLinef ("Cvar_RegisterVariable: %s is a command", variable->name);
 		return;
 	}
 
@@ -967,17 +968,17 @@ cbool	Cvar_Command (cbool src_server, cvar_t *var, lparse_t *line)
 	{
 		if ((var->flags & CVAR_TAMPERED) && var->value != var->user_value)
 		{
-			Con_Printf ("\"%s\" is \"%g\" (altered!)\n", var->name, var->value);
-			Con_Printf ("user preference is \"%s\"\n", var->string);
+			Con_PrintLinef (QUOTED_S " is " QUOTED_G " (altered!)", var->name, var->value);
+			Con_PrintLinef ("user preference is " QUOTED_S, var->string);
 		}
 		else {
-			Con_Printf ("\"%s\" is \"%s\" ", var->name, var->string);
+			Con_PrintContf (QUOTED_S " is " QUOTED_S " ", var->name, var->string);
 			if (String_Does_Match(var->string, var->default_string) )
-				Con_Printf ("[default value]\n");
+				Con_PrintLinef ("[default value]");
 			else
-				Con_Printf ("[default: \"%s\"]\n", var->default_string);
+				Con_PrintLinef ("[default: " QUOTED_S "]", var->default_string);
 			if (con_verbose.value) {
-				Con_Printf ("info: %s\n", var->description);
+				Con_PrintLinef ("info: %s", var->description);
 			}
 		}
 		return true;
@@ -1024,7 +1025,7 @@ void Cvar_WriteVariables (FILE *f)
 		}
 
 		if (var->flags & CVAR_ARCHIVE)
-			fprintf (f, "%s \"%s\"\n", var->name, var->string);
+			fprintf (f, "%s " QUOTED_S "\n", var->name, var->string);
 	}
 }
 
@@ -1064,7 +1065,7 @@ cbool Cutscene_Guardian_PF_cvar_set_Think (const char *var_name, const char *val
 	if (!strcmp(var_name, "viewsize") && newval == 120)
 	{
 #ifdef CUTSCENE_DEBUG
-	Con_Printf ("Cutscene QuakeC Begin\n: Cvar_Set %s %g\n", var_name, newval);
+	Con_PrintLinef ("Cutscene QuakeC Begin" NEWLINE ": Cvar_Set %s %g", var_name, newval);
 #endif // CUTSCENE_DEBUG
 		Cutscene_Guardian_Begin ();
 		return false;
@@ -1084,13 +1085,13 @@ cbool Cutscene_Guardian_PF_cvar_set_Think (const char *var_name, const char *val
 				// More attempts to restore the "right" values may follow
 				// and we will restore the true correct values each time it happens.
 #ifdef CUTSCENE_DEBUG
-				Con_Printf ("Cutscene QuakeC End: Cvar_Set %s %g\n", var_name, newval);
+				Con_PrintLinef ("Cutscene QuakeC End: Cvar_Set %s %g", var_name, newval);
 #endif // CUTSCENE_DEBUG
 				Cvar_Clear_Untrusted ();
 				return true; // A progs attempt to restore the cvars may never be permitted to happen
 			}
 #ifdef CUTSCENE_DEBUG
-			else Con_Printf ("Cutscene QuakeC ??: Cvar_Set %s %g\n", var_name, newval);
+			else Con_PrintLinef ("Cutscene QuakeC ??: Cvar_Set %s %g", var_name, newval);
 #endif // CUTSCENE_DEBUG
 			return false;
 		}
@@ -1108,7 +1109,7 @@ cbool Cutscene_Guardian_PF_cvar_Get_Think (const char *var_name)
 	if (var->flags & CVAR_CLIENT)
 	{
 #ifdef CUTSCENE_DEBUG
-		Con_Printf ("QuakeC asked for the value of %s\n", var_name);
+		Con_PrintLinef ("QuakeC asked for the value of %s", var_name);
 #endif // CUTSCENE_DEBUG
 		return true; // Requested a client var associated with cutscenes
 	}
@@ -1140,6 +1141,8 @@ extern void External_Textures_Change_f (cvar_t *var);
 extern void GL_Fullbrights_f (cvar_t *var);
 extern void GL_Overbright_f (cvar_t *var);
 extern void Host_Callback_Notify (cvar_t *var);
+// extern void PlayNoise_f (cvar_t *var); Security camera mock 
+
 extern void Host_Changelevel_Required_Msg (cvar_t *var);
 extern void Max_Edicts_f (cvar_t *var);
 extern void Mod_Flags_Refresh_f (cvar_t *var);
@@ -1259,5 +1262,3 @@ void Cvar_AddCvars (voidfunc_t initializer)
 	}
 
 }
-
-

@@ -56,6 +56,7 @@ float	_mathlib_temp_float1, _mathlib_temp_float2;
 
 typedef	enum
 {
+__part_type_invalid_gcc_sucks = -1, // Force int enum
 	p_spark,
 	p_smoke,
 	p_fire,
@@ -314,17 +315,17 @@ gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, con
 {
 	int width = 0, height = 0;  unsigned *rgba_data = NULL; size_t rgba_data_length;
 	switch (ordinal) {
-	case 0:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_particlefont_png, sizeof(qmb_particlefont_png), &width, &height); break;
-	case 1:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_zing_png, sizeof(qmb_zing_png), &width, &height); break;
-	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height); break;
+	case 0:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_particlefont_png, sizeof(qmb_particlefont_png), &width, &height, qmb_particlefont_png); break;
+	case 1:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_zing_png, sizeof(qmb_zing_png), &width, &height, qmb_zing_png); break;
+	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height, qmb_explosion_png); break;
 	default: break;
 	}
 	if (!rgba_data)
-		System_Error ("QMB Couldn't load: \"%s\" from memory %d", qpath, ordinal); // Failure shouldn't be possible
+		System_Error ("QMB Couldn't load: " QUOTED_S " from memory %d", qpath, ordinal); // Failure shouldn't be possible
 	rgba_data_length = width * height * RGBA_4;
 
 	if (require_size_256 && (width !=256 || height != 256) ) {
-		Con_SafePrintf ("QMB texture: \"%s\" size invalid %d x %d (256 x 256 required)", qpath, width, height);
+		Con_SafePrintLinef ("QMB texture: " QUOTED_S " size invalid %d x %d (256 x 256 required)", qpath, width, height);
 		//rgba_data = core_free (rgba_data); // DUH!  Can't free.  It's too late.
 		return NULL;
 	}
@@ -676,12 +677,12 @@ static void QMB_DrawParticles_Beam_CalcVerts (float *vert, const vec3_t org1, co
 	// calculate 'right' vector for start
 	VectorSubtract (r_origin, org1, diff);
 	VectorNormalize (diff);
-	CrossProduct (normal, diff, right1);
+	VectorCrossProduct (normal, diff, right1);
 
 	// calculate 'right' vector for end
 	VectorSubtract (r_origin, org2, diff);
 	VectorNormalize (diff);
-	CrossProduct (normal, diff, right2);
+	VectorCrossProduct (normal, diff, right2);
 
 	vert[ 0] = org1[0] + width * right1[0];
 	vert[ 1] = org1[1] + width * right1[1];
@@ -870,7 +871,7 @@ void QMB_DrawParticles (void)
 			break;
 
 		case pd_billboard_vel:
-			assert (in_range (0, (int)pt->texture_numbp, ARRAY_COUNT(particle_textures) - 1));
+			assert (in_range (0, (int)pt->texture_numbp, (int)ARRAY_COUNT(particle_textures) - 1));
 			ptex = &particle_textures[pt->texture_numbp];
 			eglEnable (GL_TEXTURE_2D);
 			GL_Bind (ptex->glt);
@@ -883,7 +884,7 @@ void QMB_DrawParticles (void)
 					continue;
 
 				VectorCopy (p->vel, up);
-				CrossProduct (vpn, up, right);
+				VectorCrossProduct (vpn, up, right);
 				VectorNormalizeFast (right);
 				VectorScale (up, pt->custom, up);
 
@@ -1905,7 +1906,7 @@ function that toggles between classic and QMB particles - by joe
 //
 //	R_SetParticles (!particle_mode);
 //
-//	Con_Printf ("Using %s particles\n", !particle_mode ? "Classic" : "QMB");
+//	Con_PrintLinef ("Using %s particles", !particle_mode ? "Classic" : "QMB");
 //}
 
 

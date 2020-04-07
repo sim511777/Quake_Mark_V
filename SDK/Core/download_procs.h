@@ -69,7 +69,7 @@ typedef struct
 // C. FEEDBACK.  TYPICALLY FOR A NON-THREADED DOWNLOAD
 
 	progress_fn_t	update_fn;
-	print_fn_t		print_fn;	
+	printline_fn_t	printline_fn;
 
 	int				*out_expected_size;	// Feedback.  Same as expected size.
 	int				*out_exit_code;		// Feedback.  Same as exit_code

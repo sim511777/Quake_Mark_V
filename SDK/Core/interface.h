@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  URL QUERY
 ///////////////////////////////////////////////////////////////////////////////
 
-const char * Folder_Binary_URL (void); // to executable
+const char * File_Binary_URL (void); // to executable
 const char * Folder_Binary_Folder_URL (void); // folder executable resides in
 const char * Folder_Caches_URL (void); // uses global appname
 
@@ -37,7 +37,7 @@ const char * Folder_Caches_URL (void); // uses global appname
 //  OS AND FOLDER INTERACTION: Baker
 ///////////////////////////////////////////////////////////////////////////////
 
-cbool Folder_Open (const char *path_url);
+cbool Folder_Open (const char *path_to_file);
 cbool Folder_Open_Highlight (const char *path_to_file);
 cbool Folder_Open_Highlight_Binary (void);
 
@@ -47,8 +47,8 @@ cbool Folder_Open_Highlight_Binary (void);
 ///////////////////////////////////////////////////////////////////////////////
 
 unsigned *Clipboard_Get_Image_Alloc (int *outwidth, int *outheight); // RGBA
-const char *Clipboard_Get_Text_Line (void);
-const char* Clipboard_Get_Text_Alloc (void);
+char *Clipboard_Get_Text_Line (void);
+char* Clipboard_Get_Text_Alloc (void);
 cbool Clipboard_Set_Image (unsigned *rgba, int width, int height);
 cbool Clipboard_Set_Text (const char * text_to_clipboard);
 

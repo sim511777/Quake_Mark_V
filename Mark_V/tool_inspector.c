@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 2009-2013 Baker
 
@@ -39,9 +41,9 @@ void Tool_Inspector_f (lparse_t *line)
 		break;
 	}
 
-	Con_Printf ("entity inspector is %s\n", inspector_on ? "ON" : "OFF");
+	Con_PrintLinef ("entity inspector is %s", inspector_on ? "ON" : "OFF");
 	if (!sv.active)
-		Con_Printf ("%s\n", svactivehint);
+		Con_PrintLinef ("%s", svactivehint);
 
 }
 
@@ -211,33 +213,33 @@ static void Entity_Inspector_Draw (void)
 
 			switch (cl.stats[STAT_ACTIVEWEAPON])
 /*weapon*/	{
-/* 1 */		case 0:		c_snprintf3 (buffer, "\bframe\b %i \bindex:\b %i\n%s", (int)ed->v.frame, (int)ed->v.modelindex, PR_GetString( ed->v.model));
+/* 1 */		case 0:		c_snprintf3 (buffer, "\bframe\b %d \bindex:\b %d\n%s", (int)ed->v.frame, (int)ed->v.modelindex, PR_GetString( ed->v.model));
 						break;
 
 /* 3 */		case 2:		if (((int)cl.time % 10) < 3)
-							c_snprintf  (buffer, "\btype\b edict %i\n\bin console\nfor more info\b", i); // So someone can learn the right words.
+							c_snprintf1 (buffer, "\btype\b edict %d\n\bin console\nfor more info\b", i); // So someone can learn the right words.
 						else
-							c_snprintf (buffer, "\bserver edict # \b%i", i);
+							c_snprintf1 (buffer, "\bserver edict # \b%d", i);
 						break;
 
-/* 7 */		case 32:	c_snprintf6 (buffer, "\borigin:\b %i %i %i\n\bangles:\b %i %i %i", (int)ed->v.origin[0], (int)ed->v.origin[1], (int)ed->v.origin[2], (int)ed->v.angles[0], (int)ed->v.angles[1], (int)ed->v.angles[2] );
+/* 7 */		case 32:	c_snprintf6 (buffer, "\borigin:\b %d %d %d\n\bangles:\b %d %d %d", (int)ed->v.origin[0], (int)ed->v.origin[1], (int)ed->v.origin[2], (int)ed->v.angles[0], (int)ed->v.angles[1], (int)ed->v.angles[2] );
 						break;
 
 /* 8 */		case 64:	c_snprintf2 (buffer, "\bnextthink time:\b\n\babs:\b %4.2f \bnet:\b%s\n", ed->v.nextthink, ed->v.nextthink < 1 ? "never" : va("%4.2f", ed->v.nextthink - sv.time) );
 						break;
 
-/* 4 */		case 4:		c_snprintf (buffer, "\bflags:\b  %i", ed->v.flags);
+/* 4 */		case 4:		c_snprintf1 (buffer, "\bflags:\b  %d", (int)ed->v.flags);
 						break;
 
 /* 5 */		case 8:		if (strlen(PR_GetString( ed->v.target)) > 0)
-							c_snprintf (buffer, "\btarget -->:\b %s", PR_GetString( ed->v.target));
+							c_snprintf1 (buffer, "\btarget -->:\b %s", PR_GetString( ed->v.target));
 						else
 							c_strlcpy (buffer, "no entity targeted");
 						break;
 
 
 /* 6 */		case 16:	if (strlen(PR_GetString( ed->v.targetname)) > 0)
-							c_snprintf (buffer, "--> \btargetname:\b %s", PR_GetString( ed->v.targetname));
+							c_snprintf1 (buffer, "--> \btargetname:\b %s", PR_GetString( ed->v.targetname));
 						else
 							c_strlcpy (buffer, "none");
 						break;
@@ -247,7 +249,7 @@ static void Entity_Inspector_Draw (void)
 						{
 							c_strlcpy  (buffer, "\bentity classname is ...\b"); // So someone can learn the right words.
 						}
-						else c_snprintf  (buffer, "%s", my_classname);
+						else c_snprintf1 (buffer, "%s", my_classname);
 						break;
 			}
 
@@ -272,4 +274,4 @@ void Entity_Inspector_Think (void)
 	Entity_Inspector_Draw ();
 }
 
-
+#endif // GLQUAKE specific

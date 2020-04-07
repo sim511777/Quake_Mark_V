@@ -70,7 +70,7 @@ static char *Time_String (void)
 
 	memset (level_time_string, 0, sizeof(level_time_string));
 
-	c_snprintf2 (level_time_string, "%i:%02i", minutes, seconds);
+	c_snprintf2 (level_time_string, "%d:%02d", minutes, seconds);
 
 	return level_time_string;
 }
@@ -107,13 +107,13 @@ const char *Talk_Macros_Expand (const char *string)
 		insert_point = &modified_string[writepos];
 
 		// Baker: Can't reliably kill these sprintfs because c_snprintf doesn't return in the ISO fashion
-			 if (letter == 'a')  writepos += sprintf(insert_point, "%i", cl.stats[STAT_ARMOR]);
-		else if (letter == 'c')  writepos += sprintf(insert_point, "%i", cl.stats[STAT_CELLS]);
+			 if (letter == 'a')  writepos += sprintf(insert_point, "%d", cl.stats[STAT_ARMOR]);
+		else if (letter == 'c')  writepos += sprintf(insert_point, "%d", cl.stats[STAT_CELLS]);
 		else if (letter == 'd')  writepos += sprintf(insert_point, "%s", LOC_GetLocation(cl.death_location));
-		else if (letter == 'h')  writepos += sprintf(insert_point, "%i", cl.stats[STAT_HEALTH]);
+		else if (letter == 'h')  writepos += sprintf(insert_point, "%d", cl.stats[STAT_HEALTH]);
 		else if (letter == 'l')  writepos += sprintf(insert_point, "%s", LOC_GetLocation(cl_entities[cl.viewentity_player].origin));
 		else if (letter == 'p')	 writepos += sprintf(insert_point, "%s", Powerups_String (/*cl.items*/));
-		else if (letter == 'r')  writepos += sprintf(insert_point, "%i", cl.stats[STAT_ROCKETS]);
+		else if (letter == 'r')  writepos += sprintf(insert_point, "%d", cl.stats[STAT_ROCKETS]);
 		else if (letter == 't')  writepos += sprintf(insert_point, "%s", Time_String (/*cl.time*/));
 		else if (letter == 'w')  writepos += sprintf(insert_point, "%s", Weapons_String (/*cl.items*/));
 		else					 writepos += sprintf(insert_point, "(invalid macro '%c')", letter); // This should be unreachable

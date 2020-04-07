@@ -1,3 +1,4 @@
+#ifndef GLQUAKE // WinQuake Software renderer
 
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
@@ -269,15 +270,15 @@ void Draw_Character (int _x, int _y, int num)
 #if 1 // was #ifdef PARANOID -- Baker: 4.32 we need this for autoid
 	if (y > clheight - 8 || x < 0 || x > clwidth - 8)
 	{
-		//System_Error  ("Con_DrawCharacter: (%i, %i)", x, y);
-		Con_DPrintf ("Con_DrawCharacter: (%i, %i)\n", x, y);
+		//System_Error  ("Con_DrawCharacter: (%d, %d)", x, y);
+		Con_DPrintLinef ("Con_DrawCharacter: (%d, %d)", x, y);
 		return;
 	}
 #endif
 
 #ifdef PARANOID // Baker: I would enable but I don't see how it could happen, haha!  Why isn't it num unsigned char anyways?
 		if (num < 0 || num > 255)
-			System_Error ("Con_DrawCharacter: char %i", num);
+			System_Error ("Con_DrawCharacter: char %d", num);
 #endif
 
 	row = num / 16; // >> 4;
@@ -850,3 +851,5 @@ void Draw_Set2D (void)
 	Draw_SetCanvas (CANVAS_DEFAULT);
 
 }
+
+#endif // !GLQUAKE - WinQuake Software renderer

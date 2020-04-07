@@ -1,3 +1,8 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
+
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2012 John Fitzgibbons and others
@@ -36,40 +41,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 sysplat_t sysplat;
 
 
-///////////////////////////////////////////////////////////////////////////////
-//  CLOCK: Baker
-///////////////////////////////////////////////////////////////////////////////
-
-// Double self-initializes now
-double System_DoubleTime (void)
-{
-	static	__int64	startcount;
-	static double	pfreq;
-	static cbool	first = true;
-
-	__int64		pcount;
-
-	QueryPerformanceCounter ((LARGE_INTEGER *)&pcount);
-	if (first)
-	{
-		__int64	freq;
-		QueryPerformanceFrequency ((LARGE_INTEGER *)&freq);
-		if (freq <= 0)
-			System_Error ("Hardware timer not available");
-
-		pfreq = (double)freq;
-		first = false;
-		startcount = pcount;
-		return 0.0;
-	}
-
-	// TODO: check for wrapping
-	return (pcount - startcount) / pfreq;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
-//  FILE IO: Baker
+//  FILE IO: Baker ... I'd love to kill these, but it can wait - 2016 Dec
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -83,6 +57,7 @@ int findhandle (void)
 	for (i = 1 ; i < MAX_HANDLES ; i++)
 		if (!sys_handles[i])
 			return i;
+
 	System_Error ("out of handles");
 	return -1;
 }
@@ -185,7 +160,7 @@ void System_MakeCodeWriteable (unsigned long startaddr, unsigned long len)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-void System_Error (const char *fmt, ...)
+int System_Error (const char *fmt, ...)
 {
 	static int	in_sys_error0 = 0;
 	static int	in_sys_error1 = 0;
@@ -243,6 +218,9 @@ void System_Error (const char *fmt, ...)
 	}
 
 	exit (1);
+#ifndef __GNUC__ // Return silence
+	return 1; // No return as an attribute isn't universally available.
+#endif // __GNUC__	// Make GCC not complain about return
 }
 
 
@@ -251,7 +229,7 @@ void System_Error (const char *fmt, ...)
 //  SYSTEM EVENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-
+// Baker: Used for Windows video mode switch
 void System_Process_Messages_Sleep_100 (void)
 {
 	MSG				msg;
@@ -270,17 +248,17 @@ void System_Process_Messages_Sleep_100 (void)
 //
 //
 //
-//
+// Called by Modal Message, Download, Install, NotifyBox
 void System_SendKeyEvents (void)
 {
 	Input_Local_SendKeyEvents ();
-
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//  SYSTEM MAIN LOOP
+//  SYSTEM QUIT, INIT
 ///////////////////////////////////////////////////////////////////////////////
+
 
 void System_Quit (void)
 {
@@ -306,9 +284,14 @@ void System_Quit (void)
 }
 
 
+
+// Main_Central calls us
 void System_Init (void)
 {
 	OSVERSIONINFO	vinfo;
+
+	Shell_Platform_Init_DPI ();
+	Shell_Platform_Init_Timer_Sleep ();
 
 #if id386
 	MaskExceptions ();
@@ -327,11 +310,11 @@ void System_Init (void)
 	}
 #pragma message ("Baker: I'm not sure we can run on Windows 98 any more or even Windows 2000")
 
-#ifdef GLQUAKE_RENDERER_SUPPORT
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D_WRAPPER)
 	// This is the "starting Quake" dialog which we abuse for multisample
 	if (!isDedicated)
 		VID_Local_Startup_Dialog ();
-#endif // GLQUAKE_RENDERER_SUPPORT
+#endif // GLQUAKE_RENDERER_SUPPORT + ! DIRECT3D_WRAPPER
 
 	if (!(sysplat.tevent = CreateEvent(NULL, FALSE, FALSE, NULL)))
 		System_Error ("Couldn't create event");
@@ -341,12 +324,26 @@ void System_Init (void)
 }
 
 
-void System_SleepUntilInput (int time)
-{
-	MsgWaitForMultipleObjects(1, &sysplat.tevent, FALSE, time, QS_ALLINPUT);
-}
+//
+//
+//
+//
+//
+//
+//
+//
 
-
+//
+//
+//
+//
+//
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////
+//  SYSTEM MAIN LOOP
+///////////////////////////////////////////////////////////////////////////////
 
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -357,8 +354,21 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     return Main_Central (lpCmdLine, &sysplat.mainwindow, true /* perform loop */);
 }
 
-/* main window procedure */
-LRESULT CALLBACK WIN_MainWndProc (
+
+///////////////////////////////////////////////////////////////////////////////
+//  SYSTEM DISPATCH
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//
+
+//
+//
+//
+//
+
+LRESULT CALLBACK Session_Windows_Dispatch (
 	HWND    hWnd,
 	UINT    Msg,
 	WPARAM  wParam,
@@ -410,7 +420,7 @@ LRESULT CALLBACK WIN_MainWndProc (
         PostQuitMessage (0);
         return 0;
 
-#ifdef GLQUAKE_RESIZABLE_WINDOW  // Baker: Optional resizeable GL window start
+#ifdef SUPPORTS_RESIZABLE_WINDOW  // Baker: Optional resizeable GL window start
 	case WM_GETMINMAXINFO:	// Sent before size change; can be used to override default mins/maxs
 		//if (host.isAltTabCapable) // If we aren't ALT-TAB capable, we cannot resize.
 
@@ -418,8 +428,8 @@ LRESULT CALLBACK WIN_MainWndProc (
 		{
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
-			mmi->ptMinTrackSize.x = 320 + (int)vid.border_width;
-			mmi->ptMinTrackSize.y = 200 + (int)vid.border_height;
+			mmi->ptMinTrackSize.x = QWIDTH_MINIMUM_320  + (int)vid.border_width;
+			mmi->ptMinTrackSize.y = QHEIGHT_MINIMUM_2XX + (int)vid.border_height;
 		}
 		return 0;
 
@@ -433,7 +443,7 @@ LRESULT CALLBACK WIN_MainWndProc (
 
 		VID_Resize_Check (1);
 		return 0;
-#endif  // GLQUAKE_RESIZABLE_WINDOW // Baker: Optional resizable window
+#endif  // SUPPORTS_RESIZABLE_WINDOW // Baker: Optional resizable window
 
 
 #ifdef SUPPORTS_MP3_MUSIC // Baker change
@@ -462,4 +472,107 @@ LRESULT CALLBACK WIN_MainWndProc (
 	// pass all unhandled messages to DefWindowProc
 	return DefWindowProc (hWnd, Msg, wParam, lParam);
 }
+
+
+// Main_Central calls us.  But SDL does not currently use that
+void System_SleepUntilInput (int time)
+{
+	MsgWaitForMultipleObjects(1, &sysplat.tevent, FALSE, time, QS_ALLINPUT);
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////
+//  CONSOLE:  
+///////////////////////////////////////////////////////////////////////////////
+
+//const char *Dedicated_ConsoleInput (void)
+// But on windows we use a dedicated file (dedicated_win.c)
+// Since Quake is not a console app on Windows
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VIDEO ROGUES
+///////////////////////////////////////////////////////////////////////////////
+
+void WIN_Vid_Init_Once_CreateClass (void)
+{
+	WNDCLASS		wc;
+	sysplat.hIcon = LoadIcon (sysplat.hInstance, MAKEINTRESOURCE (IDI_ICON1));
+
+
+	// Register the frame class
+    wc.style         = 0;
+    wc.lpfnWndProc   = (WNDPROC) Session_Windows_Dispatch;
+    wc.cbClsExtra    = 0;
+    wc.cbWndExtra    = 0;
+    wc.hInstance     = sysplat.hInstance;
+//  wc.hIcon         = sysplat.hIcon;
+	wc.hIcon		 = ExtractIcon (sysplat.hInstance, File_Binary_URL(), 0);
+    wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
+	wc.hbrBackground = NULL;
+    wc.lpszMenuName  = 0;  // We can change this later
+    wc.lpszClassName = ENGINE_NAME;
+
+    if (!RegisterClass (&wc) )
+		System_Error ("Couldn't register window class");
+}
+
+vmode_t WIN_Vid_GetDesktopProperties (void)
+{
+	DEVMODE	devmode;
+	vmode_t desktop = {0};
+
+	if (!EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
+	{
+		System_Error ("VID_UpdateDesktopProperties: EnumDisplaySettings failed");
+		return desktop;
+	}
+
+	desktop.type		=	MODE_FULLSCREEN;
+	desktop.width		=	devmode.dmPelsWidth;
+	desktop.height		=	devmode.dmPelsHeight;
+	desktop.bpp			=	devmode.dmBitsPerPel;
+
+	return desktop;
+}
+
+void WIN_AdjustRectToCenterScreen (RECT *in_windowrect)
+{
+	vmode_t desktop = VID_Local_GetDesktopProperties ();		// This call is not affected by DPI.  It would want a DPI affected call.
+	int nwidth  = in_windowrect->right - in_windowrect->left;	// But the window positioning is apparently affected by DPI
+	int nheight = in_windowrect->bottom - in_windowrect->top;
+
+	in_windowrect->left = 0 + (desktop.width - nwidth) / 2;
+	in_windowrect->top =  0 + (desktop.height - nheight) / 2;
+	in_windowrect->right = in_windowrect->left + nwidth;
+	in_windowrect->bottom = in_windowrect->top + nheight;
+}
+
+
+#endif // PLATFORM_WINDOWS
+
+#endif // ! CORE_SDL
+
 

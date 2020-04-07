@@ -40,8 +40,25 @@ typedef struct
 	int     dirlen;
 } dpackheader_t;
 
-#define MAX_FILES_IN_PACK       2048
+#define MAX_FILES_IN_PACK_2048       2048
 #define PAK_HEADER "PACK"
+
+typedef struct pak_s
+{
+	char			url[MAX_OSPATH];
+	dpackheader_t   header;
+	dpackfile_t		files[MAX_FILES_IN_PACK_2048];
+// Add a structure for new files to add?
+// When we write, do we need to qsort?
+	int				numfiles;
+	FILE			*f;
+
+// Extra
+	byte			*pHeader;
+	byte			*pDirectory;
+	int				length;
+//	clist_t			*files_list;
+} pak_t;
 
 
 cbool Pak_Has_File (const char *packfile_url, const char *filename);
@@ -60,5 +77,23 @@ void Pak_Replace_File (const char *packfile_url, const char *inside_pak_filename
 cbool Pak_Compress (const char *packfile_url);
 size_t Pak_Is_Compressable (const char *packfile_url); // Returns size gained by compression
 
+///////////////////////////////////////////////////////////////////////////////
+//  Pak from memory
+///////////////////////////////////////////////////////////////////////////////
+
+
+clist_t *Pack_Files_List_Alloc (pak_t *pack, const char *wild_patterns, reply int *num_matches);
+pak_t *Pack_Open_Memory_Alloc (const void *mem, size_t mem_length);
+pak_t *Pack_Open_Memory_Free (pak_t *pack);
+void *dPack_Find_File_Caseless (pak_t *pack, const char *path_to_file);
+void *Pack_File_Entry_To_Memory_Alloc (pak_t *pack, const byte *pak_blob, const char *path_to_file, reply size_t *mem_length); // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1
+
+const void *Pack_File_Memory_Pointer (pak_t *pack, const byte *pak_blob, const char *path_to_file, reply size_t *mem_length);
+
+cbool Pack_Extract_File (pak_t *pack, const byte *pak_blob, const char *path_to_file, const char *destfile_url);
+
+// replace_tokens2 is an array of strings (find, replace, find, replace, NULL, NULL) - double null terminated and should be multiple of 2 size
+// technically it can be single null terminated, but double null termination helps prevent errors in the array declaration.
+cbool Pack_Extract_All_To (pak_t *pack, const byte *pak_blob, const char *dest_folder, const char *wild_patterns, const char **replace_tokens2);
 
 #endif // ! __PAK_H__

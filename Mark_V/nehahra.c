@@ -102,7 +102,7 @@ void FMOD_LoadLibrary (void)
 	if (!(fmod_handle = dlopen("libfmod-3.73.so", RTLD_NOW)))
 #endif
 	{
-		Con_Warning ("FMOD module not found ( nehahra/fmod.dll )\n");
+		Con_WarningLinef ("FMOD module not found ( nehahra/fmod.dll )");
 		goto fail;
 	}
 
@@ -124,11 +124,11 @@ void FMOD_LoadLibrary (void)
 
 	if (!fmod_loaded)
 	{
-		Con_Warning ("FMOD module not initialized\n");
+		Con_WarningLinef ("FMOD module not initialized");
 		goto fail;
 	}
 
-	Con_Printf ("FMOD module initialized\n");
+	Con_PrintLinef ("FMOD module initialized");
 	return;
 
 fail:
@@ -157,7 +157,7 @@ void FMOD_Volume_Think (cbool force_because_new_track_just_started)
 
 	newvolume = (bgmvolume.value * sfxvolume.value) * 255; // bgm can go 0-3, sfx - 0-1
 	newvolume = CLAMP (0, newvolume, 256);
-	Con_DPrintf ("FMOD volume changed to %i\n", (int)newvolume);
+	Con_DPrintLinef ("FMOD volume changed to %d", (int)newvolume);
 
 	qFMUSIC_SetPaused (musicHandle, true);
 	qFMUSIC_SetMasterVolume (musicHandle, newvolume);
@@ -211,7 +211,7 @@ void FMOD_Play_f (lparse_t *line)
 
 	if (strlen(modname) < 3)
 	{
-		Con_Printf ("Usage: %s <filename.ext>", line->args[1]);
+		Con_PrintLinef ("Usage: %s <filename.ext>", line->args[1]);
 		return;
 	}
 
@@ -219,7 +219,7 @@ void FMOD_Play_f (lparse_t *line)
 
 	if (!(buffer = (char *)COM_LoadHunkFile(modname)))
 	{
-		Con_Printf ("ERROR: Couldn't open %s\n", modname);
+		Con_PrintLinef ("ERROR: Couldn't open %s", modname);
 		return;
 	}
 
@@ -229,7 +229,7 @@ void FMOD_Play_f (lparse_t *line)
 
 	if (!musicHandle)
 	{
-		Con_Printf ("%s\n", FMOD_ErrorString(qFSOUND_GetError()));
+		Con_PrintLinef ("%s", FMOD_ErrorString(qFSOUND_GetError()));
 		return;
 	}
 
@@ -244,7 +244,7 @@ void FMOD_Init (void)
 //	qFSOUND_SetBufferSize (300);
 	if (!qFSOUND_Init(11025, 32, 0))
 	{
-		Con_Printf ("%s\n", FMOD_ErrorString(qFSOUND_GetError()));
+		Con_PrintLinef ("%s", FMOD_ErrorString(qFSOUND_GetError()));
 		return;
 	}
 //#pragma message ("What do about these guys.  Command orphans")
@@ -276,7 +276,7 @@ void FMOD_Close (void)
 	}
 #endif
 
-	Con_Printf ("FMOD Shutdown.\n");
+	Con_PrintLinef ("FMOD Shutdown.");
 }
 
 
@@ -394,7 +394,7 @@ void Nehahra_Init (void)
 
 	if (nehahra_active)
 	{
-		Con_Warning ("Recursive Nehahra Init!\n");
+		Con_WarningLinef ("Recursive Nehahra Init!");
 		return;
 	}
 
@@ -568,6 +568,3 @@ void Neh_CheckMode (void)
 }
 
 #endif // SUPPORTS_NEHAHRA
-
-
-

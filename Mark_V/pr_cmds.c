@@ -78,8 +78,7 @@ static void PF_error (void)
 	edict_t	*ed;
 
 	s = PF_VarString(0);
-	Con_Printf ("======SERVER ERROR in %s:\n%s\n",
-	 PR_GetString( pr_xfunction->s_name),s);
+	Con_PrintLinef ("======SERVER ERROR in %s:" NEWLINE "%s", PR_GetString(pr_xfunction->s_name), s);
 	ed = PROG_TO_EDICT(pr_global_struct->self);
 	ED_Print (ed);
 
@@ -102,8 +101,7 @@ static void PF_objerror (void)
 	edict_t	*ed;
 
 	s = PF_VarString(0);
-	Con_Printf ("======OBJECT ERROR in %s:\n%s\n",
-		PR_GetString( pr_xfunction->s_name),s);
+	Con_PrintLinef ("======OBJECT ERROR in %s:" NEWLINE "%s", PR_GetString( pr_xfunction->s_name),s);
 	ed = PROG_TO_EDICT(pr_global_struct->self);
 	ED_Print (ed);
 	ED_Free (ed);
@@ -347,7 +345,7 @@ static void PF_sprint (void)
 
 	if (entnum < 1 || entnum > svs.maxclients_internal) // Because the cap can change at any time now.
 	{
-		Con_Printf ("tried to sprint to a non-client\n");
+		Con_PrintLinef ("tried to sprint to a non-client");
 		return;
 	}
 
@@ -378,7 +376,7 @@ static void PF_centerprint (void)
 
 	if (entnum < 1 || entnum > svs.maxclients_internal) // Because the cap can change at any time now.
 	{
-		Con_Printf ("tried to sprint to a non-client\n");
+		Con_PrintLinef ("tried to sprint to a non-client");
 		return;
 	}
 
@@ -574,7 +572,7 @@ static void PF_ambientsound (void)
 
 	if (!*check)
 	{
-		Con_Printf ("no precache: %s\n", samp);
+		Con_PrintLinef ("no precache: %s", samp);
 		return;
 	}
 
@@ -642,13 +640,13 @@ static void PF_sound (void)
 	attenuation = G_FLOAT(OFS_PARM4);
 
 	if (volume < 0 || volume > 255)
-		Host_Error ("SV_StartSound: volume = %i", volume);
+		Host_Error ("SV_StartSound: volume = %d", volume);
 
 	if (attenuation < 0 || attenuation > 4)
 		Host_Error ("SV_StartSound: attenuation = %f", attenuation);
 
 	if (channel < 0 || channel > 7)
-		Host_Error ("SV_StartSound: channel = %i", channel);
+		Host_Error ("SV_StartSound: channel = %d", channel);
 
 	SV_StartSound (entity, channel, sample, volume, attenuation);
 }
@@ -662,7 +660,7 @@ break()
 */
 static void PF_break (void)
 {
-Con_Printf ("break statement\n");
+Con_PrintLinef ("break statement");
 *(int *)-4 = 0;	// dump to debugger
 //	PR_RunError ("break statement");
 }
@@ -907,7 +905,7 @@ static void PF_localcmd (void)
 	const char	*str;
 
 	str = G_STRING(OFS_PARM0);
-//	Con_Printf ("PF_localcmd: \"%s\"\n", str);
+//	Con_PrintLinef ("PF_localcmd: " QUOTED_S, str);
 	Cbuf_AddText (str);
 }
 
@@ -955,12 +953,12 @@ static void PF_cvar_set (void)
 
 	if (!(var = Cvar_Find(var_name)))
 	{
-		Con_SafePrintf ("PF_cvar_set: variable %s not found\n", var_name);
+		Con_SafePrintLinef ("PF_cvar_set: variable %s not found", var_name);
 		return;
 	}
 
 #if 0  // Debugging
-//	Con_Printf ("QC cvar_set: %s %s\n", var_name, val);
+//	Con_PrintLinef ("QC cvar_set: %s %s", var_name, val);
 #endif
 
 
@@ -1029,7 +1027,7 @@ PF_dprint
 */
 static void PF_dprint (void)
 {
-	Con_DPrintf ("%s",PF_VarString(0));
+	Con_DPrintContf ("%s", PF_VarString(0)); // Verified, because QuakeC will add a newline
 }
 
 
@@ -1063,7 +1061,7 @@ static void PF_vtos (void)
 static void PF_etos (void)
 {
 	char	*s = PR_GetTempString();
-	c_snprintfc (s, STRINGTEMP_LENGTH, "entity %i", G_EDICTNUM(OFS_PARM0));
+	c_snprintfc (s, STRINGTEMP_LENGTH, "entity %d", G_EDICTNUM(OFS_PARM0));
 	G_INT(OFS_RETURN) = PR_SetEngineString(s); //PR_SetTempString(pr_string_temp); // - pr_strings;
 }
 
@@ -1810,9 +1808,9 @@ void SV_Map_Rotation_Refresh_f (cvar_t *var)
 		for (i = 0; i < line->count; i ++)
 		{
 			char map_qpath[MAX_QPATH_64];
-			c_snprintf (map_qpath, "maps/%s.bsp", line->args[i]);
+			c_snprintf1 (map_qpath, "maps/%s.bsp", line->args[i]);
 				if (!COM_FindFile_Obsolete (map_qpath))
-					Con_Printf ("Note that map \"%s\" was not found\n", line->args[i]);
+					Con_PrintLinef ("Note that map " QUOTED_S " was not found", line->args[i]);
 		}
 
 		Line_Parse_Free (line);
@@ -1833,7 +1831,7 @@ static void PF_changelevel (void)
 	// Check to see if we are overriding.
 	if (sv_map_rotation.string[0])
 		s = SV_Next_Map ();
-	Cbuf_AddText (va("changelevel %s\n",s));
+	Cbuf_AddTextLinef ("changelevel %s", s);
 }
 
 static void PF_sin (void)
@@ -1950,4 +1948,3 @@ PF_setspawnparms
 
 builtin_t *pr_builtins = pr_builtin;
 int pr_numbuiltins = sizeof(pr_builtin)/sizeof(pr_builtin[0]);
-

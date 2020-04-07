@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - compile or do not compile wrapper code
 
+
 // Baker:
 #define DX8_USE_POLYGON_OFFSET 0 // Baker: KEEP THIS OFF.  Shows seams, secret doors, etc.
 
@@ -122,8 +123,8 @@ static LPDIRECT3DDEVICE8 d3d_Device = NULL;
 #include "dx8_mh_wrapper.h"
 
 // externs we need
-#define Wrapper_Error Core_Error
-#define Wrapper_Printf Core_Printf
+#define Wrapper_Error log_fatal
+#define Wrapper_PrintLinef logd // Because in general, any printing from the wrapper is the result of a developer error, right?
 
 // mode definition
 static int d3d_BPP = -1;
@@ -1853,13 +1854,13 @@ void APIENTRY d3dmh_glGetTexImage (GLenum target, GLint level, GLenum format, GL
 		dstbytes = 3;
 	else if (format == GL_RGBA)
 		dstbytes = 4;
-	else Wrapper_Printf ("glGetTexImage: invalid format");
+	else Wrapper_PrintLinef ("glGetTexImage: invalid format");
 
 	hr = IDirect3DTexture8_GetSurfaceLevel (d3d_TMUs[d3d_CurrentTMU].boundtexture->teximg, level, &texsurf);
 
 	if (FAILED (hr) || !texsurf)
 	{
-		Wrapper_Printf ("glGetTexImage: failed to access back buffer\n");
+		Wrapper_PrintLinef ("glGetTexImage: failed to access back buffer");
 		return;
 	}
 
@@ -2423,7 +2424,7 @@ static D3DFORMAT D3D_GetAdapterModeFormat (int width, int height, int bpp)
 }
 
 
-BOOL WINAPI d3dmh_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR *ppfd)
+BOOL WINAPI Direct3D8_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR *ppfd)
 {
 	if (ppfd->cStencilBits)
 		d3d_RequestStencil = TRUE;
@@ -2441,7 +2442,7 @@ static void D3D_SetupPresentParams (int width, int height, int bpp, int is_fulls
 	memset (&d3d_PresentParams, 0, sizeof (D3DPRESENT_PARAMETERS));
 
 #if 0
-	Wrapper_Printf ("D3D_SetupPresentParams bpp is %i", bpp);
+	Wrapper_Printf ("D3D_SetupPresentParams bpp is %d", bpp);
 #endif
 
 	if (!is_fullscreen)
@@ -2468,13 +2469,13 @@ static void D3D_SetupPresentParams (int width, int height, int bpp, int is_fulls
 
 		if (requests_vsync)
 		{
-			//Con_Success ("Direct3D vertical sync requested\n");
+			//Con_Success ("Direct3D vertical sync requested");
 			d3d_PresentParams.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
 			requests_vsync = TRUE;
 		}
 		else
 		{
-			//Con_Success ("Direct3D vertical sync disabled\n");
+			//Con_Success ("Direct3D vertical sync disabled");
 			d3d_PresentParams.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 			requests_vsync = FALSE;
 		}
@@ -2502,25 +2503,25 @@ int asks_for_vsync;
 int asks_for_fullscreen;
 int asks_for_bpp;
 
-void Direct3D_SetVsync (int wants_vsync)
+void Direct3D8_SetVsync (int wants_vsync)
 {
 	asks_for_vsync = wants_vsync;
 
 }
 
-void Direct3D_SetFullscreen (int wants_fullscreen)
+void Direct3D8_SetFullscreen (int wants_fullscreen)
 {
 	asks_for_fullscreen = wants_fullscreen;
 }
 
-void Direct3D_SetBPP (int wants_bpp)
+void Direct3D8_SetBPP (int wants_bpp)
 {
 	asks_for_bpp = wants_bpp;
 }
 
 
 #pragma message ("Baker: I would like to see this function go ...")
-BOOL WINAPI d3dmh_wglMakeCurrent (HDC hdc, HGLRC hglrc)
+BOOL WINAPI Direct3D8_wglMakeCurrent (HDC hdc, HGLRC hglrc)
 {
 	RECT clientrect;
 	LONG winstyle;
@@ -2534,7 +2535,7 @@ BOOL WINAPI d3dmh_wglMakeCurrent (HDC hdc, HGLRC hglrc)
 	{
 		// delete the device, the object and all other objects
 		// this is required because engines may decide to destroy the window which is not good for D3D
-		d3dmh_wglDeleteContext (hglrc);
+		Direct3D8_wglDeleteContext (hglrc);
 		return TRUE;
 	}
 
@@ -2643,7 +2644,7 @@ BOOL WINAPI d3dmh_wglMakeCurrent (HDC hdc, HGLRC hglrc)
 }
 
 
-HGLRC WINAPI d3dmh_wglCreateContext (HDC hdc)
+HGLRC WINAPI Direct3D8_wglCreateContext (HDC hdc)
 {
 	// initialize direct3d and get object capabilities
 	if (!(d3d_Object = Direct3DCreate8 (D3D_SDK_VERSION)))
@@ -2653,7 +2654,7 @@ HGLRC WINAPI d3dmh_wglCreateContext (HDC hdc)
 }
 
 
-BOOL WINAPI d3dmh_wglDeleteContext (HGLRC hglrc)
+BOOL WINAPI Direct3D8_wglDeleteContext (HGLRC hglrc)
 {
 	// release all textures
 	D3D_ReleaseTextures ();
@@ -2667,13 +2668,13 @@ BOOL WINAPI d3dmh_wglDeleteContext (HGLRC hglrc)
 }
 
 
-HGLRC WINAPI d3dmh_wglGetCurrentContext (VOID)
+HGLRC WINAPI Direct3D8_wglGetCurrentContext (VOID)
 {
 	return (HGLRC) 1;
 }
 
 
-HDC WINAPI d3dmh_wglGetCurrentDC (VOID)
+HDC WINAPI Direct3D8_wglGetCurrentDC (VOID)
 {
 	return 0;
 }
@@ -2919,7 +2920,7 @@ void APIENTRY d3dmh_glReadPixels (GLint x, GLint y, GLsizei width, GLsizei heigh
 
 	if ((format != GL_RGB && format != GL_RGBA) || type != GL_UNSIGNED_BYTE)
 	{
-		Wrapper_Printf ("glReadPixels: invalid format or type\n");
+		Wrapper_PrintLinef ("glReadPixels: invalid format or type");
 		return;
 	}
 
@@ -2927,7 +2928,7 @@ void APIENTRY d3dmh_glReadPixels (GLint x, GLint y, GLsizei width, GLsizei heigh
 
 	if (FAILED (hr) || !bbsurf)
 	{
-		Wrapper_Printf ("glReadPixels: failed to access back buffer\n");
+		Wrapper_PrintLinef ("glReadPixels: failed to access back buffer");
 		return;
 	}
 
@@ -3065,7 +3066,7 @@ static void D3D_PostResetRestore (void)
 
 
 
-void Direct3D_SwapBuffers (void)
+BOOL WINAPI Direct3D8_SwapBuffers (HDC unused)
 {
 	GL_SubmitVertexes ();
 
@@ -3100,7 +3101,7 @@ void Direct3D_SwapBuffers (void)
 		Sleep (10);
 
 		// don't bother this frame
-		return;
+		return TRUE; // Baker: Don't return false at this time, we really don't care on the other side but returning FALSE wouldn't be expected to be an actual failure.
 	}
 
 	if (d3d_SceneBegun)
@@ -3144,6 +3145,7 @@ void Direct3D_SwapBuffers (void)
 			Wrapper_Error ("FAILED (hr) on IDirect3DDevice8_Present");
 		}
 	}
+	return TRUE;
 }
 
 
@@ -3388,7 +3390,7 @@ void APIENTRY d3dmh_glGetIntegerv (GLenum pname, GLint *params)
 }
 
 
-LONG WINAPI ChangeDisplaySettings_FakeGL (LPDEVMODE lpDevMode, DWORD dwflags)
+LONG WINAPI Direct3D8_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags)
 {
 	if (dwflags & CDS_TEST)
 	{
@@ -3641,7 +3643,7 @@ static gld3d_entrypoint_t d3d_EntryPoints[] =
 };
 
 
-PROC WINAPI d3dmh_wglGetProcAddress (LPCSTR s)
+PROC WINAPI Direct3D8_wglGetProcAddress (LPCSTR s)
 {
 	int i;
 

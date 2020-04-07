@@ -1,4 +1,4 @@
- 
+
 #include "HTTPClientWrapper.h"
 
 
@@ -50,6 +50,8 @@ int HTTPWrapperToLower(int c)
     // +32
     if(HTTPWrapperIsAscii(c) > 0)
     {
+        #define ASCII_A_65 65
+        #define ASCII_Z_90 90
         if(c >= ASCII_A_65 && c <= ASCII_Z_90)
         {
             return (c + 32);
@@ -73,7 +75,7 @@ int HTTPWrapperIsAlpha(int c)
 
     if(HTTPWrapperIsAscii(c) > 0)
     {
-        if( (c >= 97 /* 'a' */ && c <= 122 /* 'z' */) || (c >= ASCII_A_65 && c <= ASCII_Z_90)) 
+        if( (c >= 97 /* 'a' */ && c <= 122 /* 'z' */) || (c >= ASCII_A_65 && c <= ASCII_Z_90))
         {
             return c;
         }
@@ -99,10 +101,10 @@ int HTTPWrapperIsAlNum(int c)
             return c;
         }
 
-        if( c >= 48 && c <= 57)  
+        if( c >= 48 && c <= 57)
         {
             return c;
-        } 
+        }
 
     }
     return 0;
@@ -141,7 +143,7 @@ char* HTTPWrapperItoa(char *s,int a)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int HTTPWrapperShutDown (int s,int how) 
+int HTTPWrapperShutDown (int s,int how)
 {
     return shutdown(s,how);
 }
@@ -180,13 +182,13 @@ unsigned long HTTPWrapperGetHostByName(char *name,unsigned long *address)
     char    Num[4];
     int     iHostType = 0; // 0 : numeric IP
 
-    // Check if the name is an IP or host 
+    // Check if the name is an IP or host
     iLen = strlen(name);
     for(iPos = 0; iPos <= iLen;iPos++)
     {
         c = name[iPos];
         if((c >= 48 && c <= 57)  || (c == '.') )
-        {   
+        {
             // c is numeric or dot
             if(c != '.')
             {
@@ -228,18 +230,18 @@ unsigned long HTTPWrapperGetHostByName(char *name,unsigned long *address)
     else
     {
         iHostType++;
-    }   
+    }
 
     if(iHostType > 0)
     {
 
-        HostEntry = gethostbyname(name); 
+        HostEntry = gethostbyname(name);
         if(HostEntry)
         {
             *(address) = *((u_long*)HostEntry->h_addr_list[0]);
 
             //*(address) = (unsigned long)HostEntry->h_addr_list[0];
-            return 1; // Error 
+            return 1; // Error
         }
         else
         {
@@ -289,6 +291,7 @@ int HTTPWrapperGetRandomeNumber()
 
 
 #ifdef __MACH__ // PLATFORM_OSX // __MACH__
+// Dec 2016 or Nov 2016 adjustment.
 #include <sys/time.h>
 //clock_gettime is not implemented on OSX
 	int clock_gettime(int clk_id /* not implemented*/, struct timespec* t) {

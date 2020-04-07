@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4142 ) // SDL likes to define int8_t, uintptr_t, etc.
 #pragma comment (lib, "sdl2.lib")
 #pragma comment (lib, "sdl2main.lib")
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include <core_windows.h> // LLWinKeyHook
 #else
@@ -45,7 +45,7 @@ typedef struct
 {
     SDL_Window	    *mainwindow;
 
-    SDL_GLContext	*draw_context;
+    SDL_GLContext	*draw_gl_context;
 
 
 #if 0 // def GLQUAKE_RENDERER_SUPPORT // Baker: for multisample
@@ -63,5 +63,16 @@ extern sysplat_t sysplat;
 
 // Important:  link to mingw32 or equivalent FIRST in linker section for SDL
 // Otherwise you get undefined reference to 'WinMain@16'
+
+#define shiftbits Platform_SDL_Input_GetShiftBits
+#define getmousebits Platform_SDL_Input_GetMouseBits
+
+int Platform_SDL_Input_GetShiftBits (SDL_Event *e);
+void Platform_SDL_Input_GetMouseBits (SDL_Event *e, required int *button_bits, required int *shift_bits, required int *x, required int *y);
+
+cbool Shell_Platform_Icon_Window_Set (sys_handle_t cw);
+cbool Shell_Platform_Icon_Load (void *key /*wildcard*/);
+
+cbool SDLQ_IN_ReadInputMessages (void *_sdl_event);
 
 #endif // __SDLQUAKE_H__

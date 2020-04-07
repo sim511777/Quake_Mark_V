@@ -85,25 +85,45 @@ void Con_DrawCharacter (int cx, int line, int num);
 void Con_CheckResize (void);
 void Con_Init (void);
 void Con_DrawConsole (float pct, cbool drawinput);
-int  Con_Printf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_Warning (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
-
-int  Con_DPrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_DPrintf_Net (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_DPrintf_Files (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_DPrintf_Model (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_DPrintf_System (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
-int  Con_DWarning (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
-
-int  Con_VerbosePrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
+int Con_Printf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+#define Con_PrintContf Con_Printf
 
 
+int Con_PrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int Con_PrintLine (void); // Just prints a newline
 
 
-int  Con_DebugLog (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+//int  Con_Warning (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz (Retired due to total extinction of use)
+int Con_WarningLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
 
 
-int  Con_SafePrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int Con_DPrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+#define Con_DPrintContf Con_DPrintf
+
+
+int  Con_DPrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int  Con_DPrintLineLevel5f (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // Loaded dprint with 5 char prefix like "MP3_:"
+
+int  Con_DPrintLinef_Net (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int  Con_DPrintLinef_Files (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int  Con_DPrintLinef_Model (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int  Con_DPrintLinef_System (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+int  Con_DWarningLine (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
+
+int  Con_VerbosePrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); //johnfitz
+
+
+
+
+//int Con_DebugLog (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))); // static now.
+int Con_DebugLogLine (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+
+int Con_SafePrintf (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+#define Con_SafePrintContf Con_SafePrintf
+
+int Con_SafePrintLinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
+void Con_SafePrintLine (void);
+
 void Con_DrawNotify (void);
 void Con_ClearNotify (void);
 void Con_ToggleConsole_f (lparse_t *unused);

@@ -42,7 +42,9 @@ host_parms_t host_parms;
 fn_set_t qfunction_set =
 {
 	// Printing
-	System_Error, Con_Warning, Con_Printf, Con_DPrintf,
+	System_Error,				// log_fatal
+	Con_DPrintLinef,			// log_debug - general message.  Hopefully rarely used.
+	Con_DPrintLineLevel5f,
 
 	// Memory
 	malloc, calloc, realloc, strdup, free,
@@ -90,7 +92,7 @@ void Max_Edicts_f (cvar_t *var)
 		return;
 
 	if (cls.state == ca_connected || sv.active)
-		Con_Printf ("Changes will not take effect until the next level load.\n");
+		Con_PrintLinef ("Changes will not take effect until the next level load.");
 
 	oldval = host_max_edicts.value;
 }
@@ -105,13 +107,13 @@ void Host_EndGame (const char *fmt, ...)
 {
 	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
-	Con_DPrintf ("Host_EndGame: %s\n", text);
+	Con_DPrintLinef ("Host_EndGame: %s", text);
 
 	if (sv.active)
 		Host_ShutdownServer (false);
 
 	if (isDedicated)
-		System_Error ("Host_EndGame: %s",text);	// dedicated servers exit
+		System_Error ("Host_EndGame: %s", text);	// dedicated servers exit
 
 	if (cls.demonum != -1)
 	{
@@ -162,7 +164,7 @@ void Host_Error (const char *error, ...)
 		text[len + 0] = '\n';
 		text[len + 1] = 0;
 	}
-	Con_Printf ("Host_Error: %s\n", text);
+	Con_PrintLinef ("Host_Error: %s", text);
 
 	// Baker: If host isn't initialized, fall back to System_Error
 	if (!host_initialized)
@@ -172,7 +174,7 @@ void Host_Error (const char *error, ...)
 		Host_ShutdownServer (false);
 
 	if (isDedicated)
-		System_Error ("Host_Error: %s\n", text);	// dedicated servers exit
+		System_Error ("Host_Error: %s", text);	// dedicated servers exit
 
 	CL_Disconnect ();
 	cls.demonum = -1;
@@ -247,21 +249,21 @@ void Host_FindMaxClients (void)
 		Cvar_SetValueQuick (&pr_deathmatch, 0);
 }
 
-void Host_Version_Print (print_fn_t print_fn)
+void Host_Version_Print (printline_fn_t my_printline)
 {
-	//print_fn ("Quake Version %1.2f\n", QUAKE_VERSION); // Who cares?  Seriously ... like that hasn't been that number for 20 years+
-	print_fn ("%s %s (Build: %d)\n", ENGINE_NAME, PLATFORM_SHORTNAME, (int)ENGINE_BUILD);
-	print_fn ("Exe: %s (%d kb)\n", File_URL_SkipPath(Folder_Binary_URL()), (int)File_Length(Folder_Binary_URL())/1024  );
-	print_fn ("Exe: "__TIME__" "__DATE__"\n");
+	//my_printline ("Quake Version %1.2f", QUAKE_VERSION); // Who cares?  Seriously ... like that hasn't been that number for 20 years+
+	my_printline ("%s %s (Build: %d)", ENGINE_NAME, PLATFORM_SHORTNAME, (int)ENGINE_BUILD);
+	my_printline ("Exe: %s (%d kb)", File_URL_SkipPath(File_Binary_URL()), (int)Math_KiloBytesDouble(File_Length(File_Binary_URL()))  );
+	my_printline ("Exe: "__TIME__" "__DATE__);
 #ifndef SERVER_ONLY
 	if (!isDedicated) // Dedicated no need for that.
-		print_fn ("Caches: %s\n", Folder_Caches_URL());
+		my_printline ("Caches: %s", Folder_Caches_URL());
 #endif
 }
 
 void Host_Version_f (lparse_t *line)
 {
-	Host_Version_Print (Con_Printf);
+	Host_Version_Print (Con_PrintLinef);
 }
 #pragma message ("S_BlockSound on startup does it ever get unblocked?????")
 
@@ -269,7 +271,7 @@ void Host_Version_f (lparse_t *line)
 void Host_Callback_Notify (cvar_t *var)
 {
 	if (sv.active)
-		SV_BroadcastPrintf ("\"%s\" changed to \"%s\"\n", var->name, var->string);
+		SV_BroadcastPrintf (QUOTED_S " changed to " QUOTED_S NEWLINE, var->name, var->string);
 }
 
 // Baker:  Hint to tell dedicated server we are after initial execution of configs.
@@ -332,12 +334,12 @@ void Host_WriteConfiguration (void)
 			{
 				VID_Cvars_Sync_To_Mode (&vid.modelist[vid.modenum_user_selected]); //johnfitz -- write actual current mode to config file, in case cvars were messed with
 
-				fprintf (f, "// %s\n", ENGINE_FAMILY_NAME);
+				fprintf (f, "// %s" NEWLINE, ENGINE_FAMILY_NAME);
 				Key_WriteBindings (f);
 				Cvar_WriteVariables (f);
 				FS_fclose (f);
 
-			} else Con_Printf ("Couldn't write %s.\n", CONFIG_CFG);
+			} else Con_PrintLinef ("Couldn't write %s.", CONFIG_CFG);
 		}
 	}
 }
@@ -358,6 +360,12 @@ int SV_ClientPrintf (const char *fmt, ...)
 	MSG_WriteByte (&host_client->message, svc_print);
 	MSG_WriteString (&host_client->message, text);
 	return 0;
+}
+
+int SV_ClientPrintLinef (const char *fmt, ...)
+{
+	VA_EXPAND_NEWLINE (text, SYSTEM_STRING_SIZE_1024, fmt);
+	return SV_ClientPrintf ("%s", text);
 }
 
 /*
@@ -394,7 +402,7 @@ Send text over to the client to be executed
 void Host_ClientCommands (const char *fmt, ...)
 {
 	if (!host_client->netconnection) {
-		Con_Warning ("Tried to send command to non-client.  Ignoring ...\n");
+		Con_WarningLinef ("Tried to send command to non-client.  Ignoring ...");
 	}
 	else {
 		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
@@ -436,7 +444,7 @@ void SV_DropClient (cbool crash)
 			pr_global_struct->self = saveSelf;
 		}
 
-		Dedicated_Printf ("Client %s removed\n",host_client->name);
+		Dedicated_PrintLinef ("Client %s removed",host_client->name);
 	}
 
 // break the net connection
@@ -525,7 +533,7 @@ void Host_ShutdownServer(cbool crash)
 	MSG_WriteByte(&buf, svc_disconnect);
 	count = NET_SendToAll(&buf, 5.0);
 	if (count)
-		Con_Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
+		Con_PrintLinef ("Host_ShutdownServer: NET_SendToAll failed for %u clients", count);
 
 	for (i = 0, host_client = svs.clients ; i < svs.maxclients_internal ; i++, host_client++) // Because the cap can change at any time now.
 		if (host_client->active)
@@ -550,7 +558,7 @@ not reinitialize anything.
 */
 void Host_ClearMemory (void)
 {
-	Con_DPrintf ("Clearing memory\n");
+	Con_DPrintLinef ("Clearing memory");
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
 	D_FlushCaches ();
@@ -595,8 +603,8 @@ cbool Host_FilterTime (double time)
 	{
 		if (host_sleep.value || (!vid.ActiveApp && (!sv.active || svs.maxclients_internal == 1))) // Because maxclients_internal == 1 is still single player
 		{
-//			Con_Printf ("Extra sleep\n");
-			System_Sleep (QUAKE_SLEEP_TIME); // Lower cpu (sleep = 1 usually -- or 50 for Mac + WinQuake)
+//			Con_PrintLinef ("Extra sleep");
+			System_Sleep_Milliseconds (QUAKE_SLEEP_TIME_MILLISECONDS); // Lower cpu (sleep = 1 usually -- or 50 for Mac + WinQuake)
 		}
 		return false; // framerate is too high
 	}
@@ -677,6 +685,7 @@ void _Host_Frame (double time)
 	static double		time2 = 0;
 	static double		time3 = 0;
 	int			pass1, pass2, pass3;
+
 	// something bad happened, or the server disconnected
 	if (setjmp (host_abortserver) ) return;
 
@@ -772,7 +781,7 @@ void _Host_Frame (double time)
 		time3 = System_DoubleTime ();
 		pass2 = (time2 - time1)*1000;
 		pass3 = (time3 - time2)*1000;
-		Con_Printf ("%3i tot %3i server %3i gfx %3i snd\n",
+		Con_PrintLinef ("%3d tot %3d server %3d gfx %3d snd",
 					pass1+pass2+pass3, pass1, pass2, pass3);
 	}
 
@@ -813,7 +822,7 @@ void Host_Frame (double time)
 			c++;
 	}
 
-	Con_Printf ("serverprofile: %2i clients %2i msec\n",  c,  m);
+	Con_PrintLinef ("serverprofile: %2d clients %2d msec",  c,  m);
 }
 
 /*
@@ -832,7 +841,7 @@ void Host_Init (void)
 		Cvar_Init,
 		COM_Init,
 		COM_InitFilesystem,
-		Con_Init,  // Con_Printfs begin here
+		Con_Init,  // Con_Printfs begin here.  Logging becomes available at this point.
 		PR_Init, // Promoted above Host_InitLocal so that the deathmatch cvar is available for "-dedicated 4" which is read/set in Host_InitLocal
 		Host_InitLocal,
 		W_LoadWadFile,
@@ -863,7 +872,7 @@ void Host_Init (void)
 
 	voidfunc_t* runfunc;
 
-	Dedicated_Printf ("Host_Init\n");
+	Dedicated_PrintLinef ("Host_Init");
 
 	// Run startup functions
 	for (runfunc = &startup_function[0]; *runfunc; runfunc++)
@@ -879,19 +888,19 @@ void Host_Init (void)
 	if (0) {
 		double secs = Time_Now ();
 
-		Con_SafePrintf ("Time Now is %s\n", Time_To_String (secs) );
-		Con_SafePrintf ("Time Now GMT is %s\n", Time_To_String_GMT (secs) );
+		Con_SafePrintLinef ("Time Now is %s", Time_To_String (secs) );
+		Con_SafePrintLinef ("Time Now GMT is %s", Time_To_String_GMT (secs) );
 
 		{
 			const char *s = Time_To_String (Time_Now ());
 			double secs2 = Time_String_To_Time (s);
-			Con_SafePrintf ("Time Now is %s\n", Time_To_String (secs2) );
+			Con_SafePrintLinef ("Time Now is %s", Time_To_String (secs2) );
 		}
 	}
 #pragma message ("Have dedicated server show ip address and port on startup?")
 
-	Cbuf_InsertText ("exec quake.rc\n");
-	Cbuf_AddText ("\n_host_post_initialized\n");  // Baker -- hint to dedicated server.
+	Cbuf_InsertText ("exec quake.rc" NEWLINE);
+	Cbuf_AddTextLine (NEWLINE "_host_post_initialized");  // Baker -- hint to dedicated server.
 
 	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark ();
@@ -905,7 +914,7 @@ void Host_Init (void)
 #endif // SUPPORTS_NEHAHRA
 
 	host_initialized = true;
-	Con_SafePrintf ("\n========= Quake Initialized =========\n\n");
+	Con_SafePrintLinef (NEWLINE "========= Quake Initialized =========" NEWLINE);
 }
 
 
@@ -998,7 +1007,7 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 		cbool found = COM_Parse_Float_From_String (&value, config_buffer, var->name, sbuf, sizeof(sbuf));
 
 #if 0
-		System_Alert (va("Cvar %s was %s and is %g", video_cvars[i]->name, found ? "Found" : "Not found", found ? value : 0));
+		alert (va("Cvar %s was %s and is %g", video_cvars[i]->name, found ? "Found" : "Not found", found ? value : 0));
 #endif
 
 		if (found == false)
@@ -1017,4 +1026,3 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 
 	return found_any_cvars;
 }
-

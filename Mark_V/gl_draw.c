@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -224,7 +226,7 @@ void Scrap_Upload (void)
 
 	for (i=0; i<MAX_SCRAPS; i++)
 	{
-		c_snprintf (name, "scrap%i", i);
+		c_snprintf1 (name, "scrap%d", i);
 		scrap_textures[i] = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, name, BLOCK_WIDTH, BLOCK_HEIGHT, SRC_INDEXED, scrap_texels[i],
 			"", (src_offset_t)scrap_texels[i], TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_OVERWRITE | TEXPREF_NOPICMIP);
 	}
@@ -284,7 +286,7 @@ qpic_t *Draw_PicFromWad (const char *name)
 			int fwidth, fheight;
 			unsigned *data;
 
-			c_snprintf (current_filename, "/gfx/%s", name);
+			c_snprintf1 (current_filename, "/gfx/%s", name);
 			c_strlcpy (limit_path, com_filepath);
 
 			data = Image_Load_Limited (current_filename, &fwidth, &fheight, limit_path);//, mod->loadinfo.searchpath);
@@ -310,7 +312,7 @@ qpic_t *Draw_PicFromWad (const char *name)
 	// load little ones into the scrap
 	if (p->width < 64 && p->height < 64)
 	{
-		int		x, y;
+		int		x = 0, y = 0;
 		int		i, j, k;
 		int		texnum;
 
@@ -1138,4 +1140,4 @@ void Draw_Set2D (void)
 	eglColor4f (1,1,1,1);
 }
 
-
+#endif // GLQUAKE specific

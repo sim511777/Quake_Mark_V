@@ -296,8 +296,13 @@ cbool IPv4_List_Find (const clist_t *list, const char *unvalidated_ipstring);
 
 #define QEVENT_DOWNLOAD_COMPLETE 1
 void Q_Thread_Event_Add (int event, int code, void *id, void *data);
-int Con_Queue_Printf (const char *fmt, ...);
-
+void Q_Thread_Events_Run (void);
+void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data); 
+int Con_Queue_Printf (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));
+int Con_Queue_PrintLinef (const char *fmt, ...)  __core_attribute__((__format__(__printf__,1,2)));;
+void Con_Queue_PrintRun (void /*const char *url <--- huh? */);
+void ReadList_NewGame (void);
+void ReadList_Ensure_Shutdown (void);
 
 #endif // ! __COMMON_H__
 

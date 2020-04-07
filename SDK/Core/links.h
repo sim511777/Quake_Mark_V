@@ -72,35 +72,5 @@ void List_Sorted_Add (void *_list, void *_item);
 #define List_Sorted_Remove List_Unsorted_Remove 
 
 
-/*
-** Void links - data payload.  List knows size.  Add/Remove allocate!
-*/
-
-
-struct voidlist_s {
-	struct voiditem_s *first, *last;
-
-	size_t	data_size;
-	cbool	sorted;
-};
-
-struct voiditem_s {
-	struct voiditem_s	*prev, *next;
-	const char			*name_a;
-
-// Knows parent
-	struct voidlist_s	*parent;
-	void				*data_a;
-};
-
-
-struct voiditem_s *VoidList_Add (struct voidlist_s *list, const char *name);
-struct voiditem_s *VoidList_Remove (struct voiditem_s *item);
-
-struct voidlist_s *VoidList_Create (size_t item_data_size, cbool is_sorted);
-struct voidlist_s *VoidList_Shutdown (struct voidlist_s *me);
-
-
-
 
 #endif // ! __LINKS_H__

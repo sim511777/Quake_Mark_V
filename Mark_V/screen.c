@@ -468,7 +468,7 @@ void SCR_SizeUp_f (void)
 		// Baker: To prevent viewsize check in screen.c from formally commiting an untrusted value out-of-range value.
 		int newval = scr_viewsize.value+10;
 		newval = CLAMP (30, newval, 120);
-		Cvar_Set_Untrusted (scr_viewsize.name, va("%i", (int)newval) );
+		Cvar_Set_Untrusted (scr_viewsize.name, va("%d", (int)newval) );
 	}
 	else
 #endif // SUPPORTS_CUTSCENE_PROTECTION
@@ -492,7 +492,7 @@ void SCR_SizeDown_f (void)
 		// Baker: To prevent viewsize check in screen.c from formally commiting an untrusted value out-of-range value.
 		int newval = scr_viewsize.value-10;
 		newval = CLAMP (30, newval, 120);
-		Cvar_Set_Untrusted (scr_viewsize.name, va("%i", (int)newval) );
+		Cvar_Set_Untrusted (scr_viewsize.name, va("%d", (int)newval) );
 	}
 	else
 #endif // SUPPORTS_CUTSCENE_PROTECTION
@@ -612,14 +612,14 @@ void SCR_DrawFPS (void)
 				float	speed		= VectorLength (vel);
 				float	vspeed		= cl.velocity[2];
 
-				c_snprintf (st, "speed: %4.0f", speed);
+				c_snprintf1 (st, "speed: %4.0f", speed);
 				x = 320 - 8 - (strlen(st) * 8);
 				Draw_String (x, y, st);  y += 8;
 			}
 
 
 			if (scr_showfps.value) {
-				c_snprintf (st, "%4.0f", lastfps);
+				c_snprintf1 (st, "%4.0f", lastfps);
 				x = 320 - 8 - (strlen(st) * 8);
 				Draw_String (x, y, st);  y += 8;
 			}
@@ -658,25 +658,25 @@ void SCR_DrawDevStats (void)
 	c_strlcpy (str, "---------+---------");
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Edicts   |%4i %4i", dev_stats.edicts, dev_peakstats.edicts);
+	c_snprintf2 (str, "Edicts   |%4d %4d", dev_stats.edicts, dev_peakstats.edicts);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Packet   |%4i %4i", dev_stats.packetsize, dev_peakstats.packetsize);
+	c_snprintf2 (str, "Packet   |%4d %4d", dev_stats.packetsize, dev_peakstats.packetsize);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Visedicts|%4i %4i", dev_stats.visedicts, dev_peakstats.visedicts);
+	c_snprintf2 (str, "Visedicts|%4d %4d", dev_stats.visedicts, dev_peakstats.visedicts);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Efrags   |%4i %4i", dev_stats.efrags, dev_peakstats.efrags);
+	c_snprintf2 (str, "Efrags   |%4d %4d", dev_stats.efrags, dev_peakstats.efrags);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Dlights  |%4i %4i", dev_stats.dlights, dev_peakstats.dlights);
+	c_snprintf2 (str, "Dlights  |%4d %4d", dev_stats.dlights, dev_peakstats.dlights);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Beams    |%4i %4i", dev_stats.beams, dev_peakstats.beams);
+	c_snprintf2 (str, "Beams    |%4d %4d", dev_stats.beams, dev_peakstats.beams);
 	Draw_String (x, (y++)*8-x, str);
 
-	c_snprintf2 (str, "Tempents |%4i %4i", dev_stats.tempents, dev_peakstats.tempents);
+	c_snprintf2 (str, "Tempents |%4d %4d", dev_stats.tempents, dev_peakstats.tempents);
 	Draw_String (x, (y++)*8-x, str);
 }
 
@@ -882,7 +882,7 @@ void SCR_Draw_Download (void)
 	Draw_Fill (0, 0, vid.conwidth, 32, 0, 1);
 	Draw_Fill (16, 8, full_width, 4, 16, 1);
 	Draw_Fill (16, 8, complete_width, 4, 23, 1);
-	Draw_StringEx (16, 16, va("Downloading: \b%s\b - %s kb (\b%.1f\b%%)%s", cls.download.name, cls.download.total_bytes == -1 ? "???" : va("%i", cls.download.total_bytes / 1024), cls.download.percent * 100, cls.download.is_blocking ? "\n (ESC = abort)" : "") );
+	Draw_StringEx (16, 16, va("Downloading: \b%s\b - %s kb (\b%.1f\b%%)%s", cls.download.name, cls.download.total_bytes == -1 ? "???" : va("%d", cls.download.total_bytes / 1024), cls.download.percent * 100, cls.download.is_blocking ? "\n (ESC = abort)" : "") );
 }
 #endif // SUPPORTS_HTTP_DOWNLOAD
 
@@ -1036,7 +1036,7 @@ void SCR_ScreenShot_f (lparse_t *line)
 
 		if (strstr(line->args[1], ".."))
 		{
-			Con_Printf ("Relative pathnames are not allowed.\n");
+			Con_PrintLinef ("Relative pathnames are not allowed.");
 			return;
 		}
         c_strlcpy (basefilename, line->args[1]);
@@ -1048,7 +1048,7 @@ void SCR_ScreenShot_f (lparse_t *line)
 // find a file name to save it to
 	for (i = 0; i < 10000; i++)
 	{
-		c_snprintf (basefilename, ENGINE_SHOT_PREFIX "%04i.png", i);
+		c_snprintf1 (basefilename, ENGINE_SHOT_PREFIX "%04d.png", i);
 		file_url = qpath_to_url(basefilename);
 
 		if (!File_Exists (file_url))
@@ -1057,7 +1057,7 @@ void SCR_ScreenShot_f (lparse_t *line)
 
 	if (i == 10000)
 	{
-		Con_Printf ("SCR_ScreenShot_f: Couldn't find an unused filename\n");
+		Con_PrintLinef ("SCR_ScreenShot_f: Couldn't find an unused filename");
 		return;
  	}
 
@@ -1077,9 +1077,9 @@ takeshot:
 		// We'll say that if the file exists, it worked.
 		if (File_Exists (file_url)) {
 			Recent_File_Set_QPath (basefilename);
-			Con_Printf ("Wrote %s via DX9, type \"showfile\" to open folder\n", basefilename);
+			Con_PrintLinef ("Wrote %s via DX9, type " QUOTEDSTR("showfile") " to open folder", basefilename);
 		}
-		else Con_Printf ("SCR_ScreenShot_f: Couldn't create a PNG file\n");
+		else Con_PrintLinef ("SCR_ScreenShot_f: Couldn't create a PNG file");
 
 		return; 
 	}
@@ -1095,9 +1095,9 @@ takeshot:
 		if (Image_Save_PNG_QPath (basefilename, buffer, width, height))
 		{
 			Recent_File_Set_QPath (basefilename);
-			Con_Printf ("Wrote %s, type \"showfile\" to open folder\n", basefilename);
+			Con_PrintLinef ("Wrote %s, type " QUOTEDSTR ("showfile") " to open folder", basefilename);
 		}
-		else Con_Printf ("SCR_ScreenShot_f: Couldn't create a PNG file\n");
+		else Con_PrintLinef ("SCR_ScreenShot_f: Couldn't create a PNG file");
 		free (buffer);
 	}
 }
@@ -1109,7 +1109,7 @@ void SCR_ScreenShot_Clipboard_f (void)
 	unsigned	*buffer = VID_GetBuffer_RGBA_Malloc (&width, &height, 0 /* 1 = RGBA */); // Baker: Always RGBA
 
 	Clipboard_Set_Image (buffer, width, height);
-	Con_Printf("Screenshot to clipboard\n");
+	Con_PrintLinef ("Screenshot to clipboard");
 	free (buffer);
 }
 
@@ -1286,7 +1286,7 @@ int SCR_ModalMessage (const char *text, float timeout, cbool enter_out) //johnfi
 	{
 		key_count = -1;		// wait for a key down and up
 		System_SendKeyEvents ();
-		System_Sleep(16);
+		System_Sleep_Milliseconds (16);
 		if (timeout) time2 = System_DoubleTime (); //johnfitz -- zero timeout means wait forever.
 	} while (key_lastpress != 'y' &&
 		key_lastpress != 'n' &&
@@ -1431,7 +1431,7 @@ void SCR_UpdateScreen (void)
 		if (realtime - scr_disabled_time > 60)
 		{
 			scr_disabled_for_loading = false;
-			Con_Printf ("load failed.\n");
+			Con_PrintLinef ("load failed.");
 		}
 		else
 			return;
@@ -1473,7 +1473,7 @@ void SCR_UpdateScreen (void)
 		if (!clheight || !clwidth) {
 			vid.conwidth = 640;
 			vid.conheight = 400;
-			Con_Warning ("Zero sized clwidth/clheight\n");
+			Con_WarningLinef ("Zero sized clwidth/clheight");
 			zero_sized = true; // Hit it again next time.
 		} else {
 			// Normal operation.
@@ -1598,5 +1598,3 @@ void SCR_UpdateScreen (void)
 
 	VID_EndRendering ();
 }
-
-

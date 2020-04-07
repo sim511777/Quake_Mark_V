@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -611,14 +613,14 @@ void R_DrawBrushModel (entity_t *e)
 	if (clmodel->firstmodelsurface != 0 && !gl_flashblend.value)
 	{
 		// calculate entity local space for dlight transforms
-		GL_IdentityMatrix (&e->gl_matrix);
+		Mat4_Identity_Set (&e->gl_matrix); // GL_IdentityMatrix
 
 		// don't need to negate angles[0] as it's not going through the extra negation in R_RotateForEntity
-		if (e->angles[2]) GL_RotateMatrix (&e->gl_matrix, -e->angles[2], 1, 0, 0);
-		if (e->angles[0]) GL_RotateMatrix (&e->gl_matrix, -e->angles[0], 0, 1, 0);
-		if (e->angles[1]) GL_RotateMatrix (&e->gl_matrix, -e->angles[1], 0, 0, 1);
+		if (e->angles[2]) Mat4_Rotate (&e->gl_matrix, -e->angles[2], 1, 0, 0);  // GL_RotateMatrix
+		if (e->angles[0]) Mat4_Rotate (&e->gl_matrix, -e->angles[0], 0, 1, 0);  // GL_RotateMatrix
+		if (e->angles[1]) Mat4_Rotate (&e->gl_matrix, -e->angles[1], 0, 0, 1);  // GL_RotateMatrix
 
-		GL_TranslateMatrix (&e->gl_matrix, -e->origin[0], -e->origin[1], -e->origin[2]);
+		Mat4_Translate (&e->gl_matrix, -e->origin[0], -e->origin[1], -e->origin[2]); // GL_TranslateMatrix
 		R_PushDlights (e);
 	}
 
@@ -1016,7 +1018,7 @@ void GL_BuildLightmaps_Upload_All_NewMap (void)
 		lightmap[i].rectchange.h = 0;
 
 		//johnfitz -- use texture manager
-		c_snprintf(lightmap_txname, "lightmap%03i",i);
+		c_snprintf1 (lightmap_txname, "lightmap%03d", i);
 		lightmap[i].texture = TexMgr_LoadImage (cl.worldmodel, -1, lightmap_txname, LIGHTMAPS_BLOCK_WIDTH, LIGHTMAPS_BLOCK_HEIGHT,
 			 SRC_LIGHTMAP, lightmap[i].lightmaps, "", (src_offset_t)lightmap[i].lightmaps, TEXPREF_LINEAR | TEXPREF_NOPICMIP);
 		//johnfitz
@@ -1024,7 +1026,7 @@ void GL_BuildLightmaps_Upload_All_NewMap (void)
 
 	//johnfitz -- warn about exceeding old limits
 	if (i >= MAX_WINQUAKE_LIGHTMAPS)
-		Con_DWarning ("%i lightmaps exceeds standard limit of %d.\n", i, MAX_WINQUAKE_LIGHTMAPS); // 64
+		Con_DWarningLine ("%d lightmaps exceeds standard limit of %d.", i, MAX_WINQUAKE_LIGHTMAPS); // 64
 
 	//johnfitz
 }
@@ -1573,6 +1575,5 @@ void Stain_AddStain(const vec3_t origin, float tint, float in_radius)
 	}
 }
 
-
-
+#endif // GLQUAKE specific
 

@@ -104,33 +104,33 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	if (sc)
 		return sc;
 
-//Con_Printf ("S_LoadSound: %x\n", (int)stackbuf);
+//Con_PrintLinef ("S_LoadSound: %x", (int)stackbuf);
 
 // load it in
     c_strlcpy(namebuffer, "sound/");
     c_strlcat(namebuffer, s->name);
 
-//	Con_Printf ("loading %s\n",namebuffer);
+//	Con_PrintLinef ("loading %s",namebuffer);
 
 	data = (byte*)COM_LoadStackFile(namebuffer, stackbuf, sizeof(stackbuf));
 
 	if (!data)
 	{
-		Con_Printf ("Couldn't load %s\n", namebuffer);
+		Con_PrintLinef ("Couldn't load %s", namebuffer);
 		return NULL;
 	}
 
 	info = GetWavinfo (s->name, data, com_filesize);
 	if (info.channels != 1)
 	{
-		Con_Printf ("%s is a stereo sample\n",s->name);
+		Con_PrintLinef ("%s is a stereo sample",s->name);
 		return NULL;
 	}
 
 	// Baker check if the sound is 8 or 16 bit
 	if (info.width != 1 && info.width != 2)
 	{
-		Con_Printf("%s is not 8 or 16 bit\n", s->name);
+		Con_PrintLinef ("%s is not 8 or 16 bit", s->name);
 		return NULL;
 	}
 
@@ -142,7 +142,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	// Baker: check this scenario
 	if (info.samples == 0 || len == 0)
 	{
-		Con_DPrintf("%s has zero samples\n", s->name);
+		Con_DPrintLinef ("%s has zero samples", s->name);
 		return NULL;
 	}
 
@@ -217,7 +217,7 @@ static void FindNextChunk (const char *name)
 			return;
 		}
 //		if (iff_chunk_len > 1024*1024)
-//			System_Error ("FindNextChunk: %i length is past the 1 meg sanity limit", iff_chunk_len);
+//			System_Error ("FindNextChunk: %d length is past the 1 meg sanity limit", iff_chunk_len);
 		data_p -= 8;
 		last_chunk = data_p + 8 + ( (iff_chunk_len + 1) & ~1 );
 		if (!strncmp((char*) data_p, name, 4))
@@ -243,7 +243,7 @@ static void DumpChunks (void)
 		memcpy (str, data_p, 4);
 		data_p += 4;
 		iff_chunk_len = GetLittleLong();
-		Con_Printf ("0x%x : %s (%d)\n", (int)(data_p - 4), str, iff_chunk_len);
+		Con_PrintLinef ("0x%x : %s (%d)", (int)(data_p - 4), str, iff_chunk_len);
 		data_p += (iff_chunk_len + 1) & ~1;
 	} while (data_p < iff_end);
 }
@@ -273,7 +273,7 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 	FindChunk("RIFF");
 	if (!(data_p && !strncmp((char *)data_p+8, "WAVE", 4)))
 	{
-		Con_Printf("%s missing RIFF/WAVE chunks\n", name);
+		Con_PrintLinef ("%s missing RIFF/WAVE chunks", name);
 		return info;
 	}
 
@@ -286,14 +286,14 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 	FindChunk("fmt ");
 	if (!data_p)
 	{
-		Con_Printf ("%s is missing fmt chunk\n", name);
+		Con_PrintLinef ("%s is missing fmt chunk", name);
 		return info;
 	}
 	data_p += 8;
 	format = GetLittleShort();
 	if (format != WAV_FORMAT_PCM)
 	{
-		Con_Printf("%s is not Microsoft PCM format\n", name);
+		Con_PrintLinef ("%s is not Microsoft PCM format", name);
 		return info;
 	}
 
@@ -308,7 +308,7 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 	{
 		data_p += 32;
 		info.loopstart = GetLittleLong();
-	//	Con_Printf("loopstart=%d\n", sfx->loopstart);
+	//	Con_PrintLinef ("loopstart=%d", sfx->loopstart);
 
 	// if the next chunk is a LIST chunk, look for a cue length marker
 		FindNextChunk ("LIST");
@@ -319,7 +319,7 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 				data_p += 24;
 				i = GetLittleLong ();	// samples in loop
 				info.samples = info.loopstart + i;
-//				Con_Printf("looped length: %i\n", i);
+//				Con_PrintLinef ("looped length: %d", i);
 			}
 		}
 	}
@@ -330,7 +330,7 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 	FindChunk("data");
 	if (!data_p)
 	{
-		Con_Printf ("%s is missing data chunk\n", name);
+		Con_PrintLinef ("%s is missing data chunk", name);
 		return info;
 	}
 
@@ -349,4 +349,3 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 
 	return info;
 }
-

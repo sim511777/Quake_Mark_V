@@ -1,4 +1,4 @@
-#ifdef GLQUAKE // Right?  Build level define
+#ifdef GLQUAKE // GLQUAKE specific
 
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
@@ -94,7 +94,7 @@ const char *TexMgr_TextureModes_ListExport (void)
 			String_Edit_To_Lower_Case (returnbuf); // Baker: avoid hassles with uppercase keynames
 
 			last = i;
-//			Con_Printf ("Added %s\n", returnbuf);
+//			Con_PrintLinef ("Added %s", returnbuf);
 			return returnbuf;
 		}
 	}
@@ -115,9 +115,9 @@ void TexMgr_DescribeTextureModes_f (void)
 	int i;
 
 	for (i=0; i<NUM_GLMODES; i++)
-		Con_SafePrintf ("   %2i: %s\n", i + 1, glmodes[i].name);
+		Con_SafePrintLinef ("   %2d: %s", i + 1, glmodes[i].name);
 
-	Con_Printf ("%i modes\n", i);
+	Con_PrintLinef ("%d modes", i);
 }
 
 /*
@@ -167,7 +167,7 @@ void TexMgr_TextureMode_f (lparse_t *line)
 	switch (line->count)
 	{
 	case 1:
-		Con_Printf ("\"gl_texturemode\" is \"%s\"\n", glmodes[glmode_idx].name);
+		Con_PrintLinef (QUOTEDSTR("gl_texturemode") " is " QUOTED_S, glmodes[glmode_idx].name);
 		break;
 	case 2:
 		arg = line->args[1];
@@ -179,7 +179,7 @@ void TexMgr_TextureMode_f (lparse_t *line)
 					glmode_idx = i;
 					goto stuff;
 				}
-			Con_Printf ("\"%s\" is not a valid texturemode\n", arg);
+			Con_PrintLinef (QUOTED_S " is not a valid texturemode", arg);
 			return;
 		}
 		else if (arg[0] >= '0' && arg[0] <= '9')
@@ -187,13 +187,13 @@ void TexMgr_TextureMode_f (lparse_t *line)
 			i = atoi(arg);
 			if (i > NUM_GLMODES || i < 1)
 			{
-				Con_Printf ("\"%s\" is not a valid texturemode\n", arg);
+				Con_PrintLinef (QUOTED_S " is not a valid texturemode", arg);
 				return;
 			}
 			glmode_idx = i - 1;
 		}
 		else
-			Con_Printf ("\"%s\" is not a valid texturemode\n", arg);
+			Con_PrintLinef (QUOTED_S " is not a valid texturemode", arg);
 
 stuff:
 		for (glt=active_gltextures; glt; glt=glt->next)
@@ -205,7 +205,7 @@ stuff:
 
 		break;
 	default:
-		Con_SafePrintf ("usage: gl_texturemode <mode>\n");
+		Con_SafePrintLinef ("usage: gl_texturemode <mode>");
 		break;
 	}
 }
@@ -267,13 +267,13 @@ static void TexMgr_Imagelist_Run (int textures_to_show)
 		}
 
 		txcount ++;
-		Con_SafePrintf ("   %4i x%4i %s%s\n", glt->width, glt->height, glt->name, replaced ? " (R)" : "" );
+		Con_SafePrintLinef ("   %4d x%4d %s%s", glt->width, glt->height, glt->name, replaced ? " (R)" : "" );
 		if (glt->flags & TEXPREF_MIPMAP)
 			texels += glt->width * glt->height * 4.0f / 3.0f;
 		else texels += (glt->width * glt->height);
 	}
 	mb = texels * (vid.desktop.bpp / 8.0f) / 0x100000;
-	Con_Printf ("%i textures %i pixels %1.1f megabytes\n", txcount /*numgltextures*/, (int)texels, mb);
+	Con_PrintLinef ("%d textures %d pixels %1.1f megabytes", txcount /*numgltextures*/, (int)texels, mb);
 }
 
 
@@ -281,7 +281,7 @@ void TexMgr_Imagelist_f (lparse_t *line)
 {
 	if (line->count == 2 && !strcmp(line->args[1], "unreplaced") && cl.worldmodel )
 	{
-		Con_Printf ("imagelist unreplaced bsp textures only:\n\n");
+		Con_PrintLinef ("imagelist unreplaced bsp textures only:" NEWLINE);
 		TexMgr_Imagelist_Run (SHOW_UNREPLACED_BSP);
 	}
 	else TexMgr_Imagelist_Run (SHOW_ALL);
@@ -300,7 +300,7 @@ void TexMgr_Imagedump_f (void)
 	char *c;
 
 	{
-		Con_Printf ("This can be slow if there are many textures ...\nespecially writing png files ...\n");
+		Con_PrintLinef ("This can be slow if there are many textures ..." NEWLINE "especially writing png files ...");
 		SCR_UpdateScreen (); // Force!
 	}
 
@@ -315,7 +315,7 @@ void TexMgr_Imagedump_f (void)
 		while ( (c = strchr(tempname, ':')) ) *c = '_';
 		while ( (c = strchr(tempname, '/')) ) *c = '_';
 		while ( (c = strchr(tempname, '*')) ) *c = '_';
-		c_snprintf(image_qpath, "imagedump/%s", tempname);
+		c_snprintf1 (image_qpath, "imagedump/%s", tempname);
 
 		if (glt->width < 4 || glt->height < 4)
 			continue; // Too small for PNG, don't bother.
@@ -341,7 +341,7 @@ void TexMgr_Imagedump_f (void)
 
 	Recent_File_Set_FullPath (dirname);
 
-	Con_Printf ("dumped %d textures to %s\n", numgltextures, dirname);
+	Con_PrintLinef ("dumped %d textures to %s", numgltextures, dirname);
 }
 
 /*
@@ -436,7 +436,7 @@ gltexture_t* TexMgr_FreeTexture (gltexture_t *kill)
 
 	if (kill == NULL)
 	{
-		Con_Printf ("TexMgr_FreeTexture: NULL texture\n");
+		Con_PrintLinef ("TexMgr_FreeTexture: NULL texture");
 		return NULL;
 	}
 
@@ -465,7 +465,7 @@ gltexture_t* TexMgr_FreeTexture (gltexture_t *kill)
 		}
 	}
 
-	Con_Printf ("TexMgr_FreeTexture: not found\n");
+	Con_PrintLinef ("TexMgr_FreeTexture: not found");
 	return NULL;
 }
 
@@ -527,21 +527,21 @@ void TexMgr_Gamma_Execute (float newvalue) // Don't give us a 0
 //	if (newvalue == vid_texturegamma_effective)			// NEVER IGNORE SOMEONE CALLING US.
 //		return; // Same.  Nothing to do.
 	if (whitetexture == NULL)
-		Host_Error ("TexMgr_Gamma_Execute before TexMgr_Init\n");
+		Host_Error ("TexMgr_Gamma_Execute before TexMgr_Init");
 
 	if (newvalue != CLAMP(VID_MIN_POSSIBLE_GAMMA, newvalue, VID_MAX_POSSIBLE_GAMMA))
 		Host_Error ("Texture gamma value must be pre-clamped.");
 
 	if (texmgr_texturegamma_current == newvalue) {
-		Con_SafePrintf ("No gamma change required\n");
+		Con_SafePrintLinef ("No gamma change required");
 	}
 
 	texmgr_texturegamma_exec = newvalue;
 
 	TexMgr_Regamma (newvalue);
 	TexMgr_ReloadImages (false); // false = same slot use
-//	Cbuf_AddText ("texreload\n");
-	Con_SafePrintf ("Texture gamma applied %g\n", texmgr_texturegamma_current ? texmgr_texturegamma_current : 1);
+//	Cbuf_AddTextLine ("texreload");
+	Con_SafePrintLinef ("Texture gamma applied %g", texmgr_texturegamma_current ? texmgr_texturegamma_current : 1);
 }
 
 #endif // GLQUAKE_TEXTUREGAMMA_SUPPORT
@@ -590,7 +590,7 @@ void TexMgr_Regamma (float gamma_level)
 		byte *pal_edit;
 		texmgr_texturegamma_current = gamma_level;
 		Image_Build_Gamma_Table (texmgr_texturegamma_current, 1.0 /*contrast_level*/, texture_gammatable_256);
-		for (pal_edit = gamma_pal_768, i = 0 ; i < PALETTE_COLORS_256 ; i ++, pal_edit += 3) {
+		for (pal_edit = gamma_pal_768, i = 0 ; i < PALETTE_COLORS_256 ; i ++, pal_edit += RGB_3) {
 			pal_edit[0] = texture_gammatable_256[pal_edit[0]],
 			pal_edit[1] = texture_gammatable_256[pal_edit[1]],
 			pal_edit[2] = texture_gammatable_256[pal_edit[2]];
@@ -670,7 +670,7 @@ void TexMgr_LoadPalette (void)
 {
 	FILE *f;
 
-	Con_DPrintf ("Gamma level %g\n", texmgr_texturegamma_exec);
+	Con_DPrintLinef ("Gamma level %g", texmgr_texturegamma_exec);
 	COM_FOpenFile ("gfx/palette.lmp", &f);
 	if (!f)
 		System_Error ("Couldn't load gfx/palette.lmp"); // Keep System_Error.  That would be a tier #1 mess.
@@ -766,7 +766,7 @@ void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void)
 	// note - OpenGL allows specifying NULL data to create an empty texture, but FitzQuake's texmgr doesn't.  So we need to do hunk
 	// shenanigans to work around it; if you  modify the texmgr to allow for this, you could just specify NULL data and get rid of
 	// this.  in order to minimise the code impact i didn't bother.  using SRC_INDEXED so that risk of overflowing the hunk is minimised.
-	r_underwaterwarptexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, "r_waterwarp2", vid.maxwarpwidth, vid.maxwarpheight, SRC_INDEXED, hunk_base, "", (unsigned) hunk_base, TEXPREF_NOPICMIP | TEXPREF_PERSIST | TEXPREF_LINEAR);
+	r_underwaterwarptexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, "r_waterwarp2", vid.maxwarpwidth, vid.maxwarpheight, SRC_INDEXED, hunk_base, "", (unsigned) hunk_base, TEXPREF_NOPICMIP | TEXPREF_PERSIST | TEXPREF_LINEAR | TEXPREF_WARPIMAGE);
 
 	// the d3d wrapper will need to respecify this as a rendertarget texture so do it now rather than having to check and do it at runtime
 	GL_Bind (r_underwaterwarptexture);
@@ -916,12 +916,12 @@ static unsigned *TexMgr_MipMapH (unsigned *data, int width, int height)
 	byte	*out, *in;
 
 	out = in = (byte *)data;
-	height>>=1;
-	width<<=2;
+	height >>=1;
+	width <<=2;
 
 	for (i=0; i<height; i++, in+=width)
 	{
-		for (j=0; j<width; j+=4, out+=4, in+=4)
+		for (j=0; j<width; j+=4, out += RGBA_4, in += RGBA_4)
 		{
 			out[0] = (in[0] + in[width+0])>>1;
 			out[1] = (in[1] + in[width+1])>>1;
@@ -939,54 +939,55 @@ static unsigned *TexMgr_MipMapH (unsigned *data, int width, int height)
 TexMgr_ResampleTextureForce
 ================
 */
-static unsigned *TexMgr_ResampleTextureForce (unsigned *in, int inwidth, int inheight, int outwidth, int outheight, cbool alpha)
-{
-	byte *nwpx, *nepx, *swpx, *sepx, *dest;
-	unsigned xfrac, yfrac, x, y, modx, mody, imodx, imody, injump, outjump;
-	unsigned *out;
-	int i, j;
-
-	out = Hunk_Alloc(outwidth*outheight*RGBA_4);
-
-	xfrac = ((inwidth-1) << 16) / (outwidth-1);
-	yfrac = ((inheight-1) << 16) / (outheight-1);
-	y = outjump = 0;
-
-	for (i=0; i<outheight; i++)
-	{
-		mody = (y>>8) & 0xFF;
-		imody = 256 - mody;
-		injump = (y>>16) * inwidth;
-		x = 0;
-
-		for (j=0; j<outwidth; j++)
-		{
-			modx = (x>>8) & 0xFF;
-			imodx = 256 - modx;
-
-			nwpx = (byte *)(in + (x>>16) + injump);
-			nepx = nwpx + 4;
-			swpx = nwpx + inwidth*4;
-			sepx = swpx + 4;
-
-			dest = (byte *)(out + outjump + j);
-
-			dest[0] = (nwpx[0]*imodx*imody + nepx[0]*modx*imody + swpx[0]*imodx*mody + sepx[0]*modx*mody)>>16;
-			dest[1] = (nwpx[1]*imodx*imody + nepx[1]*modx*imody + swpx[1]*imodx*mody + sepx[1]*modx*mody)>>16;
-			dest[2] = (nwpx[2]*imodx*imody + nepx[2]*modx*imody + swpx[2]*imodx*mody + sepx[2]*modx*mody)>>16;
-			if (alpha)
-				dest[3] = (nwpx[3]*imodx*imody + nepx[3]*modx*imody + swpx[3]*imodx*mody + sepx[3]*modx*mody)>>16;
-			else
-				dest[3] = ALPHA_SOLID_255;
-
-			x += xfrac;
-		}
-		outjump += outwidth;
-		y += yfrac;
-	}
-
-	return out;
-}
+// No one calls us!  Jan 2017
+//static unsigned *TexMgr_ResampleTextureForce (unsigned *in, int inwidth, int inheight, int outwidth, int outheight, cbool alpha)
+//{
+//	byte *nwpx, *nepx, *swpx, *sepx, *dest;
+//	unsigned xfrac, yfrac, x, y, modx, mody, imodx, imody, injump, outjump;
+//	unsigned *out;
+//	int i, j;
+//
+//	out = Hunk_Alloc(outwidth*outheight*RGBA_4);
+//
+//	xfrac = ((inwidth-1) << 16) / (outwidth-1);
+//	yfrac = ((inheight-1) << 16) / (outheight-1);
+//	y = outjump = 0;
+//
+//	for (i=0; i<outheight; i++)
+//	{
+//		mody = (y>>8) & 0xFF;
+//		imody = 256 - mody;
+//		injump = (y>>16) * inwidth;
+//		x = 0;
+//
+//		for (j=0; j<outwidth; j++)
+//		{
+//			modx = (x>>8) & 0xFF;
+//			imodx = 256 - modx;
+//
+//			nwpx = (byte *)(in + (x>>16) + injump);
+//			nepx = nwpx + 4;
+//			swpx = nwpx + inwidth*4;
+//			sepx = swpx + 4;
+//
+//			dest = (byte *)(out + outjump + j);
+//
+//			dest[0] = (nwpx[0]*imodx*imody + nepx[0]*modx*imody + swpx[0]*imodx*mody + sepx[0]*modx*mody)>>16;
+//			dest[1] = (nwpx[1]*imodx*imody + nepx[1]*modx*imody + swpx[1]*imodx*mody + sepx[1]*modx*mody)>>16;
+//			dest[2] = (nwpx[2]*imodx*imody + nepx[2]*modx*imody + swpx[2]*imodx*mody + sepx[2]*modx*mody)>>16;
+//			if (alpha)
+//				dest[3] = (nwpx[3]*imodx*imody + nepx[3]*modx*imody + swpx[3]*imodx*mody + sepx[3]*modx*mody)>>16;
+//			else
+//				dest[3] = ALPHA_SOLID_255;
+//
+//			x += xfrac;
+//		}
+//		outjump += outwidth;
+//		y += yfrac;
+//	}
+//
+//	return out;
+//}
 
 
 /*
@@ -994,7 +995,7 @@ static unsigned *TexMgr_ResampleTextureForce (unsigned *in, int inwidth, int inh
 TexMgr_ResampleTexture -- bilinear resample
 ================
 */
-static unsigned *TexMgr_ResampleTexture (unsigned *in, int inwidth, int inheight, cbool alpha)
+static unsigned *TexMgr_LoadImage32_ResampleTexture_NPOT (unsigned *in, int inwidth, int inheight, cbool alpha)
 {
 	byte *nwpx, *nepx, *swpx, *sepx, *dest;
 	unsigned xfrac, yfrac, x, y, modx, mody, imodx, imody, injump, outjump;
@@ -1556,7 +1557,7 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 	// resample up
 	if (!renderer.gl_texture_non_power_of_two)
 	{
-		data = TexMgr_ResampleTexture (data, glt->width, glt->height, glt->flags & TEXPREF_ALPHA);
+		data = TexMgr_LoadImage32_ResampleTexture_NPOT (data, glt->width, glt->height, glt->flags & TEXPREF_ALPHA);
 		glt->width = TexMgr_Pad(glt->width);
 		glt->height = TexMgr_Pad(glt->height);
 	}
@@ -1880,7 +1881,7 @@ gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const cha
 	c_strlcpy (glt->source_file, source_file);
 	glt->source_offset = source_offset;
 	glt->source_palette_offset = source_palette_offset;
-//	Con_Printf ("%s source offset %i pal offset %i and delta %i\n", glt->name, source_offset, source_palette_offset, source_palette_offset - source_offset);
+//	Con_PrintLinef ("%s source offset %d pal offset %d and delta %d", glt->name, source_offset, source_palette_offset, source_palette_offset - source_offset);
 	glt->source_format = format;
 	glt->source_width = width;
 	glt->source_height = height;
@@ -1949,7 +1950,7 @@ void TexMgr_ReplaceImage_RGBA (gltexture_t* texture, unsigned *data, int width, 
 			TexMgr_LoadImage32 (texture, (unsigned *)data);
 			break;
 		default:
-			Con_Printf ("Error\n");
+			Con_PrintLinef ("Error");
 			return;
 	}
 
@@ -2028,7 +2029,7 @@ void TexMgr_ReloadImage (gltexture_t *glt, int shirt, int pants)
 	if (!data)
 	{
 invalid:
-		Con_Printf ("TexMgr_ReloadImage: invalid source for %s\n", glt->name);
+		Con_PrintLinef ("TexMgr_ReloadImage: invalid source for %s", glt->name);
 		Hunk_FreeToLowMark(mark);
 		if (f) FS_fclose (f);
 		return;
@@ -2048,7 +2049,7 @@ invalid:
 			glt->shirt = shirt;
 			glt->pants = pants;
 		}
-		else Con_Printf ("TexMgr_ReloadImage: can't colormap a non SRC_INDEXED texture: %s\n", glt->name);
+		else Con_PrintLinef ("TexMgr_ReloadImage: can't colormap a non SRC_INDEXED texture: %s", glt->name);
 	}
 	if (glt->shirt > -1 && glt->pants > -1)
 	{
@@ -2319,7 +2320,7 @@ cbool TexMgr_Clipboard_Set (gltexture_t *glt)
 
 	if (!data_rgba)
 	{
-		Con_Printf  ("Couldn't get texture %s source data\n", glt->name);
+		Con_PrintLinef  ("Couldn't get texture %s source data", glt->name);
 		return false;
 	}
 
@@ -2328,8 +2329,8 @@ cbool TexMgr_Clipboard_Set (gltexture_t *glt)
 	Hunk_FreeToLowMark (mark);
 
 	if (ok)
-		Con_Printf ("Copied %s to clipboard\n", glt->name);
-	else Con_Printf ("Clipboard copy failed\n", glt->name);
+		Con_PrintLinef ("Copied %s to clipboard", glt->name);
+	else Con_PrintLinef ("Clipboard copy for %s failed", glt->name);
 
 	return ok;
 }
@@ -2359,7 +2360,7 @@ static void TexMgr_Replacement_Save_f (void)
 		while ( (c = strchr(tempname, ':')) ) *c = '_';
 		while ( (c = strchr(tempname, '/')) ) *c = '_';
 		while ( (c = strchr(tempname, '*')) ) *c = '_';
-		c_snprintf(tganame, sizeof(tganame), "imagedump/%s.tga", tempname);
+		c_snprintf1 (tganame, sizeof(tganame), "imagedump/%s.tga", tempname);
 
 		GL_Bind (glt);
 		if (glt->flags & TEXPREF_ALPHA)
@@ -2379,7 +2380,7 @@ static void TexMgr_Replacement_Save_f (void)
 
 	Recent_File_Set_FullPath (va("%s/", dirname)`);
 
-	Con_Printf ("dumped %i textures to %s\n", numgltextures, dirname);
+	Con_PrintLinef ("dumped %d textures to %s", numgltextures, dirname);
 }
 
 static void TexMgr_Replacement_Load_f (void)
@@ -2400,7 +2401,7 @@ static void TexMgr_Replacement_Load_f (void)
 		while ( (c = strchr(tempname, ':')) ) *c = '_';
 		while ( (c = strchr(tempname, '/')) ) *c = '_';
 		while ( (c = strchr(tempname, '*')) ) *c = '_';
-		c_snprintf(tganame, sizeof(tganame), "imagedump/%s.tga", tempname);
+		c_snprintf1 (tganame, sizeof(tganame), "imagedump/%s.tga", tempname);
 
 		GL_Bind (glt);
 		if (glt->flags & TEXPREF_ALPHA)
@@ -2420,7 +2421,7 @@ static void TexMgr_Replacement_Load_f (void)
 
 	Recent_File_Set_FullPath (dirname);
 
-	Con_Printf ("dumped %i textures to %s\n", numgltextures, dirname);
+	Con_PrintLinef ("dumped %d textures to %s", numgltextures, dirname);
 }
 
 #endif
@@ -2521,4 +2522,4 @@ void GL_Bind (gltexture_t *texture)
 	}
 }
 
-#endif // GLQUAKE - Build level define.
+#endif // GLQUAKE specific

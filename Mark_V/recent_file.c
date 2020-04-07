@@ -29,7 +29,7 @@ static void Recent_File_Update_Event (void)
 {
 	// Updated recent file
 #ifdef _DEBUG
-//	Con_Printf ("Recent file set: '%s'\n", recent_file);
+//	Con_PrintLinef ("Recent file set: '%s'", recent_file);
 #endif
 }
 
@@ -60,13 +60,13 @@ void Recent_File_Show_f (lparse_t *line)
 {
 	if (vid.screen.type != MODE_WINDOWED)
 	{
-		Con_Printf ("'showfile' command only works in windowed mode\n");
-		Con_Printf ("alt-enter and try again?\n");
+		Con_PrintLinef ("'showfile' command only works in windowed mode");
+		Con_PrintLinef ("alt-enter and try again?");
 		return;
 	}
 
 	if (!isDedicated && line->count == 2 && !strcmp(line->args[1], "caches")) {
-		Con_Printf ("Open caches folder \"%s\" ...\n", Folder_Caches_URL());
+		Con_PrintLinef ("Open caches folder " QUOTED_S " ...", Folder_Caches_URL());
 		Folder_Open (Folder_Caches_URL());
 		goto open_ok;
 	}
@@ -76,11 +76,11 @@ void Recent_File_Show_f (lparse_t *line)
 			char folder_url[MAX_OSPATH];
 			// Construct the full url
 			FS_FullPath_From_Basedir (folder_url, hd_folder.string);
-			Con_Printf ("Open HD folder \"%s\" ...\n", folder_url);
+			Con_PrintLinef ("Open HD folder " QUOTED_S " ...", folder_url);
 			Folder_Open (folder_url );
 			goto open_ok;
 		}
-		Con_Printf ("No HD folder is in use.\n");
+		Con_PrintLinef ("No HD folder is in use.");
 	}
 
 	if (recent_file_url[0] && File_Exists(recent_file_url))
@@ -102,12 +102,12 @@ void Recent_File_Show_f (lparse_t *line)
 	// Couldn't do the above, try exploring to the gamedir
 	if (!Folder_Open (com_gamedir))
 	{
-		Con_Printf ("Opening folder failed\n");
+		Con_PrintLinef ("Opening folder failed");
 		return;
 	}
 
 open_ok:
-	Con_Printf ("Explorer opening folder ...\n");
+	Con_PrintLinef ("Explorer opening folder ...");
 
 }
 
@@ -115,4 +115,3 @@ void Recent_File_Init (void)
 {
 	Cmd_AddCommands (Recent_File_Init);
 }
-

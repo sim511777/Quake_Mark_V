@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -248,7 +250,7 @@ static mspriteframe_t *R_GetSpriteFrame (entity_t *currentent)
 
 	if ((frame >= psprite->numframes) || (frame < 0))
 	{
-		Con_Printf ("R_DrawSprite: no such frame %d\n", frame);
+		Con_PrintLinef ("R_DrawSprite: no such frame %d", frame);
 		frame = 0;
 	}
 
@@ -320,14 +322,14 @@ void R_DrawSpriteModel (entity_t *e)
 		r_spritedesc.vup[1] = 0;
 		r_spritedesc.vup[2] = 1;
 		r_spritedesc.vright[0] = vpn[1];
-										// CrossProduct (r_spritedesc.vup, vpn,
+										// VectorCrossProduct (r_spritedesc.vup, vpn,
 		r_spritedesc.vright[1] = -vpn[0];	//  r_spritedesc.vright)
 		r_spritedesc.vright[2] = 0;
 		VectorNormalize (r_spritedesc.vright);
 		r_spritedesc.vpn[0] = -r_spritedesc.vright[1];
 		r_spritedesc.vpn[1] = r_spritedesc.vright[0];
 		r_spritedesc.vpn[2] = 0;
-					// CrossProduct (r_spritedesc.vright, r_spritedesc.vup,
+					// VectorCrossProduct (r_spritedesc.vright, r_spritedesc.vup,
 					//  r_spritedesc.vpn)
 		break;
 	case SPR_FACING_UPRIGHT:   //faces camera origin, up is towards the heavens
@@ -350,7 +352,7 @@ void R_DrawSpriteModel (entity_t *e)
 		r_spritedesc.vup[1] = 0;
 		r_spritedesc.vup[2] = 1;
 		r_spritedesc.vright[0] = tvec[1];
-								// CrossProduct(r_spritedesc.vup, -modelorg,
+								// VectorCrossProduct(r_spritedesc.vup, -modelorg,
 		r_spritedesc.vright[1] = -tvec[0];
 								//              r_spritedesc.vright)
 		r_spritedesc.vright[2] = 0;
@@ -358,7 +360,7 @@ void R_DrawSpriteModel (entity_t *e)
 		r_spritedesc.vpn[0] = -r_spritedesc.vright[1];
 		r_spritedesc.vpn[1] = r_spritedesc.vright[0];
 		r_spritedesc.vpn[2] = 0;
-					// CrossProduct (r_spritedesc.vright, r_spritedesc.vup,
+					// VectorCrossProduct (r_spritedesc.vright, r_spritedesc.vup,
 					//  r_spritedesc.vpn)
 		break;
 	case SPR_VP_PARALLEL:  //faces view plane, up is towards the top of the screen
@@ -404,4 +406,4 @@ void R_DrawSpriteModel (entity_t *e)
 	R_SetupAndDrawSprite ();
 }
 
-
+#endif // !GLQUAKE - WinQuake Software renderer

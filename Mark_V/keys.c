@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "quakedef.h"
+#include "keys.h" // courtesy
 
 /* key up events are sent even if in console mode */
 
@@ -297,7 +298,7 @@ void Key_Console (int key)
 	cbool isremove = false;
 	cbool isdone = false;
 
-	//Con_Queue_Printf ("Key_Console: (rnd %3d) code = %d rep: '%c'\n", (int)(RANDOM_FLOAT * 100), key, key);
+	//Con_Queue_PrintLinef ("Key_Console: (rnd %3d) code = %d rep: '%c'", (int)(RANDOM_FLOAT * 100), key, key);
 
 	// Any non-shift action should clear the selection?
 	// Remember the typing of a normal key needs to stomp the selection
@@ -322,7 +323,7 @@ void Key_Console (int key)
 			memcpy (buf, &workline[netstart], abs(key_sellength));
 			buf[abs(key_sellength)]=0;
 			Clipboard_Set_Text (buf);
-//			Con_Printf ("Clipboard Set \"%s\"\n", buf);
+//			Con_PrintLinef ("Clipboard Set " QUOTED_S, buf);
 			S_LocalSound ("hknight/hit.wav");
 		}
 
@@ -346,9 +347,8 @@ void Key_Console (int key)
 	case K_ENTER:
 //	case K_KP_ENTER:  Not supported.
 		Partial_Reset (); Con_Undo_Clear ();
-		Cbuf_AddText (&workline[1]);	// skip the prompt
-		Cbuf_AddText ("\n");
-		Con_Printf ("%s\n", workline);
+		Cbuf_AddTextLine (&workline[1]);	// skip the prompt
+		Con_PrintLinef ("%s", workline);
 
 		// If the last two lines are identical, skip storing this line in history
 		// by not incrementing edit_line
@@ -661,7 +661,7 @@ void Key_Console (int key)
 		if (keydown[K_CTRL])
 		{
 			if (!Con_Undo_Walk (keydown[K_SHIFT] ? -1 : 1))
-				Con_DPrintf ("End of undo buffer\n");
+				Con_DPrintLinef ("End of undo buffer");
 
 			return;
 		}
@@ -744,7 +744,7 @@ void Key_EndChat (void)
 
 void Key_Message (int key)
 {
-	//Con_Queue_Printf ("Key_Message: (rnd %3d) code = %d rep: '%c'\n", (int)(RANDOM_FLOAT * 100), key, key);
+	//Con_Queue_PrintLinef ("Key_Message: (rnd %3d) code = %d rep: '%c'", (int)(RANDOM_FLOAT * 100), key, key);
 	if (key == K_ENTER)
 	{
 		if (chat_team)
@@ -752,8 +752,8 @@ void Key_Message (int key)
 		else
 			Cbuf_AddText ("say \"");
 
-		Cbuf_AddText(chat_buffer);
-		Cbuf_AddText("\"\n");
+		Cbuf_AddText (chat_buffer);
+		Cbuf_AddTextLine ("\""); // Add trailing quote
 
 		Key_EndChat ();
 		return;
@@ -882,7 +882,7 @@ const char *Key_ListExport (void)
 			c_strlcpy (returnbuf, kn->name);
 
 			last = i;
-			//Con_Printf ("Added %s\n", kn->name);
+			//Con_PrintLinef ("Added %s", kn->name);
 			return returnbuf;
 		}
 	}
@@ -901,7 +901,7 @@ const char *Key_GetBinding (int keynum)
 		return "toggleconsole";
 
 	if (!in_range(0, keynum, KEYMAP_COUNT_512)) {
-		Con_Warning  ("Key_GetBinding: '%c' (%d) is not a valid key\n", keynum, keynum);
+		Con_WarningLinef  ("Key_GetBinding: '%c' (%d) is not a valid key", keynum, keynum);
 		return "";
 	}
 	return (keybindings[keynum].server ? keybindings[keynum].server : keybindings[keynum].real);
@@ -981,20 +981,20 @@ void Key_Unbind_f (lparse_t *line)
 
 	if (cmd_from_server && pq_bindprotect.value) {
 		if (pq_bindprotect.value > 1) // 1 means ignore.  2 means ignore + print
-			Con_Warning ("Server key unbind, ignored: [%s]\n", line->original);
+			Con_WarningLinef ("Server key unbind, ignored: [%s]", line->original);
 		return;
 	}
 
 	if (line->count != 2)
 	{
-		Con_Printf ("unbind <key> : remove commands from a key\n");
+		Con_PrintLinef ("unbind <key> : remove commands from a key");
 		return;
 	}
 
 	b = Key_StringToKeynum (line->args[1]);
 	if (b==-1)
 	{
-		Con_Printf ("\"%s\" isn't a valid key\n", line->args[1]);
+		Con_PrintLinef (QUOTED_S " isn't a valid key", line->args[1]);
 		return;
 	}
 // SUPPORTS_KEYBIND_FLUSH -- Key_SetBinding is smart and figures out what to do just fine!
@@ -1010,7 +1010,7 @@ void Key_Unbindall_f (lparse_t *line)
 		// pq_bindprotect not required to be set.  This is a presumed hostile
 		// action.  Historically, a server admin who wanted to be a jerk
 		// would use a menu that exists in some mods to be a jerk to a player.
-		Con_Warning ("Server sent unbindall command.  Ignoring.\n");
+		Con_WarningLinef ("Server sent unbindall command.  Ignoring.");
 		return;
 	}
 	for (i = 0 ; i < KEYMAP_COUNT_512; i++)
@@ -1036,14 +1036,14 @@ void Key_Bindlist_f (void)
 	for (k = 0; k < (KEYMAP_COUNT_512 - 1) /* -1 because of hard toggle console key*/ ; k ++)
 	{
 		const char *binding = Key_GetBinding (k);
-		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: \"%s\")",  keybindings[k].real) : "";
+		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: " QUOTED_S ")",  keybindings[k].real) : "";
 
 		if (binding && *binding) {
-			Con_SafePrintf ("   %-12s \"%s\" %s\n", Key_KeynumToString(k, key_local_name), binding, permanent);
+			Con_SafePrintLinef ("   %-12s " QUOTED_S " %s", Key_KeynumToString(k, key_local_name), binding, permanent);
 			count++;
 		}
 	}
-	Con_SafePrintf ("%d bindings\n", count);
+	Con_SafePrintLinef ("%d bindings", count);
 }
 
 
@@ -1059,7 +1059,7 @@ void Key_Bind_f (lparse_t *line)
 
 	if (cmd_from_server && pq_bindprotect.value) {
 		if (pq_bindprotect.value > 1) // 1 means ignore.  2 means ignore + print
-			Con_Warning ("Server key bind, ignoring: [%s]\n", line->original);
+			Con_WarningLinef ("Server key bind, ignoring: [%s]", line->original);
 		return;
 	}
 
@@ -1067,25 +1067,25 @@ void Key_Bind_f (lparse_t *line)
 
 	if (c != 2 && c != 3)
 	{
-		Con_Printf ("bind <key> [command] : attach a command to a key\n");
+		Con_PrintLinef ("bind <key> [command] : attach a command to a key");
 		return;
 	}
 	b = Key_StringToKeynum (line->args[1]);
 	if (b==-1)
 	{
-		Con_Printf ("\"%s\" isn't a valid key\n", line->args[1]);
+		Con_PrintLinef (QUOTED_S " isn't a valid key", line->args[1]);
 		return;
 	}
 
 	if (c == 2) {
 
 		const char *binding = Key_GetBinding (b);
-		const char *permanent = (keybindings[b].server && keybindings[b].real) ? va ("(User: \"%s\")",  keybindings[b].real) : "";
+		const char *permanent = (keybindings[b].server && keybindings[b].real) ? va ("(User: " QUOTED_S ")",  keybindings[b].real) : "";
 
 		if (binding)
-			Con_Printf ("\"%s\" = \"%s\" %s\n", line->args[1], binding, permanent);
+			Con_PrintLinef (QUOTED_S " = " QUOTED_S " %s", line->args[1], binding, permanent);
 		else
-			Con_Printf ("\"%s\" is not bound\n", line->args[1] );
+			Con_PrintLinef (QUOTED_S " is not bound", line->args[1] );
 		return;
 	}
 
@@ -1117,16 +1117,16 @@ void Key_WriteBindings (FILE *f)
 
 	// unbindall before loading stored bindings:
 	if (cfg_unbindall.value)
-		fprintf (f, "unbindall\n");
+		fprintlinef (f, "unbindall");
 	for (i = 0; i < KEYMAP_COUNT_512; i++)
 	{
 #ifdef SUPPORTS_KEYBIND_FLUSH
 		// Always use real when writing.  Never the server bind.
 		if (keybindings[i].real && *keybindings[i].real)
-			fprintf (f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i, key_export_name), keybindings[i].real);
+			fprintlinef (f, "bind " QUOTED_S " " QUOTED_S, Key_KeynumToString(i, key_export_name), keybindings[i].real);
 #else // .. oldway
 		if (keybindings[i] && *keybindings[i])
-			fprintf (f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i, key_export_name), keybindings[i]);
+			fprintlinef (f, "bind " QUOTED_S " " QUOTED_S, Key_KeynumToString(i, key_export_name), keybindings[i]);
 #endif // !SUPPORTS_KEYBIND_FLUSH
 	}
 }
@@ -1299,7 +1299,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 
 	//
 	// SCAN CODE:  PHYSICAL KEY PRESS.  ALL OF THEM PASS THROUGH HERE
-//	Con_Printf ("Scancode: %c %d  ascii %c %d\n\n", CLAMP(32, scancode, 127), scancode, CLAMP(32, ascii, 127), ascii);
+//	Con_PrintLinef ("Scancode: %c %d  ascii %c %d", CLAMP(32, scancode, 127), scancode, CLAMP(32, ascii, 127), ascii);
 	if (scancode) {
 		// Run Key_Event but tell it to screen out menu/mm/console if in_keymap set.
 		desto = Key_Event (scancode, down, (int) in_keymap.value);
@@ -1369,7 +1369,7 @@ int Key_Event (int key, cbool down, int special)
 
 #pragma message ("Baker: There is the possibility of crosswired double key ups and/or double key downs")
 #pragma message ("for keys that have multiple paths, like right and left shift.  How to handle?")
-	//if (key_dest == key_game) Con_Queue_Printf ("Key_Console: (rnd %3d) code = %d rep: '%c'\n", (int)(RANDOM_FLOAT * 100), key, key);
+	//if (key_dest == key_game) Con_Queue_PrintLinef ("Key_Console: (rnd %3d) code = %d rep: '%c'", (int)(RANDOM_FLOAT * 100), key, key);
 
 
 	switch (key)
@@ -1614,7 +1614,7 @@ int Key_Event (int key, cbool down, int special)
 #endif // !SUPPORTS_KEYBIND_FLUSH
 			if (kb && kb[0] == '+')
 			{
-				c_snprintf2 (cmd, "-%s %i\n", kb + 1, key);
+				c_snprintf2 (cmd, "-%s %d\n", kb + 1, key);
 				Cbuf_AddText (cmd);
 			}
 #ifdef PLATFORM_OSX // Crusty Mac
@@ -1685,13 +1685,13 @@ int Key_Event (int key, cbool down, int special)
 
 			if (kb[0] == '+')
 			{	// button commands add keynum as a parm
-				c_snprintf2 (cmd, "%s %d\n", kb, key);
-				Cbuf_AddText (cmd);
+				//c_snprintf2 (cmd, "%s %d" NEWLINE, kb, key);
+				//Cbuf_AddTextLinef (cmd);
+				Cbuf_AddTextLinef ("%s %d", kb, key);
 			}
 			else
 			{
-				Cbuf_AddText (kb);
-				Cbuf_AddText ("\n");
+				Cbuf_AddTextLine (kb);
 			}
 		}
 		return 0;
@@ -1738,10 +1738,10 @@ int Key_Event (int key, cbool down, int special)
 		if (special) return key_console;  // Don't do it.  Let KeyEventEx do it.
 
 
-//		Con_Printf ("Before:\n");
+//		Con_PrintLinef ("Before:");
 //		Undo_Dump (&console1.undo_buffer);
 		Key_Console (key);
-//		Con_Printf ("After:\n");
+//		Con_PrintLinef ("After:");
 //		Undo_Dump (&console1.undo_buffer);
 		break;
 
@@ -1796,12 +1796,14 @@ void Key_SetDest (keydest_e newdest)
 		return; // No change
 
 #ifdef PLATFORM_WINDOWS
+#ifndef CORE_SDL
 	if (key_dest == key_game || newdest == key_game) {
 		// A switch to or away from using scancodes
 		if (in_keymap.value) // 1005
-			WIN_ResetDeadKeys ();
+			Shell_Input_ResetDeadKeys ();
 
 	}
+#endif // !CORE_SDL
 #endif // PLATFORM_WINDOWS
 
 
@@ -1817,5 +1819,3 @@ void Key_SetDest (keydest_e newdest)
 	}
 	key_dest = newdest;
 }
-
-

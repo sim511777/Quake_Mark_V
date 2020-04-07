@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CORE_LOCAL
 #include "core.h"
+#include "enumbits.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //  KEY/VALUE: Baker - Slightly easier to make constants/enumeration tables
@@ -79,9 +80,40 @@ keyvalue_t* KeyValue_GetEntry (keyvalue_t table[], const char* keystring)
 //}
 
 
+
+void c_swapd (double *a, double *b)
+{
+	double c = *a;
+	*a = *b;
+	*b = c;
+}
+
 void c_swapf (float *a, float *b)
 {
 	float c = *a;
+	*a = *b;
+	*b = c;
+}
+
+void c_swapptr (void *_a, void *_b)
+{
+	void **a = _a, **b = _b;
+	void *c = *a;
+	*a = *b;
+	*b = c;
+}
+
+
+void c_swapb (unsigned char *a, unsigned char *b)
+{
+	unsigned char c = *a;
+	*a = *b;
+	*b = c;
+}
+
+void c_swapi (int *a, int *b)
+{
+	int c = *a;
 	*a = *b;
 	*b = c;
 }

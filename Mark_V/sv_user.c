@@ -507,13 +507,13 @@ cbool SV_ReadClientMessage (void)
 
 			if (msg_badread)
 			{
-				Dedicated_Printf ("SV_ReadClientMessage: badread\n");
+				Dedicated_PrintLinef ("SV_ReadClientMessage: badread");
 				return false;
 			}
 
 			ccmd = MSG_ReadChar ();
 
-//			Dedicated_Printf ("SV_ReadClientMessage: Command %d\n", ccmd);
+//			Dedicated_PrintLinef ("SV_ReadClientMessage: Command %d", ccmd);
 
 			switch (ccmd)
 			{
@@ -521,16 +521,16 @@ cbool SV_ReadClientMessage (void)
 			return true;	//msg_badread, meaning we just hit eof.
 
 			default:
-				Dedicated_Printf ("SV_ReadClientMessage: unknown command char %d\n", ccmd);
+				Dedicated_PrintLinef ("SV_ReadClientMessage: unknown command char %d", ccmd);
 				return false;
 
 			case clc_nop:
-//				Dedicated_Printf ("clc_nop\n");
+//				Dedicated_PrintLinef ("clc_nop");
 				break;
 
 			case clc_stringcmd:
 				s = MSG_ReadString ();
-//				Con_Printf ("Message: \"%s\"\n", s);
+//				Con_PrintLinef ("Message: " QUOTED_S, s);
 
 				if (host_client->privileged)
 					ret = 2;
@@ -563,13 +563,13 @@ cbool SV_ReadClientMessage (void)
 					Cmd_ExecuteString (s, src_client);
 					break;
 				default: // 
-					 Con_DPrintf("%s tried to %s\n", host_client->name, s);
+					 Con_DPrintLinef("%s tried to %s", host_client->name, s);
 					break;
 				}
 
 				break; // Get out of here
 			case clc_disconnect:
-				Dedicated_Printf ("SV_ReadClientMessage: client disconnected\n");
+				Dedicated_PrintLinef ("SV_ReadClientMessage: client disconnected");
 				return false;
 
 			case clc_move:
@@ -614,7 +614,7 @@ void SV_Host_Frame_RunClients (double frametime) // MH had this as a float, not 
 					SV_DropClient (false);	// client misbehaved...
 					break;
 				}
-				//else Con_Printf ("Read a message from socket for %d\n", i);
+				//else Con_PrintLinef ("Read a message from socket for %d", i);
 			}
 		}
 	}
@@ -646,4 +646,3 @@ void SV_Host_Frame_RunClients (double frametime) // MH had this as a float, not 
 			SV_Host_Frame_RunClients_ClientThink (frametime); // Called here
 	}
 }
-

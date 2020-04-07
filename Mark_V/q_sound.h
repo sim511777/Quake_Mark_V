@@ -168,8 +168,12 @@ extern vec3_t listener_right;
 extern vec3_t listener_up;
 
 extern volatile dma_t sn;
-extern vec_t sound_nominal_clip_dist;
+//extern float sound_nominal_clip_dist;
+
 extern int		snd_blocked;
+
+#define		SOUND_NOMINAL_CLIP_DIST_DEFAULT_1000			1000.0
+//#define		deathmatch_sound_nominal_clip_dist				1500.0  
 
 
 void S_LocalSound (const char *name);
@@ -187,6 +191,6 @@ void Sound_Toggle_Mute_f (void);
 
 const char *S_Sound_ListExport (void); // Baker
 
-
+extern int sound_rate_hz;
 
 #endif // ! __Q_SOUND_H__

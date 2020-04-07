@@ -21,11 +21,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CORE_LOCAL
 #include "core.h"
-#include "lists.h"
+#include "lists.h" // Courtesy
 
 
 // By design List_Add does not allow duplicates!
-void List_Add (clist_t** headnode, const char *name)
+cbool List_Addf (clist_t** headnode, const char *fmt, ...) // __core_attribute__((__format__(__printf__,2,3)))
+{
+	cbool result;
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+	
+	result = List_Add (headnode, text);
+	free (text); // free VA_EXPAND_ALLOC allocation.
+	return result;
+}
+
+cbool List_Add (clist_t** headnode, const char *name)
 {
 	clist_t	*listent,*cursor,*prev;
 
@@ -33,10 +43,11 @@ void List_Add (clist_t** headnode, const char *name)
 	for (listent = *headnode; listent; listent = listent->next)
 	{
 		if (!strcmp (name, listent->name))
-			return;
+			return false;
 	}
 
-	listent = (clist_t *)core_malloc (sizeof(clist_t));
+	listent = ZeroAlloc (listent); // Important now that we have extra potential pointers.
+
 	listent->name = core_strdup (name);
 	String_Edit_To_Lower_Case (listent->name);
 
@@ -59,10 +70,47 @@ void List_Add (clist_t** headnode, const char *name)
         listent->next = prev->next;
         prev->next = listent;
     }
+	return true;
 }
 
+
+clist_t *List_Clone (const clist_t *headnode, const char *wild_patterns)
+{
+	clist_t *list_out = NULL;
+	const clist_t *cur;
+
+	for (cur = headnode; cur; cur = cur->next) {
+		if (wild_patterns && !wildcompare (cur->name, wild_patterns))
+			continue; // Disqualified
+
+		List_Add (&list_out, cur->name);
+	}
+	return list_out;
+}
+
+
+// Similar to _joindupfz
+char *List_To_String_Alloc (const clist_t *headnode, const char *separator, const char *wild_patterns)
+{
+	char *text = NULL; // text_a
+
+	const clist_t *cur;
+
+	for (cur = headnode; cur; cur = cur->next) {
+		if (wild_patterns && !wildcompare (cur->name, wild_patterns))
+			continue; // Disqualified
+
+		if (separator && text)	txtcat (&text, "%s", separator);
+		if (1)					txtcat (&text, "%s", cur->name);
+	}
+
+	if (!text) text = strdup (""); // Don't return NULL even if no parameters.
+	return text;
+}
+
+
 // By design List_Add does not allow duplicates!
-void List_Add_No_Case_To_Lower (clist_t** headnode, const char *name)
+clist_t *List_Add_No_Case_To_Lower (clist_t **headnode, const char *name)
 {
 	clist_t	*listent,*cursor,*prev;
 
@@ -70,10 +118,10 @@ void List_Add_No_Case_To_Lower (clist_t** headnode, const char *name)
 	for (listent = *headnode; listent; listent = listent->next)
 	{
 		if (!strcmp (name, listent->name))
-			return;
+			return NULL;
 	}
 
-	listent = (clist_t *)core_malloc (sizeof(clist_t));
+	listent = ZeroAlloc (listent); // Important now that we have extra pointers in struct that are optional
 	listent->name = core_strdup (name);
 	//String_Edit_To_Lower_Case (listent->name);
 
@@ -96,6 +144,7 @@ void List_Add_No_Case_To_Lower (clist_t** headnode, const char *name)
         listent->next = prev->next;
         prev->next = listent;
     }
+	return listent;
 }
 
 
@@ -137,10 +186,17 @@ clist_t *List_Find_Item (const clist_t *headnode, const char *s_find)
 
 void List_Add_Raw_Unsorted (clist_t** headnode, const void *buf, size_t bufsiz)
 {
+// Black sheep function.  I think it is used to store memory blocks that might contain null characters, or not contain null characters (hence no termination)
+// List_Find won't work for that reason.
 	clist_t	*listent;
 	
-	listent = (clist_t *)core_malloc (sizeof(clist_t));
-	listent->name = (char *)c_memdup (buf, bufsiz);
+	listent = ZeroAlloc (listent);
+
+	listent->name = (char *)core_memdup (buf, bufsiz + 1); // +1 let's at least be able to sort of see the contents as a string.
+	
+	// Let's at least be able to see string (barring nulls in the data).  
+	// So a +1 size and NULL it so viewing as string at least isn't a buffer overrun if it has no nulls.
+	listent->name[bufsiz] = 0; 
 	listent->next = NULL;
 
 	if (*headnode)
@@ -156,7 +212,7 @@ void List_Add_Raw_Unsorted (clist_t** headnode, const void *buf, size_t bufsiz)
 void List_Add_Unsorted (clist_t** headnode, const char *name)
 {
 	clist_t	*listent;
-	listent = (clist_t *)core_malloc (sizeof(clist_t));
+	listent = ZeroAlloc (listent);
 	listent->name = core_strdup (name);
 	listent->next = NULL;
 	String_Edit_To_Lower_Case (listent->name);
@@ -184,24 +240,25 @@ void List_Concat_Unsorted (clist_t** headnode, clist_t *list2)
 
 void List_Free (clist_t** headnode)
 {
-	clist_t *blah;
-
 	while (*headnode)
 	{
-		blah = (*headnode)->next;
-		core_free ((*headnode)->name);
-		core_free (*headnode);
+		clist_t *item = *headnode;	// Get item
 
-		*headnode = blah;
+		*headnode = item->next;		// Advance before we start nuking data.
+		
+		freenull (item->name);
+		freenull (item->extradata);
+		freenull (item->extradata2);
+		freenull (item);
 	}
 
 	// headnode is NULL
 }
 
 
-int List_Count (clist_t *headnode)
+int List_Count (const clist_t *headnode)
 {
-	clist_t *cur;
+	const clist_t *cur;
 	int count;
 
 	for (cur = headnode, count = 0; cur; cur = cur->next, count ++);
@@ -209,10 +266,24 @@ int List_Count (clist_t *headnode)
 	return count;
 }
 
-int List_Compare (clist_t *list1, clist_t *list2)
+clist_t *List_Item_Num (const clist_t *headnode, int num)
 {
-	clist_t *cur_1 = list1;
-	clist_t *cur_2 = list2;
+	const clist_t *cur;
+	int count;
+
+	for (cur = headnode, count = 0; cur; cur = cur->next, count ++)
+		if (count == num)
+			return (clist_t *)cur;
+
+	return NULL; // Failure
+}
+
+
+
+int List_Compare (const clist_t *list1, const clist_t *list2)
+{
+	const clist_t *cur_1 = list1;
+	const clist_t *cur_2 = list2;
 	int count = 1;  // Notice we start at 1.  So a 1 member list returns 1 instead 0 for the comparison fail.
 
 	while (1)
@@ -235,16 +306,16 @@ int List_Compare (clist_t *list1, clist_t *list2)
 
 
 
-void List_Print (clist_t *headnode)
+void List_Print (const clist_t *headnode, printline_fn_t my_printline)
 {
-	clist_t *cur;
+	const clist_t *cur;
 	int count;
 	for (cur = headnode, count = 0; cur; cur = cur->next, count ++)
-		Core_Printf ("%i: %s\n", count, cur->name);
+		my_printline ("%d: %s", count, cur->name);
 }
 
 
-clist_t *List_String_Split (const char *s, int ch_delimiter)
+clist_t *List_String_Split_Alloc (const char *s, int ch_delimiter)
 {
 	clist_t *list = NULL;
 	const char* linestart = s;
@@ -273,8 +344,63 @@ clist_t *List_String_Split (const char *s, int ch_delimiter)
 	return list;
 }
 
+//  Carriage return killer
+// Aewesome 09192015
+clist_t *List_String_Split_NewLines_Scrub_CarriageReturns_Alloc (const char *s, int s_len)
+{
+	clist_t *top = NULL, *prev_item = NULL, *item = NULL;
+
+	const char *cursor, *linestart;
+	const char *s_last_char = s_len ? &s[s_len - 1] : NULL;
+	int linenum = 0;
+	int line_length;
+	cbool end_of_string = false;
+
+	for (cursor = s, linestart = cursor, line_length = 0; /*nothing !! */; cursor++, line_length ++)
+	{
+		if (s_len && cursor > s_last_char)
+			end_of_string = true;
+		else {
+			switch (*cursor) {
+			default:			continue;									// Not either, keep going ...
+			case_break '\0':	end_of_string = true;						// Null terminator hit.  Reduce count by 1.
+			case_break '\n':	if (linestart[line_length - 1] == '\r')		// Newline hit.  If carriage return, back it off.
+									line_length --;
+			}
+		}
+
+		// If null is first line (top = NULL), write it.  Even if zero length, because file does exist.
+		// If not the first line, if we hit null terminator and length is zero do not write.
+
+		if (end_of_string && line_length == 0 && top != NULL)
+			break; // Get out without writing, there is nothing to write.
+
+		item = ZeroAlloc(item);
+		item->name = strndup (linestart, line_length);
+		item->next = NULL;
+
+		//logd ("Wrote line: '%s'", item->name);
+		linenum ++;
+//		alert ("#%03d: %s", linenum, item->name);
+
+		if (prev_item)	prev_item->next = item;
+		if (!top)		top = item;
+		prev_item = item;
+
+		if (end_of_string)
+			break; // We had something in the buffer when we hit end and needed to write it out, but now that is complete so get out.
+
+		linestart = &cursor[1], line_length = -1;
+	}
+	// Last one
+
+
+	return top;
+}
+
+
 // Will add a trailing empty line after a newline.
-clist_t *List_From_String_Lines (const char *s)
+clist_t *List_From_String_Lines_Alloc (const char *s)
 {
 	clist_t *out = NULL;
 	char *buf = core_strdup (s); // Copy

@@ -1,3 +1,10 @@
+#ifdef GLQUAKE // GLQUAKE specific
+#ifndef CORE_SDL // NOT SDL
+
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
+
+
 /*
 Copyright (C) 2009-2013 Baker
 
@@ -31,25 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void VID_Local_Window_PreSetup (void)
 {
-	WNDCLASS		wc;
-	sysplat.hIcon = LoadIcon (sysplat.hInstance, MAKEINTRESOURCE (IDI_ICON1));
-
-
-	// Register the frame class
-    wc.style         = 0;
-    wc.lpfnWndProc   = (WNDPROC)WIN_MainWndProc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 0;
-    wc.hInstance     = sysplat.hInstance;
-//  wc.hIcon         = sysplat.hIcon;
-	wc.hIcon		 = ExtractIcon (sysplat.hInstance, Folder_Binary_URL(), 0);
-    wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
-	wc.hbrBackground = NULL;
-    wc.lpszMenuName  = 0;
-    wc.lpszClassName = ENGINE_NAME;
-
-    if (!RegisterClass (&wc) )
-		System_Error ("Couldn't register window class");
+	WIN_Vid_Init_Once_CreateClass (); // Class, icon, etc.
 
 	 // Baker: Multisample support.  In principal, at least.
 	if (sysplat.hwnd_dialog)
@@ -66,7 +55,7 @@ void VID_Local_Window_PreSetup (void)
 
 			if (ask_samples != 2 && ask_samples != 4 && ask_samples != 8)
 			{
-				Con_Warning ("Multisamples requested \"%d\" is invalid, trying 4\n", ask_samples);
+				Con_WarningLinef ("Multisamples requested " QUOTED_D " is invalid, trying 4", ask_samples);
 				ask_samples = 4;
 			}
 
@@ -81,11 +70,11 @@ void VID_Local_Window_PreSetup (void)
 
 			if (sysplat.multisamples)
 			{
-				Con_SafePrintf ("Multisample x %i Enabled (Requested %i, Received %i).\n", sysplat.multisamples, ask_samples, sysplat.multisamples);
+				Con_SafePrintLinef ("Multisample x %d Enabled (Requested %d, Received %d).", sysplat.multisamples, ask_samples, sysplat.multisamples);
 				vid.multisamples = sysplat.multisamples;
 			}
-			else Con_Warning ("Multisample: Requested but not available.\n");
-		} else Con_DPrintf ("Note: Multisample not requested\n");
+			else Con_WarningLinef ("Multisample: Requested but not available.");
+		} else Con_DPrintLinef ("Note: Multisample not requested");
 
 		// Post teardown
 		DestroyWindow (sysplat.hwnd_dialog);
@@ -96,28 +85,16 @@ void VID_Local_Window_PreSetup (void)
 
 vmode_t VID_Local_GetDesktopProperties (void)
 {
-	DEVMODE	devmode;
-	vmode_t desktop = {0};
 
-	if (!EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
-	{
-		System_Error ("VID_UpdateDesktopProperties: EnumDisplaySettings failed");
-		return desktop;
-	}
-
-	desktop.type		=	MODE_FULLSCREEN;
-	desktop.width		=	devmode.dmPelsWidth;
-	desktop.height		=	devmode.dmPelsHeight;
-	desktop.bpp			=	devmode.dmBitsPerPel;
-
-	return desktop;
+	return WIN_Vid_GetDesktopProperties ();  // Vid_Display_Properties_Get	
 }
+
 
 //
 // vsync
 //
 
-
+// Sole caller is GL_CheckExtensions.  No fucking kidding.  It's true.
 cbool VID_Local_Vsync_Init (const char *gl_extensions_str)
 {
 	if (vid.direct3d == 8) // dx8 - vsync handled specially, automatically available, but not used through functions and requires vid_restart
@@ -145,12 +122,12 @@ void VID_Local_Vsync (void)
 		if (vid_vsync.value)
 		{
 			if (!sysplat.wglSwapIntervalEXT(1))
-				Con_Printf ("VID_Vsync_f: failed on wglSwapIntervalEXT\n");
+				Con_PrintLinef ("VID_Vsync_f: failed on wglSwapIntervalEXT");
 		}
 		else
 		{
 			if (!sysplat.wglSwapIntervalEXT(0))
-				Con_Printf ("VID_Vsync_f: failed on wglSwapIntervalEXT\n");
+				Con_PrintLinef ("VID_Vsync_f: failed on wglSwapIntervalEXT");
 		}
 	}
 }
@@ -158,8 +135,10 @@ void VID_Local_Vsync (void)
 void VID_Local_Vsync_f (cvar_t *var)
 {
 	if (vid.direct3d == 8) { // dx8 - vsync switch handled specially
-		if (host_post_initialized)
-			Con_Printf ("Direct3D: vid_vsync takes effect after mode change\n          vsync only works for fullscreen\n");
+		if (host_post_initialized) {
+			Con_PrintLinef ("Direct3D: vid_vsync takes effect after mode change");
+			Con_PrintLinef ("          vsync only works for fullscreen");
+		}
 	}
 
 	VID_Local_Vsync ();
@@ -169,16 +148,18 @@ void VID_Local_Vsync_f (cvar_t *var)
 void VID_Local_Multisample_f (cvar_t *var)
 {
 #pragma message ("Baker: What if it isn't supported?  Like if we don't bother on a Mac?")
-	if (host_initialized)
-		Con_Printf ("%s set to \"%s\".  requires engine restart.\n"
-				    "Note settings are: 2, 4, 8 and 0\n", var->name, var->string);
+	if (host_initialized) {
+		Con_PrintLinef ("%s set to " QUOTED_S ".  requires engine restart.", var->name, var->string);
+		Con_PrintLinef ("Note settings are: 2, 4, 8 and 0");
+	}
 }
+
 
 //
 // vid modes
 //
 
-
+// Sys_win?  NO.
 void VID_Local_AddFullscreenModes (void)
 {
 
@@ -210,13 +191,14 @@ void VID_Local_AddFullscreenModes (void)
 		{
 			// Not a dup and test = ok ---> add it
 			memcpy (&vid.modelist[vid.nummodes++], &test, sizeof(vmode_t) );
-//			Con_SafePrintf ("Added %i x %i %i\n", vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
+			logd ("Added %d: %d x %d %d", vid.nummodes -1, vid.modelist[vid.nummodes-1].width, vid.modelist[vid.nummodes-1].height, vid.modelist[vid.nummodes-1].bpp);
 		}
 	}
 }
 
+
 // Baker: begin resize window on the fly
-void VID_Local_Resize_Act (void)
+void VID_BeginRendering_Resize_Think_Resize_Act (void)
 {
 	WINDOWINFO windowinfo;
 	windowinfo.cbSize = sizeof (WINDOWINFO);
@@ -240,25 +222,17 @@ void VID_Local_Resize_Act (void)
 		vid.warp_stale = true; // Means warp needs recalculated.
 #ifdef DIRECT3D9_WRAPPER 
 		Direct3D9_ResizeWindow (vid.screen.width, vid.screen.height, vid.desktop.bpp); //, true /*windowed*/);
-		
-		{
-			// Right now for Open GL, clwidth is the same as the client width.  
-			// In the software renderer, this is not the case if vid_stretch is used.
-			// OR ... if the window resolution exceeds the maximum WinQuake supported resolution (forced stretch).
-//			clwidth = vid.screen.width;
-//			clheight = vid.screen.height;
-		}
-//		vid.warp_stale = true; // 
-//		TexMgr_RecalcWarpImageSize (); <--- Mark V OpenGL doesn't seem to need this, I suspect Direct3D will.
 #endif // DIRECT3D9_WRAPPER
 		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.
 
+		eglClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 		
 	}
-#endif // DIRECT3DX_WRAPPER  // Temp!
+#endif // DIRECT3D8_WRAPPER
 }
 // End resize window on the fly
 
+// Move to sys_win?  Probably not.
 void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rect)
 {
 	const char *nm = ENGINE_NAME;
@@ -269,6 +243,7 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 // Baker: begin resize window on the fly
 	VID_Resize_Check (2);
 // End resize window on the fly
+
 	if (sysplat.mainwindow)
 	{
 		SetWindowLong (sysplat.mainwindow, GWL_EXSTYLE, exstyle);
@@ -282,35 +257,40 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 	if (!sysplat.mainwindow) System_Error ("Couldn't create DIB window");
 }
 
+
+// Move to sys_win?
 void WIN_Change_DisplaySettings (int modenum)
 {
 	// Change display settings
+	vmode_t *p = &vid.modelist[modenum];
 	sysplat.gdevmode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-	sysplat.gdevmode.dmPelsWidth = vid.modelist[modenum].width;
-	sysplat.gdevmode.dmPelsHeight = vid.modelist[modenum].height;
-	sysplat.gdevmode.dmBitsPerPel = vid.modelist[modenum].bpp;
+	sysplat.gdevmode.dmPelsWidth = p->width;
+	sysplat.gdevmode.dmPelsHeight = p->height;
+	sysplat.gdevmode.dmBitsPerPel = p->bpp;
 	sysplat.gdevmode.dmSize = sizeof (DEVMODE);
 
 	if (eChangeDisplaySettings (&sysplat.gdevmode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-		System_Error ("Couldn't set fullscreen mode %i x %i @ %i bpp", vid.modelist[modenum].width, vid.modelist[modenum].height, vid.modelist[modenum].bpp);
+		System_Error ("Couldn't set fullscreen mode %d x %d @ %d bpp", p->width, p->height, p->bpp);
 }
+
 
 // Returns false if need to do GL setup again.
 cbool VID_Local_SetMode (int modenum)
 {
-	cbool reuseok = false;
-	RECT client_rect	= {0,0,vid.modelist[modenum].width, vid.modelist[modenum].height};
+	vmode_t *p 			= &vid.modelist[modenum];	// vid.c sets vid.screen, so do not use that here.
+	cbool reuseok 		= false;
+	RECT client_rect	= {0, 0, p->width, p->height};
 	RECT window_rect	= client_rect;
-	cbool bordered	= vid.modelist[modenum].type   == MODE_WINDOWED &&
-						  (vid.modelist[modenum].width  != vid.desktop.width ||
-						  vid.modelist[modenum].height != vid.desktop.height);
+	cbool bordered		= p->type   == MODE_WINDOWED &&
+						  (p->width  != vid.desktop.width ||
+						  p->height != vid.desktop.height);
 
 	DWORD ExWindowStyle = 0;
 	DWORD WindowStyle	= bordered ? DW_BORDERED : DW_BORDERLESS;
 	cbool restart	= (sysplat.mainwindow != NULL);
 
 	// Preserve these for hopeful reuse.
-	HDC wglHDC 		= restart ? ewglGetCurrentDC() : 0;
+	HDC wglHDC 		= restart ? ewglGetCurrentDC() : 0; // Not used?
 	HGLRC wglHRC 	= restart ? ewglGetCurrentContext() : 0;
 
 // Baker: begin resize window on the fly
@@ -326,11 +306,11 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
 		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.
-		if (vid.modelist[modenum].type == MODE_WINDOWED)
+		if (p->type == MODE_WINDOWED)
 			eChangeDisplaySettings (NULL, 0);
 
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
-		Direct3D9_ResetMode (vid.modelist[modenum].width, vid.modelist[modenum].height, vid.desktop.bpp, (vid.modelist[modenum].type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
+		Direct3D9_ResetMode (p->width, p->height, vid.desktop.bpp, (p->type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
 		return true; // Reuseok!
 	}
@@ -339,16 +319,15 @@ cbool VID_Local_SetMode (int modenum)
 #endif // DIRECT3D9_WRAPPER
 
 
-
 	if (restart)
-		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT);
+		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
 
-	if (vid.modelist[modenum].type == MODE_FULLSCREEN)
+	if (p->type == MODE_FULLSCREEN)
 		WIN_Change_DisplaySettings (modenum);
 
 // Baker: begin resize window on the fly
 	AdjustWindowRectEx (&window_rect, WindowStyle, FALSE, ExWindowStyle);  // Adds the borders
-	// Window width - Client width
+	// Window width - Client width - WM_GETMINMAXINFO needs the border size.
 	vid.border_width = (window_rect.right - window_rect.left) - client_rect.right;
 	vid.border_height = (window_rect.bottom - window_rect.top) - client_rect.bottom;
 // End resize window on the fly
@@ -356,7 +335,7 @@ cbool VID_Local_SetMode (int modenum)
 
 #if 1
 	// Windows 8 introduces chaos :(
-	if (restart && vid.modelist[modenum].type != vid.screen.type)
+	if (restart && p->type != vid.screen.type)
 	{
 		DestroyWindow (sysplat.mainwindow);
 		sysplat.mainwindow = 0;
@@ -364,16 +343,15 @@ cbool VID_Local_SetMode (int modenum)
 #endif
 
 
-
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
-	if (vid.modelist[modenum].type == MODE_WINDOWED)
+	if (p->type == MODE_WINDOWED)
 		eChangeDisplaySettings (NULL, 0);
 
 	// clear to black so it isn't empty
 	sysplat.draw_context = GetDC(sysplat.mainwindow);
 	#pragma message ("Baker: Oddly PaintBlackness does not seem to be doing anything now that I have multisample")
-	PatBlt (sysplat.draw_context, 0, 0, vid.modelist[modenum].width,vid.modelist[modenum].height, BLACKNESS);
+	PatBlt (sysplat.draw_context, 0, 0, p->width,p->height, BLACKNESS);
 
 // Get focus if we can, get foreground, finish setup, pump messages.
 // then sleep a little.
@@ -388,9 +366,9 @@ cbool VID_Local_SetMode (int modenum)
 	WIN_SetupPixelFormat (sysplat.draw_context);
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
-	Direct3D_SetVsync (vid_vsync.value); // Baker
-	Direct3D_SetFullscreen (vid.modelist[modenum].type == MODE_FULLSCREEN); // Baker
-	Direct3D_SetBPP (vid.desktop.bpp);
+	Direct3D8_SetVsync (vid_vsync.value); // Baker
+	Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+	Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3DX_WRAPPER
 
 	if (wglHRC && (reuseok = ewglMakeCurrent (sysplat.draw_context, wglHRC)) == 0)
@@ -398,7 +376,7 @@ cbool VID_Local_SetMode (int modenum)
 		// Tried to reuse context and it failed
 		ewglDeleteContext (wglHRC);
 		wglHRC = NULL;
-		Con_DPrintf ("Context reuse failed.  Must reload textures.\n");
+		Con_DPrintLinef ("Context reuse failed.  Must reload textures.");
 	}
 
 
@@ -408,13 +386,13 @@ cbool VID_Local_SetMode (int modenum)
 		wglHRC = ewglCreateContext( sysplat.draw_context );
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
-		Direct3D_SetVsync (vid_vsync.value); // Baker
-		Direct3D_SetFullscreen (vid.modelist[modenum].type == MODE_FULLSCREEN); // Baker
-		Direct3D_SetBPP (vid.desktop.bpp);
+		Direct3D8_SetVsync (vid_vsync.value); // Baker
+		Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+		Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3DX_WRAPPER
 
 		if (!wglHRC)
-			System_Error ("Could not initialize GL (wglCreateContext failed).\n\nMake sure you in are 65535 color mode, and try running -window.");
+			System_Error ("Could not initialize GL (wglCreateContext failed)." NEWLINE NEWLINE "Make sure you in are 65535 color mode, and try running -window.");
 		if (!ewglMakeCurrent( sysplat.draw_context, wglHRC ))
 			System_Error ("VID_Init: wglMakeCurrent failed");
 	}
@@ -435,17 +413,10 @@ cbool VID_Local_SetMode (int modenum)
 
 void VID_Local_SwapBuffers (void)
 {
-#ifdef DIRECT3D8_WRAPPER // dx8 - call Direct3D_SwapBuffers instead of Windows Swap_Buffers
-	Direct3D_SwapBuffers (); // Add void param?  Add swapbuffers as a sysplat.function?
-#endif // DIRECT3D8_WRAPPER
-#ifdef DIRECT3D9_WRAPPER // dx9 - call Direct3D9_SwapBuffers instead of Windows Swap_Buffers
-	Direct3D9_SwapBuffers ();
-#endif // DIRECT3D9_WRAPPER
-#ifndef DIRECT3DX_WRAPPER
-	if (SwapBuffers (sysplat.draw_context) == 0)
+	if (eSwapBuffers (sysplat.draw_context) == 0) {
 		if (vid.ActiveApp) // I'm getting this inappropriately after changing input for some reason.  Quit does a disconnect, which causes a screen update?
-			System_MessageBox ("Quake", "Swapbuffers failed"); // I've not seen this happen in at least a month.  But since it doesn't happen, little harm in leaving it here, right?
-#endif // !DIRECT3DX_WRAPPER
+			msgbox ("Quake", "Swapbuffers failed"); // I've not seen this happen in at least a month.  But since it doesn't happen, little harm in leaving it here, right?
+	}
 }
 
 
@@ -514,23 +485,12 @@ BOOL WIN_SetupPixelFormat (HDC hDC)
     return TRUE;
 }
 
-void WIN_AdjustRectToCenterScreen (RECT *in_windowrect)
-{
-	vmode_t desktop = VID_Local_GetDesktopProperties ();
-	int nwidth  = in_windowrect->right - in_windowrect->left;
-	int nheight = in_windowrect->bottom - in_windowrect->top;
-
-	in_windowrect->left = 0 + (desktop.width - nwidth) / 2;
-	in_windowrect->top =  0 + (desktop.height - nheight) / 2;
-	in_windowrect->right = in_windowrect->left + nwidth;
-	in_windowrect->bottom = in_windowrect->top + nheight;
-}
 
 //
 // window teardown
 //
 
-void VID_Local_Window_Renderer_Teardown (int destroy)
+void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode)
 {
 	// destroy = 1 = TEARDOWN_FULL else TEARDOWN_NO_DELETE_GL_CONTEXT (don't destroy the context or destroy window)
 	HGLRC hRC = ewglGetCurrentContext();
@@ -693,6 +653,7 @@ void VID_Local_Gamma_Set (unsigned short* ramps)
 {
 	if (!vid.ever_set_gamma)
 		vid.ever_set_gamma = true;
+
 	SetDeviceGammaRamp (sysplat.draw_context, ramps);
 }
 
@@ -719,14 +680,14 @@ void VID_Local_Startup_Dialog (void)
 {
 	if (DIRECT3D_WRAPPER_VERSION != 0) {
 		// Multisample not supported in Direct 3D version.
-		Con_DebugLog ("Direct 3D version does not support multisample\n");
+		Con_DebugLogLine ("Direct 3D version does not support multisample");
 		return;
 	}
 
 	// Baker: I think this is broke somehow.  Although doesn't matter that much.  Few situations that it would matter.
 
 	if (COM_CheckParm ("-nomultisample")) {
-		//Con_DPrintf ("Multisample disabled at command line\n"); // This is WAY TOO early.
+		//Con_DPrintLinef ("Multisample disabled at command line"); // This is WAY TOO early.
 		return;
 	}
 
@@ -762,33 +723,37 @@ void VID_Local_Startup_Dialog (void)
 
 void VID_Local_Set_Window_Caption (const char *text)
 {
+	const char *new_caption = text ? text : ENGINE_NAME;
+
 	if (!sysplat.mainwindow)
 		return;
 
-	if (!text)
-		SetWindowText (sysplat.mainwindow, ENGINE_NAME);
-	else
-		SetWindowText (sysplat.mainwindow, text);
+#pragma message ("Let's slam this into vid.c and call vidco set window caption or something.  Please!")
+	SetWindowText (sysplat.mainwindow, new_caption);
+
 }
 
 
 void VID_Local_Shutdown (void)
 {
-    VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL);
+    VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL_1, true /*reset video mode*/);
 
 #ifdef GLQUAKE_HARDWARE_GAMMA
 	VID_Gamma_Shutdown ();
 #endif // GLQUAKE_HARDWARE_GAMMA
-
-
-
 }
 
+
+// This function gets called before anything happens
 void VID_Local_Init (void)
 {
 // Early
 #ifdef GLQUAKE_RENDERER_SUPPORT
-	VID_Renderer_Setup (); // Hooks up GL functions
+	VID_Renderer_Setup (); // Hooks up our GL functions
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 }
+
+#endif // PLATFORM_WINDOWS
+#endif // !CORE_SDL
+#endif // GLQUAKE specific

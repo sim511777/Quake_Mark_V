@@ -171,13 +171,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* argument format attributes for function
  * pointers are supported for gcc >= 3.1
  */
- //#pragma message ("Attribute check")
+//#pragma message ("Attribute check")
 #if defined(__GNUC__) //&& (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 0))
 	#define	__core_attribute__	__attribute__
 	//#pragma message ("Attribute define")
 #else
 	#define	__core_attribute__(x)
 #endif
+
 
 #if (defined(PLATFORM_WINDOWS) || defined(PLATFORM_LINUX)) && defined (__GNUC__)
 // Linux does not have BSD strlcpy which is not standard C
@@ -186,7 +187,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #ifdef __GNUC__
+#ifndef PLATFORM_LINUX
 	#define CORE_NEEDS_STRNDUP // Mingw is pissing me off ..
+#endif // !PLATFORM_LINUX
 	#define CORE_NEEDS_STRNLEN // Mingw is pissing me off ..
 #endif // __GNUC__
 
@@ -198,6 +201,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _MSC_VER
 	#define CORE_NEEDS_MEMICMP	// Non-Microsoft compilers don't have this function
 #endif // ! _MSC_VER
+
+#define SPRINTSFUNC "%s: "
 
 #ifdef _MSC_VER
 	typedef __int64 int64_t;
@@ -250,15 +255,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	// Visual Studio has different names for these functions
 
 	#ifdef __VISUAL_STUDIO_6__
-		#define __func__ va(__FILE__ " %d", __LINE__)  // No Pretty function support
+		//#define __func__ va(__FILE__ " %d", __LINE__)  // No Pretty function support
+		#define __func__ "not available"
 
 		#define strcasecmp stricmp
 		#define strncasecmp strnicmp
 	#else
-		#define __func__ __FUNCTION__  // Pretty function support
+		#define __func__ __FUNCTION__
 
-		#define strcasecmp _stricmp
-		#define strncasecmp _strnicmp
+		#ifndef strcasecmp
+			#define strcasecmp _stricmp		// Largely for HTTPClientWrapper.h
+		#endif
+		#ifndef strncasecmp
+			#define strncasecmp _strnicmp	// Largely for HTTPClientWrapper.h
+		#endif
 	#endif // ! __VISUAL_STUDIO_6__
 
 	#ifndef __VISUAL_STUDIO_6__
@@ -274,6 +284,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	#pragma warning(disable:4267) // conversion from 'size_t' to 'type', possible loss of data (/Wp64 warning)
 
 #endif // _MSC_VER
+
+// -save-temps option in gcc is pre-processed file.  Didn't work as far as I could tell -E is what worked.
+//#define __FUNC_COLON_SPACE__ __core_function__  // You have to treat it as a variable for gcc :(  Doesn't behave like string literal.
+
 
 #ifdef __clang__
 	#pragma clang diagnostic ignored "-Wshorten-64-to-32" // size_t 64 bits to a 32 bit int (because we don't use these for offsets and we aren't handling giga-files or giga-memory)
@@ -328,7 +342,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef enum
 {
 #ifdef __GNUC__
-    ___cbool_gcc_sucks_signed = -1,
+    ___cbool_gcc_sucks_signed = -1, // To throw into enums to force fucking int like the C standards say enumerations are supposed to be :(
 #endif // __GNUC__
 	false = 0,
 	true = 1,
@@ -354,7 +368,7 @@ typedef unsigned char byte;
 #endif
 
 #define in_range( _lo, _v, _hi ) ( (_lo) <= (_v) && (_v) <= (_hi) )
-#define out_of_bounds( _lo, _v, _hi ) ( (_v) < (_lo) || (_hi) < (_v) )
+#define out_of_bounds( _lo, _v, _hi ) ( (_v) < (_lo) || (_hi) < (_v) ) // It's back!  And bigger than ever!
 #define range_length(_start,_end)	 ((_end) - (_start) + 1)
 #define range_end   (_start,_length) ((_start) + (_length) - 1)
 #define in_range_beyond(_start, _v, _beyond ) ( (_start) <= (_v) && (_v) < (_beyond) )
@@ -382,19 +396,15 @@ typedef unsigned char byte;
 #define c_rint(x)	((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
 #define c_sgn(x)	((x > 0) - (x < 0))
 
+// DANGEROUS AS FUCK OCT 2016 ... no parens around the args ....
+//#define INBOUNDS(_low, _test, _high) (_low <= _test && _test <= _high )
 
 typedef void  (*voidfunc_t)			(void);
 typedef cbool (*progress_fn_t )		(void *id, int oldamt, int newamt); // Allows boundary checks easier
 typedef cbool (*boolfunc_t )		(void);
 
-typedef struct crect_s
-{
-	int				left, right, bottom, top;
-	int				center_x, center_y;
-	int				width, height;
-} crect_t;
 
-extern const char * const empty_string;
+extern const char * const empty_string;  // Why?  A decent compiler would combine them anyway, but may allow us to specifically identify an unchanged string (?)
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constants
@@ -420,6 +430,11 @@ extern const char * const empty_string;
 //  Command Support
 ///////////////////////////////////////////////////////////////////////////////
 
+// lineparse_t - Line_Parse_Alloc and Line_Parse_Free
+// MAX_CMD_256 is max string.  We could dynamically allocate but
+// then we run into the harder limit of 80 args and how to handle that.
+// And nothing needs 80 args.  For a general splitter, we should make a new
+// function.
 
 typedef int cmdret_t; // 0 = successful, non-zero = error
 #define MAX_CMD_256 256
@@ -435,6 +450,9 @@ typedef int cmdret_t; // 0 = successful, non-zero = error
 #define ARRAY_COUNT(_array)			(sizeof(_array) / sizeof(_array[0]))
 #define ARRAY_STRLEN(s) (ARRAY_COUNT(s) - sizeof(s[0]))  // Tags: STRING_LENGTH STRING_LEN STRLEN
 #define ARRAY_BOUNDS_FAIL(_n, _count) ((_n) < 0 || (_count) <= (_n))
+
+#define YES_OR_NULL(_blah) _blah : NULL
+
 //#define ARRAY_COUNT_STATIC(_array)	static const int _array ## _count = sizeof(_array) / sizeof(_array[0])
 
 #define OFFSET_ZERO_0 0
@@ -479,10 +497,17 @@ typedef void  (*MShutdown)			(void *);
 ///////////////////////////////////////////////////////////////////////////////
 
 #define case_break break; { } case  // EVIL!  And so awesome.
+
+#define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :    // EVIL!  And so awesome.
+#define SWITCH_DEFAULT(_val) (_val)
+
 #define block_start__ {
 #define __block_end }
 
 typedef void *sys_handle_t;
+
+#define XORY(x, y) ((x) ? (x) : (y))
+
 #define BATCHSIZE_8 8
 
 #define VA_ARGSCOPY_START(_text)				\
@@ -502,9 +527,15 @@ typedef void *sys_handle_t;
 #else
 	#define DEBUG_ONLY(x)
 #endif
+
+#define DEBUG_ASSERT(condition, message) DEBUG_ONLY (if (!(condition)) log_fatal ("Assertion failure: %s",  message));
+
 #define BYTE_POSITION(_dest, _n) (((byte *)(_dest))[_n])
 
-#if 0
+// Lets see who complains ...
+
+#if 0 // For now ...  these *MUST* be renamed and redeployed
+
 // See limits.h ... groan
 #define UINT8_MIN	      0			// UCHAR_MIN, UCHAR_MAX
 #define UINT8_MAX		256

@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -32,7 +34,7 @@ extern	qmodel_t	*loadmodel;
 extern	int	rs_skypolys; //for r_speeds readout
 extern	int rs_skypasses; //for r_speeds readout
 float	skyflatcolor[3];
-float	skymins[2][6], skymaxs[2][6];
+float	skymins[2][SKYBOX_SIDES_COUNT_6], skymaxs[2][SKYBOX_SIDES_COUNT_6];
 
 char	skybox_name[MAX_QPATH_64]; //name of current skybox, or "" if no skybox
 
@@ -41,9 +43,9 @@ gltexture_t	*solidskytexture, *alphaskytexture;
 
 
 
-int		skytexorder[6] = {0,2,1,3,4,5}; //for skybox
+int skytexorder[SKYBOX_SIDES_COUNT_6] = {0, 2, 1, 3, 4, 5}; //for skybox
 
-vec3_t	skyclip[6] = {
+vec3_t	skyclip[SKYBOX_SIDES_COUNT_6] = {
 	{1,1,0},
 	{1,-1,0},
 	{0,-1,1},
@@ -52,7 +54,7 @@ vec3_t	skyclip[6] = {
 	{-1,0,1}
 };
 
-int	st_to_vec[6][3] =
+int	st_to_vec[SKYBOX_SIDES_COUNT_6][3] =
 {
 	{3,-1,2},
 	{-3,1,2},
@@ -62,7 +64,7 @@ int	st_to_vec[6][3] =
  	{2,-1,-3}		// straight down
 };
 
-int	vec_to_st[6][3] =
+int	vec_to_st[SKYBOX_SIDES_COUNT_6][3] =
 {
 	{-2,3,1},
 	{2,3,-1},
@@ -96,7 +98,7 @@ void Sky_LoadTexture (texture_t *mt)
 
 	// Baker: Warn.
 	if (mt->width != 256 || mt->height != 128)
-		Con_Warning ("Standard sky texture %s expected to be 256 x 128 but is %d by %d \n", mt->name, mt->width, mt->height);
+		Con_WarningLinef ("Standard sky texture %s expected to be 256 x 128 but is %d by %d ", mt->name, mt->width, mt->height);
 
 	src = (byte *)mt + mt->offset0;
 
@@ -152,7 +154,7 @@ void Sky_LoadTexture (texture_t *mt)
 Sky_LoadSkyBox
 ==================
 */
-const char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+const char	*suf[SKYBOX_SIDES_COUNT_6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 void Sky_LoadSkyBox (const char *name)
 {
 	int			i, mark, width, height;
@@ -164,7 +166,7 @@ void Sky_LoadSkyBox (const char *name)
 		return; //no change
 
 	//purge old textures
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		if (skybox_textures[i] && skybox_textures[i] != notexture)
 			TexMgr_FreeTexture (skybox_textures[i]);
@@ -188,7 +190,7 @@ void Sky_LoadSkyBox (const char *name)
 
 
 	//load textures
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		mark = Hunk_LowMark ();
 		c_snprintf2 (filename, "gfx/env/%s%s", name, suf[i]);
@@ -200,7 +202,7 @@ void Sky_LoadSkyBox (const char *name)
 		}
 		else
 		{
-			Con_Printf ("Couldn't load %s\n", filename);
+			Con_PrintLinef ("Couldn't load %s", filename);
 			skybox_textures[i] = notexture;
 		}
 		Hunk_FreeToLowMark (mark);
@@ -208,7 +210,7 @@ void Sky_LoadSkyBox (const char *name)
 
 	if (nonefound) // go back to scrolling sky if skybox is totally missing
 	{
-		for (i = 0; i < 6; i++)
+		for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 		{
 			if (skybox_textures[i] && skybox_textures[i] != notexture)
 				TexMgr_FreeTexture (skybox_textures[i]);
@@ -220,7 +222,7 @@ void Sky_LoadSkyBox (const char *name)
 		return;
 	}
 
-	c_strlcpy(skybox_name, name);
+	c_strlcpy (skybox_name, name);
 }
 
 
@@ -243,7 +245,7 @@ void Sky_FrameSetup (void)
 
 	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for 
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
-	if (!renderer.gl_stencilbits) 
+	if (!renderer.gl_stencilbits  || vid.direct3d == 9 /*temp disable hack*/) 
 	{
 		Sky_DrawSky (); //johnfitz
 		return;
@@ -316,12 +318,14 @@ void Sky_Stencil_Draw (void)
 
 	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for 
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
-	if (!renderer.gl_stencilbits)
-		return;
 
 // Baker: No sky to draw
 	if (!level.sky /*|| !frame.has_sky*/)
 		return;
+
+	if (!renderer.gl_stencilbits || vid.direct3d ==9 /*temp disable hack*/) {
+		return;
+	}
 
 // Baker: Where drawn (doesn't z-fail), replace with 1
 // in the stencil buffer.
@@ -736,7 +740,7 @@ void Sky_DrawSkyBox (void)
 {
 	int		i;
 
-	for (i=0 ; i<6 ; i++)
+	for (i = 0; i< SKYBOX_SIDES_COUNT_6; i++)
 	{
 		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
@@ -1007,7 +1011,7 @@ void Sky_DrawSkyLayers (void)
 	if (gl_skyalpha.value < 1.0)
 		eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	for (i=0 ; i<6 ; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 		if (skymins[0][i] < skymaxs[0][i] && skymins[1][i] < skymaxs[1][i])
 			Sky_DrawFace (i);
 
@@ -1032,7 +1036,8 @@ void Sky_DrawSky (void)
 
 //#ifndef DIRECT3D8_WRAPPER // Baker: Direct3D no stencil at this time :(
 // Don't enable this since I don't think we are checking.
-// 	if (!frame.has_sky) // Investigate this
+// But would be nice to check, wouldn't it?
+// 	if (!frame.has_sky)
 //		return;
 //#endif // DIRECT3D8_WRAPPER
 
@@ -1043,7 +1048,7 @@ void Sky_DrawSky (void)
 	//
 	// reset sky bounds
 	//
-	for (i=0 ; i<6 ; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		skymins[0][i] = skymins[1][i] = 9999;
 		skymaxs[0][i] = skymaxs[1][i] = -9999;
@@ -1084,4 +1089,4 @@ void Sky_DrawSky (void)
 	Fog_EnableGFog ();
 }
 
-
+#endif // GLQUAKE specific

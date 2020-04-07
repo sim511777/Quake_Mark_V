@@ -16,18 +16,28 @@
 // stringlib.c -- extended string functionality
 
 
-#include "stringlib.h"
-#include "core.h"
+#include "core.h"		// Barely required
+#include "stringlib.h" // Courtesy
+
 #include <stdarg.h>
 #include <string.h> // strlen, etc.
 #include <ctype.h> // islower, etc.
 
+// Do not like enough for them to be widely available
+#define isnotvisibleascii(c) ((c) <= 32 || 127 <=(c)) // This actually already includes 127 delete char, good job
+#define iswhitespace(c) ((c) <= 32) // What about 127 delete char? // Going for the traditional definition of whitespace here I guess.  I dis
+#define text_a char // More like const char, actually
 
 // Short: Argv to command line
 // Notes: None.
 // Unit Test:
 void String_Command_Argv_To_String (char *cmdline, int numargc, char **argvz, size_t siz)
 {
+// Unfortunately, this is an inexact science that will not have quotes intact because system argv removes them.
+// Non-Windows deconstructs a command line into arguments
+// meaning it is lossy and actually impossible to reconstruct the original.
+// With 100% certainty.
+// Example mybin "hello" "my friend" --> arg0 mybin arg1 hello arg2 my friend <--- if there were quotes, we'd never know!
 	int i;
 
 	cmdline[0] = 0;
@@ -152,6 +162,37 @@ int String_Count_String (const char *s, const char *s_find)
 }
 
 
+int String_Count_Words (const char *s)
+{
+    int count = 0;
+    //printf ("Word is %s and  ... ", s);
+
+    while (*s)
+    {
+        if (*s != SPACE_CHAR_32) {
+            count ++;
+            while (*s && *s != SPACE_CHAR_32)
+                s ++;
+        }
+        else {
+            while (*s && *s == SPACE_CHAR_32)
+                s ++;
+//            in_space = 1;
+        }
+    }
+    //printf ("count is %d", count);
+	return count;
+}
+
+int String_Count_First_Word_Length (const char *s)
+{
+    const char *first_space = strchr (s, ' ');
+    if (!first_space) return strlen(s); // First word is everything.
+    if (first_space == s) return -1; // First "word" is a space.
+    return first_space - s;
+}
+
+
 #undef String_Does_Contain
 // Short: Returns 1 if string contains string, otherwise returns 0
 // Notes: For reference only, function has no advantage over strstr.
@@ -165,7 +206,7 @@ int String_Does_Contain (const char *s, const char *s_find)
 
 
 // Short: Returns 1 if string contains spaces, otherwise returns 0
-// Notes: Offers no advantage over strchr(s, SPACECHAR_32).
+// Notes: Offers no advantage over strchr(s, SPACE_CHAR_32).
 int String_Does_Contain_Spaces (const char *s)
 {
 	if (strchr(s, SPACE_CHAR_32))
@@ -280,6 +321,7 @@ int String_Does_Have_Uppercase (const char *s)
 
 	return 0;
 }
+
 
 cbool String_Is_Only_Alpha_Numeric_Plus_Charcode (const char *s, int charcode)
 {
@@ -404,7 +446,7 @@ int String_Edit_Insert_At (char* s_edit, size_t s_size, const char* s_insert, si
 }
 
 
-// Short: Removes all leading white-spaces (char < SPACECHAR_32) from string except for spaces (char SPACECHAR_32)
+// Short: Removes all leading white-spaces (char < SPACE_CHAR_32) from string except for spaces (char SPACE_CHAR_32)
 // Notes: None.
 char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit)
 {
@@ -417,13 +459,12 @@ char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all leading white-spaces (char <=SPACECHAR_32 ) from string including spaces (char SPACECHAR_32)
+// Short: Removes all leading white-spaces (char <= SPACE_CHAR_32 ) from string including spaces (char SPACE_CHAR_32)
 // Notes: None.
 char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit)
 {
 	if (s_edit[0]) // Don't bother for 0 length string
 	{
-		
 		char *s_end = String_Find_End (s_edit);
 		char *s_past_white = String_Skip_WhiteSpace_Including_Space (s_edit);
 
@@ -434,7 +475,7 @@ char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all trailing white-spaces (char < SPACECHAR_32) from string except for spaces (char SPACECHAR_32) by replacing with null characters
+// Short: Removes all trailing white-spaces (char < SPACE_CHAR_32) from string except for spaces (char SPACE_CHAR_32) by replacing with null characters
 // Notes: None.
 char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit)
 {
@@ -451,7 +492,7 @@ char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit)
 }
 
 
-// Short: Removes all trailing white-spaces (char <= SPACECHAR_32) from string including for spaces (char SPACECHAR_32) by replacing with null characters
+// Short: Removes all trailing white-spaces (char <= SPACE_CHAR_32) from string including for spaces (char SPACE_CHAR_32) by replacing with null characters
 // Notes: None.
 char *String_Edit_RTrim_Whitespace_Including_Spaces (char *s_edit)
 {
@@ -492,6 +533,48 @@ char *String_Edit_RemoveTrailingSpaces (char *s_edit)
 }
 
 
+char *String_Edit_RemoveTrailingZeros (char *s_edit)
+{
+	char *cursor = strchr (s_edit, '\0');
+
+	if (cursor && cursor > s_edit) {
+		for (cursor --; cursor >= s_edit && *cursor == '0'; cursor --)
+			*cursor = 0;
+
+		if (*cursor == '.')
+			*cursor = 0;
+	}
+	return s_edit;
+}
+
+// We leave at least 1 decimal after the dot.  Examples: 2.000 -> 2.0, 2.1000 -> 2.1
+char *String_Edit_To_ProperFloat (char *s_edit)
+{
+	char *dot = strchr (s_edit, '.');
+	char *decimal2 = dot && dot[1] && dot[2] ? &dot[2] : NULL;
+
+	if (decimal2) {
+		char *cursor = strchr (decimal2, '\0' /* like the null terminator escape 0 */);
+		for (cursor-- ; cursor >= decimal2 && *cursor == '0' /* like the digit zero */; cursor --)
+			*cursor = 0;
+	}
+	return s_edit;
+}
+
+
+// Short: Replaces string buffer with string repeated N times
+// Notes: None.
+char *String_Repeat_Alloc (char ch, int count)
+{
+	char *out = calloc (ch, count + 1);
+	int n;
+	for (n = 0; n < count; n ++)
+		out[n] = ch;
+
+	return out;
+}
+
+
 // Short: Replaces string buffer with string repeated N times
 // Notes: None.
 char *String_Edit_Repeat (char *s_edit, size_t s_size, const char *s_repeat, int count)
@@ -504,6 +587,18 @@ char *String_Edit_Repeat (char *s_edit, size_t s_size, const char *s_repeat, int
 
 	return s_edit;
 }
+
+//http://stackoverflow.com/questions/8534274/is-the-strrev-function-not-available-in-linux
+char *String_Edit_Reverse (char *s_edit)
+{
+    int i = strlen (s_edit) - 1, j = 0;
+
+    while (i > j)
+		c_swapb (&s_edit[i--], &s_edit[j++]);
+
+	return s_edit;
+}
+
 
 // Short: Deletes count from
 // Notes: No safety checks at this time.  Attempts to delete null terminator or exceed buffer are not prohibited.
@@ -534,55 +629,175 @@ char *String_Edit_Range_Delete (char *s_edit, size_t s_size, const char *s_start
 // Notes: None.
 char *String_Edit_Replace (char *s_edit, size_t s_size, const char *s_find, const char *s_replace)
 {
-	char *workbuf = malloc (s_size);
+	char *first_match = s_find && s_find[0] ? strstr(s_edit, s_find) : NULL;
 
-	size_t s_find_len = strlen (s_find);
-//	size_t s_replace_len = strlen(s_replace); not used
-
-	const char *src = s_edit;
-	const char *buf_end = &workbuf[s_size-2];
-	char *dst = workbuf;
-	const char *rep_src;
-	const char *new_match = NULL;
-
-	while ( (new_match = strstr(src, s_find)) )
+	// Make sure the find string actually exists in the string before going to any effort ...
+	if (first_match)
 	{
-		// First copy over any characters we skipped
-		while (src < new_match)
+		int s_find_len = strlen (s_find);
+		int s_replace_len = strlen(s_replace);
+		int delta_len = s_replace_len - s_find_len;
+
+    	// If replacement string length greater than find, duplicate source buffer.
+    	// While it is possible to avoid creating this extra buffer
+    	// and just memmove the remaining string after each replacement
+    	// this would be inefficient.
+
+		char *src_dup = (delta_len > 0) ? strdup (s_edit) : NULL;
+		const char *src = src_dup ? src_dup : s_edit;
+
+
+		// new match is first_match's offset into the source.
+		// This may look repetitive but to keep Memory_Constant and regular source same
+		char *new_match = (char *)&src[first_match - s_edit];
+
+		char *dst = s_edit;
+		const char *buf_start = &dst[0];
+		const char *buf_end   = &dst[s_size - 1];
+		const char *replace_src;
+
+		while ( new_match )
 		{
-			if (dst < buf_end)
+			// First copy over any characters we skipped
+			while (src < new_match)
+			{
+				if (dst > buf_end)
+					goto end_of_buffer;
 				*dst++ = *src ++;
-			else goto end_of_buffer;
-		}
+			}
 
-		// Now copy over replacement
-		for (rep_src = s_replace; *rep_src; )
+			// Now copy over replacement
+			for (replace_src = s_replace; *replace_src; )
+			{
+				if (dst > buf_end)
+					goto end_of_buffer;
+				*dst++ = *replace_src++;
+			}
+
+			// Now advance cursor past find results
+			src += s_find_len;
+			new_match = strstr(src, s_find);
+
+		} // End of while loop
+
+		// Copy over anything that remains in the buffer
+		while (*src)
 		{
-			if (dst < buf_end)
-				*dst++ = *rep_src++;
-			else goto end_of_buffer;
-		}
-
-		// Now advance cursor past find results
-		src += s_find_len;
-	}
-
-	// Copy over anything that remains in the buffer
-	while (*src)
-	{
-		if (dst < buf_end)
+			if (dst > buf_end)
+				goto end_of_buffer;
 			*dst++ = *src ++;
-		else goto end_of_buffer;
-	}
+		}
 
 end_of_buffer:
 
-	// Null terminate it
-	*dst = 0;
+		// Null terminate it
+		if (dst <= buf_end)
+			*dst = 0;
+		else if (dst > buf_start)
+			dst[-1] = 0; // We would overflow
 
-	memcpy (s_edit, workbuf, s_size - 1);
-	s_edit[s_size-1] = 0;
-	free (workbuf);
+		if (src_dup)
+			free (src_dup);
+	}
+
+	return s_edit;
+}
+
+char *String_Edit_Replace_Token_Array (char *s_edit, size_t s_size, const char **replace_tokens2)
+{
+	const char **curt;
+	for (curt = replace_tokens2; *curt; curt +=2 ) {
+		const char *s_find = curt[0], *s_replace = curt[1];
+
+		String_Edit_Replace (s_edit, s_size, s_find, s_replace); // TODO: # replaces feedback would be nice :(
+
+		//alert ("key:\n\n%s\n\n%s", s_find, s_replace);
+	}
+	return s_edit;
+}
+
+
+
+
+// Short: Replaces all instances of a string within a string or until reaching s_size - 1
+// Notes: None.
+char *String_Edit_Replace_Memory_Constant (char *s_edit, size_t s_size, const char *s_find, const char *s_replace)
+{
+	char *first_match = s_find && s_find[0] ? strstr(s_edit, s_find) : NULL;
+
+	// Make sure the find string actually exists in the string before going to any effort ...
+	if (first_match)
+	{
+		int s_find_len = strlen (s_find);
+		int s_replace_len = strlen(s_replace);
+		int delta_len = s_replace_len - s_find_len;
+
+		const char *src = s_edit;
+
+		// new match is first_match's offset into the source.
+		// This may look repetitive but to keep Memory_Constant and regular source same
+		char *new_match = (char *)&src[first_match - s_edit];
+
+		char *dst = s_edit;
+		const char *buf_start = &dst[0];
+		const char *buf_end   = &dst[s_size - 1];
+
+		const char *replace_src;
+
+		while ( new_match )
+		{
+			// First copy over any characters we skipped
+			while (src < new_match)
+			{
+				if (dst > buf_end)
+					goto end_of_buffer;
+				*dst++ = *src ++;
+			}
+
+			// If replacement string is longer, memmove everything
+			// after the current match forward the appropriate amount first ...
+			if (delta_len > 0)
+			{
+				char *move_dst = &new_match[s_replace_len];
+				char *move_src = &new_match[s_find_len];
+				int move_len = buf_end - move_src - delta_len;
+				if (move_len > 0)
+					memmove (move_dst, move_src, move_len);
+
+				src += delta_len;
+			}
+
+			// Now copy over replacement
+			for (replace_src = s_replace; *replace_src; )
+			{
+				if (dst > buf_end)
+					goto end_of_buffer;
+				*dst++ = *replace_src++;
+			}
+
+			// Now advance cursor past find results
+			src += s_find_len;
+			new_match = strstr(src, s_find);
+
+		} // End of while loop
+
+		// Copy over anything that remains in the buffer
+		while (*src)
+		{
+			if (dst > buf_end)
+				goto end_of_buffer;
+			*dst++ = *src ++;
+		}
+
+	end_of_buffer:
+
+		// Null terminate it
+		if (dst <= buf_end)
+			*dst = 0;
+		else if (dst > buf_start)
+			dst[-1] = 0; // We would overflow
+
+	}
 
 	return s_edit;
 }
@@ -590,27 +805,27 @@ end_of_buffer:
 
 // Short: Replaces all instances of a character with another character
 // Notes: None.
-char *String_Edit_Replace_Char (char *s_edit, int ch_find, int ch_replace, int *outcount)
+char *String_Edit_Replace_Char (char *s_edit, int ch_find, int ch_replace, reply int *outcount)
 {
 	char *cursor;
+	int n;
 	int count;
-	int c;
 
-	for (cursor = s_edit, count = 0; *cursor; cursor ++)
+	for (cursor = s_edit, count = 0, n = 0; *cursor; cursor ++, n++)
 	{
-		c = *cursor;
-		if (c == ch_find)
+		if (*cursor == ch_find)
 		{
-			*cursor = ch_replace;
+			int c = *cursor;
+			s_edit[n] = ch_replace;
 			count ++;
 		}
 	}
 
-	if (outcount)
-		*outcount = count;
+	NOT_MISSING_ASSIGN(outcount, count);
 
 	return s_edit;
 }
+
 
 
 // Short: Converts all upper case characters to lower case
@@ -683,7 +898,29 @@ char *String_Edit_Unquote (char *s_edit)
 }
 
 
-// Short: Replaces all white-space characters (char < SPACECHAR_32) with spaces (char SPACECHAR_32)
+// Short: SPACE_CHAR_32 to 126 stays.  Everything else except \n and \r g
+// Notes: None.
+char *String_Edit_For_Stdout_Ascii (char *s_edit)
+{
+	unsigned char *cursor;
+	int c;
+	cbool should_print;
+
+	for (cursor = s_edit; *cursor; cursor ++)
+	{
+		c = *cursor;
+		should_print = in_range (SPACE_CHAR_32, c, 126) || c == '\n'; // // && /* c != '\r' && */  c != '\t')
+
+		if (!should_print)
+			*cursor = '#';
+	}
+
+	return s_edit;
+}
+
+
+
+// Short: Replaces all white-space characters (char < SPACE_CHAR_32) with spaces (char SPACE_CHAR_32)
 // Notes: None.
 char *String_Edit_Whitespace_To_Space (char *s_edit)
 {
@@ -904,6 +1141,26 @@ char *String_Length_Copy (char *s_dest, size_t siz, const char *src_start, size_
 	return s_dest;
 }
 
+// Short: Finds position of string.
+// Notes: Returns -1 on not found
+int String_Pos_Find (const char *s, const char *s_find)
+{
+	const char *sfound = strstr (s, s_find);
+	if (sfound)
+		return sfound - s;
+	return -1;
+}
+
+// Short: Finds position of string.
+// Notes: Returns -1 on not found
+int String_Pos_Find_Char (const char *s, int ch_findchar)
+{
+	const char *sfound = String_Find_Char (s, ch_findchar);
+	if (sfound)
+		return sfound - s;
+	return -1;
+}
+
 // Short: Missing
 // Notes: Advantage: strrchr could waste time searching beyond end of scope desired (beyond end of range)
 char *String_Range_Find_Char_Reverse (const char *s_start, const char *s_end, int ch_findchar)
@@ -926,8 +1183,16 @@ char *String_Skip_Char (const char *s, int ch_findchar)
 	return (search ? (char*)&search[1] : (char*)s);
 }
 
+char *String_Skip_Char_Reverse (const char *s, int ch_findchar)
+{
+	const char *search = strrchr (s, ch_findchar);
 
-// Short: Returns a pointer beyond any leading white-space (char < SPACECHAR_32) in a string except for spaces (char 32)
+	return (search ? (char *)&search[1] : (char *)s);
+}
+
+
+
+// Short: Returns a pointer beyond any leading white-space (char < SPACE_CHAR_32) in a string except for spaces (char SPACE_CHAR_32)
 // Notes: None.
 char *String_Skip_WhiteSpace_Excluding_Space (const char *s)
 {
@@ -937,7 +1202,7 @@ char *String_Skip_WhiteSpace_Excluding_Space (const char *s)
 }
 
 
-// Short: Returns a pointer beyond any leading white-space (char < =32) in a string including for spaces (char 32)
+// Short: Returns a pointer beyond any leading white-space (char <= SPACE_CHAR_32) in a string including for spaces (char SPACE_CHAR_32)
 // Notes: None.
 char *String_Skip_WhiteSpace_Including_Space (const char *s)
 {
@@ -1681,10 +1946,173 @@ find_string(const u_char *bp, int *tgt, const char * const *n1,
 }
 #endif // CORE_NEEDS_STRPTIME
 
+
 #ifdef CORE_NEEDS_VSNPRINTF_SNPRINTF
 
+	// On other platforms, vsnprintf can do what c_vsnprintf_alloc is needed for by doing it twice.
+
+	#ifdef PLATFORM_WINDOWS
+		// The performance decreases once really large sizes are hit.  But how often are we going to be dealing with super-massive strings.
+		char *_length_vsnprintf (cbool just_test, reply int *created_length, reply size_t *created_bufsize, const char *fmt, va_list args)
+		{
+			size_t bufsize = 8; // Was 2.  Set to 8 which is a defacto 16.
+			char *buffer = NULL;
+			int length = -1;
+
+			// We need a length of 1 greater
+			while (length == -1 || (size_t)length >= bufsize)
+			{
+				bufsize = bufsize * 2;
+				buffer = realloc (buffer, bufsize);
+		//		logd ("c_vsnprintf_alloc: buffer size %d", bufsize);
+
+				// For _vsnprintf, if the number of bytes to write exceeds buffer, then count bytes are written
+				// and ñ1 is returned.
+
+				length = _vsnprintf (buffer, bufsize, fmt, args);
+			}
+
+			// Reduce the allocation to a 16 padded size, which has nothing to do with alignment but rather our stringa spec.
+			// To decrease reallocation for small string changes but using a blocksize.  Leave alignment to calloc/malloc.
+
+			if (just_test)
+				free  (buffer);
+			else
+			{
+				bufsize = roundup_16 (length + 1);
+				buffer = realloc (buffer, bufsize); // Reduce the allocation.
+			}
+
+		//	logd ("c_vsnprintf_alloc: '%s'" NEWLINE "Length is %d", buffer, length);
+			NOT_MISSING_ASSIGN(created_length, length);
+			NOT_MISSING_ASSIGN(created_bufsize, bufsize);
+			return buffer;
+		}
+
+
+	#else // Non-Windows
+
+		// The performance decreases once really large sizes are hit.  But how often are we going to be dealing with super-massive strings.
+		char *_length_vsnprintf (cbool just_test, reply int *created_length, reply size_t *created_bufsize, const char *fmt, va_list args)
+		{
+			va_list args_copy;
+			va_copy (args_copy, args);
+			int length = vsnprintf(NULL, 0, fmt, args_copy);
+			va_end (args_copy);
+			size_t bufsize = roundup_16 (length + 1);
+			char *buffer = NULL;
+
+			if (!just_test) {
+				va_list args_copy;
+				buffer = calloc(bufsize,1);
+				va_copy (args_copy, args);
+				int length2 = vsnprintf (buffer, length + 1, fmt, args_copy); // I'm not sure this null terminates?
+				va_end (args_copy);
+
+				//buffer[length] = 0;
+			}
+
+			//	logd ("c_vsnprintf_alloc: '%s'" NEWLINE "Length is %d", buffer, length);
+			NOT_MISSING_ASSIGN(created_length, length);
+			NOT_MISSING_ASSIGN(created_bufsize, bufsize);
+			return buffer;
+		}
+
+
+	#endif // !PLATFORM_WINDOWS
+#endif // CORE_NEEDS_VSNPRINTF_SNPRINTF
+
+
+char *c_strdupf (const char *fmt, ...)
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+//	logd ("Allocated " QUOTED_S " with bufsize %d", newstring, bufsiz);
+
+	return text; // VA_EXPAND_ALLOC free not necessary as this is alloc function
+}
+
+
+char *c_len_strdupf (reply int *len, const char *fmt, ...) // Same except first param returns length
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+//	logd ("Allocated " QUOTED_S " with bufsize %d", newstring, bufsiz);
+	NOT_MISSING_ASSIGN (len, length);
+
+	return text; // VA_EXPAND_ALLOC free not necessary as this is alloc function
+}
+
+
+char *String_Range_Dup_Alloc(const char *s_start, const char *s_end)
+{
+	int len = s_end - s_start + 1;
+
+	return (len > 0) ? strndup (s_start, len) : NULL;
+}
+
+
+char *String_Replace_Alloc (const char *s, const char *s_find, const char *s_replace)
+{
+	// Some day, preprocessor macros might be as reliable.  Or perhaps someday, headers will auto-generate and all functions should be explicitly defined.
+	return String_Replace_Len_Count_Alloc (s, s_find, s_replace, NULL, NULL, NULL);
+}
+
+char *String_Replace_Len_Count_Alloc (const char *s, const char *s_find, const char *s_replace, reply int *created_length, reply size_t *created_bufsize, reply int *replace_count)
+{
+	char *newstring_o;
+
+	// CASE MATTERS!
+	// Determine the number of instances of s_find
+	int s_len = strlen(s), find_len = strlen(s_find), replace_len = strlen(s_replace);
+	int delta_instance_len = replace_len - find_len; // How much we increase per instance
+	// Number of instances?
+	// strcasestr
+	int count = 0;
+	const char *cursor;
+
+
+	if (!find_len) {
+//		log_warn ("Passed empty replacement string");
+
+		NOT_MISSING_ASSIGN(replace_count, count);
+		NOT_MISSING_ASSIGN(created_length, strlen (s));
+		NOT_MISSING_ASSIGN(created_bufsize, strlen (s) + 1);
+
+		return strdup(s);
+	}
+
+	for (cursor = s, count = 0; (cursor = strstr(cursor, s_find));  count ++)
+		cursor += find_len; // Advance cursor
+
+	block_start__
+
+	int delta_len = delta_instance_len * count;
+	size_t bufsiz = s_len + delta_len + 1; // delta_len might be positive or negative
+	size_t minbufsize = s_len + 1;
+	size_t tempbufsize = bufsiz > minbufsize ? bufsiz : minbufsize; // Temp bufsize is greater of the 2
+
+	newstring_o = malloc (tempbufsize);
+	strlcpy (newstring_o, s, tempbufsize);
+
+	// This is gonna get tested!
+	String_Edit_Replace (newstring_o, tempbufsize, s_find, s_replace);
+
+	if (tempbufsize > bufsiz) // Over allocation can now be corrected.
+		newstring_o = realloc (newstring_o, bufsiz); // Shorten.  Or should we really bother?  Yes, let's bother.  What if source was a monster.
+
+	NOT_MISSING_ASSIGN(replace_count, count);
+	NOT_MISSING_ASSIGN(created_length, bufsiz - 1);
+	NOT_MISSING_ASSIGN(created_bufsize, bufsiz);
+
+	__block_end
+
+	return newstring_o;
+}
+
+
 // Our version doesn't comply with C and instead returns size if buffer would have overflowed.
-int c_vsnprintf (char * s, size_t n, const char * format, va_list arg)
+int c_vsnprintf (char * s, size_t n, const char *fmt, va_list arg)
 {
 	int ret;
 
@@ -1693,12 +2121,12 @@ int c_vsnprintf (char * s, size_t n, const char * format, va_list arg)
 
 #ifdef PLATFORM_WINDOWS
 	#ifdef __VISUAL_STUDIO_6__
-		ret = _vsnprintf (s, n, format, arg);
+		ret = _vsnprintf (s, n, fmt, arg);
 	#else
-		ret = _vsnprintf (s, n, format, arg); // To do ...
+		ret = _vsnprintf (s, n, fmt, arg); // To do ...
 	#endif
 #else // ! PLATFORM_WINDOWS ...
-	ret = vsnprintf (s, n, format, arg);
+	ret = vsnprintf (s, n, fmt, arg);
 #endif // ! PLATFORM_WINDOWS
 
 	// Conditionally null terminate the string
@@ -1713,147 +2141,247 @@ int c_vsnprintf (char * s, size_t n, const char * format, va_list arg)
 
 }
 
-int c_snprintfc (char * s, size_t n, const char * format, ...)
+
+int c_snprintfc (char * s, size_t n, const char *fmt, ...)
 {
 	va_list args; // pointer to the list of arguments
 	int result;
 
-	va_start (args, format);
-	result = c_vsnprintf (s, n, format, args);
+		va_start (args, fmt);
+		result = c_vsnprintf (s, n, fmt, args);
 	va_end (args);
 
 	return result;
 }
 
-#endif // CORE_NEEDS_VSNPRINTF_SNPRINTF
-
-static void s_alloc_resize (const char ** dst, size_t len)
-{
-	if (!*dst)
-	{
-		char *buf = malloc(len);
-		buf[0] = 0;
-		*dst = buf;
-	} else *dst = realloc ((void*)*dst, len);
-}
-
-// Short: Concatenates and reallocs a dynamic string.  Dest may be null.
-// Notes: dst should be NULL if unallocated (i.e. no auto inside a function like const char *dst; <---- no!
-int StringAlloc_Cat (const char ** dst, const char *src)
-{
-	if (src)
-	{
-		size_t len = (*dst == NULL) ? 0 : strlen(*dst);
-		size_t newlen = len + strlen(src)  + 1 /* +1 = null terminator */;
-		s_alloc_resize (dst, newlen);
-
-		strlcat ((char*)*dst, src, newlen);
-		return newlen;
-	}
-
-	return 0;
-}
-
-#pragma message ("StringAlloc_Catf: Weakness 2048.  Need to calc dynamic expansion vscprint or such")
-int StringAlloc_Catf (const char ** dst, const char *fmt, ...)
-{
-	if (fmt)
-	{
-		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024 * 2, fmt);
-		return StringAlloc_Cat (dst, text);
-	}
-
-	return 0;
-}
+// #endif // CORE_NEEDS_VSNPRINTF_SNPRINTF  Was here.  Didn't seem right.
 
 
 // Short: wildcard compare (i.e. if ( wildcmp ("bl?h.*", "blah.jpg") )
 // Notes: http://www.codeproject.com/Articles/1088/Wildcard-string-compare-globbing
-int wildcmp (const char *wild, const char *string)
+// true/false
+
+static int _donothing(int a)
+{
+	return a;
+}
+
+static cbool wildcmpx (const char *s, const char *wild_pattern, cbool case_matters)
 {
 	// Written by Jack Handy - <A href="mailto:jakkhandy@hotmail.com">jakkhandy@hotmail.com</A>
 	const char *cp = NULL, *mp = NULL;
+	typedef int (*charcase_fn_t) (int);
+	charcase_fn_t case_fn = case_matters ? _donothing : tolower;
 
-	while ((*string) && (*wild != '*'))
-	{
-		if ((*wild != *string) && (*wild != '?'))
-		{
-			return 0;
-		}
-		wild++;
-		string++;
+	// Comparing leading until we hit an asterisk
+	while (*s && *wild_pattern != '*') {
+		if ( case_fn(*wild_pattern) != case_fn(*s) && *wild_pattern != '?')
+			return false;
+
+		wild_pattern++, s++;
 	}
 
-	while (*string)
-	{
-		if (*wild == '*')
-		{
-			if (!*++wild)
-			{
-				return 1;
-			}
-			mp = wild;
-			cp = string+1;
+	while (*s) {
+		if (*wild_pattern == '*') {
+			if (!*++wild_pattern)
+				return true; // Hit asterisk terminator in wild_pattern s
+
+			mp = wild_pattern, cp = s + 1;
 		}
-		else if ((*wild == *string) || (*wild == '?'))
-		{
-			wild++;
-			string++;
-		}
+		else if (case_fn(*wild_pattern) == case_fn(*s) || *wild_pattern == '?')
+			wild_pattern++, s++;
 		else
-		{
-			wild = mp;
-			string = cp++;
-		}
+			wild_pattern = mp, s = cp++;
 	}
 
-	while (*wild == '*')
-	{
-		wild++;
-	}
-	return !*wild;
+	// Trailing asterisk
+	while (*wild_pattern == '*')
+		wild_pattern++;
+
+	return !*wild_pattern;
 }
+
+
+
+//String_Test_Reject (test, "<valid:alpha,numeric,space>");
+// <validchars:alpha,numeric,space>
+// <notempty>, <notrim>
+const char *String_Test_Reject (const char *s_test, const char *textflags)
+{
+	const char *fail_reason = NULL;
+
+#define FAILOUT(msg) { fail_reason = msg; goto cleanup; }
+#define CLEANUP freenull (command_string); freenull (command_prefix);  freenull (flags_string);
+
+	char *command_string = NULL, *command_prefix = NULL, *flags_string = NULL;
+
+	const char *cursor, *s_colon, *s_less, *ch;
+	int s_test_len;
+
+	if (!textflags) return NULL; // Didn't fail, there are just no test criteria
+	if (!s_test) FAILOUT ("Input cannot be null")
+
+	s_test_len = strlen(s_test);
+
+	cursor = textflags;
+	while (*cursor) {
+		CLEANUP // Don't want accumulations while running through loop
+
+		if (*cursor != '<') FAILOUT ("Invalid criteria didn't encounter <")
+
+		s_less = strstr(&cursor[1], ">");
+		if (!s_less) FAILOUT( "Invalid criteria didn't encounter >")
+
+		command_string = String_Range_Dup_Alloc (cursor, s_less);
+
+		cursor = &s_less[1]; // Move cursor beyond ">" for next iteration when/if that happens
+
+		//
+		// Check command_string - standalones
+		//
+
+		if (!strcasecmp (command_string, "<notempty>")) {
+			if (!s_test[0]) FAILOUT	("Input cannot be empty")
+
+			continue;
+		}
+
+		if (!strcasecmp (command_string, "<notrim>")) {
+			if (s_test_len)
+				if (iswhitespace(s_test[0]) || iswhitespace (s_test[s_test_len - 1]))
+					FAILOUT ("Input cannot have leading or trailing whitespace")
+
+			continue;
+		}
+
+		//
+		// Check command_string - compounders
+		//
+
+		s_colon = strstr(command_string, ":");
+		if (!s_colon) FAILOUT ("Couldn't colon")
+
+		command_prefix = String_Range_Dup_Alloc (command_string, s_colon);
+		flags_string = strdup (s_colon);	flags_string[0] = ','; flags_string[strlen(flags_string) - 1] = ',';
+
+		if (!strcasecmp (command_prefix, "<validchars:")) {
+			int pass_alpha		= !!strstr (flags_string, ",alpha,");
+			int pass_numeric	= !!strstr (flags_string, ",numeric,");
+			int pass_space		= !!strstr (flags_string, ",spaces,");
+
+			const char *validchars_reason = va("Invalid characters: Text may only contain:%s%s%s",
+				pass_alpha ? " letters" : "",
+				pass_numeric ? " numbers" : "",
+				pass_space ? " spaces" : "");
+
+			flags_string = core_free (flags_string);
+
+			for (ch = s_test; *ch; ch ++) {
+				if (pass_alpha   && isalpha (*ch)) continue;
+				if (pass_numeric && isdigit (*ch)) continue;
+				if (pass_space   && *ch == ' '   ) continue;
+
+				FAILOUT ( validchars_reason )
+			}
+
+			continue;
+		}
+
+		FAILOUT ( va("Unrecognized command " QUOTED_S, command_prefix) )
+
+	}
+
+cleanup:
+
+	CLEANUP
+#undef CLEANUP
+#undef FAILOUT
+	return fail_reason;
+}
+
 
 // Short: multi-wildcard compare (wildcard compare (i.e. if ( wildmultcmp ("bl?h.*;*.png", "blah.jpg") )
 // Notes: none
-int wildmultcmp (const char *wild, const char *string)
+// "<reject><caseless>*HAM*;<accept>*.c*;*.h;*.m"; ret = wildcompare ("hamburger.cpp", pattern)
+// "<reject><case>*HAM*;<accept>*.c*;*.h;*.m"; ret = wildcompare ("hamburger.cpp", pattern);
+// "<reject><case>*HAM*;<accept>*.cpp;*.c*;*.h;*.m"; ret = wildcompare ("hamburger.cpp", pattern);
+
+cbool wildcompare (const char *s, const char *wild_patterns)
 {
 //	size_t len = strlen (wild);   // Not used
-	char *wildbuf = core_strdup (wild);
+	char *wildbuf = core_strdup (wild_patterns);
 	static const char *splitter = ";";
 	char *token;
-	int ret = 0;
+	cbool ret = 0;
+
+	typedef enum {
+		eval_rejected = -1,
+		eval_undetermined = 0,
+		eval_accepted = 1
+	} eval_e;
+
+	// DEFAULT: reject-unless --- normally we need something to match to qualify "*.c; *.h" <--- reject unless one of those hits
+	eval_e eval =	SWITCH_CASE		(eval_rejected, String_Does_Start_With (wild_patterns, "<reject-unless>") && !!(wild_patterns = &wild_patterns[strlen("<reject-unless>")])	)	// Normal
+					SWITCH_CASE		(eval_accepted, String_Does_Start_With (wild_patterns, "<accept-unless>") && !!(wild_patterns = &wild_patterns[strlen("<accept-unless>")])	)	// Uncommon
+					SWITCH_DEFAULT	(eval_rejected);													// DEFAULT: reject-unless
+
+	// Order of operation sensitive.  Reject or accept must lead.
+//	if (String_Does_Start_With (token, "<reject>")
+
+	eval_e eval_mode = eval_accepted; // By default, we use accepted.
+
+	int casematters_mode = false; // Defaults caseless
 
 	// Get the first token
+	for ( token = strtok(wildbuf, splitter); token; token = strtok (NULL, splitter)) {
+//		const char *begun_at = token;
+		cbool passed_token;
+//		int bob = alert ("%s vs. wild token %s", s, token);
+		//logd ("%s", token);  //		alert ("atom: %s", token);
+//		cbool token_evaluation =
+		eval_e mode_changed =	SWITCH_CASE		(eval_rejected, String_Does_Start_With (token, "<reject>") && !!(token = &token[strlen("<reject>")])	)
+								SWITCH_CASE		(eval_accepted, String_Does_Start_With (token, "<accept>") && !!(token = &token[strlen("<accept>")])	)
+								SWITCH_DEFAULT	(eval_undetermined); // Default:  For the moment
 
-	for ( token = strtok(wildbuf, splitter); token; token = strtok (NULL, splitter))
-	{
-		//Core_Printf ("%s\n", token);
-		ret = wildcmp (token, string);
-		if (ret)
-			break;
+
+		if (String_Does_Start_With (token, "<case>") && !!(token = &token[strlen("<case>")]))
+			casematters_mode = true;
+		if (String_Does_Start_With (token, "<caseless>") && !!(token = &token[strlen("<caseless>")]))
+			casematters_mode = false;
+
+
+		if (mode_changed != eval_undetermined)
+			eval_mode = mode_changed;
+
+		// For shortcircuit ANY match is approval:
+		passed_token = wildcmpx (s, token, casematters_mode);
+
+		if (passed_token && eval_mode == eval_accepted && /*evil set:-->*/ (eval = eval_accepted) ) {
+//			alert ("%s was accepted on TOKEN %s\n\n \n\nExpression (%s)", s, token, wild_patterns);
+			break; // Accepted immediately
+		}
+		if (passed_token && eval_mode == eval_rejected && /*evil set:-->*/ (eval = eval_rejected) ) {
+//			alert ("%s was rejected on %s\n\nExpression (%s)", s, token, wild_patterns);
+			break; // Rejected immediately
+		}
+
 	}
 
+//	alert ("string " QUOTED_S " vs (%s) = %d", s, wild_patterns, ret);
+
 	wildbuf = core_free (wildbuf);
+	ret = (eval == eval_accepted);
 	return ret;
 }
 
-char *String_Write_NiceFloatString (char *s_dest, size_t siz, float floatvalue)
-{
-	int			i;
 
+char *String_Write_NiceFloatString (char *s_dest, size_t siz, double floatvalue)
+{
 	c_snprintfc (s_dest, siz, "%f", floatvalue);
 
-	// Strip off ending zeros
-	for (i = strlen(s_dest) - 1 ; i > 0 && s_dest[i] == '0' ; i--)
-		s_dest[i] = 0;
-
-	// Strip off ending period
-	if (s_dest[i] == '.')
-		s_dest[i] = 0;
-
-	return s_dest;
+	return String_Edit_RemoveTrailingZeros (s_dest); // Also removes period
 }
+
 
 // Short: Command line to argv
 // Notes: None.
@@ -1866,6 +2394,13 @@ void * Line_Parse_Free (lparse_t *ptr)
 {
 	return core_free(ptr);
 }
+
+
+// Note this function is only nominally "quote aware"
+// Making it more quote aware might make it less comply with
+// standardish parsing behavor.
+// bob"frog man" >>--- standard parser becomes --> bob "frog man"
+// A more atomic parse (we aren't doing here) would be bob"frog man"
 
 lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args)
 {
@@ -1924,6 +2459,7 @@ lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args)
 			line->args[line->count++] = cmdline;
 
 			// Advance until reach space, white space, delete or non-ascii
+
 			while (*cmdline && (*cmdline > SPACE_CHAR_32) )
 				cmdline++;
 		} // End of switch
@@ -1966,14 +2502,14 @@ split_t *Split_Free (split_t *split)
 
 char *Split_To_String_Alloc (split_t *split, const char *sdelim)
 {
-	const char *s = NULL; // Required to be null
+	text_a *s = NULL; // Required to be null
 	int i;
 
-	StringAlloc_Cat (&s, split->vars[0]);
+	txtcat (&s, "%s", split->vars[0]);
 	for (i = 1; i < split->count; i ++)
 	{
-		StringAlloc_Cat (&s, sdelim);
-		StringAlloc_Cat (&s, split->vars[i]);
+		txtcat (&s, "%s", sdelim);
+		txtcat (&s, "%s", split->vars[i]);
 	}
 	return (char *)s;
 }
@@ -2042,7 +2578,7 @@ typedef struct split_s
 	{
 		// Advance beyond spaces, white space, delete and non-ascii characters
 		// ASCII = chars 0-127, where chars > 127 = ANSI codepage 1252
-		while (*c && (*c <= SPACECHAR_32 || MAX_ASCII_PRINTABLE_126 <= *c ) ) // Changed to 126, 127 is delete and cannot print
+		while (*c && (*c <= SPACE_CHAR_32 || MAX_ASCII_PRINTABLE_126 <= *c ) ) // Changed to 126, 127 is delete and cannot print
 			c ++;
 
 		if (*c == 0)
@@ -2087,7 +2623,7 @@ typedef struct split_s
 				break;
 
 			default:
-				if (*c <= SPACECHAR_32 <  && MAX_ASCII_PRINTABLE_126 <= *c) // Changed to 126, 127 is delete and cannot print
+				if (*c <= SPACE_CHAR_32 && MAX_ASCII_PRINTABLE_126 <= *c) // Changed to 126, 127 is delete and cannot print
 					end = c;
 			}
 			c ++;
@@ -2100,7 +2636,7 @@ typedef struct split_s
 				c++
 
 				// Advance until reach space, white space, delete or non-ascii
-				while (*cmdline && (SPACECHAR_32 < *cmdline && *cmdline <= MAX_ASCII_PRINTABLE_126 ) )  // Changed from < 127 to <=126 for better clarity
+				while (*cmdline && (SPACE_CHAR_32 < *cmdline && *cmdline <= MAX_ASCII_PRINTABLE_126 ) )  // Changed from < 127 to <=126 for better clarity
 					cmdline++;
 			} // End of switch
 
@@ -2187,7 +2723,7 @@ spreads_t *Spreads_Free (spreads_t *spreads)
 
 char *Spreads_To_String_Alloc (spreads_t *spreads, const char *sdelim, const char *slinedelim)
 {
-	const char *s = NULL; // Required to be null
+	text_a *s = NULL; // Required to be null
 	int r, c, cell;
 
 	cell = 0;
@@ -2195,15 +2731,15 @@ char *Spreads_To_String_Alloc (spreads_t *spreads, const char *sdelim, const cha
 	{
 		// Add a line delimiter if not the first row
 		if (r != 0)
-			StringAlloc_Cat (&s, slinedelim);
+			txtcat (&s, "%s", slinedelim);
 
 		for (c = 0; c < spreads->cols; c ++)
 		{
 			// Add a column delimiter if not the first column
 			if (c != 0)
-				StringAlloc_Cat (&s, sdelim);
+				txtcat (&s, "%s", sdelim);
 
-			StringAlloc_Cat (&s, spreads->vars[cell++]);
+			txtcat (&s, "%s", spreads->vars[cell++]);
 		}
 	}
 	return (char *)s;
@@ -2251,7 +2787,7 @@ spreads_t *Spreads_Alloc (const char *s, const char *sdelim, const char *slinede
 
 	if (!valid)
 	{
-		Core_Error ("Inconsistent number of columns for row %i", count);
+		log_fatal ("Inconsistent number of columns for row %d", count);
 		free (str_a);
 		return NULL;
 	}
@@ -2296,29 +2832,29 @@ spreads_t *Spreads_Alloc (const char *s, const char *sdelim, const char *slinede
 
 char *String_C_Escape_Alloc (const char *s)
 {
-	const char *str_o = NULL; // Required
+	text_a *str_o = NULL; // Required
 
 	for (; *s; s++)
 	{
 		switch (*s)
 		{
-		case '\a': StringAlloc_Cat (&str_o, "\\" "a");  break;	// \a 	07 	Alarm (Beep, Bell)
-		case '\b': StringAlloc_Cat (&str_o, "\\" "b");  break;	// \b 	08 	Backspace
-		case '\f': StringAlloc_Cat (&str_o, "\\" "f");  break;	// \f 	0C 	Formfeed
-		case '\n': StringAlloc_Cat (&str_o, "\\" "n");  break;	// \n 	0A 	Newline (Line Feed); see notes below
-		case '\r': StringAlloc_Cat (&str_o, "\\" "r");  break;	// \r 	0D 	Carriage Return
-		case '\t': StringAlloc_Cat (&str_o, "\\" "t");  break;	// \t 	09 	Horizontal Tab
-		case '\v': StringAlloc_Cat (&str_o, "\\" "v");  break;	// \v 	0B 	Vertical Tab
-		case '\\': StringAlloc_Cat (&str_o, "\\" "\\"); break;	// \\ 	5C 	Backslash
-		case '\'': StringAlloc_Cat (&str_o, "\\" "\'"); break;	// \' 	27 	Single quotation mark
-		case '\"': StringAlloc_Cat (&str_o, "\\" "\""); break;	// \" 	22 	Double quotation mark
-		case '\?': StringAlloc_Cat (&str_o, "\\" "\?"); break;	// \? 	3F 	Question mark
+		case '\a': txtcat (&str_o, "\\" "a");  break;	// \a 	07 	Alarm (Beep, Bell)
+		case '\b': txtcat (&str_o, "\\" "b");  break;	// \b 	08 	Backspace
+		case '\f': txtcat (&str_o, "\\" "f");  break;	// \f 	0C 	Formfeed
+		case '\n': txtcat (&str_o, "\\" "n");  break;	// \n 	0A 	Newline (Line Feed); see notes below
+		case '\r': txtcat (&str_o, "\\" "r");  break;	// \r 	0D 	Carriage Return
+		case '\t': txtcat (&str_o, "\\" "t");  break;	// \t 	09 	Horizontal Tab
+		case '\v': txtcat (&str_o, "\\" "v");  break;	// \v 	0B 	Vertical Tab
+		case '\\': txtcat (&str_o, "\\" "\\"); break;	// \\ 	5C 	Backslash
+		case '\'': txtcat (&str_o, "\\" "\'"); break;	// \' 	27 	Single quotation mark
+		case '\"': txtcat (&str_o, "\\" "\""); break;	// \" 	22 	Double quotation mark
+		case '\?': txtcat (&str_o, "\\" "\?"); break;	// \? 	3F 	Question mark
 
 		default:
-			// SPACECHAR_32 to MAX_ASCII_PRINTABLE_126 print normal ---  Somewhat inefficient
-			if (SPACE_CHAR_32 <= *s && *s <= MAX_ASCII_PRINTABLE_126)
-				StringAlloc_Catf (&str_o, "%c", *s);
-			else  StringAlloc_Catf (&str_o, "\\x%02x", (unsigned char)*s);  // otherwise hex encode
+			// SPACE_CHAR_32 to MAX_ASCII_PRINTABLE_126 print normal ---  Somewhat inefficient
+			if ( in_range (SPACE_CHAR_32, *s, MAX_ASCII_PRINTABLE_126 ) )
+				txtcat (&str_o, "%c", *s);
+			else  txtcat (&str_o, "\\x%02x", (unsigned char)*s);  // otherwise hex encode
 			break;
 		}
 	}
@@ -2326,32 +2862,32 @@ char *String_C_Escape_Alloc (const char *s)
 }
 
 
-char *String_C_UnEscape_Alloc (const char *s, int *anyerror)
+char *String_C_UnEscape_Alloc (const char *s, reply int *anyerror)
 {
-	const char *str_o = NULL; // Required
+	text_a *str_o = NULL; // Required
 	int esc_error = 0;
 
 	for (; *s; s++)
 	{
 		if (*s != '\\')
-			StringAlloc_Catf (&str_o, "%c", *s); // Inefficient
+			txtcat (&str_o, "%c", *s); // Inefficient
 		else
 		{
 			switch (s[1])
 			{
-			case '\0': StringAlloc_Cat (&str_o, "<<incomplete escape>>"); esc_error = 1; break;  // Error?  We have a NULL.
+			case '\0': txtcat (&str_o, "<<incomplete escape>>"); esc_error = 1; break;  // Error?  We have a NULL.
 
-			case 'a':  StringAlloc_Cat (&str_o, "\a"); break;	// \a 	07 	Alarm (Beep, Bell)
-			case 'b':  StringAlloc_Cat (&str_o, "\b"); break;	// \b 	08 	Backspace
-			case 'f':  StringAlloc_Cat (&str_o, "\f"); break;	// \f 	0C 	Formfeed
-			case 'n':  StringAlloc_Cat (&str_o, "\n"); break;	// \n 	0A 	Newline (Line Feed); see notes below
-			case 'r':  StringAlloc_Cat (&str_o, "\r"); break;	// \r 	0D 	Carriage Return
-			case 't':  StringAlloc_Cat (&str_o, "\t"); break;	// \t 	09 	Horizontal Tab
-			case 'v':  StringAlloc_Cat (&str_o, "\v"); break;	// \v 	0B 	Vertical Tab
-			case '\\': StringAlloc_Cat (&str_o, "\\"); break;	// \\ 	5C 	Backslash
-			case '\'': StringAlloc_Cat (&str_o, "\'"); break;	// \' 	27 	Single quotation mark
-			case '\"': StringAlloc_Cat (&str_o, "\""); break;	// \" 	22 	Double quotation mark
-			case '\?': StringAlloc_Cat (&str_o, "\?"); break;	// \? 	3F 	Question mark
+			case 'a':  txtcat (&str_o, "\a"); break;	// \a 	07 	Alarm (Beep, Bell)
+			case 'b':  txtcat (&str_o, "\b"); break;	// \b 	08 	Backspace
+			case 'f':  txtcat (&str_o, "\f"); break;	// \f 	0C 	Formfeed
+			case 'n':  txtcat (&str_o, "\n"); break;	// \n 	0A 	Newline (Line Feed); see notes below  // newline care
+			case 'r':  txtcat (&str_o, "\r"); break;	// \r 	0D 	Carriage Return
+			case 't':  txtcat (&str_o, "\t"); break;	// \t 	09 	Horizontal Tab
+			case 'v':  txtcat (&str_o, "\v"); break;	// \v 	0B 	Vertical Tab
+			case '\\': txtcat (&str_o, "\\"); break;	// \\ 	5C 	Backslash
+			case '\'': txtcat (&str_o, "\'"); break;	// \' 	27 	Single quotation mark
+			case '\"': txtcat (&str_o, "\""); break;	// \" 	22 	Double quotation mark
+			case '\?': txtcat (&str_o, "\?"); break;	// \? 	3F 	Question mark
 
 			case 'x': // Hex
 				if (isxdigit(s[2]) && isxdigit(s[3]) )
@@ -2359,24 +2895,24 @@ char *String_C_UnEscape_Alloc (const char *s, int *anyerror)
 					char temp[] = {s[2], s[3], 0};
 					int val = (int) strtol (temp, NULL, 16); // We use 0 because begins 0x
 
-					StringAlloc_Catf (&str_o, "%c", val);
+					txtcat (&str_o, "%c", val);
 					s += 3; // 4 character escape (\xf6, etc.) sequence so advance an extra 3
 					continue;
 				}
 				// Error
-				StringAlloc_Catf (&str_o, "<<invalid or unsupport 0 escape %i>>", s[2]);
+				txtcat (&str_o, "<<invalid or unsupported 0 escape %d>>", s[2]);
 				esc_error = 1;
 				break;
 
 			default:   // Something we don't support apparently ...
-				StringAlloc_Catf (&str_o, "<<invalid or unsupport escape %i>>", s[1]);
+				txtcat (&str_o, "<<invalid or unsupported escape %d>>", s[1]);
 				esc_error = 1;
 				break;
 			}
 			s += 1; // 2 character escape sequence so advance an extra 1
 		}
 	}
-	if (anyerror) *anyerror = esc_error;
+	NOT_MISSING_ASSIGN (anyerror, esc_error);
 	return (char *)str_o;
 }
 
@@ -2427,11 +2963,11 @@ char *Split_To_String_Alloc (split_t *split, const char *sdelim)
 	char *s = NULL; // Required to be null
 	int i;
 
-	StringAlloc_Cat (&s, split->vars[0]);
+	txtcat (&s, split->vars[0]);
 	for (i = 1; i < split->count; i ++)
 	{
-		StringAlloc_Cat (&s, sdelim);
-		StringAlloc_Cat (&s, split->vars[i]);
+		txtcat (&s, sdelim);
+		txtcat (&s, split->vars[i]);
 	}
 	return s;
 }
@@ -2478,19 +3014,178 @@ split_t *Split_Alloc (const char *s, const char *sdelim)
 
 #endif // 0
 
-void perrorf (const char *fmt, ...)
-{
-	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
-	perror (text);
+void txtdelat (text_a **pstring, size_t offset, size_t num)
+{
+	char *s = (char *)*pstring;
+	size_t bufsize = strlen (s) + 1;
+	char *s_start = &s[offset];
+	char *s_beyond = &s[offset + num]; // 1 beyond, which may be null terminator.
+	char *s_term = &s[bufsize - 1];
+	size_t copylength = s_term - s_beyond + 1;
+
+	memmove (s_start, s_beyond, copylength);
+
+	//String_Edit_Delete_At ((char *)*pstring, bufsize, offset, num);
+	//String_Edit_Range_Delete (s, bufsize, s_start, s_end);
 }
 
-void *c_memdup (const void *src, size_t len)
+
+// This is unlikely to be much of a bottleneck
+void txtfree (text_a **pstring)
 {
-	void *buf = core_malloc (len);
-	memcpy (buf, src, len);
-	return buf;
+//	TXTFREE (pstring);
+#if 1
+	if (!*pstring)
+		return;
+
+	free ( (void *)*pstring);
+	*pstring = NULL;
+#endif
 }
+
+
+// Same as c_snprintf_alloc.
+text_a *txtnew (const char *fmt, ...)
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+//	logd ("txtnew: allocated " QUOTED_S " with bufsize %d", text, bufsiz);
+
+	return text; // VA_EXPAND_ALLOC free not necessary as this is alloc function
+}
+
+
+int txtset (text_a **pstring, const char *fmt, ...)
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+	txtfree (pstring);
+	*pstring = text;
+	return bufsiz; // VA_EXPAND_ALLOC free not necessary as this is alloc function, specifically for txtset it is a realloc like action
+}
+
+
+int txtreplace (text_a **pstring, const char *s_find, const char *s_replace)
+{
+	int num_replaces = -1;
+	char *newstring = String_Replace_Len_Count_Alloc (*pstring, s_find, s_replace, NULL, NULL, &num_replaces);
+	if (num_replaces) {
+//		alert ("num replaces %d of " QUOTED_S " with " QUOTED_S NEWLINE NEWLINE
+//				QUOTED_S NEWLINE NEWLINE
+//					"%s", num_replaces, s_find, s_replace, *pstring, newstring);
+		*pstring = core_free (*pstring);
+		*pstring = newstring, newstring = NULL;
+	}
+	return num_replaces;
+}
+
+
+// Fuck it, no bufsize right now.   Besides it is probably strlen +/-
+void txtsetfree (text_a **pstring, char *s_free)
+{
+	free (*pstring); // Kill mine.
+	*pstring = s_free; // Take yours.
+
+
+//		int bufsiz = txtset (pstring, s_free);
+//		free (s_free);
+//
+//		return bufsiz;
+}
+
+
+void txtcatfree (text_a **pstring, char *s_free)
+{
+//	char *newstring = NULL;
+	if (*pstring == NULL) {
+//			int bufsiz = txtcat (pstring, s_free);
+//			free (s_free);
+//
+//			return bufsiz;
+		*pstring = s_free;
+		// Ideally s_free would be set to NULL but we can't access that memory.
+
+	}
+	else
+	{
+		char *p = NULL;
+		int len1 = strlen(*pstring);
+		int len2 = strlen(s_free);
+		int combined = len1 + len2 + 1; /*room for null*/
+		*pstring = realloc (*pstring, combined);
+
+		p = *pstring;
+		memcpy (&p[len1], s_free, len2);
+		p[combined - 1] = 0; // Null
+		free (s_free);
+	}
+
+}
+
+
+// A more optimized version would do what?  Well, a really optimized version would realloc?
+// But a super-optimized one would know the buffer size and wouldn't need to strlen even ...
+int txtcat (text_a **pstring, const char *fmt, ...)
+{
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+	bufsiz = txtset (pstring, "%s%s", *pstring ? *pstring : "", text);
+	free (text); // VA_EXPAND_ALLOC free
+	return bufsiz;
+}
+
+
+int txtprecat (text_a **pstring, const char *fmt, ...)
+{
+//	char *newstring = NULL;
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
+
+	bufsiz = txtset (pstring, "%s%s", text, *pstring ? *pstring : "");
+	free (text); // VA_EXPAND_ALLOC free not necessary as this is alloc function
+	return bufsiz;
+}
+
+
+// Returns new length.
+	/*
+	\e	Write an <escape> character.
+	\a	Write a <bell> character.
+	\b	Write a <backspace> character.
+	\f	Write a <form-feed> character.
+	\n	Write a <new-line> character.
+	\r	Write a <carriage return> character.
+	\t	Write a <tab> character.
+	\v	Write a <vertical tab> character.
+	\'	Write a <single quote> character.
+	\\	Write a backslash character.
+	*/
+
+// Strips newlines, carriage returns and backspaces,
+void String_Edit_To_Single_Line (char *s_edit)
+{
+	int length = strlen(s_edit);
+
+	const char *temp_a = strdup(s_edit);
+	int remaining = length;
+
+	const char *src = temp_a;
+	char *dst = s_edit;			// Yes we rewrite
+
+	// Truncate at any new line or carriage return or backspace character
+	// BUT convert any whitespace characters that are not actual spaces into spaces.
+	//while (*src && dst - cliptext < sizeof out - 1 && *src != '\n' && *src != '\r' && *src != '\b')
+	while (*src && remaining > 0 && *src != '\n' && *src != '\r' && *src != '\b')
+	{
+		if (*src < ' ')
+			*dst++ = ' ';
+		else *dst++ = *src;
+		src++;
+		remaining --;
+	}
+	*dst = 0;
+}
+
 
 const char *String_Get_Word (const char *text, const char *s_find, char *buffer, size_t buffer_size)
 {
@@ -2532,3 +3227,148 @@ const char *String_Get_Word (const char *text, const char *s_find, char *buffer,
 		return next + strlen(s_find);
 	}
 }
+
+
+char *_joindupfz (const char *separator, const char *string1, va_list arglist)
+{
+	text_a *text = NULL;
+
+	const char *s = string1;
+
+	for ( ; s ; s = va_arg(arglist, char *) /* grab next */  ) {
+		if (separator && text)	txtcat (&text, "%s", separator);
+		if (1)					txtcat (&text, "%s", s);
+	}
+
+	if (!text) text = strdup (""); // Don't return NULL even if no parameters.
+	return text;
+}
+
+
+
+char *catdupfz (const char *text_1, ...)
+{
+	text_a *text = NULL;
+	VA_ARGSCOPY_START (text_1);
+	text = _joindupfz ("", text_1, argscopy);
+	VA_ARGSCOPY_END;
+	return text;
+}
+
+char *joindupfz (const char *separator, const char *text_1, ...)
+{
+	text_a *text = NULL;
+	VA_ARGSCOPY_START (text_1);
+	text = _joindupfz (separator, text_1, argscopy);
+	VA_ARGSCOPY_END;
+	return text;
+}
+
+
+
+const char *nthz (int index, const char *text_1, ...)
+{
+	const char *s_found = NULL;
+	const char *s_arg;
+
+	va_list argptr;
+	int n;
+
+	va_start (argptr, text_1); // Initialize
+
+	for (s_arg = text_1, n = 1; !s_found ; s_arg = va_arg (argptr, char *), n ++)
+	{
+		if (!s_arg) // Hit null
+			break;
+
+		if (n == index)
+			s_found = s_arg;
+
+	}
+
+	va_end (argptr); // Shutdown
+
+	return s_found;
+}
+
+
+//
+int qsort_strcasecmp (const void *a, const void *b)
+{
+	char *aa = *(char **)a;
+	char *bb = *(char **)b;
+	return strcasecmp (aa,bb);
+}
+
+int qsort_strcmp (const void *a, const void *b)
+{
+	char *aa = *(char **)a;
+	char *bb = *(char **)b;
+	return strcmp (aa,bb);
+}
+
+int qsort_strcasecmp_rev (const void *a, const void *b)
+{
+	char *aa = *(char **)a;
+	char *bb = *(char **)b;
+	return -strcasecmp (aa,bb);
+}
+
+int qsort_strcmp_rev (const void *a, const void *b)
+{
+	char *aa = *(char **)a;
+	char *bb = *(char **)b;
+	return -strcmp (aa,bb);
+}
+
+int printlinef (const char *fmt, ...) //__core_attribute__((__format__(__printf__,1,2);
+{
+	int result;
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt); // 1024 barrier is NOT be ok for printf replacement, so variable sized
+
+	result = printf ("%s" NEWLINE, text);
+	free (text); // free VA_EXPAND_ALLOC allocation.
+	return result;  // I guess?
+}
+
+// fprintf: If successful, the total number of characters written is returned otherwise, a negative number is returned.
+//int fprintf(FILE *stream, const char *format, ...)
+int fprintlinef (FILE *stream, const char *fmt, ...) //__core_attribute__((__format__(__printf__,2,3);
+{
+	int result;
+	VA_EXPAND_ALLOC (text, length, bufsiz, fmt); // 1024 barrier is NOT be ok for fprintf replacement, so variable sized
+
+	result = fprintf (stream, "%s" NEWLINE, text);
+	free (text); // free VA_EXPAND_ALLOC allocation.
+	return result;  // If successful, the total number of characters written is returned otherwise, a negative number is returned.
+}
+
+
+int perrorlinef (const char *fmt, ...)
+{
+	VA_EXPAND_NEWLINE (text, SYSTEM_STRING_SIZE_1024, fmt); // 1024 barrier is probably ok for error message.
+	// Really?
+	perror (text); // mingw doesn't recognize this as a noreturn function.  So throws noreturn error.
+
+    exit (1);   // Trick gcc
+#ifndef __GNUC__ // noreturn
+
+	return 1;
+#endif	// __GNUC__
+}
+
+#if 0
+int perrorf (const char *fmt, ...)
+{
+	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt); // 1024 barrier is probably ok for error message.
+	// Really?
+	perror (text); // mingw doesn't recognize this as a noreturn function.  So throws noreturn error.
+
+    exit (1);   // Trick gcc
+#ifndef __GNUC__ // noreturn
+
+	return 1;
+#endif	// __GNUC__
+}
+#endif // Discouraged
+

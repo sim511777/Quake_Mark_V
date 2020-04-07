@@ -330,6 +330,12 @@ int main(int argc, CHAR *argv[])
             break;
         }
 
+		// 100s - Informational  (100: continue, 101 switching protocols, 102 processing)
+		// 200s - ok.  And friends.  I think 200 is primary?
+		// 300s - 302 = found, 300 = multiple choices (bad for us), 301 = moved, others.
+		// 400s - 400 bad request, 401 unauthorized, 402 payment reqd?, 403 = forbidden, 404 = not found, etc.
+		// 500s - Internal server error and friends. 502 bad gateway
+
 		// Baker:
 		if ( in_range(400, download->http_status_code, 499)) {
 			// Error codes like 404 etc.

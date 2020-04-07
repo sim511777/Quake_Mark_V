@@ -47,10 +47,10 @@ void Admin_Ban_List_f (lparse_t *line)
 	clist_t *cur = svs.ban_listing.list;
 	int count;
 
-	Con_SafePrintf ("Ban List\n");
+	Con_SafePrintLinef ("Ban List");
 	for ( count = 0; cur; cur = cur->next, count ++)
 	{
-		Con_Printf ("%04i: %s\n", count + 1, cur->name);
+		Con_PrintLinef ("%04d: %s", count + 1, cur->name);
 	}
 }
 
@@ -59,10 +59,10 @@ void Admin_White_List_f (lparse_t *line)
 	clist_t *cur = svs.white_listing.list;
 	int count;
 
-	Con_SafePrintf ("White List\n");
+	Con_SafePrintLinef ("White List");
 	for ( count = 0; cur; cur = cur->next, count ++)
 	{
-		Con_Printf ("%04i: %s\n", count + 1, cur->name);
+		Con_PrintLinef ("%04d: %s", count + 1, cur->name);
 	}
 }
 
@@ -94,7 +94,7 @@ void Admin_Whitelist_URL_Changed_f (cvar_t *var)
 void Admin_UnLock_f (lparse_t *line)
 {
 	svs.lock_until_time = 0;
-	Con_Printf ("Server is unlocked, new connections may join.\n");
+	Con_PrintLinef ("Server is unlocked, new connections may join.");
 }
 
 void Admin_Lock_f (lparse_t *line)
@@ -102,12 +102,12 @@ void Admin_Lock_f (lparse_t *line)
 
 	if (!svs.listening)
 	{
-		Con_Printf ("Server isn't listening.  Set maxplayers.\n");
+		Con_PrintLinef ("Server isn't listening.  Set maxplayers.");
 		return;
 	}
 
 	svs.lock_until_time = realtime + LOCK_AMOUNT_TIME;
-	Con_Printf ("Server locked for a few minutes.\n");
+	Con_PrintLinef ("Server locked for a few minutes.");
 }
 
 
@@ -124,12 +124,12 @@ cbool Admin_Check_ServerLock (const char *unvalidated_ipv4_string)
 	if (realtime > svs.lock_until_time)
 	{
 		svs.lock_until_time = 0; // Unlock
-		Con_Printf ("Server has unlocked\n");
+		Con_PrintLinef ("Server has unlocked");
 		return false;
 
 	}
 
-	Con_Printf ("Locked server has prevent %s from connecting.\n", unvalidated_ipv4_string);
+	Con_PrintLinef ("Locked server has prevent %s from connecting.", unvalidated_ipv4_string);
 	return false;
 }
 
@@ -148,7 +148,7 @@ cbool Admin_Check_Whitelist (const char *unvalidated_ipv4_string)
 	if (IPv4_List_Find (svs.white_listing.list, ip_prepped))
 		return false; // On list, you are ok.
 
-	Con_Printf ("Unwhitelisted player %s tried to connect\n", unvalidated_ipv4_string);
+	Con_PrintLinef ("Unwhitelisted player %s tried to connect", unvalidated_ipv4_string);
 	return true;
 }
 
@@ -168,7 +168,7 @@ cbool Admin_Check_Ban (const char *unvalidated_ipv4_string)
 		return false; // Not on ban file, you are ok.
 	}
 
-	Con_Printf ("Banned player %s tried to connect\n", unvalidated_ipv4_string);
+	Con_PrintLinef ("Banned player %s tried to connect", unvalidated_ipv4_string);
 	return true;
 }
 
@@ -181,7 +181,7 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 	
 
 	// We only run in the main thread.  We could use con_printf.  But we use queue_printf so messages print sequentially.
-	Con_Queue_Printf ("Event dispatching event:%i code:%i id:%p data:%p \n", event, code, id, data);
+	Con_Queue_PrintLinef ("Event dispatching event:%d code:%d id:%p data:%p ", event, code, id, data);
 	
 	switch (event)
 	{
@@ -199,11 +199,11 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 				listz->download_complete = true;
 
 				if (listz->download_data)
-					Con_DPrintf ("Data is empty!  %i %s\n", d->exit_code, KeyValue_GetKey (downloader_error_strings, d->exit_code));
+					Con_DPrintLinef ("Data is empty!  %d %s", d->exit_code, KeyValue_GetKey (downloader_error_strings, d->exit_code));
 				break;
 
 			default:
-				System_Alert ("Invalid code for download event\n");
+				alert ("Invalid code for download event");
 				break;
 			}
 
@@ -212,7 +212,7 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 		break;
 
 	default:
-		System_Alert ("Unknown event number\n");
+		alert1 ("Unknown event number");
 	}
 	// End of function after event switch
 }
@@ -251,7 +251,7 @@ void Admin_Remote_Update (void)
 				
 					// Determine if first
 					if (!cur->list)
-						Con_Printf ("List initial set\n");
+						Con_PrintLinef ("List initial set");
 					
 					// Determine if change
 					changed = !cur->list || cur->listcount != newcount || List_Compare (test, cur->list) !=0;
@@ -259,7 +259,7 @@ void Admin_Remote_Update (void)
 					if (changed)
 					{
 						// This is where we set the list.
-						if (cur->list) System_Alert ("A banlist/whitelist changed and wasn't the first startup\n");
+						if (cur->list) alert ("A banlist/whitelist changed and wasn't the first startup");
 						// If banlist changed, check everyone.
 						// If whitelist changed, ??  Do we still do it?  I think no.
 						List_Free (&cur->list); // Discard old list
@@ -277,10 +277,10 @@ void Admin_Remote_Update (void)
 				// List Count.  List compare?
 				cur->download_data = core_free (cur->download_data);
 				cur->download_size = 0;
-				Con_Queue_Printf ("Updated list %s with count %i\n", cur->remote_url, List_Count (cur->list));
+				Con_Queue_PrintLinef ("Updated list %s with count %d", cur->remote_url, List_Count (cur->list));
 			}	
 			if (!cur->listcount)
-				System_Error ("Remote host with empty banlist or whitelist is not allowed.  Add a fake real valid ip if needed. %s\n", cur->remote_url);
+				System_Error ("Remote host with empty banlist or whitelist is not allowed.  Add a fake real valid ip if needed. %s", cur->remote_url);
 
 			cur->download_complete = false;
 			cur->nextchecktime = realtime + DOWNLOAD_CHECK_INTERVAL_300;
@@ -312,6 +312,7 @@ void Set_List_Download_Status (pthread_mutex_t *plock, int *var_int, int newstat
 
 void Admin_Init (void)
 {	
+	void Install_Init (void);
 //	return;
 	Install_Init ();
 //	exit (1);
@@ -328,15 +329,15 @@ void Admin_Init (void)
 
 		c_snprintf2 (svs.ban_listing.remote_url, "%s/%s.txt",  svs.remote_host, BANLIST); // Multiple servers could stomp each other?
 		c_snprintf2 (svs.white_listing.remote_url, "%s/%s.txt",  svs.remote_host, WHITELIST); // Multiple servers could stomp each other?
-		Con_SafePrintf ("Remote control activated \"%s\":banlist: %s\nwhitelist: %s\n", svs.remote_host, svs.ban_listing.remote_url, svs.white_listing.remote_url);
+		Con_SafePrintLinef ("Remote control activated " QUOTED_S ":banlist: %s" NEWLINE "whitelist: %s", svs.remote_host, svs.ban_listing.remote_url, svs.white_listing.remote_url);
 		return;
 	}
 
 	// We still read the banfile from file right?
-	c_snprintf3 (svs.ban_listing.local_url, "%s/%s/%s.txt",  com_basedir, GAMENAME, BANLIST); // Multiple servers could stomp each other?
+	c_snprintf3 (svs.ban_listing.local_url, "%s/%s/%s.txt",  com_basedir, GAMENAME_ID1, BANLIST); // Multiple servers could stomp each other?
 	svs.ban_listing.list = IPv4_List_From_File (svs.ban_listing.local_url);
 
-	//Con_SafePrintf ("Admin Init\n");
+	//Con_SafePrintLinef ("Admin Init");
 }
 
 
@@ -357,7 +358,7 @@ void Player_IPv4_List_Update (void)
 	client_t	*client;
 	int n;
 #if 0 
-	Con_Printf ("Updated player list\n");
+	Con_PrintLinef ("Updated player list");
 #endif
 
 	pthread_mutex_lock (&player_list_lock);
@@ -374,12 +375,12 @@ void Player_IPv4_List_Update (void)
 			continue;
 
 #if 0
-		Con_Printf ("Found an active one %s\n", NET_QSocketGetTrueAddressString(client->netconnection));
+		Con_PrintLinef ("Found an active one %s", NET_QSocketGetTrueAddressString(client->netconnection));
 #endif
 
 		if (!IPv4_String_Validated (prepared_ip_string, sizeof(prepared_ip_string), unvalidated_ipstring))	
 			continue; // Something like "local"
-		Con_Printf (prepared_ip_string);
+		Con_PrintLinef ("%s", prepared_ip_string);
 		List_Add (&player_list_thread_safe, prepared_ip_string);
 	}
 
@@ -397,7 +398,7 @@ cbool Player_IP_List_Find (const char *unvalidated_ipstring)
 
 void GetFile_Command_f (void *p)
 {
-	Net_Simple_Client ("192.168.1.8", 26010, "c:/", Con_Queue_Printf, Con_Queue_Printf, Con_Queue_Printf);
+	Net_Simple_Client ("192.168.1.8", 26010, "c:/", (errorline_fn_t)Con_Queue_Printf, Con_Queue_Printf, Con_Queue_Printf);
 
 }
 
@@ -406,7 +407,7 @@ void ServeFile_Shutdown_Command_f (lparse_t *unused)
 {
 	if (fileserver_notify_socket == INVALID_SOCKET)
 	{
-		Con_Printf ("Server not running\n");
+		Con_PrintLinef ("Server not running");
 		return;
 	}
 
@@ -420,19 +421,19 @@ void ServeFile_Command_f (lparse_t *unused)
 
 	if (fileserver_notify_socket != INVALID_SOCKET)
 	{
-		Con_Printf ("Server already active\n");
+		Con_PrintLinef ("Server already active");
 		return;
 	}
 
 	if (!Net_Simple_Server_Async (NULL, port, "c:/", 
-		Con_Queue_Printf, Con_Queue_Printf, Con_Queue_Printf, Player_IP_List_Find, &fileserver_notify_socket))
+		(errorline_fn_t)Con_Queue_Printf, Con_Queue_Printf, Con_Queue_Printf, Player_IP_List_Find, &fileserver_notify_socket))
 	{
-		Con_Printf ("Server failed to start\n");
+		Con_PrintLinef ("Server failed to start");
 		return;
 	} 
 	
 	// fileserver_notify_socket should be set at some point.
-	Con_Printf ("Server started ok\n");
+	Con_PrintLinef ("Server started ok");
 }
 
 clist_t *cl_gamefiles_list;
@@ -461,14 +462,14 @@ clist_t *Create_Source_List_Alloc (const clist_t *list)
 		
 			tmp = com_filepath[0] ? &com_filepath[path_strip] : com_filepath; // Don't skip null terminator if file wasn't found ;-)
 			// com_filesize is -1 is wasn't found
-			tmp = va ("\"%s\" \"%s\" %d %s", cur->name, tmp, com_filesize, com_filesrcpak ? "pak" : "dir");
+			tmp = va (QUOTED_S " " QUOTED_S " %d %s", cur->name, tmp, com_filesize, com_filesrcpak ? "pak" : "dir");
 			List_Add_No_Case_To_Lower (&out, tmp);
 			if (com_filepath[0] == 0)
 				h=h;
 		if (h != -1)
 			COM_CloseFile (h);
 //		}
-//		else Con_SafePrintf ("%s wasn't found with COM_FindFile\n", cur->name); // This could happen for client!
+//		else Con_SafePrintLinef ("%s wasn't found with COM_FindFile", cur->name); // This could happen for client!
 	}
 
 	return out;
@@ -486,7 +487,7 @@ clist_t *Admin_Game_Files_List_Client_Missing (clist_t *cl_list, clist_t *sv_lis
 	// Weird possible stupid problem:  if pak2 and let's say map doesn't use any of pak1, we still need pak1. Because need sequential paks.
 	// So we will need to gamedir change later???? EEK!
 	// Because once this is done, we effectively must gamedir change.
-
+	return 0; // I guess?
 }
 
 
@@ -504,7 +505,7 @@ void Admin_Game_Files_List_Update_Client (clist_t *cl_list)
 	List_Print (cl_gamefiles_list);
 #endif
 
-//	System_Alert ( "%d", List_Compare (cl_gamefiles_list, gamefiles_list_thread_safe ) );
+//	alert ( "%d", List_Compare (cl_gamefiles_list, gamefiles_list_thread_safe ) );
 
 
 }	
@@ -532,9 +533,9 @@ void Admin_Game_Files_List_Update_Server (void)
 	gamefiles_list_thread_safe = Create_Source_List_Alloc (rawlist);
 
 #if 0 
-Con_Printf ("Startssz");	
+Con_PrintLinef ("Startssz");	
 	List_Print (gamefiles_list_thread_safe);
-Con_Printf ("Stopsz");
+Con_PrintLinef ("Stopsz");
 #endif	
 
 	pthread_mutex_unlock (&gamefiles_list_lock);
@@ -568,7 +569,7 @@ void Admin_Game_Files_List_Update_Server (void)
 			char buf[MAX_QPATH_64];
 			if (*s)
 			{
-				c_snprintf (buf, "sound/%s", *s);
+				c_snprintf1 (buf, "sound/%s", *s);
 				List_Add_No_Case_To_Lower (&list, buf);
 			}
 		}
@@ -596,11 +597,11 @@ void Admin_Game_Files_List_Update_Server (void)
 			COM_FindFile (cur->name, &h, NULL, NULL); // returns filesize or -1
 			if (h == -1)
 			{
-			//	Con_SafePrintf ("%s wasn't found with COM_FindFile\n", cur->name);
+			//	Con_SafePrintLinef ("%s wasn't found with COM_FindFile", cur->name);
 			}
 			else {
-			//	Con_SafePrintf ("%s X %s|%d|%d\n", cur->name, &com_filepath[path_strip], com_filesize, com_filesrcpak ? "pak" : "dir");
-				c_snprintfc (buf, sizeof(buf), "\"%s\" \"%s\" %d %d", cur->name, &com_filepath[path_strip], com_filesize, com_filesrcpak ? "pak" : "dir");
+			//	Con_SafePrintLinef ("%s X %s|%d|%d", cur->name, &com_filepath[path_strip], com_filesize, com_filesrcpak ? "pak" : "dir");
+				c_snprintfc (buf, sizeof(buf), QUOTED_S " " QUOTED_S " %d %d", cur->name, &com_filepath[path_strip], com_filesize, com_filesrcpak ? "pak" : "dir");
 				List_Add_No_Case_To_Lower (&datalist, buf);
 				COM_CloseFile (h);
 			}

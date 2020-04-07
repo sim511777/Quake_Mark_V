@@ -39,6 +39,13 @@ typedef byte pixel_t; // a pixel can be one, two, or four bytes
 #define WINQUAKE_MAX_HEIGHT_1080 1080	// Must also change MAXHEIGHT 1080 in r_shared.h, d_ifacea.h.  This affects asm.
 #endif // WINQUAKE_RENDERER_SUPPORT
 
+#define QWIDTH_MINIMUM_320 320
+
+#ifdef GLQUAKE
+#define QHEIGHT_MINIMUM_2XX 200		// 200, supported mostly for testing
+#else
+#define QHEIGHT_MINIMUM_2XX 240		// 240, mostly so double size is 640x480 // I guess.
+#endif
 
 typedef struct vrect_s
 {
@@ -46,7 +53,7 @@ typedef struct vrect_s
 	struct vrect_s	*pnext;	// Baker: ASM expects this in struct
 } vrect_t;
 
-enum {TEARDOWN_NO_DELETE_GL_CONTEXT = 0, TEARDOWN_FULL = 1};
+enum {TEARDOWN_NO_DELETE_GL_CONTEXT_0 = 0, TEARDOWN_FULL_1 = 1};
 
 enum {USER_SETTING_FAVORITE_MODE = 0, ALT_ENTER_TEMPMODE = 1};
 
@@ -91,6 +98,20 @@ typedef struct mrect_s
 	int				width, height;
 } mrect_t;
 
+// Baker: Similar to GL Initial setup after window is constructed, needs to know palette
+#ifdef WINQUAKE_GL // !defined(GLQUAKE) && defined(CORE_GL) // WinQuake GL
+typedef struct {
+	unsigned		rgbapal[PALETTE_COLORS_256];
+	unsigned int	texslot;
+	int				w, h;
+	int				numpels;
+	int				width_pow2, height_pow2;
+	float			s1, t1;
+	unsigned		*rgbabuffer;
+	pixel_t			*pixelbytes;	// Link vid.buffer to us.
+} wingl_t;
+#endif // WINQUAKE_GL // !GLQUAKE but CORE_GL - WinQuake GL
+
 typedef struct
 {
 	vmode_t			modelist[MAX_MODE_LIST];
@@ -98,19 +119,26 @@ typedef struct
 
 	vmode_t			screen;
 
-#ifdef GLQUAKE_RESIZABLE_WINDOW // Windows resize on the fly
+#ifdef WINQUAKE_GL // !defined(GLQUAKE) && defined(CORE_GL) // WinQuake GL
+	wingl_t			wingl;
+#endif // WINQUAKE_GL -- !GLQUAKE but CORE_GL - WinQuake GL
+
+#ifdef SUPPORTS_RESIZABLE_WINDOW // Windows resize on the fly
 	int				border_width;
 	int				border_height;
 	mrect_t			client_window;
-#endif // GLQUAKE_RESIZABLE_WINDOW
+	int				resized; // Baker: resize on fly, if resized this flag gets cleared after resize actions occur.  Set 2 for setmode.
+#endif // SUPPORTS_RESIZABLE_WINDOW
 	int				modenum_screen;		// mode # on-screen now
 	int				modenum_user_selected;	// mode # user intentionally selected (i.e. not an ALT-ENTER toggle)
 
-	int				conwidth;
-	int				conheight;
+	int				conwidth;		// Largely used by software renderer, rarely used by GL?
+	int				conheight;		// Largely used by software renderer, rarely used by GL?
 
+#ifdef GLQUAKE_RENDERER_SUPPORT // The irony
 	int				maxwarpwidth;
 	int				maxwarpheight;
+#endif // GLQUAKE_RENDERER_SUPPORT
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
 // These need to be set when screen changes
@@ -127,7 +155,7 @@ typedef struct
 
 	byte			*surfcache;
 	int				surfcachesize;
-	int				highhunkmark;
+//	int				highhunkmark;  extincted by malloc instead
 
 	int				stretch_old_cvar_val;	// The cvar value at time of set.
 #endif // WINQUAKE_RENDERER_SUPPORT
@@ -171,13 +199,14 @@ typedef struct
 	cbool			nomouse;
 
 #ifdef GLQUAKE_RENDERER_SUPPORT // Windows resize on the fly
-	int				resized; // Baker: resize on fly, if resized this flag gets cleared after resize actions occur.  Set 2 for setmode.
+
 	cbool			warp_stale;
 	cbool			consize_stale;
 
 	cbool			scale_dirty; // Happens if vid.conwidth changes, scr_scaleauto changes, scr_menuscale changes, scr_sbarscalechanges, vid_conscale
 	float			menu_scale;
 	float			sbar_scale;	
+
 #endif  // GLQUAKE_RENDERER_SUPPORT
 
 	int				direct3d;
@@ -213,7 +242,7 @@ int VID_SetMode (int modenum);
 cbool VID_Local_SetMode (int modenum);
 void VID_Shutdown (void);
 void VID_Local_Shutdown (void);
-void VID_Local_Window_Renderer_Teardown (int full);
+void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode); // Many versions don't care about the resize, but WinQuake does.
 void VID_Local_Set_Window_Caption (const char *text);
 
 // Video modes
@@ -227,9 +256,12 @@ void VID_Cvars_Sync_To_Mode (vmode_t *mymode);
 void VID_Cvars_Set_Autoselect_Temp_Fullscreen_Mode (int favoritemode);
 void VID_Cvars_Set_Autoselect_Temp_Windowed_Mode (int favoritemode);
 
+#ifdef CORE_GL // Applies to either GLQUAKE or WinQuake GL
+void VID_Renderer_Setup (void);
+#endif // CORE_GL
+
 #ifdef GLQUAKE_RENDERER_SUPPORT
 void VID_Local_Startup_Dialog (void);
-void VID_Renderer_Setup (void);
 void VID_Local_Multisample_f (cvar_t *var);
 void VID_BrightenScreen (void); // Non-hardware gamma
 
@@ -239,32 +271,32 @@ void VID_Gamma_Think (void);
 void VID_Gamma_Shutdown (void);
 cbool VID_Local_IsGammaAvailable (unsigned short* ramps);
 void VID_Local_Gamma_Set (unsigned short* ramps);
-int VID_Local_Gamma_Reset (void);
+cbool VID_Local_Gamma_Reset (void);
 void VID_Gamma_Clock_Set (void); // Initiates a "timer" to ensure gamma is good in fullscreen
 
 void Vid_Gamma_TextureGamma_f (lparse_t *line);
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 
-#ifdef GLQUAKE_RESIZABLE_WINDOW
+#ifdef SUPPORTS_RESIZABLE_WINDOW
 // Baker: resize on the fly
-void VID_Resize_Check (int resize_level);
-void VID_Resize_Think (void);
-void VID_Local_Resize_Act (void);
+void VID_Resize_Check (int resize_level); // System messages calls this
+void VID_BeginRendering_Resize_Think_Resize_Act (void); // Exclusively called by vid.c but we'll declare it here.
+// static void VID_BeginRendering_Resize_Think (void); // Internal to vid.c
 // Baker: end resize on the fly
-#endif // GLQUAKE_RESIZABLE_WINDOW
+#endif // SUPPORTS_RESIZABLE_WINDOW
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-void VID_Local_SetPalette (unsigned char *palette);
+void VID_Local_SetPalette (byte *palette);
 // called after any gamma correction
 
-void VID_ShiftPalette (unsigned char *palette);
+void VID_ShiftPalette (byte *palette);
 // called for bonus and pain flashes, and for underwater color changes
 
 void VID_Update (vrect_t *rects); // Equivalent of swap buffers for WinQuake
 
 
-void VID_Local_Modify_Palette (unsigned char *palette);
+void VID_Local_Modify_Palette (byte *palette); // Only MH Windows WinQuake needs this.  On Mac won't do anything.  On WinQuake GL, won't do anything.
 cbool VID_CheckGamma (void);  // Equivalent of VID_Gamma_Think
 void VID_Palette_NewGame (void); // New game needs to reload palette (a few rare mods use custom palette / colormap)
 

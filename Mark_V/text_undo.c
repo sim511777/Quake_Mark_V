@@ -27,13 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void Undo_Dump (struct undo_s *u)
 {
 	int n;
-	Con_Printf ("Undo ... Count = %i Undo Level is %i\n", u->count, u->level);
+	Con_PrintLinef ("Undo ... Count = %d Undo Level is %d", u->count, u->level);
 	
 	for (n = 0; n < u->count; n ++)
 	{
 //		if (!u->undo_entries[n].text)
 //			u=u;
-		Con_Printf ("%04i:%s \"%s\"\n", n, (n + 1 == u->level)  ? ">" : " ", u->undo_entries[n].text);
+		Con_PrintLinef ("%04d:%s " QUOTED_S, n, (n + 1 == u->level)  ? ">" : " ", u->undo_entries[n].text);
 	}
 	
 }
@@ -47,7 +47,7 @@ void Undo_Clear (struct undo_s *u)
 	u->count = 0;
 
 #ifdef DEBUG_UNDO
-	Con_Printf ("Undo Clear Action\n");
+	Con_PrintLinef ("Undo Clear Action");
 	Undo_Dump (u);
 #endif
 }
@@ -77,7 +77,7 @@ static void Undo_Compact_ (struct undo_s *u)
 	int n;
 
 #ifdef DEBUG_UNDO
-	Con_Printf ("Before compact\n");
+	Con_PrintLinef ("Before compact");
 	Undo_Dump (u);
 #endif
 	
@@ -151,7 +151,7 @@ void Undo_Set_Point (struct undo_s *u, const char *text, int cursor, int cursor_
 	u->undo_entries = core_realloc (u->undo_entries, sizeof(struct undo_entry_s) * u->count);
 	
 //	if (!u->undo_entries)
-//		System_Error ("Failed undo alloc on %i bytes", sizeof(struct undo_entry_s) * u->count);
+//		System_Error ("Failed undo alloc on %d bytes", sizeof(struct undo_entry_s) * u->count);
 
 	// If we have undo entries, move everything down one.
 	if (u->undo_entries)
@@ -211,4 +211,3 @@ const char *Undo_Walk (struct undo_s *u, int change, char *text, int *cursor, in
 	}
 
 }
-

@@ -56,7 +56,7 @@ const char *LOC_LoadLocations (void)
 
 	numlocations = 0;
 	File_URL_Copy_StripExtension (base_map_name, File_URL_SkipPath(cl.worldmodel->name) /* skip "maps/" */, sizeof(base_map_name));
-	c_snprintf (locs_filename, "locs/%s.loc", base_map_name);
+	c_snprintf1 (locs_filename, "locs/%s.loc", base_map_name);
 
 	if (COM_FOpenFile_Limited (locs_filename, &f, cl.worldmodel->loadinfo.searchpath) == -1)
 		return locs_filename;  // Failed

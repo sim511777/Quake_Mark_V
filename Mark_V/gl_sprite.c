@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -44,7 +46,7 @@ static mspriteframe_t *R_GetSpriteFrame (entity_t *currentent)
 
 	if ((frame >= psprite->numframes) || (frame < 0))
 	{
-		Con_Printf ("R_DrawSprite: no such frame %d\n", frame);
+		Con_PrintLinef ("R_DrawSprite: no such frame %d", frame);
 		frame = 0;
 	}
 
@@ -195,4 +197,4 @@ void R_DrawSpriteModel (entity_t *e)
 		GL_PolygonOffset (OFFSET_NONE);
 }
 
-
+#endif // GLQUAKE specific

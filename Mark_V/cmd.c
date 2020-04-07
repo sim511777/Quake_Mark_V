@@ -100,12 +100,26 @@ void Cbuf_AddText (const char *text)
 
 	if (cmd_text.cursize + l >= cmd_text.maxsize)
 	{
-		Con_Printf ("Cbuf_AddText: overflow\n");
+		Con_PrintLinef ("Cbuf_AddText: overflow");
 		return;
 	}
 
 	SZ_Write (&cmd_text, text, strlen (text));
 }
+
+int Cbuf_AddTextLinef (const char *fmt, ...) //  __core_attribute__((__format__(__printf__,1,2)))
+{
+	VA_EXPAND_NEWLINE (text, SYSTEM_STRING_SIZE_1024, fmt);
+	Cbuf_AddText (text);
+	return 0;
+}
+
+void Cbuf_AddTextLine (const char *text)
+{
+	Cbuf_AddTextLinef ("%s", text);
+}
+
+
 
 
 /*
@@ -265,7 +279,7 @@ void Cmd_Exec_f (lparse_t *line)
 
 	if (line->count  != 2)
 	{
-		Con_Printf ("exec <filename> : execute a script file\n");
+		Con_PrintLinef ("exec <filename> : execute a script file");
 		return;
 	}
 
@@ -275,7 +289,7 @@ void Cmd_Exec_f (lparse_t *line)
 	if (!file_text)
 	{
 		if (!exec_silent)
-			Con_Printf ("couldn't exec %s\n", line->args[1] );
+			Con_PrintLinef ("couldn't exec %s", line->args[1] );
 		exec_silent = false;
 		return;
 	}
@@ -356,7 +370,7 @@ void Cmd_Exec_f (lparse_t *line)
 			}
 			else
 			{
-				Con_Printf ("couldn't exec %s\n", line->args[1]);
+				Con_PrintLinef ("couldn't exec %s", line->args[1]);
 				return;
 			}
 		}
@@ -369,13 +383,13 @@ decent keys and always run on
 		int filesize = com_filesize;
 		int crc32 = CRC_Block (f, com_filesize);
 
-		Con_Printf ("execing %s\n",line->args[1]);
+		Con_PrintLinef ("execing %s",line->args[1]);
 	}
 
 */
 	if (!exec_silent)
 	{
-		Con_SafePrintf ("execing %s\n",line->args[1]);
+		Con_SafePrintLinef ("execing %s",line->args[1]);
 		exec_silent = false;
 	}
 
@@ -398,8 +412,8 @@ void Cmd_Echo_f (lparse_t *line)
 	int		i;
 
 	for (i = 1 ; i < line->count ; i++)
-		Con_Printf ("%s ", line->args[i]);
-	Con_Printf ("\n");
+		Con_PrintContf ("%s ", line->args[i]); // It's printing each arg after another.
+	Con_PrintLine ();
 }
 
 /*
@@ -420,31 +434,32 @@ void Cmd_Alias_f (lparse_t *line)
 	{
 	case 1: //list all aliases
 		for (a = cmd_alias, i = 0; a; a=a->next, i++) {
-			Con_SafePrintf (" %s %s: %s",
+			// Remember, aliasees are newline terminated!!
+			Con_SafePrintContf (" %s %s: %s",
 			(a->is_server_alias) ? "*" : " ",
 			a->name,
 			a->value);
 
-//			Con_SafePrintf ("   %s: %s", a->name, a->value);
+//			Con_SafePrintContf ("   %s: %s", a->name, a->value);
 		}
 
 
 
 		if (i)
-			Con_SafePrintf ("%i alias command(s)\n", i);
+			Con_SafePrintLinef ("%d alias command(s)", i);
 		else
-			Con_SafePrintf ("no alias commands found\n");
+			Con_SafePrintLinef ("no alias commands found");
 		break;
 	case 2: //output current alias string
 		for (a = cmd_alias ; a ; a=a->next)
 			if (!strcmp(line->args[1], a->name))
-				Con_Printf ("   %s: %s", a->name, a->value);
+				Con_PrintContf ("   %s: %s", a->name, a->value); // Aliases have a newline built into them, right?
 		break;
 	default: //set alias string
 		s = line->args[1];
 		if (strlen(s) >= MAX_ALIAS_NAME)
 		{
-			Con_Printf ("Alias name is too long\n");
+			Con_PrintLinef ("Alias name is too long");
 			return;
 		}
 
@@ -471,7 +486,7 @@ void Cmd_Alias_f (lparse_t *line)
 		// copy the rest of the command line
 		cmd[0] = 0;		// start out with a null string
 		c = line->count;
-		for (i=2 ; i< c ; i++)
+		for (i = 2 ; i < c ; i++)
 		{
 			c_strlcat (cmd, line->args[i]);
 			if (i != c - 1)
@@ -479,7 +494,7 @@ void Cmd_Alias_f (lparse_t *line)
 		}
 		if (c_strlcat(cmd, "\n") >= sizeof(cmd))
 		{
-			Con_Printf("alias value too long!\n");
+			Con_PrintLinef ("alias value too long!");
 			cmd[0] = '\n';	// nullify the string
 			cmd[1] = 0;
 		}
@@ -503,7 +518,7 @@ void Cmd_Unalias_f (lparse_t *line)
 	{
 	default:
 	case 1:
-		Con_Printf("unalias <name> : delete alias\n");
+		Con_PrintLinef ("unalias <name> : delete alias");
 		break;
 	case 2:
 		prev = NULL;
@@ -522,7 +537,7 @@ void Cmd_Unalias_f (lparse_t *line)
 			}
 			prev = a;
 		}
-		Con_Printf ("No alias named %s\n", line->args[1]);
+		Con_PrintLinef ("No alias named %s", line->args[1]);
 		break;
 	}
 }
@@ -613,20 +628,20 @@ void Cmd_List_f (lparse_t *line)
 		if (partial && String_Does_Not_Start_With (cmd->name, partial))
 			continue;
 
-		Con_SafePrintf ("   %s\n", cmd->name);
+		Con_SafePrintLinef ("   %s", cmd->name);
 		count++;
 		prevprev = prev;
 		prev = cmd;
 		
 	}
 
-	Con_SafePrintf ("%i commands", count);
+	Con_SafePrintContf ("%d commands", count);
 
 	if (partial)
 	{
-		Con_SafePrintf (" beginning with \"%s\"", partial);
+		Con_SafePrintContf (" beginning with " QUOTED_S, partial);
 	}
-	Con_SafePrintf ("\n");
+	Con_SafePrintLine ();
 }
 
 /*
@@ -658,7 +673,7 @@ void	Cmd_RemoveCommand (const char *cmd_name)
 
 	if (cursor == NULL)
 	{
-		Con_Printf ("Couldn't remove command %s\n", cmd_name);
+		Con_PrintLinef ("Couldn't remove command %s", cmd_name);
 		return;
 	}
 
@@ -740,7 +755,7 @@ void Cmd_AddCommand (const char *cmd_name, xcmd_t function, const char *descript
 // fail if the command is a variable name
 	if (Cvar_Find(cmd_name))
 	{
-		Con_SafePrintf ("Cmd_AddCommand: %s already defined as a var\n", cmd_name);
+		Con_SafePrintLinef ("Cmd_AddCommand: %s already defined as a var", cmd_name);
 		return;
 	}
 
@@ -749,7 +764,7 @@ void Cmd_AddCommand (const char *cmd_name, xcmd_t function, const char *descript
 	{
 		if (!strcmp (cmd_name, cmd->name))
 		{
-			Con_Printf ("Cmd_AddCommand: %s already defined\n", cmd_name);
+			Con_PrintLinef ("Cmd_AddCommand: %s already defined", cmd_name);
 			return;
 		}
 	}
@@ -860,7 +875,7 @@ void Cmd_ExecuteString (const char *text, cmd_source_t src)
 
 #if 0 // Debugging
 	if (cmd_from_server)
-		Con_Printf ("Cmd_ExecuteString: Cmd from server is %s\n", text);
+		Con_PrintLinef ("Cmd_ExecuteString: Cmd from server is %s", text);
 #endif  //
 
 #endif // SUPPORTS_CUTSCENE_PROTECTION
@@ -948,7 +963,7 @@ void Cmd_ExecuteString (const char *text, cmd_source_t src)
 			// DO MAKE DEDICATED NOT PRINT THAT STUFF.
 			// INSTEAD make viewsize, gamma, sensitivity, bind, unbindall have dummies for dedicated server.
 			//if (!isDedicated || host_post_initialized)
-				Con_Printf ("Unknown command \"%s\"\n", line->args[0]);
+				Con_PrintLinef ("Unknown command " QUOTED_S, line->args[0]);
 		}
 	}
 	free (line);
@@ -971,7 +986,7 @@ void Cmd_ForwardToServer (lparse_t *line)
 
 	if (cls.state != ca_connected)
 	{
-		Con_Printf ("Can't \"%s\", not connected\n", line->args[0]);
+		Con_PrintLinef ("Can't " QUOTED_S ", not connected", line->args[0]);
 		return;
 	}
 
@@ -993,7 +1008,7 @@ void Cmd_ForwardToServer (lparse_t *line)
 	{
 		SZ_Print (&cls.message, cmd_after_whitespace);
 	}
-	else SZ_Print (&cls.message, "\n"); // "cmd" with no extra args
+	else SZ_Print (&cls.message, NEWLINE); // "cmd" with no extra args
 
 }
 
@@ -1051,5 +1066,3 @@ cmd_alias_t *Alias_Find (const char *s)
 
 	return NULL;
 }
-
-

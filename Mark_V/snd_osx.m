@@ -62,7 +62,7 @@ NSUInteger SNDDMA_Callback (void* pDst, NSUInteger numBytes, void* pContext)
 int SNDDMA_Init (void)
 {
     cbool        success         = false;
-    const UInt32    sampleRate      = sndspeed.value; //11025; // 44100;
+    const UInt32    sampleRate      = sound_rate_hz;  // SOUND_RATE sndspeed.value; //11025; // 44100;
     const UInt32    bitsPerChannel  = 16;
     const UInt32    numChannels     = 2;
 
@@ -95,7 +95,7 @@ int SNDDMA_Init (void)
     }
     else
     {
-        Con_Printf ("Audio init: Failed to initialize!\n");
+        Con_PrintLinef ("Audio init: Failed to initialize!");
     }
 
     return success;
@@ -128,5 +128,4 @@ int SNDDMA_GetDMAPos (void)
 
     return pos;
 }
-
 

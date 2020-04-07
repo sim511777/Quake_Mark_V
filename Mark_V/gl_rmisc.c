@@ -1,3 +1,5 @@
+#ifdef GLQUAKE // GLQUAKE specific
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -77,13 +79,13 @@ void R_Envmap_f (lparse_t *unused)
 	if (vid.direct3d)
 	{
 		// Direct3D wrapper doesn't seem to support size on the fly at this time.
-		Con_Printf ("Not supported for Direct3D at this time\n");
+		Con_PrintLinef ("Not supported for Direct3D at this time");
 		return;
 	}
 
 	if (cls.state != ca_connected)
 	{
-		Con_Printf ("No map running\n");
+		Con_PrintLinef ("No map running");
 		return;
 	}
 
@@ -139,7 +141,7 @@ void R_Envmap_f (lparse_t *unused)
 	envmap = false;
 
 	Recent_File_Set_QPath ("env_0.png");
-	Con_Printf ("Envmaps env files created\n");
+	Con_PrintLinef ("Envmaps env files created");
 	vid.recalc_refdef = true; // Recalc the refdef next frame
 }
 
@@ -205,7 +207,7 @@ cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname)
 	// In order to hit here, we are not Direct3D
 	cbool Is_Texture_Prefix (const char *texturename, const char *prefixstring);
 	
-	if (Is_Texture_Prefix (txname, gl_texprefix_mirror.string) && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME)) {
+	if (Is_Texture_Prefix (txname, gl_texprefix_mirror.string) && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME_ID1)) {
 		return true; // id1 gamedir
 	}
 	
@@ -277,7 +279,7 @@ void GL_Mirrors_Scan_Surface (msurface_t *surf, int surfnum)
 		size_t siz = sizeof( *(surf->xtraleafs));
 		surf->xtraleafs = Hunk_AllocName (sizeof(surf->xtraleafs[0]) * MAX_MAP_LEAFS, va("mirror_surfs_%d", surfnum)); // We'll chop this.
 
-		//Con_SafePrintf ("Mirror Surface %x (%d) appears in vis node %d viewleaf is %x\n", surf, j, i, mirror_leaf);
+		//Con_SafePrintLinef ("Mirror Surface %x (%d) appears in vis node %d viewleaf is %x", surf, j, i, mirror_leaf);
 		{	int j2;
 			mleaf_t	*leaf;
 			for (j2 = 0, leaf = &cl.worldmodel->leafs[1]; j2 < cl.worldmodel->numleafs; j2++, leaf++) {
@@ -322,10 +324,10 @@ void R_NewMap_Local (void)
 		void Mirror_Scan_SubModels (qmodel_t *world_model);
 		Mirror_Scan_SubModels (cl.worldmodel);
 
-		//Con_SafePrintf ("Num nodes is %d\n", cl.worldmodel->numnodes);
-		//Con_Printf ("Num surfaces is %d\n", cl.worldmodel->numnodes); // ?
+		//Con_SafePrintLinef ("Num nodes is %d", cl.worldmodel->numnodes);
+		//Con_PrintLinef ("Num surfaces is %d", cl.worldmodel->numnodes); // ?
 
-		//Con_Printf ("Num leafs %d\n", cl.worldmodel->numleafs);
+		//Con_PrintLinef ("Num leafs %d", cl.worldmodel->numleafs);
 		// Scan for mirrors
 		GL_Mirrors_Build_Vis ();
 	}
@@ -362,7 +364,7 @@ cbool R_SkinTextureChanged (entity_t *cur_ent)
 	if (skintexture->owner != cur_ent->model)
 	{
 #if 0
-		Con_Printf ("ent %i Model changed\n", entnum);
+		Con_PrintLinef ("ent %d Model changed", entnum);
 #endif
 		return true;	// Model changed
 	}
@@ -376,7 +378,7 @@ cbool R_SkinTextureChanged (entity_t *cur_ent)
 		if (skintexture->pants != pants_color)
 		{
 #if 0
-			Con_Printf ("ent %i: Pants changed\n", entnum);		// Pants changed
+			Con_PrintLinef ("ent %d: Pants changed", entnum);		// Pants changed
 #endif
 			return true;
 		}
@@ -384,7 +386,7 @@ cbool R_SkinTextureChanged (entity_t *cur_ent)
 		if (skintexture->shirt != shirt_color)
 		{
 #if 0
-			Con_Printf ("ent %i: Shirt changed\n", entnum);		// Shirt changed
+			Con_PrintLinef ("ent %d: Shirt changed", entnum);		// Shirt changed
 #endif
 			return true;
 		}
@@ -392,7 +394,7 @@ cbool R_SkinTextureChanged (entity_t *cur_ent)
 		if (skintexture->skinnum != cur_ent->skinnum)
 		{
 #if 0
-			Con_Printf ("ent %i: Player skin changed\n", entnum);		// Skin changed
+			Con_PrintLinef ("ent %d: Player skin changed", entnum);		// Skin changed
 #endif
 			return true; // Skin changed
 		}
@@ -432,7 +434,7 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 		if (skinnum < 0 || skinnum >= paliashdr->numskins)
 		{
 			// Baker: Note I do not believe this ever happens!!!
-			Con_DPrintf("(%d): Invalid player skin #%d\n", entity_number, skinnum);
+			Con_DPrintLinef ("(%d): Invalid player skin #%d", entity_number, skinnum);
 			skinnum = 0;
 		}
 
@@ -445,7 +447,7 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 		shirt_color = (cl.scores[playerslot].colors & 0xf0) /16; //>> 4; // Divide by 16
 		pants_color = cl.scores[playerslot].colors & 15;
 
-		// Con_Printf ("Seeking shirt %d, pants %d, skin %d, model %x\n", shirt_color, pants_color, skinnum, cur_ent->model);
+		// Con_PrintLinef ("Seeking shirt %d, pants %d, skin %d, model %x", shirt_color, pants_color, skinnum, cur_ent->model);
 
 		for (matchingslot = 0; matchingslot < MAX_COLORMAP_SKINS_1024; matchingslot ++)
 		{
@@ -457,26 +459,26 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 			//Con_Printf ("Slot %d: Shirt %d, pants %d, skin %d, model %x %x ... ", matchingslot, curtex->shirt, curtex->pants, curtex->skinnum, curtex->owner, curtex);
 
 			if (curtex->shirt != shirt_color) {
-				//Con_Printf ("Slot %d: Failed on shirt\n", matchingslot);
+				//Con_PrintLinef ("Slot %d: Failed on shirt", matchingslot);
 				continue;
 			}
 
 			if (curtex->pants != pants_color) {
-				//Con_Printf ("Slot %d: Failed on pants\n", matchingslot);
+				//Con_PrintLinef ("Slot %d: Failed on pants", matchingslot);
 				continue;
 			}
 
 			if (curtex->skinnum != skinnum) {
-				//Con_Printf ("Slot %d: Failed on skin\n", matchingslot);
+				//Con_PrintLinef ("Slot %d: Failed on skin", matchingslot);
 				continue;
 			}
 
 			if (curtex->owner != cur_ent->model) {
-				//Con_Printf ("Slot %d: Failed on model\n", matchingslot);
+				//Con_PrintLinef ("Slot %d: Failed on model", matchingslot);
 				continue;
 			}
 
-			//Con_Printf ("Match = %d\n");
+			//Con_PrintLinef ("Match = %d");
 
 			// Found an existing translation for this
 			return curtex;
@@ -494,7 +496,7 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 	} while (0);
 
 //	matchingslot = matchingslot;
-//	Con_SafePrintf ("Skin max: %d\n", matchingslot);
+//	Con_SafePrintLinef ("Skin max: %d", matchingslot);
 	do // UPLOAD THE NEW SKIN + MODEL PHASE (MAYBE COLOR)
 	{
 		aliashdr_t	*paliashdr = (aliashdr_t *)Mod_Extradata (cur_ent->model);
@@ -503,10 +505,10 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 #if 1
 		c_snprintf3(description_name, "player_color_shirt_%d_pants_%d_skin_%d", /*entity_number,*/ shirt_color, pants_color, skinnum); // Entity number just hurts compression, right?
 #else
-		c_snprintf(name, "player_%d", entity_number);
+		c_snprintf1 (name, "player_%d", entity_number);
 #endif
 
-//		Con_Printf ("New upload\n");
+//		Con_PrintLinef ("New upload");
 
 		//upload new image
 		playertextures[matchingslot] = TexMgr_LoadImage (cur_ent->model, -1 /*not bsp texture*/, description_name, paliashdr->skinwidth, paliashdr->skinheight,
@@ -523,4 +525,4 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 	return playertextures[matchingslot];
 }
 
-
+#endif // GLQUAKE specific

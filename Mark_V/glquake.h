@@ -24,42 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __GLQUAKE_H__
 #define __GLQUAKE_H__
 
-#include "core_opengl.h"
-
-///////////////////////////////////////////////////////////////////////////////
-//  OPENGL: Renderer capabilities
-///////////////////////////////////////////////////////////////////////////////
-
-typedef struct
-{
-	const char	*gl_vendor;
-	const char	*gl_renderer;
-	const char	*gl_version;
-	const char	*gl_extensions;
-	char		*gl_extensions_nice;
-
-	cbool		isIntelVideo;
-	cbool		gl_mtexable;
-	int			gl_max_texture_size;
-	cbool		gl_texture_env_combine;
-	cbool		gl_texture_env_add;
-	cbool		gl_texture_non_power_of_two;
-	cbool		gl_swap_control;
-	cbool		gl_anisotropy_able;
-	float		gl_max_anisotropy; //johnfitz
-	int			gl_stencilbits; //johnfitz
-
-	GLenum		TEXTURE0, TEXTURE1; //johnfitz
-
-	PFNGLMULTITEXCOORD2FARBPROC GL_MTexCoord2fFunc;
-	PFNGLACTIVETEXTUREARBPROC GL_SelectTextureFunc;
-
-} renderer_t;
-
-extern renderer_t renderer;
-
-void GL_Evaluate_Renderer (void);
-void GL_SetupState (void);
 //cmd void GL_Info_f (void);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,6 +127,8 @@ cbool R_CullModelForEntity (entity_t *e);
 void R_RotateForEntity (vec3_t origin, vec3_t angles);
 
 void R_SetupView_UpdateWarpTextures (void); // R_WATERWARP
+
+void GL_WarpScreen (void); // R_WATERWARP
 
 void R_DrawWorld (void);
 void R_DrawAliasModel (entity_t *e);

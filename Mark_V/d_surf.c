@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -32,7 +34,7 @@ surfcache_t                     *sc_rover, *sc_base;
 #define GUARDSIZE       4
 
 
-int     D_SurfaceCacheForRes (int width, int height)
+int D_SurfaceCacheForRes (int width, int height)
 {
 	int             size, pix;
 
@@ -84,7 +86,7 @@ void D_InitCaches (void *buffer, int size)
 {
 
 //	if (!msg_suppress_1)
-//		Con_Printf ("%ik surface cache\n", size/1024);
+//		Con_PrintLinef ("%dk surface cache", (int) Math_KiloBytesDouble(size));
 
 	sc_size = size - GUARDSIZE;
 	sc_base = (surfcache_t *)buffer;
@@ -214,6 +216,7 @@ D_CheckCacheGuard ();   // DEBUG
 D_SCDump
 =================
 */
+#if 0
 void D_SCDump (void)
 {
 	surfcache_t             *test;
@@ -221,10 +224,11 @@ void D_SCDump (void)
 	for (test = sc_base ; test ; test = test->next)
 	{
 		if (test == sc_rover)
-			Dedicated_Printf ("ROVER:\n");
-		printf ("%p : %i bytes     %i width\n",test, test->size, test->width);
+			Dedicated_PrintLinef ("ROVER:");
+		Dedicated_PrintLinef ("%p : %d bytes     %d width",test, test->size, test->width);
 	}
 }
+#endif
 
 //=============================================================================
 
@@ -332,4 +336,4 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 	return surface->cachespots[miplevel];
 }
 
-
+#endif // !GLQUAKE - WinQuake Software renderer

@@ -1,3 +1,7 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -22,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // dedicated_win.c
 
 #include "quakedef.h"
-#ifdef PLATFORM_WINDOWS // Has to be here, set by a header
 #include "winquake.h"
 #include "dedicated_win.h"
 
@@ -51,7 +54,7 @@ void InitConProc (HANDLE hFile, HANDLE heventParent, HANDLE heventChild)
 
 	if (!heventDone)
 	{
-		Con_SafePrintf ("Couldn't create heventDone\n");
+		Con_SafePrintLinef ("Couldn't create heventDone");
 		return;
 	}
 
@@ -63,7 +66,7 @@ void InitConProc (HANDLE hFile, HANDLE heventParent, HANDLE heventChild)
 					   &dwID))
 	{
 		CloseHandle (heventDone);
-		Con_SafePrintf ("Couldn't create QHOST thread\n");
+		Con_SafePrintLinef ("Couldn't create QHOST thread");
 		return;
 	}
 
@@ -106,7 +109,7 @@ DWORD RequestProc (DWORD dwNichts)
 	// hfileBuffer is invalid.  Just leave.
 		if (!pBuffer)
 		{
-			Con_SafePrintf ("Invalid hfileBuffer\n");
+			Con_SafePrintLinef ("Invalid hfileBuffer");
 			break;
 		}
 
@@ -484,7 +487,7 @@ void ConProc_Error (const char *text)
 	double		starttime;
 	DWORD		dummy;
 
-	c_snprintf (text2, "ERROR: %s\n", text);
+	c_snprintf1 (text2, "ERROR: %s\n", text);
 	WriteFile (sysplat.houtput, text5, strlen (text5), &dummy, NULL);
 	WriteFile (sysplat.houtput, text4, strlen (text4), &dummy, NULL);
 	WriteFile (sysplat.houtput, text2, strlen (text2), &dummy, NULL);
@@ -503,3 +506,5 @@ void ConProc_Error (const char *text)
 
 
 #endif // PLATFORM_WINDOWS
+
+#endif // !CORE_SDL

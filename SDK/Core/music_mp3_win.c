@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "environment.h"
+
+#ifdef PLATFORM_WINDOWS
+
+
 #ifdef _MSC_VER // Temp .. should read environment.h
 
     #ifndef __VISUAL_STUDIO_6__
@@ -37,9 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
     #define COBJMACROS
     #include <dshow.h>
     #pragma comment (lib, "strmiids.lib") // dxsdk/sdk8/lib/
-
-
-
 
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +99,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
             int db = 0;
 
-            Core_DPrintf ("%s: refresh volumepct is %g\n", _tag, volumepct);
+            loghushed (HUSHLEVEL_MP3, "%s: refresh volumepct is %g", _tag, volumepct);
             if (volumepct <= 0)
                 db = -10000;
             else if (volumepct >= 1)
@@ -108,7 +109,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
             IBasicAudio_put_Volume	(m->pAudio, db);
             me->volumepct = volumepct;
-            Core_DPrintf ("%s: refresh volume %i\n", _tag, db);
+            loghushed (HUSHLEVEL_MP3, "%s: refresh volume %d", _tag, db);
         }
     }
 
@@ -156,7 +157,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
             me->playing = false;
             me->paused = false;
 
-            Core_DPrintf ("%s: stop\n", _tag);
+            loghushed (HUSHLEVEL_MP3, "%s: stop", _tag);
         }
     }
 
@@ -175,7 +176,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         if (me->getvolumepct && *(me->getvolumepct) != me->volumepct)
         {
             sRefreshVolume (me);
-            Core_DPrintf ("%s: volume is %g\n", _tag, me->volumepct);
+            loghushed (HUSHLEVEL_MP3, "%s: volume is %g", _tag, me->volumepct);
         }
     }
 
@@ -196,7 +197,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
             }
 
             me->paused = setpause;
-            Core_DPrintf ("%s: %s\n", _tag, me->paused ? "paused" : "resumed");
+            loghushed (HUSHLEVEL_MP3, "%s: %s", _tag, me->paused ? "paused" : "resumed");
         }
     }
 
@@ -220,7 +221,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
         do
         {
-            #define FAILED_SETUP(_s) { Core_Printf ("%s\n", _s); return false; }
+            #define FAILED_SETUP(_s) { log_fatal ("%s", _s); return false; }
 
             HRESULT hr = CoInitialize (NULL);
 
@@ -269,7 +270,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         // examples in the SDK will wait for the event to complete here, but this is totally inappropriate for a game engine.
         sRefreshVolume (me);
 
-        Core_DPrintf ("%s: playing\n", _tag);
+        loghushed (HUSHLEVEL_MP3, "%s: playing", _tag);
         return true;
     }
 
@@ -301,7 +302,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
             case true:
                 // If this is the end of the clip, reset to beginning (first frame)
                 hr = IMediaSeeking_SetPositions(m->pSeek, &pos, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning);
-                Core_DPrintf ("%s: looped\n", _tag);
+                loghushed (HUSHLEVEL_MP3, "%s: looped", _tag);
                 break;
 
             case false:
@@ -324,9 +325,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
         if (!FAILED (hr))
         {
-            Core_DPrintf ("CoInitialize initialized\n");
+            logd ("CoInitialize initialized");
             result = true;
-        } else Core_Error ("CoInitialize failed");
+        } else log_fatal ("CoInitialize failed"); // Too strong?  mingw out of the box has this weakness still, right?
 
         CoUninitialize ();
 
@@ -388,4 +389,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-#endif
+#endif // _MSC_VER
+
+
+#endif // PLATFORM_WINDOWS ONLY
+
+
+
+

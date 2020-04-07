@@ -48,9 +48,9 @@ typedef struct server_x_s
 {
 	// Baggage
 	socket_info_t			*socka;
-	error_fn_t				error_fn;
-	print_fn_t				print_fn;
-	print_fn_t				dprint_fn;
+	errorline_fn_t			error_fn;
+	printline_fn_t			printline_fn;
+	printline_fn_t			dprint_fn;
 	whitelist_fn_t			whitelist_fn;
 	volatile sys_socket_t	*notify_socket; // Mostly for forcing server thread to shutdown by closing accept socket.
 
@@ -59,8 +59,8 @@ typedef struct server_x_s
 
 
 
-cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *basedir, error_fn_t error_fn, print_fn_t print_fn, print_fn_t dprint_fn, whitelist_fn_t whitelist_fn, volatile sys_socket_t *notify_socket);
-cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, error_fn_t error_fn, print_fn_t print_fn, print_fn_t dprint_fn);
+cbool Net_Simple_Server_Async (const char *_ipstring, int port, const char *basedir, errorline_fn_t errorline_fn, printline_fn_t my_printline, printline_fn_t dprintline_fn, whitelist_fn_t whitelist_fn, volatile sys_socket_t *notify_socket);
+cbool Net_Simple_Client (const char *_ipstring, int port, const char *basedir, errorline_fn_t errorline_fn, printline_fn_t my_printline, printline_fn_t dprintline_fn);
 
 void Net_Simple_Server_Force_Shutdown (sys_socket_t notify_socket);
 

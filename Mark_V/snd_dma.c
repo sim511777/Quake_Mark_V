@@ -53,8 +53,8 @@ vec3_t		listener_forward;
 vec3_t		listener_right;
 vec3_t		listener_up;
 
-#define		sound_nominal_clip_dist 1000.0
-#define		deathmatch_sound_nominal_clip_dist 1500.0
+//#define		sound_nominal_clip_dist 1000.0			Moved to q_sound.h
+//#define		deathmatch_sound_nominal_clip_dist 1500.0  Moved q_sound.h
 #pragma message ("Get deathmatch sound_nominal_clip_dist working so on parity for online play.  Your multimap tourney mod idea has merit.  Place tourney maps 1500 apart to avoid sound conflicts?")
 
 int			soundtime;		// sample PAIRS
@@ -105,19 +105,19 @@ void S_SoundInfo_f (void)
 {
 	if (!sound_started || !shm)
 	{
-		Con_Printf ("sound system not started\n");
+		Con_PrintLinef ("sound system not started");
 		return;
 	}
 
-	Con_SafePrintf ("%d bit, %s, %d Hz\n", shm->samplebits,
+	Con_SafePrintLinef ("%d bit, %s, %d Hz", shm->samplebits,
 				(shm->channels == 2) ? "stereo" : "mono", shm->speed);
-    Con_SafePrintf("%5d samples\n", shm->samples);
-    Con_SafePrintf("%5d samplepos\n", shm->samplepos);
-    Con_SafePrintf("%5d samplebits\n", shm->samplebits);
-    Con_SafePrintf("%5d submission_chunk\n", shm->submission_chunk);
-    Con_SafePrintf("%5d speed\n", shm->speed);
-    Con_SafePrintf("0x%x dma buffer\n", (int)shm->buffer);
-	Con_SafePrintf("%5d total_channels\n", total_channels);
+    Con_SafePrintLinef ("%5d samples", shm->samples);
+    Con_SafePrintLinef ("%5d samplepos", shm->samplepos);
+    Con_SafePrintLinef ("%5d samplebits", shm->samplebits);
+    Con_SafePrintLinef ("%5d submission_chunk", shm->submission_chunk);
+    Con_SafePrintLinef ("%5d speed", shm->speed);
+    Con_SafePrintLinef ("%p dma buffer", shm->buffer);
+	Con_SafePrintLinef ("%5d total_channels", total_channels);
 }
 
 
@@ -141,14 +141,14 @@ void S_Startup (void)
 		if (!rc)
 		{
 #ifndef	DIRECT_SOUND_QUAKE
-			Con_Printf("S_Startup: SNDDMA_Init failed.\n");
+			Con_PrintLinef ("S_Startup: SNDDMA_Init failed.");
 #endif // !DIRECT_SOUND_QUAKE
 			sound_started = 0;
 			return;
 		}
 	}
 
-	Con_SafePrintf ("Audio: %d bit, %s, %d Hz\n",
+	Con_SafePrintLinef ("Audio: %d bit, %s, %d Hz",
 				shm->samplebits,
 				(shm->channels == 2) ? "stereo" : "mono",
 				shm->speed);
@@ -161,7 +161,7 @@ cbool SND_Read_Early_Cvars (void)
 	// Any of these found and we bail
 	char *sound_override_commandline_params[] = {"-sndspeed", NULL };
 
-	const cvar_t* cvarslist[] = {&sndspeed, NULL};
+	const cvar_t *cvarslist[] = {&sndspeed, NULL};
 	cbool found_in_config, found_in_autoexec;
 	int i;
 
@@ -179,8 +179,8 @@ void S_Snd_Speed_Notify_f (cvar_t *var)
 {
 	if (host_post_initialized) // Too late, remember this reads early in SND_Read_Early_Cvars
 	{
-		Con_Printf ("sndspeed changed. takes effect on engine restart.\n");
-		Con_Printf ("values: 11025, 22050, 44100\n");
+		Con_PrintLinef ("sndspeed changed. takes effect on engine restart.");
+		Con_PrintLinef ("values: 11025, 22050, 44100");
 	}
 }
 
@@ -189,6 +189,7 @@ void S_Snd_Speed_Notify_f (cvar_t *var)
 S_Init
 ================
 */
+int sound_rate_hz; // Hello global
 void S_Init (void)
 {
 	if (COM_CheckParm("-nosound"))
@@ -212,11 +213,23 @@ void S_Init (void)
 
 	} while (0);
 
+	if (!isin3 (sndspeed.value, 44100, 22050, 11025))
+		Cvar_SetValueQuick (&sndspeed, 11025);
 
-	if (COM_CheckParm("-simsound"))
+	sound_rate_hz = sndspeed.value;
+
+#ifdef CORE_SDL_STATIC // SDL static linkage workaround
+	sound_rate_hz = 44100;
+	Con_SafePrintLinef ("Sound forced to 44100 Hz due to SDL + static linkage Windows sound issue");
+#endif // CORE_SDL + !_DEBUG // SDL static linkage workaround
+
+	if (COM_CheckParm("-simsound")) {
 		fakedma = true;
+		sound_rate_hz = 22050; // Baker Jan 2017 - Is good enough?
+	}
 
-	Con_SafePrintf("\nSound Initialization\n");
+	Con_SafePrintLine ();
+	Con_SafePrintLinef ("Sound Initialization");
 
 	SND_InitScaletable ();
 
@@ -234,7 +247,7 @@ void S_Init (void)
 		shm = (void *) Hunk_AllocName(sizeof(*shm), "shm");
 		shm->splitbuffer = 0;
 		shm->samplebits = 16;
-		shm->speed = 22050;
+		shm->speed = sound_rate_hz; // 22050;
 		shm->channels = 2;
 		shm->samples = 32768;
 		shm->samplepos = 0;
@@ -246,7 +259,7 @@ void S_Init (void)
 
     if (shm)
     {
-		Con_SafePrintf ("Sound sampling rate: %i\n", shm->speed);
+		Con_SafePrintLinef ("Sound sampling rate: %d", shm->speed);
     }
 
 	// provides a tick sound until washed clean
@@ -365,14 +378,14 @@ sfx_t *S_PrecacheSound (const char *name, cbool *precached_ok)
 	}
 	return sfx;
 }
-		
+
 cbool S_PrecacheSound_Again (sfx_t *sfx)
 {
 	if (S_LoadSound (sfx))
 		return true;
 
 	return false;
-	
+
 }
 
 
@@ -506,7 +519,7 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, const vec3_t origin, 
 // spatialize
 	memset (target_chan, 0, sizeof(*target_chan));
 	VectorCopy(origin, target_chan->origin);
-	target_chan->dist_mult = attenuation / sound_nominal_clip_dist;
+	target_chan->dist_mult = attenuation / level.sound_nominal_clip_dist /*sound_nominal_clip_dist*/;
 	target_chan->master_vol = (int) (fvol * 255);
 	target_chan->entnum = entnum;
 	target_chan->entchannel = entchannel;
@@ -629,14 +642,14 @@ void S_ClearBuffer (void)
 		{
 			if (hresult != DSERR_BUFFERLOST)
 			{
-				Con_Printf ("S_ClearBuffer: DS::Lock Sound Buffer Failed\n");
+				Con_PrintLinef ("S_ClearBuffer: DS::Lock Sound Buffer Failed");
 				S_Shutdown ();
 				return;
 			}
 
 			if (++reps > 10000)
 			{
-				Con_Printf ("S_ClearBuffer: DS: couldn't restore buffer\n");
+				Con_PrintLinef ("S_ClearBuffer: DS: couldn't restore buffer");
 				S_Shutdown ();
 				return;
 			}
@@ -670,7 +683,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 	if (total_channels == MAX_CHANNELS)
 	{
-		Con_Printf ("total_channels == MAX_CHANNELS\n");
+		Con_PrintLinef ("total_channels == MAX_CHANNELS");
 		return;
 	}
 
@@ -684,14 +697,14 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 	if (sc->loopstart == -1)
 	{
-		Con_Printf ("Sound %s not looped\n", sfx->name);
+		Con_PrintLinef ("Sound %s not looped", sfx->name);
 		return;
 	}
 
 	ss->sfx = sfx;
 	VectorCopy (origin, ss->origin);
 	ss->master_vol = (int)vol;
-	ss->dist_mult = (attenuation/64) / sound_nominal_clip_dist;
+	ss->dist_mult = (attenuation/64) / level.sound_nominal_clip_dist; //sound_nominal_clip_dist;
     ss->end = paintedtime + sc->length;
 
 	SND_Spatialize (ss);
@@ -855,12 +868,12 @@ void S_Update (const vec3_t origin, const vec3_t forward, const vec3_t right, co
 		{
 			if (ch->sfx && (ch->leftvol || ch->rightvol) )
 			{
-				//Con_Printf ("%3i %3i %s\n", ch->leftvol, ch->rightvol, ch->sfx->name);
+				//Con_PrintLinef ("%3d %3d %s", ch->leftvol, ch->rightvol, ch->sfx->name);
 				total++;
 			}
 		}
 
-		Con_Printf ("----(%i)----\n", total);
+		Con_PrintLinef ("----(%d)----", total);
 	}
 
 // mix some sound
@@ -938,7 +951,7 @@ static void S_Update_(void)
 // check to make sure that we haven't overshot
 	if (paintedtime < soundtime)
 	{
-		//Con_Printf ("S_Update_ : overflow\n");
+		//Con_PrintLinef ("S_Update_ : overflow");
 		paintedtime = soundtime;
 	}
 
@@ -955,7 +968,7 @@ static void S_Update_(void)
 		if (pDSBuf)
 		{
 			if (IDirectSoundBuffer_GetStatus (pDSBuf, &dwStatus) != S_OK)
-				Con_Printf ("Couldn't get sound buffer status\n");
+				Con_PrintLinef ("Couldn't get sound buffer status");
 
 			if (dwStatus & DSBSTATUS_BUFFERLOST)
 				IDirectSoundBuffer_Restore (pDSBuf);
@@ -1002,7 +1015,7 @@ void S_Play_f (lparse_t *line)
 {
 	if (line->count != 2)
 	{
-		Con_Printf ("Usage: play <filename>\n");
+		Con_PrintLinef ("Usage: play <filename>");
 		return;
 	}
 
@@ -1013,7 +1026,7 @@ void S_Play2_f (lparse_t *line)
 {
 	if (line->count != 2)
 	{
-		Con_Printf ("Usage: play2 <filename>\n");
+		Con_PrintLinef ("Usage: play2 <filename>");
 		return;
 	}
 
@@ -1065,12 +1078,12 @@ void S_SoundList (lparse_t *unused)
 		total += size;
 
 		if (sc->loopstart >= 0)
-			Con_SafePrintf ("L"); //johnfitz -- was Con_Printf
+			Con_SafePrintContf ("L"); //johnfitz -- was Con_Printf
 		else
-			Con_SafePrintf (" "); //johnfitz -- was Con_Printf
-		Con_SafePrintf("(%2db) %6i : %s\n",sc->width*8,  size, sfx->name); //johnfitz -- was Con_Printf
+			Con_SafePrintContf (" "); //johnfitz -- was Con_Printf
+		Con_SafePrintLinef ("(%2db) %6d : %s", sc->width*8,  size, sfx->name); //johnfitz -- was Con_Printf
 	}
-	Con_Printf ("%i sounds, %i bytes\n", /*num_sfx*/ found, total); //johnfitz -- added count (Baker: Made count ones loaded instead of named ones.)
+	Con_PrintLinef ("%d sounds, %d bytes", /*num_sfx*/ found, total); //johnfitz -- added count (Baker: Made count ones loaded instead of named ones.)
 }
 
 
@@ -1113,7 +1126,7 @@ void S_LocalSound (const char *name)
 
 	if (!sfx)
 	{
-		Con_Printf ("S_LocalSound: can't cache %s\n", name);
+		Con_PrintLinef ("S_LocalSound: can't cache %s", name);
 		return;
 	}
 
@@ -1146,7 +1159,7 @@ void Neh_ResetSFX (void)
 		num_sfxorig = num_sfx;
 
 	num_sfx = num_sfxorig;
-	Con_DPrintf ("Current SFX: %d\n", num_sfx);
+	Con_DPrintLinef ("Current SFX: %d", num_sfx);
 
 	for (i=num_sfx+1 ; i< MAX_SFX ; i++)
 	{
@@ -1174,12 +1187,13 @@ S_UnblockSound
 void S_UnblockSound (void)
 {
 	snd_blocked = 0;
+	logd ("Sound blocked = 0");
 }
 
 void S_BlockSound (void)
 {
 	snd_blocked = 1;
+	logd ("Sound blocked = 1");
 }
 
 #endif // ! DIRECT_SOUND_QUAKE
-

@@ -101,14 +101,14 @@ void Pak_Command_f (lparse_t *line)
 
 		if (!validnum)
 		{
-			Con_Printf ("Invalid pak command %s\n", parm2);
+			Con_PrintLinef ("Invalid pak command %s", parm2);
 			return;
 		}
 
 		if (!meets_args)
 		{
-			Con_Printf ("Wrong number of arguments for \"%s\": needs %i, have %i\n", parm2, args_required[cmd_num], numargs);
-			Con_Printf ("Usage: %s %s %s\n", line->args[0], parm2, arg_msg[cmd_num]);
+			Con_PrintLinef ("Wrong number of arguments for " QUOTED_S ": needs %d, have %d", parm2, args_required[cmd_num], numargs);
+			Con_PrintLinef ("Usage: %s %s %s", line->args[0], parm2, arg_msg[cmd_num]);
 			return;
 		}
 
@@ -117,7 +117,7 @@ void Pak_Command_f (lparse_t *line)
 
 		if (cmd_num != arg_zip && !File_Exists (pakurl))
 		{
-			Con_Printf ("File \"%s\" doesn't exist\n", _pakurl); // Print the unmodified version
+			Con_PrintLinef ("File " QUOTED_S " doesn't exist", _pakurl); // Print the unmodified version
 			return;
 		}
 
@@ -131,13 +131,13 @@ void Pak_Command_f (lparse_t *line)
 			// Make sure the new file exists
 			if (!File_Exists (fileurl))
 			{
-				Con_Printf ("New file \"%s\" does not exist\n", arg2);
+				Con_PrintLinef ("New file " QUOTED_S " does not exist", arg2);
 				return;
 			}
 
 			if (Pak_Has_File(pakurl, inside_pak_filename))
 			{
-				Con_Printf ("A file named \"%s\" is already in the pak\n", inside_pak_filename);
+				Con_PrintLinef ("A file named " QUOTED_S " is already in the pak", inside_pak_filename);
 				return;
 			}
 
@@ -151,9 +151,9 @@ void Pak_Command_f (lparse_t *line)
 		case arg_compress:  // sorts and rewrites (where nulled entry space is recovered) (can just sort the header)
 
 			if (Pak_Compress (pakurl))
-				Con_Printf ("Pak compress successful\n");
+				Con_PrintLinef ("Pak compress successful");
 
-			else Con_Printf ("Pak compress failed\n");
+			else Con_PrintLinef ("Pak compress failed");
 
 			Recent_File_Set_FullPath (pakurl);
 			return;
@@ -170,13 +170,13 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!File_Exists (destfolder))
 			{
-				Con_Printf ("Destination folder for \"%s\" does not exist\n", arg2);
+				Con_PrintLinef ("Destination folder for " QUOTED_S " does not exist", arg2);
 				return;
 			}
 
 			if (!File_Is_Folder(destfolder))
 			{
-				Con_Printf ("Destination folder for \"%s\" is a file\n", arg2);
+				Con_PrintLinef ("Destination folder for " QUOTED_S " is a file", arg2);
 				return;
 			}
 
@@ -186,7 +186,7 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!Pak_Has_File (pakurl, inside_pak_filename))
 			{
-				Con_Printf ("File \"%s\" does not exist in pak \"%s\"\n", inside_pak_filename, pakurl);
+				Con_PrintLinef ("File " QUOTED_S " does not exist in pak " QUOTED_S, inside_pak_filename, pakurl);
 				return;
 			}
 
@@ -203,7 +203,7 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!Pak_Has_File (pakurl, inside_pak_filename))
 			{
-				Con_Printf ("File \"%s\" does not exist in pak \"%s\"\n", inside_pak_filename, pakurl);
+				Con_PrintLinef ("File " QUOTED_S " does not exist in pak " QUOTED_S, inside_pak_filename, pakurl);
 				return;
 			}
 
@@ -218,7 +218,7 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!File_Exists (fileurl))
 			{
-				Con_Printf ("File source \"%s\" does not exist\n", fileurl);
+				Con_PrintLinef ("File source " QUOTED_S " does not exist", fileurl);
 				return;
 			}
 
@@ -228,7 +228,7 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!Pak_Has_File (pakurl, inside_pak_filename))
 			{
-				Con_Printf ("File \"%s\" does not exist in pak \"%s\"\n", inside_pak_filename, pakurl);
+				Con_PrintLinef ("File " QUOTED_S " does not exist in pak " QUOTED_S, inside_pak_filename, pakurl);
 				return;
 			}
 #pragma message ("Baker: Has pak replace ever been tested?")
@@ -249,7 +249,7 @@ void Pak_Command_f (lparse_t *line)
 
 				if (!File_Exists(parentpath))
 				{
-					Con_Printf ("Destination \"%s\" does not exist\n", destfolder);
+					Con_PrintLinef ("Destination " QUOTED_S " does not exist", destfolder);
 					return;
 				}
 				// Ok to make just a subfolder
@@ -257,7 +257,7 @@ void Pak_Command_f (lparse_t *line)
 
 			i = Pak_Unzip (pakurl, destfolder);
 
-			Con_Printf ("%d files extracted\n", i);
+			Con_PrintLinef ("%d files extracted", i);
 			Recent_File_Set_FullPath (destfolder);
 			return;
 
@@ -269,7 +269,7 @@ void Pak_Command_f (lparse_t *line)
 
 			if (!File_Exists (srcfolder))
 			{
-				Con_Printf ("Source folder \"%s\" does not exist\n", srcfolder);
+				Con_PrintLinef ("Source folder " QUOTED_S " does not exist", srcfolder);
 				return;
 			}
 
@@ -280,37 +280,38 @@ void Pak_Command_f (lparse_t *line)
 
 		case arg_help: // list current mappings
 
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s <0-99> <yourfile.mp3>\nwhere yourfile.mp3 is in [gamedir]/music folder\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s list  - print list of contents\n", line->args[0]);
-			Con_Printf ("Usage: %s zip <folder_to_zip> <output.pak> - resets everything\n", line->args[0]);
-			Con_Printf ("Usage: %s unzip <input.pak> <folder_unzip_location>\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Examples:\n");
-			Con_Printf ("\n");
-			Con_Printf ("%s unzip c:\\quake\\id1\\pak.0.pak c:\\quake2\n", line->args[0]);
-			Con_Printf ("%s zip c:\\quake\\id1\\maps c:\\quake\\id1\\mymaps.pak\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Filenames should avoid spaces and only use alphanumeric\n");
-			Con_Printf ("characters and the underscore '_'.\n");
-			Con_Printf ("\n");
-			Con_Printf ("Type 'folder' to access current gamedir.\n");
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s <0-99> <yourfile.mp3>", line->args[0]);
+			Con_PrintLinef ("where yourfile.mp3 is in [gamedir]/music folder");
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s list  - print list of contents", line->args[0]);
+			Con_PrintLinef ("Usage: %s zip <folder_to_zip> <output.pak> - resets everything", line->args[0]);
+			Con_PrintLinef ("Usage: %s unzip <input.pak> <folder_unzip_location>", line->args[0]);
+			Con_PrintLine ();
+			Con_PrintLinef ("Examples:");
+			Con_PrintLine ();
+			Con_PrintLinef ("%s unzip c:\\quake\\id1\\pak.0.pak c:\\quake2", line->args[0]);
+			Con_PrintLinef ("%s zip c:\\quake\\id1\\maps c:\\quake\\id1\\mymaps.pak", line->args[0]);
+			Con_PrintLine ();
+			Con_PrintLinef ("Filenames should avoid spaces and only use alphanumeric");
+			Con_PrintLinef ("characters and the underscore '_'.");
+			Con_PrintLine ();
+			Con_PrintLinef ("Type 'folder' to access current gamedir.");
+			Con_PrintLine ();
 
 			return;
 
 		case arg_list: // list current mappings
 
-			Con_Printf ("\n");
-			Con_Printf ("Files in pak \"%s\":\n", _pakurl);
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Files in pak " QUOTED_S ":", _pakurl);
+			Con_PrintLine ();
 
 			Pak_List_Print (pakurl);
 
-			Con_Printf ("\n");
+			Con_PrintLine ();
 
-			Con_Printf ("Savings by compressing pak is %u\n", (unsigned int) Pak_Is_Compressable(pakurl));
+			Con_PrintLinef ("Savings by compressing pak is %u", (unsigned int) Pak_Is_Compressable(pakurl));
 
 			Recent_File_Set_FullPath (pakurl);
 			return;
@@ -320,10 +321,10 @@ void Pak_Command_f (lparse_t *line)
 	} // End of args >=2
 
 	// with no parameters or invalid parameters ends up displaying help
-	Con_Printf ("\n");
-	Con_Printf ("Usage: %s {help|list|unzip|zip}\n", line->args[0]);
-	Con_Printf ("Type '%s help' for examples and detail\n", line->args[0]);
-	Con_Printf ("\n");
+	Con_PrintLine ();
+	Con_PrintLinef ("Usage: %s {help|list|unzip|zip}", line->args[0]);
+	Con_PrintLinef ("Type '%s help' for examples and detail", line->args[0]);
+	Con_PrintLine ();
 
 }
 
@@ -355,14 +356,14 @@ void Zip_Command_f (lparse_t *line)
 
 		if (!validnum)
 		{
-			Con_Printf ("Invalid zip command %s\n", parm2);
+			Con_PrintLinef ("Invalid zip command %s", parm2);
 			return;
 		}
 
 		if (!meets_args)
 		{
-			Con_Printf ("Wrong number of arguments for \"%s\": needs %i, have %i\n", parm2, args_required[cmd_num], numargs);
-			Con_Printf ("Usage: %s %s %s\n", line->args[0], parm2, arg_msg[cmd_num]);
+			Con_PrintLinef ("Wrong number of arguments for " QUOTED_S ": needs %d, have %d", parm2, args_required[cmd_num], numargs);
+			Con_PrintLinef ("Usage: %s %s %s", line->args[0], parm2, arg_msg[cmd_num]);
 			return;
 		}
 
@@ -371,20 +372,20 @@ void Zip_Command_f (lparse_t *line)
 
 		if (cmd_num != arg_zip && !File_Exists (zipurl))
 		{
-			Con_Printf ("File \"%s\" doesn't exist\n", _zipurl); // Print the unmodified version
+			Con_PrintLinef ("File " QUOTED_S " doesn't exist", _zipurl); // Print the unmodified version
 			return;
 		}
 
 		switch (cmd_num)
 		{
 		case arg_add:  // sorts and rewrites (where nulled entry space is recovered) (can just sort the header)
-			Con_Printf ("Unsupported at this time\n");
+			Con_PrintLinef ("Unsupported at this time");
 			return;
 
 
 		case arg_compress:  // sorts and rewrites (where nulled entry space is recovered) (can just sort the header)
 
-			Con_Printf ("Unsupported at this time\n");
+			Con_PrintLinef ("Unsupported at this time");
 			return;
 
 		case arg_extract:	// extract file to <dest> (final arg is not folder but entire path of file to write!!!!)
@@ -399,13 +400,13 @@ void Zip_Command_f (lparse_t *line)
 
 			if (!File_Exists (destfolder))
 			{
-				Con_Printf ("Destination folder for \"%s\" does not exist\n", arg2);
+				Con_PrintLinef ("Destination folder for " QUOTED_S " does not exist", arg2);
 				return;
 			}
 
 			if (!File_Is_Folder(destfolder))
 			{
-				Con_Printf ("Destination folder for \"%s\" is a file\n", arg2);
+				Con_PrintLinef ("Destination folder for " QUOTED_S " is a file", arg2);
 				return;
 			}
 
@@ -415,7 +416,7 @@ void Zip_Command_f (lparse_t *line)
 
 			if (!Zip_Has_File (zipurl, inside_zip_filename))
 			{
-				Con_Printf ("File \"%s\" does not exist in zip \"%s\"\n", inside_zip_filename, zipurl);
+				Con_PrintLinef ("File " QUOTED_S " does not exist in zip " QUOTED_S, inside_zip_filename, zipurl);
 				return;
 			}
 
@@ -426,12 +427,12 @@ void Zip_Command_f (lparse_t *line)
 
 		case arg_rem:		// remove a file <delete a file inside zip by zeroing out entry>
 
-			Con_Printf ("Unsupported at this time\n");
+			Con_PrintLinef ("Unsupported at this time");
 			return;
 
 		case arg_replace:	return; // replace a file in zip <if larger, null out entry and write another one>
 
-			Con_Printf ("Unsupported at this time\n");
+			Con_PrintLinef ("Unsupported at this time");
 			return;
 
 		case arg_unzip: // arg1 is destination
@@ -448,7 +449,7 @@ void Zip_Command_f (lparse_t *line)
 
 				if (!File_Exists(parentpath))
 				{
-					Con_Printf ("Destination \"%s\" does not exist\n", destfolder);
+					Con_PrintLinef ("Destination " QUOTED_S " does not exist", destfolder);
 					return;
 				}
 				// Ok to make just a subfolder
@@ -456,7 +457,7 @@ void Zip_Command_f (lparse_t *line)
 
 			i = Zip_Unzip (zipurl, destfolder);
 
-			Con_Printf ("%d files extracted\n", i);
+			Con_PrintLinef ("%d files extracted", i);
 			Recent_File_Set_FullPath (destfolder);
 			return;
 
@@ -468,7 +469,7 @@ void Zip_Command_f (lparse_t *line)
 
 			if (!File_Exists (srcfolder))
 			{
-				Con_Printf ("Source folder \"%s\" does not exist\n", srcfolder);
+				Con_PrintLinef ("Source folder " QUOTED_S " does not exist", srcfolder);
 				return;
 			}
 
@@ -479,35 +480,36 @@ void Zip_Command_f (lparse_t *line)
 
 		case arg_help: // list current mappings
 
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s <0-99> <yourfile.mp3>\nwhere yourfile.mp3 is in [gamedir]/music folder\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Usage: %s list  - print list of contents\n", line->args[0]);
-			Con_Printf ("Usage: %s zip <folder_to_zip> <output.zip> - resets everything\n", line->args[0]);
-			Con_Printf ("Usage: %s unzip <input.zip> <folder_unzip_location>\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Examples:\n");
-			Con_Printf ("\n");
-			Con_Printf ("%s unzip c:\\quake\\id1\\zip.0.zip c:\\quake2\n", line->args[0]);
-			Con_Printf ("%s zip c:\\quake\\id1\\maps c:\\quake\\id1\\mymaps.zip\n", line->args[0]);
-			Con_Printf ("\n");
-			Con_Printf ("Filenames should avoid spaces and only use alphanumeric\n");
-			Con_Printf ("characters and the underscore '_'.\n");
-			Con_Printf ("\n");
-			Con_Printf ("Type 'folder' to access current gamedir.\n");
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s <0-99> <yourfile.mp3>", line->args[0]);
+			Con_PrintLinef ("where yourfile.mp3 is in [gamedir]/music folder");
+			Con_PrintLine ();
+			Con_PrintLinef ("Usage: %s list  - print list of contents", line->args[0]);
+			Con_PrintLinef ("Usage: %s zip <folder_to_zip> <output.zip> - resets everything", line->args[0]);
+			Con_PrintLinef ("Usage: %s unzip <input.zip> <folder_unzip_location>", line->args[0]);
+			Con_PrintLine ();
+			Con_PrintLinef ("Examples:");
+			Con_PrintLine ();
+			Con_PrintLinef ("%s unzip c:\\quake\\id1\\zip.0.zip c:\\quake2", line->args[0]);
+			Con_PrintLinef ("%s zip c:\\quake\\id1\\maps c:\\quake\\id1\\mymaps.zip", line->args[0]);
+			Con_PrintLine ();
+			Con_PrintLinef ("Filenames should avoid spaces and only use alphanumeric");
+			Con_PrintLinef ("characters and the underscore '_'.");
+			Con_PrintLine ();
+			Con_PrintLinef ("Type 'folder' to access current gamedir.");
+			Con_PrintLine ();
 
 			return;
 
 		case arg_list: // list current mappings
 
-			Con_Printf ("\n");
-			Con_Printf ("Files in zip \"%s\":\n", _zipurl);
-			Con_Printf ("\n");
+			Con_PrintLine ();
+			Con_PrintLinef ("Files in zip " QUOTED_S ":", _zipurl);
+			Con_PrintLine ();
 
 			Zip_List_Print (zipurl);
 
-			Con_Printf ("\n");
+			Con_PrintLine ();
 
 			Recent_File_Set_FullPath (zipurl);
 			return;
@@ -517,38 +519,45 @@ void Zip_Command_f (lparse_t *line)
 	} // End of args >=2
 
 	// with no parameters or invalid parameters ends up displaying help
-	Con_Printf ("\n");
-	Con_Printf ("Usage: %s {help|list|unzip|zip}\n", line->args [0]);
-	Con_Printf ("Type '%s help' for examples and detail\n", line->args [0]);
-	Con_Printf ("\n");
+	Con_PrintLine ();
+	Con_PrintLinef ("Usage: %s {help|list|unzip|zip}", line->args [0]);
+	Con_PrintLinef ("Type '%s help' for examples and detail", line->args [0]);
+	Con_PrintLine ();
 
 }
+
 
 
 void Dir_Command_f (lparse_t *line)
 {
-	clist_t *dir_contents = File_List_Recursive_Alloc (com_gamedir);
+	const char *comparestring = (line->count == 2) ? line->args[1] : NULL;
+	clist_t *dir_contents = File_List_Recursive_Alloc (com_gamedir, comparestring);
 	clist_t *cursor;
 	double filesizes;
 	size_t cursize;
-	const char *comparestring = NULL;
+	
 
+#if 0 // OLD - Dec 29 2016
 	if (line->count == 2)
 		comparestring = line->args[1];
+#endif
 
 	for (cursor = dir_contents, filesizes = 0; cursor; cursor = cursor->next)
 	{
+#if 0 // OLD - Dec 29 2016
 		// Skip disqualified matches
 		if (comparestring && !wildmultcmp (comparestring, File_URL_SkipPath (cursor->name)) )
 			continue;
+#endif
 		cursize = File_Length(cursor->name),
-		Con_Printf ("%s %u\n", cursor->name, (unsigned int) cursize); // C89
+		Con_PrintLinef ("%s %u", cursor->name, (unsigned int) cursize); // C89
 		filesizes += cursize;
 	}
 
-	Con_Printf ("Sizes combined %f\n", filesizes);
+	Con_PrintLinef ("Sizes combined %f", filesizes);
 	List_Free (&dir_contents);
 }
+
 
 
 
@@ -610,18 +619,25 @@ void UnInstall_Command_f (lparse_t *line)
 	cbool ret;
 	
 // What if game is in use?
-	if (cmd_from_server || cls.demoplayback || cmd_source == src_client)
-		return; // Not allowed
+	if (cmd_from_server || cmd_source == src_client)
+		return; // Not allowed (demoplayback?)
 
 	if (cls.state == ca_connected || cls.demoplayback) // Demo playback + download screen updates causes R_RenderView to run out of stack space for WinQuake.
 	{
-		Con_Printf ("Disconnect first please\n");
-		return;
+#if 1
+		//Kill the server
+		CL_Disconnect ();
+		Host_ShutdownServer (true);
+#else
+		Con_PrintLinef ("Disconnect first please");
+#endif
+
+	//	return;
 	}
 
-	if (strcasecmp(gamedir_shortname(), GAMENAME) || com_gametype != gametype_standard)
+	if (strcasecmp(gamedir_shortname(), GAMENAME_ID1) || com_gametype != gametype_standard)
 	{
-		Con_Printf ("Set \"game id1\" first!  Currently in a gamedir\n");
+		Con_PrintLinef ("Set " QUOTEDSTR("game id1") " first!  Currently in a gamedir");
 		return;
 	}
 
@@ -630,9 +646,9 @@ void UnInstall_Command_f (lparse_t *line)
 
 	if ( !(line->count == 2 || (line->count == 3 && dofull)))
 	{
-		Con_Printf ("Need the game to install or the entire URL with the http:// in it\n");
-		Con_Printf ("Example: uninstall <modname> [full]\n");
-		Con_Printf ("Note: Using 'full' will also remove zip from library\n");
+		Con_PrintLinef ("Need the game to install or the entire URL with the http:// in it");
+		Con_PrintLinef ("Example: uninstall <modname> [full]");
+		Con_PrintLinef ("Note: Using 'full' will also remove zip from library");
 		return;
 	}
 
@@ -648,7 +664,7 @@ void UnInstall_Command_f (lparse_t *line)
 	{
 		const char *msgs[] = {"uninstall isn't permitted remotely", "relative path not allowed", "no path separators allowed", "can't remove id1"};
 		const char *fail_msg = msgs[fail_reason - 1];
-		Con_Printf ("%s: %s\n", line->args[0], fail_msg);
+		Con_PrintLinef ("%s: %s", line->args[0], fail_msg);
 		return;
 	}
 
@@ -657,43 +673,43 @@ void UnInstall_Command_f (lparse_t *line)
 	if (File_Exists(game_folder_url) && !File_Is_Folder(game_folder_url))
 	{
 		Recent_File_Set_FullPath (game_folder_url);
-		Con_Printf ("%s: \"%s\" is a file, you might consider removing it.\n", line->args[0], game_folder_url);
-		Con_Printf ("Type 'showfile' to browse to that file.\n");  
+		Con_PrintLinef ("%s: " QUOTED_S " is a file, you might consider removing it.", line->args[0], game_folder_url);
+		Con_PrintLinef ("Type 'showfile' to browse to that file.");  
 		return;
 	}
 
 	if (!File_Exists(game_folder_url))
 	{
-		Con_Printf ("%s: folder \"%s\" does not exist\n", line->args[0], game_folder_url);
+		Con_PrintLinef ("%s: folder " QUOTED_S " does not exist", line->args[0], game_folder_url);
 	}
 	else
 	{
 		clist_t *file_list = NULL;
 		
-		Con_Printf ("Removing files in %s\n", subdir);
-		file_list = File_List_Recursive_Alloc(game_folder_url);
+		Con_PrintLinef ("Removing files in %s", subdir);
+		file_list = File_List_Recursive_Alloc(game_folder_url, NO_PATTERN_NULL);
 		File_Delete_List (file_list);
 		List_Free (&file_list);		
 
-		Con_Printf ("Removing directories in %s\n", subdir);
-		file_list = File_List_Dirs_Recursive_Alloc(game_folder_url);
+		Con_PrintLinef ("Removing directories in %s", subdir);
+		file_list = File_List_Dirs_Recursive_Alloc(game_folder_url, NO_PATTERN_NULL);
 		File_Rmdir_List (file_list);
 		List_Free (&file_list);		
 
-		Con_Printf ("Removing base folder in %s\n", subdir);
+		Con_PrintLinef ("Removing base folder in %s", subdir);
 
 		ret = File_Rmdir (game_folder_url); 	
 		if (!ret)
 		{
 			Recent_File_Set_FullPath (game_folder_url);				
-			Con_Warning ("Couldn't remove base folder %s\n", subdir);
-			Con_Warning ("Does the folder have other contents?\n");
-			Con_Warning ("Is a file opened in another application?\n");
-			Con_Warning ("Is the folder open in another window?\n");
-			Con_Printf ("Type 'folder' to explore contents.\n");
-			Con_Printf ("Try again when this is resolved.\n");
+			Con_WarningLinef ("Couldn't remove base folder %s", subdir);
+			Con_WarningLinef ("Does the folder have other contents?");
+			Con_WarningLinef ("Is a file opened in another application?");
+			Con_WarningLinef ("Is the folder open in another window?");
+			Con_PrintLinef ("Type 'folder' to explore contents.");
+			Con_PrintLinef ("Try again when this is resolved.");
 			return;
-		} else Con_Printf ("Removed base folder in %s\n", subdir);
+		} else Con_PrintLinef ("Removed base folder in %s", subdir);
 
 	}
 
@@ -704,12 +720,12 @@ void UnInstall_Command_f (lparse_t *line)
 			c_strlcat (library_url, ".zip");
 		
 		if (!File_Exists(library_url))
-			Con_Printf ("%s archive not present\n", library_url);
+			Con_PrintLinef ("%s archive not present", library_url);
 		else if (File_Is_Folder(library_url))
-			Con_Printf ("%s is a folder!\n", library_url);
+			Con_PrintLinef ("%s is a folder!", library_url);
 		else
 		{
-			Con_Printf ("Deleting archive %s\n", library_url);
+			Con_PrintLinef ("Deleting archive %s", library_url);
 			File_Delete (library_url);
 		}
 	}
@@ -741,7 +757,7 @@ void Http_Command_f (lparse_t *line)
 // Pass an update fn
 	//const char *user_agent, update_fn, buffer, destfile, url
 
-	c_snprintf (argbuckets.cmdline, "anything /h:%s", "http://www.quake-1.com/quakec-gallery/gyro2_21a.zip");
+	c_snprintf1 (argbuckets.cmdline, "anything /h:%s", "http://www.quake-1.com/quakec-gallery/gyro2_21a.zip");
 	String_To_Arg_Buckets (&argbuckets, argbuckets.cmdline);
 	http_runner (argbuckets.argcount, argbuckets.argvs);
 
@@ -754,11 +770,19 @@ void Install_Command_f (lparse_t *line)
 	char game_url[SYSTEM_STRING_SIZE_1024];
 	const char *quoth22name = "quoth2pt2full";
 	cbool game_is_quoth = false;  // We'll set this to quoth if quoth2pt2full
+
+#if 0 // Proposed
+	if (cmd_from_server || cmd_source == src_client) {
+		Con_PrintLinef ("Illegal install request source");
+		return; // Not allowed
+	}
+#endif
+
 	if (line->count != 2)
 	{
-		Con_Printf ("Need the game to install or the entire URL with the http:// in it\n");
-		Con_Printf ("Example: install travail or install [http://URL]\n");
-		Con_Printf ("The version of libcurl used does not support https:// at this time\n");
+		Con_PrintLinef ("Need the game to install or the entire URL with the http:// in it");
+		Con_PrintLinef ("Example: install travail or install [http://URL]");
+		Con_PrintLinef ("The version of libcurl used does not support https:// at this time");
 		return;
 	}
 	else
@@ -784,7 +808,7 @@ void Install_Command_f (lparse_t *line)
 		{
 			if (!String_Does_End_With_Caseless (arg1, ".zip"))
 			{
-				Con_Printf ("Only .zip files are supported\n");
+				Con_PrintLinef ("Only .zip files are supported");
 				return;
 			}
 			c_strlcpy (game_url, arg1);
@@ -794,7 +818,7 @@ void Install_Command_f (lparse_t *line)
 
 	File_Mkdir_Recursive (downloads_folder_url(""));
 
-	Con_DPrintf ("Source: %s\n", game_url);
+	Con_DPrintLinef ("Source: %s", game_url);
 
 	{ 
 		const char *_library_folder_zip_url = downloads_folder_url(File_URL_SkipPath(game_url));
@@ -820,14 +844,14 @@ void Install_Command_f (lparse_t *line)
 			if (File_Is_Folder(install_game_folder_url))
 			{
 				// Let the user examine the folder.
-				Con_Printf ("It looks like this may already be installed.\n");
-				Con_Printf ("Type 'folder' to explore contents.\n");
+				Con_PrintLinef ("It looks like this may already be installed.");
+				Con_PrintLinef ("Type 'folder' to explore contents.");
 			}
 			else
 			{
 				// Address only remotely possible extra stupid situation.  Delete file instead?
-				Con_Printf ("Will not be able to make folder \"%s\" because a file by that name exists\n");
-				Con_Printf ("Type 'showfile' to browse to that file.\n");  
+				Con_PrintLinef ("Will not be able to make folder " QUOTED_S " because a file by that name exists", install_game_folder_url);
+				Con_PrintLinef ("Type 'showfile' to browse to that file.");  
 			}
 			return; // Get out
 		}
@@ -840,13 +864,13 @@ void Install_Command_f (lparse_t *line)
 			if (file_list == NULL)
 			{
 				Recent_File_Set_FullPath (library_folder_zip_url);
-				Con_Printf ("There is an archive, but it contains no files or an invalid zip\n");
-				Con_Printf ("Type 'showfile' to browse to that file.\n");
+				Con_PrintLinef ("There is an archive, but it contains no files or an invalid zip");
+				Con_PrintLinef ("Type 'showfile' to browse to that file.");
 				return; // If file_list is null, don't need to free anything because there is nothing to free.
 			}
 			List_Free (&file_list);
 
-			Con_Printf ("This archive exists in the library, no download required\n");
+			Con_PrintLinef ("This archive exists in the library, no download required");
 		}
 
 
@@ -855,7 +879,7 @@ void Install_Command_f (lparse_t *line)
 			//Kill the server
 			CL_Disconnect ();
 			Host_ShutdownServer(true);
-	//		Con_Printf ("Disconnect first please\n");
+	//		Con_PrintLinef ("Disconnect first please");
 	//		return;
 		}
 
@@ -867,7 +891,7 @@ void Install_Command_f (lparse_t *line)
 			cbool is_success;
 			cbool was_cancelled = false;
 			int errorcode;
-			Con_DPrintf ("Download: to %s\n", download_cache_url);
+			Con_DPrintLinef ("Download: to %s", download_cache_url);
 	
 			// We don't need to make the folder or delete an existing file, the download proc does this.
 //			Download_Set_User_Agent ("(^Quakeinjector|^Java|DokuWiki HTTP Client)");
@@ -894,10 +918,10 @@ void Install_Command_f (lparse_t *line)
 			// Download to file will set is_success to false if the entire zip didn't download.
 			if (!is_success)
 			{
-				Con_Printf ("download %s\n", was_cancelled ? "cancelled by user" : "failed or incomplete");
+				Con_PrintLinef ("download %s", was_cancelled ? "cancelled by user" : "failed or incomplete");
 				File_Delete (download_cache_url); // If it is a partial, delete it.
 				return; // Get out
-			} else Con_Printf ("Download complete\n");
+			} else Con_PrintLinef ("Download complete");
 			did_download = true;
 		}
 
@@ -972,7 +996,7 @@ void Install_Command_f (lparse_t *line)
 					
 						zip_skipchars = begin_text - cur->name + 1;
 						begin_text = &cur->name[zip_skipchars];
-						Con_Printf ("%s ---> %s\n", cur->name, begin_text);
+						Con_PrintLinef ("%s ---> %s", cur->name, begin_text);
 					}
 				}
 
@@ -993,31 +1017,31 @@ void Install_Command_f (lparse_t *line)
 			}
 
 			if (found_game && game_is_quoth) { 
-				Con_Warning ("Assuming Quoth installation.\n");
+				Con_WarningLinef ("Assuming Quoth installation.");
 				String_Edit_Replace (install_game_folder_url, sizeof(install_game_folder_url), quoth22name, "quoth");
 			}
 
 			if (what_found == found_none)
 			{
-				Con_Printf ("This archive has no maps, no paks and no progs.dat so appears to have no playable content.\n");
+				Con_PrintLinef ("This archive has no maps, no paks and no progs.dat so appears to have no playable content.");
 				if (did_download)
 				{
-					Con_Printf ("As we just downloaded this archive, removing the file from the library to prevent any confusion in the future.\n");
+					Con_PrintLinef ("As we just downloaded this archive, removing the file from the library to prevent any confusion in the future.");
 					File_Delete (download_cache_url); 
 				}
 				else  
 				{
 					Recent_File_Set_FullPath (library_folder_zip_url);
-					Con_Printf ("File \"%s\" should not be in the library because of this and may cause interference.\n", File_URL_SkipPath(library_folder_zip_url));
-					Con_Printf ("Type 'showfile' to browse to that file.\n");  
+					Con_PrintLinef ("File " QUOTED_S " should not be in the library because of this and may cause interference.", File_URL_SkipPath(library_folder_zip_url));
+					Con_PrintLinef ("Type 'showfile' to browse to that file.");  
 				}
 			}
 			else
 			{
 				const char *_dest_base[] = {
 					install_game_folder_url, 
-					va("%s/" GAMENAME, com_basedir), 
-					va("%s/" GAMENAME "/maps", com_basedir)
+					va("%s/" GAMENAME_ID1, com_basedir), 
+					va("%s/" GAMENAME_ID1 "/maps", com_basedir)
 				};
 				char dest_base[MAX_OSPATH];
 				int dnum = what_found == found_game ? 0 : 
@@ -1038,20 +1062,20 @@ void Install_Command_f (lparse_t *line)
 					
 					if (String_Does_End_With_Caseless(cur->name, ".exe"))
 					{
-						Con_Printf ("Note: Skipping an .exe file contained in the archive.\n");
+						Con_PrintLinef ("Note: Skipping an .exe file contained in the archive.");
 						continue;  // No thanks!
 					}
 
 					if (String_Does_Match_Caseless(cur->name, "config.cfg"))
 					{
-						Con_Printf ("Warning:  Archive contained a config.cfg, but we are skipping that.\n");
+						Con_PrintLinef ("Warning:  Archive contained a config.cfg, but we are skipping that.");
 						continue;  // No thanks!
 					}
 
 					if (String_Does_Match_Caseless(cur->name, "autoexec.cfg"))
 					{
 						// Allow but warn. :(
-						Con_Printf ("Warning:  This mod has an autoexec.cfg!\n");
+						Con_PrintLinef ("Warning:  This mod has an autoexec.cfg!");
 					}
 
 					if (String_Does_End_With (cur->name, "/") )
@@ -1073,10 +1097,16 @@ void Install_Command_f (lparse_t *line)
 						dest_name = va("%s/%s", dest_base, lower_name); // Maps only
 					else dest_name = va("%s/%s", dest_base, &lower_name[zip_skipchars]); // Other
 
-					if (!Zip_Extract_File (library_folder_zip_url, cur->name, dest_name))
-						Con_Printf ("Warning: Couldn't extract %s\n", cur->name);
-					else Con_DPrintf ("Extracted: %s to %s\n", cur->name, dest_name);
-				
+					if (!Zip_Extract_File (library_folder_zip_url, cur->name, dest_name)) {
+						Con_DPrintLinef ("Warning: Couldn't extract %s", cur->name);
+						Con_PrintLinef ("Extracted %03d: %s (EXTRACTION FAILED)", count + 1, zip_skipchars == -1 ? lower_name : &lower_name[zip_skipchars]);
+						continue;
+					}	
+					
+					// Success!
+					Con_DPrintLinef ("Extracted: %s to %s", cur->name, dest_name);
+					Con_PrintLinef  ("Extracted %03d: %s", count + 1, zip_skipchars == -1 ? lower_name : &lower_name[zip_skipchars]);	
+					#pragma message ("We have a name borkage problem with some zips where first n characters are not a match, example is Nehahra")
 				}
 				// We either found a game, a map
 				if (what_found == found_game)
@@ -1098,14 +1128,10 @@ void Install_Command_f (lparse_t *line)
 void OpenD_Command_f (void)
 {
 //	Folder_Open
-	Con_Printf ("%s\n", System_Dialog_Open_Type ("Open a file", "c:/quake/cda", ".pak,.png"));
+	Con_PrintLinef ("%s", System_Dialog_Open_Type ("Open a file", "c:/quake/cda", ".pak,.png"));
 }
 
 void SaveD_Command_f (void)
 {
 }
 #endif
-
-
-
-

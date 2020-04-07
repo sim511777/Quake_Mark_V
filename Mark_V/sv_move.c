@@ -192,7 +192,7 @@ cbool SV_movestep (edict_t *ent, vec3_t move, cbool relink)
 				SV_LinkEdict (ent, true);
 
 			ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
-//	Con_Printf ("fall down\n");
+//	Con_PrintLinef ("fall down");
 			return true;
 		}
 
@@ -220,7 +220,7 @@ cbool SV_movestep (edict_t *ent, vec3_t move, cbool relink)
 
 	if ( (int)ent->v.flags & FL_PARTIALGROUND )
 	{
-//		Con_Printf ("back on ground\n");
+//		Con_PrintLinef ("back on ground");
 		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
 	}
 
@@ -288,7 +288,7 @@ SV_FixCheckBottom
 */
 void SV_FixCheckBottom (edict_t *ent)
 {
-//	Con_Printf ("SV_FixCheckBottom\n");
+//	Con_PrintLinef ("SV_FixCheckBottom");
 
 	ent->v.flags = (int)ent->v.flags | FL_PARTIALGROUND;
 }
@@ -435,4 +435,3 @@ void SV_MoveToGoal (void)
 		SV_NewChaseDir (ent, goal, dist);
 	}
 }
-

@@ -1,3 +1,5 @@
+#ifndef GLQUAKE // WinQuake Software renderer
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 2009-2014 Baker and others
@@ -71,8 +73,8 @@ qasmbool	r_lastvertvalid /* qasm */;
 // Code taken from the ToChriS engine - Author: Vic (vic@quakesrc.org) (http://hkitchen.quakesrc.org/)
 int				r_skyframe;
 msurface_t		*r_skyfaces;
-mplane_t		r_skyplanes[6]; // Manoel Kasimier - edited
-mtexinfo_t		r_skytexinfo[6];
+mplane_t		r_skyplanes[SKYBOX_SIDES_COUNT_6]; // Manoel Kasimier - edited
+mtexinfo_t		r_skytexinfo[SKYBOX_SIDES_COUNT_6];
 mvertex_t		*r_skyverts;
 medge_t			*r_skyedges;
 int				*r_skysurfedges;
@@ -87,7 +89,7 @@ int box_edges[24] = { 1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4
 
 int	box_faces[6] = {0,0,2,2,2,0};
 
-vec3_t	box_vecs[6][2] = {
+vec3_t	box_vecs[SKYBOX_SIDES_COUNT_6][2] = {
 	{	{0,-1,0}, {-1,0,0} },
 	{ {0,1,0}, {0,0,-1} },
 	{	{0,-1,0}, {1,0,0} },
@@ -97,7 +99,7 @@ vec3_t	box_vecs[6][2] = {
 };
 
 // Manoel Kasimier - hi-res skyboxes - begin
-vec3_t	box_bigvecs[6][2] = {
+vec3_t	box_bigvecs[SKYBOX_SIDES_COUNT_6][2] = {
 	{	{0,-2,0}, {-2,0,0} },
 	{ {0,2,0}, {0,0,-2} },
 	{	{0,-2,0}, {2,0,0} },
@@ -150,8 +152,8 @@ void R_InitSkyBox (void)
 	r_skysurfedges = loadmodel->surfedges + loadmodel->numsurfedges;
 	loadmodel->numsurfedges += 24;
 
-	memset (r_skyfaces, 0, 6*sizeof(*r_skyfaces));
-	for (i = 0 ; i < 6 ; i++)
+	memset (r_skyfaces, 0, SKYBOX_SIDES_COUNT_6 * sizeof(*r_skyfaces));
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		r_skyplanes[i].normal[skybox_planes[i*2]] = 1;
 		r_skyplanes[i].dist = skybox_planes[i*2+1];
@@ -231,14 +233,14 @@ void R_EmitSkyBox (void)
 			r_skyverts[i].position[j] = r_origin[j] + box_verts[i][j]*128;
 
 	// set the six fake planes
-	for (i = 0 ; i < 6 ; i++)
+	for (i = 0 ; i < SKYBOX_SIDES_COUNT_6 ; i++)
 		if (skybox_planes[i*2+1] > 0)
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]+128;
 		else
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]-128;
 
 	// fix texture offsets
-	for (i = 0 ; i < 6 ; i++)
+	for (i = 0 ; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		r_skytexinfo[i].vecs[0][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[0]);
 		r_skytexinfo[i].vecs[1][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[1]);
@@ -247,7 +249,7 @@ void R_EmitSkyBox (void)
 	// emit the six faces
 	oldkey = r_currentkey;
 	r_currentkey = 0x7ffffff0;
- 	for (i = 0 ; i < 6 ; i++)
+ 	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 	{
 		R_RenderFace (r_skyfaces + i, 15);
 	}
@@ -916,3 +918,4 @@ void R_RenderBmodelFace (bedge_t *pedges, msurface_t *psurf)
 	surface_p++;
 }
 
+#endif // !GLQUAKE - WinQuake Software renderer

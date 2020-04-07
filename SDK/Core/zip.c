@@ -103,7 +103,7 @@ cbool Zip_Has_File (const char *zipfile_url, const char *filename)
 
 #pragma message ("Baker: Make sure zip extract can do zero length extraction ok")
 // If inside_zip_filename is NULL, we do them all
-int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url, print_fn_t print_fn)
+int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url, printline_fn_t my_printline)
 {
 	HZIP curzip = OpenZipFile (zipfile_url, 0);
 	int written;
@@ -140,12 +140,12 @@ int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename,
 
 			if ( result!= ZR_OK) // ZR_OK = 0
 			{
-				Core_Printf ("Error trying to write file %s\n", curfile);
+				my_printline ("Error trying to write file %s", curfile);
 				CloseZip (curzip);
 				return false;
 			}
 
-			print_fn ("Extracted to %s\n", curfile);
+			my_printline ("Extracted to %s", curfile);
 			written ++;
 
 			if (inside_zip_filename)
@@ -157,14 +157,14 @@ int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename,
 		return written;
 	}
 
-	Core_Printf ("Couldn't open zip %s\n", zipfile_url);
+	my_printline ("Couldn't open zip %s", zipfile_url);
 	return false;
 }
 
 
 cbool Zip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url)
 {
-	if (sZip_Extract_File (zipfile_url, inside_zip_filename, destfile_url, Core_Printf))
+	if (sZip_Extract_File (zipfile_url, inside_zip_filename, destfile_url, logflex))
 		return true;
 
 	return false;
@@ -173,7 +173,7 @@ cbool Zip_Extract_File (const char *zipfile_url, const char *inside_zip_filename
 
 int Zip_Unzip (const char *zipfile_url, const char *dest_folder_url)
 {
-	int n = sZip_Extract_File (zipfile_url, NULL, dest_folder_url, Core_Printf);
+	int n = sZip_Extract_File (zipfile_url, NULL, dest_folder_url, log_debug);
 
 	return n;
 }
@@ -196,7 +196,7 @@ void Zip_List_Print (const char * zipfile_url)
 		{ 
 			// get individual details
 			GetZipItem (curzip, i, &cur); 
-			Core_Printf ("%04i: %s\n", found, cur.name);
+			logc ("%04d: %s", found, cur.name); // I would hope a print function would print!!!
 		}
 		
 		CloseZip (curzip);
@@ -233,7 +233,7 @@ clist_t * Zip_List_Alloc (const char *zipfile_url)
 
 int Zip_Zip_Folder (const char *zipfile_url, const char *source_folder_url)
 {
-	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url);
+	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url, NULL /* no wildcard */);
 
 
 	if (!files)
@@ -260,7 +260,7 @@ int Zip_Zip_Folder (const char *zipfile_url, const char *source_folder_url)
 
 			ZipAddFile (curzip, listitem->name,  full_url);
 
-			Core_Printf ("%04i: Added %s\n", count, listitem->name);
+			logflex ("%04d: Added %s", count, listitem->name);
 		}
 
 
@@ -292,7 +292,7 @@ int Zip_File_Query (const char *zipfile_url, const char *filename, enum query_e 
 		{
 			if (!mz_zip_reader_file_stat (&curzip, i, &cur))
 			{
-				Core_Printf ("mz_zip_reader_file_stat() failed!\n");
+				logd ("mz_zip_reader_file_stat() failed!");
 				break;
 			}
 
@@ -343,7 +343,7 @@ cbool Zip_Has_File (const char *zipfile_url, const char *filename)
 }
 
 // If inside_zip_filename is NULL, we do them all
-int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url, print_fn_t print_fn)
+int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url, printline_fn_t my_printline)
 {
 	mz_zip_archive curzip = {0};
 	mz_bool status = mz_zip_reader_init_file(&curzip, zipfile_url, 0);
@@ -362,7 +362,7 @@ int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename,
 			// get individual details
 			if (!mz_zip_reader_file_stat (&curzip, i, &cur))
 			{
-				Core_Printf ("mz_zip_reader_file_stat() failed!\n");
+				logd ("mz_zip_reader_file_stat() failed!");
 				mz_zip_reader_end (&curzip);
 				return false;
 			}
@@ -386,12 +386,12 @@ int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename,
 			// extract	 
 			if (!mz_zip_reader_extract_to_file (&curzip, cur.m_file_index, current_url, 0))
 			{
-				Core_Printf ("mz_zip_reader_extract_to_file() failed!\n");
+				logd ("mz_zip_reader_extract_to_file() failed!");
 				mz_zip_reader_end (&curzip);
 				return false;
 			}
 
-			print_fn ("Extracted to %s\n", curfile);
+			my_printline ("Extracted to %s", curfile);
 			written ++;
 
 			if (inside_zip_filename)
@@ -403,14 +403,14 @@ int sZip_Extract_File (const char *zipfile_url, const char *inside_zip_filename,
 		return written;
 	}
 
-	Core_Printf ("Couldn't open zip %s\n", zipfile_url);
+	logd ("Couldn't open zip %s", zipfile_url);
 	return false;
 }
 
 
 cbool Zip_Extract_File (const char *zipfile_url, const char *inside_zip_filename, const char *destfile_url)
 {
-	if (sZip_Extract_File (zipfile_url, inside_zip_filename, destfile_url, Core_Printf))
+	if (sZip_Extract_File (zipfile_url, inside_zip_filename, destfile_url, log_debug))
 		return true;
 
 	return false;
@@ -419,7 +419,7 @@ cbool Zip_Extract_File (const char *zipfile_url, const char *inside_zip_filename
 
 int Zip_Unzip (const char *zipfile_url, const char *dest_folder_url)
 {
-	int n = sZip_Extract_File (zipfile_url, NULL, dest_folder_url, Core_Printf);
+	int n = sZip_Extract_File (zipfile_url, NULL, dest_folder_url, log_debug);
 
 	return n;
 }
@@ -441,11 +441,11 @@ void Zip_List_Print (const char *zipfile_url)
 			// get individual details
 			if (!mz_zip_reader_file_stat (&curzip, i, &cur))
 			{
-				Core_Printf ("mz_zip_reader_file_stat() failed!\n");
+				logd ("mz_zip_reader_file_stat() failed!");
 				break;
 			}
 
-			Core_Printf ("%04i: %s\n", found, cur.m_filename);
+			logd ("%04d: %s", found, cur.m_filename);
 		}
 
 		mz_zip_reader_end (&curzip);
@@ -470,7 +470,7 @@ clist_t * Zip_List_Alloc (const char *zipfile_url)
 			// get individual details
 			if (!mz_zip_reader_file_stat (&curzip, i, &cur))
 			{
-				Core_Printf ("mz_zip_reader_file_stat() failed!\n");
+				logd ("mz_zip_reader_file_stat() failed!");
 				mz_zip_reader_end (&curzip);
 				List_Free (&list);
 				return NULL;
@@ -504,7 +504,7 @@ clist_t * Zip_List_Details_Alloc (const char *zipfile_url, const char *delimiter
 			// get individual details
 			if (!mz_zip_reader_file_stat (&curzip, i, &cur))
 			{
-				Core_Printf ("mz_zip_reader_file_stat() failed!\n");
+				logd ("mz_zip_reader_file_stat() failed!");
 				mz_zip_reader_end (&curzip);
 				List_Free (&list);
 				return NULL;
@@ -522,7 +522,7 @@ clist_t * Zip_List_Details_Alloc (const char *zipfile_url, const char *delimiter
 
 int Zip_Zip_Folder (const char *zipfile_url, const char *source_folder_url)
 {
-	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url);
+	clist_t *files = File_List_Recursive_Relative_Alloc (source_folder_url, NULL);
 	int count = 0;
 
 	if (files)
@@ -551,7 +551,7 @@ int Zip_Zip_Folder (const char *zipfile_url, const char *source_folder_url)
 				return 0;
 			}
 			
-			Core_Printf ("%04i: Added %s\n", count, listitem->name);
+			logd ("%04d: Added %s", count, listitem->name);
 		}
 	
 		// close the file

@@ -1,3 +1,9 @@
+// Here's something crazy.  If I don't exclude this from the project, it will explode compile for SDL.
+
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_WINDOWS // Header level define, must be here
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2009 John Fitzgibbons and others
@@ -23,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // rights reserved.
 
 #include "quakedef.h"
-#ifdef PLATFORM_WINDOWS // Header level define, must be here
 
 #ifdef WANTED_MP3_MUSIC // Baker change
 #pragma message ("Note: MP3 Music disabled; I've never had any luck with DX8 and MinGW + CodeBlocks / GCC --- Baker :(")
@@ -55,7 +60,7 @@ static void CDAudio_Eject(void)
 	DWORD	dwReturn;
 
     if (dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, (DWORD)NULL))
-		Con_DPrintf("MCI_SET_DOOR_OPEN failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("MCI_SET_DOOR_OPEN failed (%d)", dwReturn);
 }
 
 
@@ -64,7 +69,7 @@ static void CDAudio_CloseDoor(void)
 	DWORD	dwReturn;
 
     if (dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_CLOSED, (DWORD)NULL))
-		Con_DPrintf("MCI_SET_DOOR_CLOSED failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("MCI_SET_DOOR_CLOSED failed (%d)", dwReturn);
 }
 
 
@@ -80,13 +85,13 @@ static int CDAudio_GetAudioDiskInfo(void)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("CDAudio: drive ready test - get status failed\n");
+		Con_PrintLinef ("CDAudio: drive ready test - get status failed");
 		return -1;
 	}
 
 	if (!mciStatusParms.dwReturn)
 	{
-		Con_DPrintf("CDAudio: drive not ready\n");
+		Con_DPrintLinef ("CDAudio: drive not ready");
 		return -1;
 	}
 
@@ -95,13 +100,13 @@ static int CDAudio_GetAudioDiskInfo(void)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("CDAudio: get tracks - status failed\n");
+		Con_PrintLinef ("CDAudio: get tracks - status failed");
 		return -1;
 	}
 
 	if (mciStatusParms.dwReturn < 1)
 	{
-		Con_DPrintf("CDAudio: no music tracks\n");
+		Con_PrintLinef ("CDAudio: no music tracks");
 		return -1;
 	}
 
@@ -169,7 +174,7 @@ void CDAudio_Play(byte track, cbool looping)
 
 	if (track < 1 || track > maxTrack)
 	{
-		Con_DPrintf("CDAudio: Bad track number %u.\n", track);
+		Con_DPrintLinef ("CDAudio: Bad track number %u.", track);
 		return;
 	}
 
@@ -180,13 +185,13 @@ void CDAudio_Play(byte track, cbool looping)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("MCI_STATUS failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("MCI_STATUS failed (%d)", dwReturn);
 		return;
 	}
 
 	if (mciStatusParms.dwReturn != MCI_CDA_TRACK_AUDIO)
 	{
-		Con_Printf("CDAudio: track %i is not audio\n", track);
+		Con_PrintLinef ("CDAudio: track %d is not audio", track);
 		return;
 	}
 
@@ -197,7 +202,7 @@ void CDAudio_Play(byte track, cbool looping)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("MCI_STATUS failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("MCI_STATUS failed (%d)", dwReturn);
 		return;
 	}
 
@@ -216,7 +221,7 @@ void CDAudio_Play(byte track, cbool looping)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("CDAudio: MCI_PLAY failed (%d)", dwReturn);
 		return;
 	}
 
@@ -254,7 +259,7 @@ void CDAudio_Stop(void)
 		return;
 
     if (dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, (DWORD)NULL))
-		Con_DPrintf("MCI_STOP failed (%i)", dwReturn);
+		Con_DPrintLinef ("MCI_STOP failed (%d)", dwReturn);
 
 	wasPlaying = false;
 	playing = false;
@@ -282,7 +287,7 @@ void CDAudio_Pause(void)
 
 	mciGenericParms.dwCallback = (DWORD)sysplat.mainwindow;
     if (dwReturn = mciSendCommand(wDeviceID, MCI_PAUSE, 0, (DWORD)(LPVOID) &mciGenericParms))
-		Con_DPrintf("MCI_PAUSE failed (%i)", dwReturn);
+		Con_DPrintLinef ("MCI_PAUSE failed (%d)", dwReturn);
 
 	wasPlaying = playing;
 	playing = false;
@@ -318,7 +323,7 @@ void CDAudio_Resume(void)
 
 	if (dwReturn)
 	{
-		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
+		Con_DPrintLinef ("CDAudio: MCI_PLAY failed (%d)", dwReturn);
 		return;
 	}
 
@@ -348,19 +353,19 @@ void CD_f (lparse_t *line)
 		CDAudio_GetAudioDiskInfo();
 		if (!cdValid)
 		{
-			Con_Printf("No CD in player.\n");
+			Con_PrintLinef ("No CD in player.");
 			return;
 		}
 	}
 #endif // Baker change -
-			Con_Printf("%u tracks\n", maxTrack);
+			Con_PrintLinef ("%u tracks", maxTrack);
 
 			if (playing)
-				Con_Printf("Currently %s track %u\n", playLooping ? "looping" : "playing", playTrack);
+				Con_PrintLinef ("Currently %s track %u", playLooping ? "looping" : "playing", playTrack);
 			else if (wasPlaying)
-				Con_Printf("Paused %s track %u\n", playLooping ? "looping" : "playing", playTrack);
+				Con_PrintLinef ("Paused %s track %u", playLooping ? "looping" : "playing", playTrack);
 
-			Con_Printf("Volume is %f\n", cdvolume);
+			Con_PrintLinef ("Volume is %f", cdvolume);
 			return;
 
 		case arg_loop: // loop the selected track:
@@ -374,12 +379,12 @@ void CD_f (lparse_t *line)
 			if (MediaPlayer_Force_On () )
 			{
 				if (host_post_initialized)
-					Con_Printf ("Music track play will start on map load\n");
+					Con_PrintLinef ("Music track play will start on map load");
 			}
 			else
 			{
 				if (host_post_initialized)
-					Con_Printf ("Disabled due to command line param -nosound or -nocdaudio\n");
+					Con_PrintLinef ("Disabled due to command line param -nosound or -nocdaudio");
 			}
 #endif // Baker change +
 
@@ -422,7 +427,7 @@ void CD_f (lparse_t *line)
 			{
 				for (n = 1; n < MAX_MUSIC_MAPS_100; n++)
 					if (remap[n] != n)
-						Con_Printf("  %u -> %u\n", n, remap[n]);
+						Con_PrintLinef ("  %u -> %u", n, remap[n]);
 
 				return;
 			}
@@ -455,10 +460,11 @@ void CD_f (lparse_t *line)
 	} // End of args >= 2
 
 	// with no parameters or invalid parameters ends up displaying help
-	Con_Printf ("Usage: %s {play|stop|on|off|info|pause|resume} [filename]\n", line->args[0]);
-	Con_Printf ("  Note: music files should be in gamedir\\music\n");
-	Con_Printf ("Example: quake\\id1\\music\\track04.mp3 \n");
-	Con_Printf ("\n%s is set to \"%s\" and if set to 0, will prohibit music.\n", external_music.name, external_music.string);
+	Con_PrintLinef ("Usage: %s {play|stop|on|off|info|pause|resume} [filename]", line->args[0]);
+	Con_PrintLinef ("  Note: music files should be in gamedir\\music");
+	Con_PrintLinef ("Example: quake\\id1\\music\\track04.mp3 ");
+	Con_PrintLine ();
+	Con_PrintLinef ("%s is set to " QUOTED_S " and if set to 0, will prohibit music.", external_music.name, external_music.string);
 }
 
 
@@ -502,13 +508,13 @@ LONG WIN_CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			break;
 
 		case MCI_NOTIFY_FAILURE:
-			Con_DPrintf("MCI_NOTIFY_FAILURE\n");
+			Con_PrintLinef ("MCI_NOTIFY_FAILURE");
 			CDAudio_Stop ();
 			cdValid = false;
 			break;
 
 		default:
-			Con_DPrintf("Unexpected MM_MCINOTIFY type (%i)\n", wParam);
+			Con_DPrintLinef ("Unexpected MM_MCINOTIFY type (%d)", wParam);
 			return 1;
 	}
 
@@ -632,7 +638,7 @@ void CDAudio_Init(void)
 #ifdef SUPPORTS_MP3_MUSIC
 		MediaPlayer_Command_Line_Disabled ();
 #endif // SUPPORTS_MP3_MUSIC
-		Con_Printf ("CD disabled by command line\n");
+		Con_PrintLinef ("CD disabled by command line");
 		return;
 	}
 
@@ -643,7 +649,7 @@ void CDAudio_Init(void)
 
 	if (dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE, (DWORD) (LPVOID) &mciOpenParms))
 	{
-		Con_SafePrintf ("CDAudio_Init: MCI_OPEN failed (%i)\n", dwReturn);
+		Con_SafePrintLinef ("CDAudio_Init: MCI_OPEN failed (%d)", dwReturn);
 		return;
 	}
 
@@ -654,7 +660,7 @@ void CDAudio_Init(void)
 
     if (dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_TIME_FORMAT, (DWORD)(LPVOID) &mciSetParms))
     {
-		Con_Printf("MCI_SET_TIME_FORMAT failed (%i)\n", dwReturn);
+		Con_PrintLinef ("MCI_SET_TIME_FORMAT failed (%d)", dwReturn);
         mciSendCommand(wDeviceID, MCI_CLOSE, 0, (DWORD)NULL);
 		return;
     }
@@ -667,11 +673,11 @@ void CDAudio_Init(void)
 
 	if (CDAudio_GetAudioDiskInfo())
 	{
-		Con_SafePrintf("CDAudio_Init: No CD in player.\n");
+		Con_SafePrintLinef ("CDAudio_Init: No CD in player.");
 		cdValid = false;
 	}
 
-	Con_SafePrintf ("%s\n", "CD Audio Initialized");
+	Con_SafePrintLinef ("%s", "CD Audio Initialized");
 }
 
 
@@ -687,7 +693,9 @@ void CDAudio_Shutdown(void)
 	CDAudio_Stop();
 
 	if (mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)NULL))
-		Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
+		Con_PrintLinef ("CDAudio_Shutdown: MCI_CLOSE failed");
 }
 
 #endif // PLATFORM_WINDOWS - Header level define
+
+#endif // !CORE_SDL

@@ -105,13 +105,13 @@ entity_t	*CL_EntityNum (int num)
 {
 	//johnfitz -- check minimum number too
 	if (num < 0)
-		Host_Error ("CL_EntityNum: %i is an invalid number",num);
+		Host_Error ("CL_EntityNum: %d is an invalid number",num);
 	//john
 
 	if (num >= cl.num_entities)
 	{
 		if (num >= cl_max_edicts) //johnfitz -- no more MAX_EDICTS
-			Host_Error ("CL_EntityNum: %i is an invalid number",num);
+			Host_Error ("CL_EntityNum: %d is an invalid number",num);
 
 		while (cl.num_entities <= num)
 		{
@@ -184,11 +184,11 @@ void CL_ParseStartSoundPacket(void)
 
 	//johnfitz -- check soundnum
 	if (sound_num >= MAX_FITZQUAKE_SOUNDS)
-		Host_Error ("CL_ParseStartSoundPacket: %i > MAX_FITZQUAKE_SOUNDS", sound_num);
+		Host_Error ("CL_ParseStartSoundPacket: %d > MAX_FITZQUAKE_SOUNDS", sound_num);
 	//johnfitz
 
 	if (ent > cl_max_edicts) //johnfitz -- no more MAX_EDICTS
-		Host_Error ("CL_ParseStartSoundPacket: ent = %i", ent);
+		Host_Error ("CL_ParseStartSoundPacket: ent = %d", ent);
 
 	for (i=0 ; i<3 ; i++)
 		pos[i] = MSG_ReadCoord ();
@@ -260,7 +260,7 @@ void CL_KeepaliveMessage (void)
 	lastmsg = time;
 
 // write out a nop
-	Con_Printf ("--> client to server keepalive\n");
+	Con_PrintLinef ("--> client to server keepalive");
 
 	MSG_WriteByte (&cls.message, clc_nop);
 	NET_SendMessage (cls.netcon, &cls.message);
@@ -339,7 +339,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 	// Remote URL for download
 	c_snprintf2 (remote_url, "http://%s/%s", pq_download_http_url.string, file_to_download);
 
-	Con_Printf ("HTTP downloading: %s (%s)\n", file_to_download, pq_download_http_url.string); // File_URL_SkipPath
+	Con_PrintLinef ("HTTP downloading: %s (%s)", file_to_download, pq_download_http_url.string); // File_URL_SkipPath
 
 	// CL_Download_After
 	// We detect whether or not a download is going on solely by cls.download.name[0]
@@ -380,12 +380,12 @@ cbool CL_Download_Attempt (const char *file_to_download)
 	// We get an error code 4 on invalid domain.
 	if (!is_success) {
 		File_Delete (local_tempname_url);  // Delete the temp file
-		Con_Printf ("HTTP download failed (%d): \"%s\"\n", errorcode, file_to_download );
+		Con_PrintLinef ("HTTP download failed (%d): " QUOTED_S, errorcode, file_to_download );
 	}
 
 	if (is_success) {
 		File_Rename (local_tempname_url, download_finalname_url /*newname*/);	// Rename it to the correct name
-		Con_Printf ( "HTTP download success: \"%s\"\n", file_to_download );
+		Con_PrintLinef ("HTTP download success: " QUOTED_S, file_to_download );
 	}
 
 	// If we wanted to be super-thorough, we would disallow a number of things that can cause a disconnect.
@@ -396,7 +396,7 @@ cbool CL_Download_Attempt (const char *file_to_download)
 		// if the user type disconnect in the middle of the download
 		cls.download.disconnect = false;
 		CL_Disconnect_f (NULL);
-		Con_Printf ("HTTP download abort");
+		Con_PrintLinef ("HTTP download abort");
 	}
 
 	return is_success; // or failure
@@ -421,7 +421,7 @@ void CL_ParseServerInfo (void)
 
 	// this function can call Con_Printf so explicitly wipe the particles in case Con_Printf
 	// needs to call SCR_UpdateScreen.
-	Con_DPrintf ("Serverinfo packet received.\n");
+	Con_DPrintLinef ("Serverinfo packet received.");
 
 
 // parse protocol version number
@@ -430,8 +430,8 @@ void CL_ParseServerInfo (void)
 	//johnfitz -- support multiple protocols
 	if (i != PROTOCOL_NETQUAKE && i != PROTOCOL_FITZQUAKE && i != PROTOCOL_FITZQUAKE_PLUS && i != PROTOCOL_BJP3)
 	{
-		Con_Printf ("\n"); //because there's no newline after serverinfo print
-		Host_Error ("Server returned version %i, not %i, %i, %i or %i\n", i, PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS, PROTOCOL_BJP3);
+		Con_PrintLine (); //because there's no newline after serverinfo print
+		Host_Error ("Server returned version %d, not %d, %d, %d or %d", i, PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS, PROTOCOL_BJP3);
 	}
 
 // wipe the client_state_t struct
@@ -442,7 +442,7 @@ void CL_ParseServerInfo (void)
 
 	if (cl.maxclients < 1 || cl.maxclients > MAX_SCOREBOARD_16)
 	{
-		Host_Error ("Bad maxclients (%u) from server\n", cl.maxclients);
+		Host_Error ("Bad maxclients (%u) from server", cl.maxclients);
 		return;
 	}
 
@@ -462,11 +462,12 @@ void CL_ParseServerInfo (void)
 
 
 // separate the printfs so the server message can have a color
-	Con_Printf ("\n%s\n", Con_Quakebar(40)); //johnfitz
-	Con_Printf ("%c%s\n", 2, str);
+	Con_PrintLine ();
+	Con_PrintLinef ("%s", Con_Quakebar(40)); //johnfitz
+	Con_PrintLinef ("%c%s", 2, str);
 
 //johnfitz -- tell user which protocol this is
-	Con_Printf ("Using protocol %i\n", i);
+	Con_PrintLinef ("Using protocol %d", i);
 
 // first we go through and touch all of the precache data that still
 // happens to be in the cache, so precaching something else doesn't
@@ -489,9 +490,12 @@ void CL_ParseServerInfo (void)
 
 		if (nummodels == MAX_FITZQUAKE_MODELS)
 		{
-			Host_Error ("Server sent too many model precaches\n");
+			Host_Error ("Server sent too many model precaches");
 			return;
 		}
+
+		//if (nummodels == 76)
+		//	alert ("76 is %s", str);
 
 		strlcpy (model_precache[nummodels], str, MAX_QPATH_64);
 
@@ -512,7 +516,7 @@ void CL_ParseServerInfo (void)
 
 	//johnfitz -- check for excessive models
 	if (nummodels >= MAX_WINQUAKE_MODELS)
-		Con_DWarning ("%d models exceeds standard limit of %d.\n", nummodels, MAX_WINQUAKE_MODELS); //256
+		Con_DWarningLine ("%d models exceeds standard limit of %d.", nummodels, MAX_WINQUAKE_MODELS); //256
 
 //#ifdef GLQUAKE_SUPPORTS_QMB // After the for loop
 //// joe: load the extra "no-flamed-torch" model  NOTE: this is an ugly hack
@@ -520,7 +524,7 @@ void CL_ParseServerInfo (void)
 //	if (qmb_is_available) {
 //		if (nummodels == MAX_FITZQUAKE_MODELS)
 //		{
-//			Con_Printf ("Server sent too many model precaches -> replacing flame0.mdl with flame.mdl\n");
+//			Con_PrintLinef ("Server sent too many model precaches -> replacing flame0.mdl with flame.mdl");
 //			cl_modelindex[mi_flame0] = cl_modelindex[mi_flame1];
 //		}
 //		else
@@ -545,7 +549,7 @@ void CL_ParseServerInfo (void)
 
 		if (numsounds == MAX_FITZQUAKE_SOUNDS)
 		{
-			Host_Error ("Server sent too many sound precaches\n");
+			Host_Error ("Server sent too many sound precaches");
 			return;
 		}
 
@@ -555,7 +559,7 @@ void CL_ParseServerInfo (void)
 
 	//johnfitz -- check for excessive sounds
 	if (numsounds >= MAX_WINQUAKE_SOUNDS)
-		Con_DWarning ("%i sounds exceeds standard limit of %d.\n", numsounds, MAX_WINQUAKE_SOUNDS); // 256
+		Con_DWarningLine ("%d sounds exceeds standard limit of %d.", numsounds, MAX_WINQUAKE_SOUNDS); // 256
 
 	// Baker: We need this early for external vis to know if a model is worldmodel or not
 	File_URL_Copy_StripExtension (cl.worldname, File_URL_SkipPath (model_precache[1]), sizeof (cl.worldname) ); // Baker: maps/e1m1.bsp ---> e1m1
@@ -602,7 +606,7 @@ void CL_ParseServerInfo (void)
 			}
 #endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD 
 
-			Con_Printf ("Model %s not found\n", model_precache[i]);
+			Con_PrintLinef ("Model %s not found", model_precache[i]);
 			return;  //don't disconnect, let them sit in console and ask for help.
 		}
 
@@ -754,7 +758,7 @@ void CL_ParseUpdate (int bits)
 	else
 	{
 #if 0
-		Con_Printf("ent: num %i colormap %i frame %i\n", num, i, ent->frame);
+		Con_PrintLinef ("ent: num %d colormap %d frame %d", num, i, ent->frame);
 #endif
 		if (i > cl.maxclients)
 			Host_Error ("i >= cl.maxclients");
@@ -857,7 +861,7 @@ void CL_ParseUpdate (int bits)
 #ifdef SUPPORTS_NEHAHRA
 				if (!nehahra_active)
 #endif // SUPPORTS_NEHAHRA
-					Con_Warning ("nonstandard update bit, assuming Nehahra protocol\n");
+					Con_WarningLinef ("nonstandard update bit, assuming Nehahra protocol");
 				cl.warned_about_nehahra_protocol = true;
 			}
 
@@ -920,6 +924,7 @@ void CL_ParseBaseline (entity_t *ent, int version) //johnfitz -- added argument
 	{
 		ent->baseline.modelindex = MSG_ReadShort ();
 		ent->baseline.frame = MSG_ReadByte ();
+		bits = 0;
 	}
 	else
 	{
@@ -1211,7 +1216,7 @@ void CL_ParseStatic (int version) //johnfitz -- added a parameter
 
 #if 0 // Feb 4 2016 - static ents on hunk
 	if (i >= MAX_FITZQUAKE_STATIC_ENTITIES)
-		Host_Error ("Too many static entities.  Limit is %i", MAX_FITZQUAKE_STATIC_ENTITIES);
+		Host_Error ("Too many static entities.  Limit is %d", MAX_FITZQUAKE_STATIC_ENTITIES);
 
 	ent = &cl.static_entities[i];
 #else
@@ -1319,7 +1324,7 @@ void Q_Version (const char *s)
 		if (!strncmp(t, ": q_version", 9))
 		{
 			const char *vers = VersionString();
-			Cbuf_AddText (va("say %s", vers));
+			Cbuf_AddTextLinef ("say %s", vers);
 
 			// Baker: do not allow spamming of it
 			cl.q_version_next_reply_time = realtime + 60;
@@ -1337,7 +1342,7 @@ void CL_ExamineParseText (char *string)
 	char *s, *s2, *s3;
 
 	s = string;
-	if (!strcmp (string, "Client ping times:\n") && scr_scoreboard_pings.value)
+	if (!strcmp (string, "Client ping times:" NEWLINE) && scr_scoreboard_pings.value)
 	{
 		// Receiving a ping status.  Begin a new parse.
 		cl.last_ping_time = cl.time;
@@ -1405,16 +1410,16 @@ void CL_Hints_List_f (lparse_t *unused)
 {
 #pragma message ("Remember to make it so demos will play even if can't change to gamedir")
 	hint_type_t hint_num;
-	Con_Printf ("Client hints:\n");
+	Con_PrintLinef ("Client hints:");
 	for (hint_num = 0; hint_num < MAX_NUM_HINTS; hint_num ++)
 	{
 		const char *hintname = hintnames[hint_num].keystring;
 		const char *hintvalue = cl.hintstrings[hint_num];
 
-		Con_Printf ("%-10s: %s\n", hintname, hintvalue);
+		Con_PrintLinef ("%-10s: %s", hintname, hintvalue);
 	}
 
-//	Con_Printf ("Note that cl.skillhint is %i\n", cl.skillhint);
+//	Con_PrintLinef ("Note that cl.skillhint is %d", cl.skillhint);
 }
 
 static void CL_Hint_Set (int cl_new_hintnum, const char *cl_set_hintstring)
@@ -1423,12 +1428,12 @@ static void CL_Hint_Set (int cl_new_hintnum, const char *cl_set_hintstring)
 	int result;
 	char stringbufx[MAX_HINT_BUF_64] = {0};
 	// Recognized strings on cmd_argv 0 look up and do a switch
-	Con_DPrintf_Net ("CL_Hint_Set: #%d \"%s\"\n", cl_new_hintnum, cl_set_hintstring);
+	Con_DPrintLinef_Net ("CL_Hint_Set: #%d " QUOTED_S, cl_new_hintnum, cl_set_hintstring);
 	switch ( cl_new_hintnum )
 	{
 	case hint_game:
 		// Host_Game_f
-		Con_DPrintf_Net ("Game hint %s to %s\n", hintnames[cl_new_hintnum].keystring, cl_set_hintstring);
+		Con_DPrintLinef_Net ("Game hint %s to %s", hintnames[cl_new_hintnum].keystring, cl_set_hintstring);
 		c_strlcpy (stringbufx, cl_set_hintstring);
 
 		for (arg1 = stringbufx, arg2 = NULL; *arg1; arg1++)
@@ -1439,18 +1444,18 @@ static void CL_Hint_Set (int cl_new_hintnum, const char *cl_set_hintstring)
 				break; // Done
 			}
 
-		Con_DPrintf_Net ("Game change request: cls.signon is %d\n", cls.signon);
+		Con_DPrintLinef_Net ("Game change request: cls.signon is %d", cls.signon);
 		result = Host_Gamedir_Change (stringbufx, arg2, true, (const char **)&str, false /*don't force*/);
 		if (result == -1 /*fail*/)
 		{
-			Con_Printf ("game change to \"%s%s\" failed.\nReason: %s\n", stringbufx, arg2 ? va(" %s", arg2) : "", str);
+			Con_PrintLinef ("game change to \"%s%s\" failed." NEWLINE "Reason: %s", stringbufx, arg2 ? va(" %s", arg2) : "", str);
 		}
 		break;
 
 	case hint_skill:
 		cl.skillhint = CLAMP(0, atoi(cl_set_hintstring), 3);
 		cl.skillhint ++; // So that 0 means unknown.
-		Con_DPrintf_Net ("Set skill hint to %i\n", cl.skillhint);
+		Con_DPrintLinef_Net ("Set skill hint to %d", cl.skillhint);
 		break;
 
 	case hint_fileserver_port:
@@ -1459,7 +1464,7 @@ static void CL_Hint_Set (int cl_new_hintnum, const char *cl_set_hintstring)
 
 	default:
 		// A client shouldn't error on an unknown hint
-		Con_DPrintf_Net ("Unknown hintnum %d from %s", cl_new_hintnum, hintnames[cl_new_hintnum].keystring );
+		Con_DPrintLinef_Net ("Unknown hintnum %d from %s", cl_new_hintnum, hintnames[cl_new_hintnum].keystring );
 		return;
 	}
 
@@ -1497,13 +1502,13 @@ void CL_Hint_f (const char *in_text)
 		if (!hint_entry)
 			return;
 
-		Con_DPrintf_Net ("Server hint: %s %s\n", harg1, harg2);
-		Con_DPrintf_Net ("Setting hint %d = %s\n", hint_entry->value, harg2);
+		Con_DPrintLinef_Net ("Server hint: %s %s", harg1, harg2);
+		Con_DPrintLinef_Net ("Setting hint %d = %s", hint_entry->value, harg2);
 		CL_Hint_Set (hint_entry->value, harg2);
 	}
 }
 
-#define SHOWNET(x) if (cl_shownet.value == 2) Con_Printf ("%3i:%s\n", msg_readcount-1, x);
+#define SHOWNET(x) if (cl_shownet.value == 2) Con_PrintLinef ("%3d:%s", msg_readcount-1, x);
 
 
 
@@ -1531,7 +1536,7 @@ CL_ParseProQuakeMessage
 		cl.pq_teamgame = true;
 		// cl.teamscores[team].frags = 0;	// JPG 3.20 - removed this
 		cl.pq_teamscores[team].colors = 16 * shirt + team;
-		//Con_Printf("pqc_new_team %d %d\n", team, shirt);
+		//Con_PrintLinef ("pqc_new_team %d %d", team, shirt);
 		break;
 
 	case pqc_erase_team:
@@ -1541,7 +1546,7 @@ CL_ParseProQuakeMessage
 			Host_Error ("CL_ParseProQuakeMessage: pqc_erase_team invalid team");
 		cl.pq_teamscores[team].colors = 0;
 		cl.pq_teamscores[team].frags = 0;		// JPG 3.20 - added this
-		//Con_Printf("pqc_erase_team %d\n", team);
+		//Con_PrintLinef ("pqc_erase_team %d", team);
 		break;
 
 	case pqc_team_frags:
@@ -1554,7 +1559,7 @@ CL_ParseProQuakeMessage
 		if (frags & 32768)
 			frags = frags - 65536;
 		cl.pq_teamscores[team].frags = frags;
-		//Con_Printf("pqc_team_frags %d %d\n", team, frags);
+		//Con_PrintLinef ("pqc_team_frags %d %d", team, frags);
 		break;
 
 	case pqc_match_time:
@@ -1562,7 +1567,7 @@ CL_ParseProQuakeMessage
 		cl.pq_minutes = MSG_ReadBytePQ();
 		cl.pq_seconds = MSG_ReadBytePQ();
 		cl.pq_last_match_time = cl.time;
-		//Con_Printf("pqc_match_time %d %d\n", cl.pq_minutes, cl.pq_seconds);
+		//Con_PrintLinef ("pqc_match_time %d %d", cl.pq_minutes, cl.pq_seconds);
 		break;
 
 	case pqc_match_reset:
@@ -1572,7 +1577,7 @@ CL_ParseProQuakeMessage
 			cl.pq_teamscores[i].colors = 0;
 			cl.pq_teamscores[i].frags = 0;		// JPG 3.20 - added this
 		}
-		//Con_Printf("pqc_match_reset\n");
+		//Con_PrintLinef ("pqc_match_reset");
 		break;
 
 	case pqc_ping_times:
@@ -1584,10 +1589,10 @@ CL_ParseProQuakeMessage
 		}
 		cl.last_ping_time = cl.time;
 		/*
-		Con_Printf("pqc_ping_times ");
+		Con_PrintLinef ("pqc_ping_times ");
 		for (i = 0 ; i < cl.maxclients ; i++)
-			Con_Printf("%4d ", cl.scores[i].ping);
-		Con_Printf("\n");
+			Con_PrintLinef ("%4d ", cl.scores[i].ping);
+		Con_PrintLine ();
 		*/
 		break;
 	}
@@ -1607,7 +1612,7 @@ void CL_ParseProQuakeString (char *string)
 
 	// JPG 3.02 - made this more robust.. try to eliminate screwups due to "unconnected" and '\n'
 	s = string;
-	if (!strcmp(string, "Client ping times:\n") /*&& pq_scoreboard_pings.value*/)
+	if (!strcmp(string, "Client ping times:" NEWLINE) /*&& pq_scoreboard_pings.value*/)
 	{
 		cl.last_ping_time = cl.time;
 		checkping = 0;
@@ -1665,14 +1670,14 @@ void CL_ParseProQuakeString (char *string)
 			cl.pq_last_match_time = cl.time;
 		}
 	}
-	else if (!strcmp(string, "Match paused\n"))
+	else if (!strcmp(string, "Match paused" NEWLINE))
 		cl.pq_match_pause_time = cl.time;
-	else if (!strcmp(string, "Match unpaused\n"))
+	else if (!strcmp(string, "Match unpaused" NEWLINE))
 	{
 		cl.pq_last_match_time += (cl.time - cl.pq_match_pause_time);
 		cl.pq_match_pause_time = 0;
 	}
-	else if (!strcmp(string, "The match is over\n") || !strncmp(string, "Match begins in", 15))
+	else if (!strcmp(string, "The match is over" NEWLINE) || !strncmp(string, "Match begins in", 15))
 		cl.pq_minutes = 255; // When does this happen?  Remember this is a ProQuake string, right?
 	else if (checkping < 0)
 	{
@@ -1680,7 +1685,7 @@ void CL_ParseProQuakeString (char *string)
 		i = 0;
 		while (*s >= '0' && *s <= '9')
 			i = 10 * i + *s++ - '0';
-		if (!strcmp(s, " minutes remaining\n"))
+		if (!strcmp(s, " minutes remaining" NEWLINE))
 		{
 			cl.pq_minutes = i;
 			cl.pq_seconds = 0;
@@ -1711,9 +1716,9 @@ void CL_ParseServerMessage (cbool *found_server_command)
 // if recording demos, copy the message out
 //
 	if (cl_shownet.value == 1)
-		Con_Printf ("%i ", net_message.cursize);
+		Con_PrintContf ("%d ", net_message.cursize); // I guess is a continuator version.
 	else if (cl_shownet.value == 2)
-		Con_Printf ("------------------\n");
+		Con_PrintLinef ("------------------");
 
 	cl.onground = false;	// unless the server says otherwise
 //
@@ -1748,11 +1753,11 @@ void CL_ParseServerMessage (cbool *found_server_command)
 		switch (cmd)
 		{
 		default:
-			Host_Error ("CL_ParseServerMessage: Illegible server message, previous was %s\n", svc_strings[lastcmd]); //johnfitz -- added svc_strings[lastcmd]
+			Host_Error ("CL_ParseServerMessage: Illegible server message, previous was %s", svc_strings[lastcmd]); //johnfitz -- added svc_strings[lastcmd]
 			break;
 
 		case svc_nop:
-//			Con_Printf ("svc_nop\n");
+//			Con_PrintLinef ("svc_nop");
 			break;
 
 		case svc_time:
@@ -1769,7 +1774,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 
 			//johnfitz -- support multiple protocols
 			if (i != PROTOCOL_NETQUAKE && i != PROTOCOL_FITZQUAKE && i != PROTOCOL_FITZQUAKE_PLUS)
-				Host_Error ("Server returned version %i, not %i, %i or %i\n", i, PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS);
+				Host_Error ("Server returned version %d, not %d, %d or %d", i, PROTOCOL_NETQUAKE, PROTOCOL_FITZQUAKE, PROTOCOL_FITZQUAKE_PLUS);
 
 			cl.protocol = i;
 
@@ -1781,7 +1786,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 			break;
 
 		case svc_disconnect:
-			Host_EndGame ("Server disconnected\n");
+			Host_EndGame ("Server disconnected" NEWLINE);
 
 		case svc_print:
 			str = MSG_ReadString ();
@@ -1790,7 +1795,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 #if 0 // Baker's rewrite not being used, even though easier to read.
 			CL_ExamineParseText (str);
 #endif // Baker's write
-			Con_Printf ("%s", str);
+			Con_PrintContf ("%s", str);
 
 			break;
 
@@ -1815,7 +1820,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 			// Server hint string begins: "//hint "
 			if (String_Does_Start_With (str, HINT_MESSAGE_PREIX))
 			{
-				//Con_Printf ("Received server hint: %s\n", str);
+				//Con_PrintLinef ("Received server hint: %s", str);
 				str += strlen (HINT_MESSAGE_PREIX);
 				CL_Hint_f (str); // We need this to happen NOW
 
@@ -1835,7 +1840,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 					// This gets inserted before the server command
 					// And only once for an entire block
 					*found_server_command = true;
-					Cbuf_AddText (va("\n%c\n", CUTSCENE_CHAR_START_5));
+					Cbuf_AddTextLinef (NEWLINE "%c", CUTSCENE_CHAR_START_5);
 				}
 			}
 
@@ -1850,7 +1855,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 					int len = strlen(str);
 					int newline = str[len - 1] == '\n' ? true : false;
 					if (newline) str[len - 1] = 0; // Keep print less annoying this way.
-					Con_Printf ("[Stuffed command]: \"%s\" \n", str); //  Used that to check what kind of crazy stuff Nehhra was sending us.
+					Con_PrintLinef ("[Stuffed command]: " QUOTED_S " ", str); //  Used that to check what kind of crazy stuff Nehhra was sending us.
 					if (newline) str[len - 1] = 10;
 				}
 				Cbuf_AddText (str); // <------------------------- we are going to indicate the server buffer here.
@@ -2012,14 +2017,14 @@ void CL_ParseServerMessage (cbool *found_server_command)
 			i = MSG_ReadByte ();
 
 			if (i <= cls.signon)
-				Host_Error ("Received signon %i when at %i", i, cls.signon);
+				Host_Error ("Received signon %d when at %d", i, cls.signon);
 
 			cls.signon = i;
 			//johnfitz -- if signonnum==2, signon packet has been fully parsed, so check for excessive static ents and efrags
 			if (i == 2)
 			{
 				if (cl.num_statics > 128)
-					Con_DWarning ("%i static entities exceeds standard limit of 128.\n", cl.num_statics);
+					Con_DWarningLine ("%d static entities exceeds standard limit of 128.", cl.num_statics);
 				R_CheckEfrags ();
 			}
 
@@ -2045,7 +2050,7 @@ void CL_ParseServerMessage (cbool *found_server_command)
 			i = MSG_ReadByte ();
 
 			if (i < 0 || i >= MAX_CL_STATS)
-				Host_Error ("svc_updatestat: %i is invalid", i);
+				Host_Error ("svc_updatestat: %d is invalid", i);
 
 			cl.stats[i] = MSG_ReadLong ();
 			break;
@@ -2157,6 +2162,6 @@ void CL_ParseServerMessage (cbool *found_server_command)
 		}
 
 		lastcmd = cmd; //johnfitz
-//		Con_SafePrintf ("Command: %s\n", svc_strings[cmd] );
+//		Con_SafePrintLinef ("Command: %s", svc_strings[cmd] );
 	}
 }

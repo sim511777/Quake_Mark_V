@@ -175,16 +175,16 @@ static inp_info_t inps;
 
 void Input_Info_f (void)
 {
-	Con_Printf ("IN Info ...\n");
-	Con_Printf ("%-25s :  %s\n", "current_state", KeyValue_GetKey (input_state_text, inps.current_state) );
-	Con_Printf ("%-25s :  %i\n", "initialized", inps.initialized);
-	Con_Printf ("%-25s :  %i\n", "have_mouse", inps.have_mouse);
-	Con_Printf ("%-25s :  %i\n", "have_keyboard", inps.have_keyboard);
-	Con_Printf ("%-25s :  %i\n", "disabled_windows_key", inps.disabled_windows_key);
-	Con_Printf ("%-25s :  (%i, %i)-(%i, %i) center: %i, %i\n", "mouse_clip_screen_rect:", MRECT_PRINT(inps.mouse_clip_screen_rect) );
-	Con_Printf ("%-25s :  %i\n", "mouse_accum_x", inps.mouse_accum_x);
-	Con_Printf ("%-25s :  %i\n", "mouse_accum_y", inps.mouse_accum_y);
-	Con_Printf ("%-25s :  %i\n", "mouse_old_button_state", inps.mouse_old_button_state);
+	Con_PrintLinef ("IN Info ...");
+	Con_PrintLinef ("%-25s :  %s", "current_state", KeyValue_GetKey (input_state_text, inps.current_state) );
+	Con_PrintLinef ("%-25s :  %d", "initialized", inps.initialized);
+	Con_PrintLinef ("%-25s :  %d", "have_mouse", inps.have_mouse);
+	Con_PrintLinef ("%-25s :  %d", "have_keyboard", inps.have_keyboard);
+	Con_PrintLinef ("%-25s :  %d", "disabled_windows_key", inps.disabled_windows_key);
+	Con_PrintLinef ("%-25s :  (%d, %d)-(%d, %d) center: %d, %d", "mouse_clip_screen_rect:", MRECT_PRINT(inps.mouse_clip_screen_rect) );
+	Con_PrintLinef ("%-25s :  %d", "mouse_accum_x", inps.mouse_accum_x);
+	Con_PrintLinef ("%-25s :  %d", "mouse_accum_y", inps.mouse_accum_y);
+	Con_PrintLinef ("%-25s :  %d", "mouse_old_button_state", inps.mouse_old_button_state);
 }
 
 #pragma message ("OS X mouse input has to be purely event oriented, we can't just nab the screen at any given time")
@@ -205,10 +205,10 @@ void Input_Think (void)
 		switch (disable_windows_key)
 		{
 		case true:
-			if (vid.system_enhanced_keys) Input_Local_Keyboard_Disable_Windows_Key (true);
+			if (vid.system_enhanced_keys) Shell_Input_KeyBoard_Capture (true /*capture*/, false /*act on stickey*/, vid.screen.type == MODE_FULLSCREEN /*act on windows key*/);
 			break;
 		case false:
-			if (vid.system_enhanced_keys) Input_Local_Keyboard_Disable_Windows_Key (false);
+			if (vid.system_enhanced_keys) Shell_Input_KeyBoard_Capture (false /*capture*/, false /*act on stickey*/, vid.screen.type == MODE_FULLSCREEN /*act on windows key*/);
 			break;
 		}
 
@@ -221,7 +221,7 @@ void Input_Think (void)
 		newstate = input_have_mouse_keyboard;
 
 #if 0
-	Con_Printf ("current_state: %s (init %i active %i mini %i)\n", Keypair_String (input_state_text, inps.current_state),
+	Con_PrintLinef ("current_state: %s (init %d active %d mini %d)", Keypair_String (input_state_text, inps.current_state),
 		inps.initialized, vid.ActiveApp, vid.Minimized);
 #endif
 
@@ -231,14 +231,14 @@ void Input_Think (void)
 		char	keyboard_action = ( newstate != input_none && inps.have_keyboard == false) ? GET_IT :  (( newstate == input_none && inps.have_keyboard == true) ? LOSE_IT : 0);
 
 #if 0
-		Con_Printf ("State change\n");
+		Con_PrintLinef ("State change");
 #endif
 
 		switch (keyboard_action)
 		{
 		case GET_IT:
 			// Sticky keys
-			if (vid.system_enhanced_keys) Input_Local_Keyboard_Disable_Sticky_Keys (true);
+			if (vid.system_enhanced_keys) Shell_Input_KeyBoard_Capture (true /*capture*/, true /*act on stickey*/, vid.screen.type == MODE_FULLSCREEN /*act on windows key*/);
 
 			inps.have_keyboard = true;
 			break;
@@ -247,7 +247,8 @@ void Input_Think (void)
 			// Note we still need our key ups when entering the console
 			// Sticky keys, Window key reenabled
 
-			if (vid.system_enhanced_keys) Input_Local_Keyboard_Disable_Sticky_Keys (false);			// Key ups
+			if (vid.system_enhanced_keys) Shell_Input_KeyBoard_Capture (false, true /*act on stickey*/, vid.screen.type == MODE_FULLSCREEN);
+			// Key ups
 
 			inps.have_keyboard = false;
 			break;
@@ -323,15 +324,19 @@ void Input_Mouse_Button_Event (int mstate)
 				Key_Event_Ex (NO_WINDOW_NULL, K_MOUSE1 + i, button_pressed ? true : false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 #endif
 			}
-				
+
 		}
 		inps.mouse_old_button_state = mstate;
 	}
 }
 
+// This re-centers the mouse, so it means more than simple build-up of accumulation alone.
+// S_ExtraUpdate calls this, which is called several places.
+// The only other caller is Input_Mouse_Move (us!)
+// In perfect work, something like DirectInput would always be used making this unnecessary.
 void Input_Mouse_Accumulate (void)
 {
-	static last_key_dest;
+	static int last_key_dest;
 	int new_mouse_x, new_mouse_y;
 
 	Input_Think ();
@@ -468,7 +473,7 @@ void Input_Init (void)
 
 	inps.initialized = true;
 	Input_Think ();
-	Con_Printf ("Input initialized\n");
+	Con_PrintLinef ("Input initialized");
 }
 
 void Input_Shutdown (void)
@@ -483,6 +488,6 @@ void Input_System_Enhanced_Keys_Changed (cvar_t *var)
 {
 	// Too late, remember this reads early in SND_Read_Early_Cvars
 	if (host_post_initialized) {
-		Con_Printf ("System enhanced keys changed.  Requires engine restart to take effect.\n");
+		Con_PrintLinef ("System enhanced keys changed.  Requires engine restart to take effect.");
 	}
 }

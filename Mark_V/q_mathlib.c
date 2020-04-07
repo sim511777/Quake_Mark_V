@@ -197,7 +197,7 @@ void FloorDivMod (double numer, double denom, int *quotient, int *rem)
 		System_Error ("FloorDivMod: bad denominator %f", denom);
 
 //	if ((floor(numer) != numer) || (floor(denom) != denom))
-//		System_Error ("FloorDivMod: non-integer numer or denom %f %f\n",
+//		System_Error ("FloorDivMod: non-integer numer or denom %f %f",
 //				numer, denom);
 #endif
 
@@ -395,4 +395,3 @@ float Math_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float roll
 	return side*sign;
 
 }
-

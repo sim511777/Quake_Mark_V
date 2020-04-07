@@ -78,6 +78,14 @@ void Input_Local_Joy_AdvancedUpdate_f (lparse_t *unused);
 cbool Input_Local_Joystick_Startup (void);
 cbool Input_Local_Joystick_Read (void);
 
+#ifdef CORE_SDL
+	#define INPUT_RELATIVE
+	#pragma message ("INPUT_RELATIVE defined")
+#endif // CORE_SDL
+
+#ifdef INPUT_RELATIVE
+	extern int input_accum_x, input_accum_y;
+#endif // INPUT_RELATIVE
 
 #define MOUSELOOK_ACTIVE (in_freelook.value || (in_mlook.state & 1))
 

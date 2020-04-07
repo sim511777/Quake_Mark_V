@@ -22,6 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+#ifdef INPUT_RELATIVE
+	int input_accum_x, input_accum_y;
+	/// #define Input_Local_Mouse_Cursor_SetPos // Baker: wicked evil ... but not just yet
+#endif // INPUT_RELATIVE
 
 // How do we convert this to Quake?
 keyvalue_t key_scancodes_table [108] = {
@@ -363,10 +367,15 @@ void Input_Mouse_Accumulate (void)
 			}
 		}
 
+#ifdef INPUT_RELATIVE
+		inps.mouse_accum_x += input_accum_x; input_accum_x = 0;
+		inps.mouse_accum_y += input_accum_y; input_accum_y = 0;
+#else
 		Input_Local_Mouse_Cursor_GetPos (&new_mouse_x, &new_mouse_y); // GetCursorPos (&current_pos);
 
 		inps.mouse_accum_x += new_mouse_x - inps.mouse_clip_screen_rect.center_x;
 		inps.mouse_accum_y += new_mouse_y - inps.mouse_clip_screen_rect.center_y;
+#endif
 
 		// Re-center the mouse cursor
 		Input_Local_Mouse_Cursor_SetPos (inps.mouse_clip_screen_rect.center_x, inps.mouse_clip_screen_rect.center_y);

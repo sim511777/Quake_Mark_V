@@ -44,9 +44,12 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 //	    SDL_SetRelativeMouseMode(SDL_TRUE);
 //		ShowCursor (FALSE); // Hides mouse cursor
 //		SetCapture (sysplat.mainwindow);	// Captures mouse events
+#ifdef INPUT_RELATIVE
+		SDL_SetRelativeMouseMode (SDL_TRUE);
+#else
 		SDL_ShowCursor (SDL_DISABLE /*0 FALSE*/); // Hides mouse cursor
 		SDL_CaptureMouse (SDL_ENABLE /* 1 TRUE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
-
+#endif
 		Con_DPrintLinef ("Mouse Captured");
 		captured = true;
 	}
@@ -58,10 +61,12 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		//ShowCursor (TRUE); // Hides mouse cursor
 		//ReleaseCapture ();
 		//ClipCursor (NULL); // Can't hurt
-
+#ifdef INPUT_RELATIVE
+		SDL_SetRelativeMouseMode (SDL_FALSE);
+#else
 		SDL_CaptureMouse (SDL_DISABLE /* 0 FALSE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
 		SDL_ShowCursor (SDL_ENABLE /* 1 TRUE*/); // Hides mouse cursor
-
+#endif 
 		Con_DPrintLinef ("Mouse Released");
 		captured = false;
 	}
@@ -184,6 +189,14 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 			Input_Mouse_Button_Event (buttons);
 		}
 		return true; // handled
+
+#ifdef INPUT_RELATIVE
+	case SDL_MOUSEMOTION:
+		input_accum_x += e->motion.xrel;
+		input_accum_y += e->motion.yrel;
+		return true;
+#endif // INPUT_RELATIVE
+	
 
 //	case WM_MOUSELEAVE:	 // Mouse cancel
 	//	return true; // handled

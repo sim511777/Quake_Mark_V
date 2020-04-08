@@ -758,7 +758,9 @@ void Input_Local_Joystick_Move (usercmd_t *cmd)
 
 void Input_Local_Joystick_Shutdown (void)
 {
+#if 0 // May 5 2018 - See if stops crash?
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+#endif
 }
 
 

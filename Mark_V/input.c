@@ -800,7 +800,8 @@ void Key_Surface_Action (touch_stamp_t *touche, mouseaction_e mouseaction, int x
 
 
 	// 2. ESCAPE Super hotspot always available in touch-screen mode.
-	else if (vid.touch_screen_active && ESCAPE_BOX_COLLISION(x, y) && mouseaction == mouseaction_up) {
+	// Also if demoplayback any key brings up menu
+	else if (vid.touch_screen_active && ((key_dest == key_game && cls.demoplayback) || ESCAPE_BOX_COLLISION(x, y)) && mouseaction == mouseaction_up) {
 		// We do nothing.
 		switch (key_dest) {
 		default:				// Can't happen
@@ -872,6 +873,13 @@ void Key_Surface_Action (touch_stamp_t *touche, mouseaction_e mouseaction, int x
 			// We do this here to degrade it to a mousemove
 			if (mouseaction == mouseaction_up && f->focus) {
 				// No need to degrade it to a mousemove.  Above should hover it ok.
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // May 7 2018
+				if (f->focus->is_gamma) {
+					// Kick the gamma
+					extern double gamma_timer;
+					gamma_timer = realtime + 0.35;
+				}
+#endif // GLQUAKE + !DIRECT3D9_WRAPPER
 				f->focus = NULL; // Wipe it
 				return; // GET OUT
 			}

@@ -780,6 +780,9 @@ void Install_Command_f (lparse_t *line)
 	cbool did_download = false;			// Used to determine if we are reading from cache or library.
 	cbool game_is_quoth = false;		// We'll set this to quoth if quoth2pt2full
 	const char *arg1 = line->args[1];
+	const char *arg2 = line->args[2];
+	cbool is_self_forced = line->count == 3 && String_Does_Match_Caseless (arg2, "self");
+	cbool is_specific_forced = line->count == 3 && !is_self_forced;
 
 #if 0 // Proposed
 	if (cmd_from_server || cmd_source == src_client) {
@@ -788,7 +791,8 @@ void Install_Command_f (lparse_t *line)
 	}
 #endif
 
-	if (line->count != 2) {
+	// Formats accepted "install travail" or "install grendel travail" or "install grendel self"
+	if (!isin2 (line->count, 2, 3)) {
 		Con_PrintLinef ("Need the game to install or the entire URL with the http:// in it");
 		Con_PrintLinef ("Example: install travail or install [http://URL]");
 		Con_PrintLinef ("The version of libcurl used does not support https:// at this time");
@@ -837,10 +841,17 @@ download_it:
 		// Build the places
 		c_strlcpy (library_folder_zip_url, downloads_folder_url(File_URL_SkipPath(game_url)) /**/); 
 		c_snprintf2 (download_cache_url, "%s/%s", com_safedir, File_URL_SkipPath(game_url));
-		c_strlcpy (install_game_folder_url, basedir_to_url (File_URL_SkipPath(game_url)) /**/);  File_URL_Edit_Remove_Extension (install_game_folder_url); // If it is a game
+
+		if (is_specific_forced) {
+			c_strlcpy (install_game_folder_url,basedir_to_url (String_Edit_To_Lower_Case(arg2)));
+		}
+		else {
+			c_strlcpy (install_game_folder_url, basedir_to_url (File_URL_SkipPath(game_url)) /**/);  File_URL_Edit_Remove_Extension (install_game_folder_url); // If it is a game
+		}
+		
 
 		// If folder exists like (c:/quake/warpspasm), warn and refuse.
-		if (File_Exists(install_game_folder_url)) {
+		if (File_Exists(install_game_folder_url) && !is_specific_forced) {
 			// REJECTION ... c:\quake\warpspasm already exists ...
 			Recent_File_Set_FullPath (install_game_folder_url);
 
@@ -998,11 +1009,14 @@ download_it:
 			if (skipcount == maps_slash_slen_5 && String_Does_Start_With_Caseless (basis_fp, maps_slash)) {
 				// This is maps/mybsp.bsp so bare basepath and normal install.
 				is_maps_only_extract = false;
+				found_what = found_pak; // Lazy but whatever May 2 2018
+				skipcount = skipcount - maps_slash_slen_5;
 				goto maps_done; // Just use skipcount
 			}
 
 			if (skipcount > maps_slash_slen_5 && String_Does_Start_With_Caseless (&basis_filename[-maps_slash2_slen_6], maps_slash2)) {
 				is_maps_only_extract = false;
+				found_what = found_pak; // Lazy but whatever May 2 2018
 				skipcount = skipcount - maps_slash_slen_5;
 				goto maps_done; // Just use this new skip count
 			}
@@ -1027,9 +1041,14 @@ maps_done:
 		{
 			char dest_base[MAX_OSPATH];
 			char strip_prefix[MAX_OSPATH] = {0};
-			switch (found_what) {
-			default:				c_strlcpy   (dest_base, install_game_folder_url);
-			case_break found_map:	c_snprintf1 (dest_base, "%s/" GAMENAME_ID1, com_basedir);
+			switch (found_what != found_map  || is_specific_forced || is_self_forced) {
+			default /*true*/:		
+									c_strlcpy   (dest_base, install_game_folder_url);		
+									
+			case_break false:		// Maps and not forced = quake/id1
+									c_snprintf1 (dest_base, "%s/" GAMENAME_ID1, com_basedir);
+			
+									
 			}
 
 			if (skipcount > 0) {
@@ -1042,6 +1061,8 @@ maps_done:
 				c_strlcat (dest_base, "/maps");
 			}
 		
+			Con_PrintLinef ("Destination: " QUOTED_S, dest_base);
+
 			// Unpak time
 			// 
 			{ clist_t *cur; int count; for (cur = file_list_alloc, count = 0; cur; cur = cur->next, count ++) {

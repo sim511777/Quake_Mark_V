@@ -37,7 +37,7 @@ void M_KeyPress (key_scancode_e key, int hotspot);
 
 
 int Mnu_Part_DrawVScrollbar (int left, int top, int width, int height, int buttonsize, int thumbsize, int firstrow, int pagerows, int totalrows);
-void Mnu_Part_DrawSlider (int x, int top, float _range_clampf, int numticks);
+void Mnu_Part_DrawSlider (int x, int top, float _range_clampf, int numticks, cbool is_gamma);
 
 typedef enum { ENUM_FORCE_INT_GCC_ (hotspottype)
 	hotspottype_none_0 = 0,
@@ -78,6 +78,8 @@ typedef struct _hotspot_menu_item_t_s {
 	crect_t			r_button2;
 
 	crect_t			r_trackuse;			// The range that the thumb top might be placed. 16 height, 32 track 0 to 16 = 17 places.
+
+	cbool			is_gamma;			// Sigh ... May 7 2018 - But the results are NICE!
 } hotspot_menu_item_t;
 
 typedef enum { ENUM_FORCE_INT_GCC_ (focus_event)

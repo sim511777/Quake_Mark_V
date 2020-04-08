@@ -60,6 +60,10 @@ typedef void (*qboolfunc_t)(cbool);
 typedef enum { ENUM_FORCE_INT_GCC_ (mdraw) mdraw_none_0, mdraw_check, mdraw_slide, mdraw_vmode, mdraw_textbutton} mdraw_t;
 typedef enum { ENUM_FORCE_INT_GCC_ (moperation) op_nonzero, op_greaterthan, op_lessthan } moperation_e; // True is determined by what
 
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // May 7 2018
+double gamma_timer = 0; // Set to realtime + 0.35 for every minor gamma change.
+#endif // GLQUAKE + !DIRECT3D9_WRAPPER
+
 typedef struct
 {
 	opt_e 		optnum;
@@ -101,7 +105,11 @@ moptions_t menu_options_draw [opt_COUNT] =
 	{opt_screensize_03,	 "       Screen size", "",				mdraw_slide,		&scr_viewsize, 		10,		30,						120									},
 	{opt_contrast_04,	 "          Contrast", "",				mdraw_slide,		&vid_contrast,		21,		VID_MIN_CONTRAST_1_0,	VID_MAX_CONTRAST_2_0				},
 	{opt_gamma_05,		 "             Gamma", "",				mdraw_slide,		&vid_gamma,			21,		VID_MAX_MENU_GAMMA_1_0, VID_MIN_MENU_GAMMA_0_5				},
+#ifndef PLATFORM_ANDROID // NOT ANDROID
+	{opt_mousespeed_06,	 "       Mouse Speed", "",				mdraw_slide,		&sensitivity, 		21,		1,						21									},
+#else
 	{opt_mousespeed_06,	 "       Mouse Speed", "",				mdraw_slide,		&sensitivity, 		11,		1,						11									},
+#endif
 	{opt_cdvolume_07,	 "   CD Music Volume", "",				mdraw_slide,		&bgmvolume, 		11,		0,						3									},
 	{opt_soundvolume_08, "      Sound Volume", "",				mdraw_slide,		&sfxvolume, 		21,		0,						1									},
 
@@ -161,6 +169,12 @@ static void Mnu_Options_AdjustSliders_ (int this_cursor, int dir, cbool is_silen
 			if (!is_silent) MENU_TOGGLE_SOFT_SOUND();
 			newcvarval = CLAMP (lowval, newcvarval, highval);
 			Cvar_SetValueQuick (myopt->cvar_eval, newcvarval);
+			
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // May 7 2018
+			if (myopt->optnum == opt_gamma_05 && vid_hardwaregamma.value == 0) {
+				gamma_timer = realtime + 0.35;
+			}
+#endif // GLQUAKE + !DIRECT3D9_WRAPPER
 
 			if (local_menu->cursor != this_cursor)		// Baker: Mar 6 2018 - final attempt?
 				local_menu->cursor = this_cursor;
@@ -198,7 +212,8 @@ LOCAL_EVENT (Draw) (void)
 	int row; // col_16 = 16, col_220 = 220, row;
 	qpic_t	*p;
 
-#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER)
+// May 7 2018 - We never hide this anymore
+#if 0//defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) && !defined(PLATFORM_ANDROID)
 	menu_options_draw[opt_gamma_05].disabled = (vid_hardwaregamma.value == 0);
 	if (menu_options_draw[local_menu->cursor].disabled) {
 		local_menu->cursor++; if (local_menu->cursor >= local_menu->cursor_solid_count) local_menu->cursor = 0;
@@ -208,7 +223,9 @@ LOCAL_EVENT (Draw) (void)
 
 	if (f->focus) {
 		switch (f->focus_event) {
-		default:
+		default: // impossible
+
+		case_break focus_event_thumb_position:
 			// THUMB?
 			if (f->focus_event == focus_event_thumb_position) {
 				// Units should be 0-20 if there are 21 ticks.
@@ -284,7 +301,7 @@ no_action:		(0); // Null statement.  A label must have a statement :(
 		case_break mdraw_check:			Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_toggle);
 										Mnu_Part_DrawCheckbox (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]) );
 
-		case_break mdraw_slide:			Mnu_Part_DrawSlider (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]), e->a);
+		case_break mdraw_slide:			Mnu_Part_DrawSlider (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]), e->a, /*is_gamma*/ n == opt_gamma_05);
 		case_break mdraw_vmode:			Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_button);
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
@@ -306,6 +323,18 @@ no_action:		(0); // Null statement.  A label must have a statement :(
 
 // cursor
 	M_DrawCharacter (200, menu_options_draw[local_menu->cursor].row, 12+((int)(realtime*4)&1));
+
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // May 7 2018
+	if (gamma_timer && gamma_timer < realtime) {
+		// Push through a gamma update
+		void Vid_Gamma_TextureGamma_f (lparse_t *line);
+		lparse_t line = {0};
+		line.args[1] = va ("%2.2f", vid_gamma.value);
+		line.count = 2;
+		Vid_Gamma_TextureGamma_f (&line);
+		gamma_timer = 0;
+	}
+#endif // GLQUAKE + !DIRECT3D9_WRAPPER
 
 	focus0.in_left = in_range (opt_screensize_03, local_menu->cursor, opt_soundvolume_08);
 }
@@ -370,6 +399,9 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 
 LOCAL_EVENT (Enter_f) (lparse_t *unused)
 {
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // May 7 2018
+	gamma_timer = 0;
+#endif // GLQUAKE + !DIRECT3D9_WRAPPER
 	Key_SetDest (key_menu); Menu_SetDest (LOCAL_MENU_STATE);
 }
 

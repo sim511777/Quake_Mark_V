@@ -35,7 +35,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	void System_Exit (int status)
 	{	
 		//alert ("SDL Quit");
+#if 0 // May 7 2019 - Toxic to Android with SDL 2.0.8 and QuakeDroid
 		SDL_Quit ();
+#endif
 		exit (status);
 	}
 #else

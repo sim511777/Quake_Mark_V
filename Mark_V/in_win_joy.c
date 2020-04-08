@@ -49,7 +49,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define JOYID_NOT_FOUND_NEG1 -1
 static cbool				joy_disabled_commandline	= false;
 static int					joy_active_instance_idx		= JOYID_NOT_FOUND_NEG1;
-
+static cbool				first_read = false;
 
 typedef enum
 {
@@ -340,6 +340,9 @@ void Input_Local_Joystick_Commands (void)
 	if (joy_disabled_commandline || joy_active_instance_idx == JOYID_NOT_FOUND_NEG1 || !joy_enable.value /*|| !joy_active_joystick*/)
 		return;
 
+	if (!first_read)
+		return; // Haven't read it yet
+
 	//Con_SafePrintLinef ("joybutt %x", (int)ji.dwButtons);
 	// emit key events for controller buttons
 	{ int n; for (n = 0; n < SDL_CONTROLLER_BUTTON_MAX; n++) {
@@ -402,7 +405,7 @@ cbool Input_Local_Joystick_Read (void)
 		//	(float)(*mControllerAxis[5])
 		//
 		//);
-
+		first_read = true;
 		return true;
 	}
 	
@@ -497,7 +500,7 @@ cbool Input_Local_Joystick_Startup (void)
 
 		{
 			MMRESULT	mmr = -1;
-			int joy_provisional_idx = - 1;
+			int joy_provisional_idx = JOYID_NOT_FOUND_NEG1;
 
 			// cycle through the joystick ids for the first valid one
 			{ int n; for (n = 0; n < numdevs ; n ++) {
@@ -507,14 +510,17 @@ cbool Input_Local_Joystick_Startup (void)
 
 				if ((mmr = joyGetPosEx(n, &ji)) == JOYERR_NOERROR) {
 					// Accepted
+					//static char *GetJoystickName_Alloc (int index, const char *szRegKey);
+					//char *name =  GetJoystickName_Alloc (n, "");
+
 					joy_provisional_idx = n;
 					break;
 				}
 			}}
 
 			// abort startup if we didn't find a valid joystick
-			if (mmr != JOYERR_NOERROR /* which is zero*/)
-			{
+			//if (mmr != JOYERR_NOERROR /* which is zero*/)
+			if (joy_provisional_idx == JOYID_NOT_FOUND_NEG1) {
 				Con_SafePrintLinef ("joystick not found -- no valid joysticks (%x)", mmr);
 				return false;
 			}
@@ -552,6 +558,84 @@ cbool Input_Local_Is_Joystick (void)
 {
 	return joy_active_instance_idx != JOYID_NOT_FOUND_NEG1; // For now?
 }
+
+
+
+//#include <mmsystem.h>
+//#include <regstr.h>
+//
+//#ifdef REGSTR_VAL_JOYOEMNAME 
+//#undef REGSTR_VAL_JOYOEMNAME 
+//#endif
+//#define REGSTR_VAL_JOYOEMNAME "OEMName"
+//
+//static char *GetJoystickName_Alloc (int index, const char *szRegKey) // May return NULL
+//{
+//    /* added 7/24/2004 by Eckhard Stolberg */
+//    /*
+//       see if there is a joystick for the current
+//       index (1-16) listed in the registry
+//     */
+//    char *name = NULL;
+//    HKEY hTopKey;
+//    HKEY hKey;
+//    DWORD regsize;
+//    LONG regresult;
+//    char regkey[256];
+//    char regvalue[256];
+//    char regname[256];
+//
+//	c_snprintf3 (regkey, "%s\\%s", REGSTR_PATH_JOYCONFIG, szRegKey, REGSTR_KEY_JOYCURR); //SDL_snprintf(regkey, SDL_arraysize(regkey),
+//               
+//    hTopKey = HKEY_LOCAL_MACHINE;
+//    regresult = RegOpenKeyExA(hTopKey, regkey, 0, KEY_READ, &hKey);
+//    if (regresult != ERROR_SUCCESS) {
+//        hTopKey = HKEY_CURRENT_USER;
+//        regresult = RegOpenKeyExA(hTopKey, regkey, 0, KEY_READ, &hKey);
+//    }
+//    if (regresult != ERROR_SUCCESS) {
+//        return NULL;
+//    }
+//
+//    /* find the registry key name for the joystick's properties */
+//    regsize = sizeof(regname);
+//    //SDL_snprintf(regvalue, SDL_arraysize(regvalue), "Joystick%d%s", index + 1, REGSTR_VAL_JOYOEMNAME);
+//	c_snprintf2 (regvalue, "Joystick%d%s", index + 1, REGSTR_VAL_JOYOEMNAME);
+//    regresult =
+//        RegQueryValueExA(hKey, regvalue, 0, 0, (LPBYTE) regname, &regsize);
+//    RegCloseKey(hKey);
+//
+//    if (regresult != ERROR_SUCCESS) {
+//        return NULL;
+//    }
+//
+//    /* open that registry key */    
+//	//SDL_snprintf(regkey, SDL_arraysize(regkey),
+//	c_snprintf2 (regkey, "%s\\%s", REGSTR_PATH_JOYOEM, regname);
+//                 
+//    regresult = RegOpenKeyExA(hTopKey, regkey, 0, KEY_READ, &hKey);
+//    if (regresult != ERROR_SUCCESS) {
+//        return NULL;
+//    }
+//
+//    /* find the size for the OEM name text */
+//    regsize = sizeof(regvalue);
+//    regresult =
+//        RegQueryValueExA(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, NULL, &regsize);
+//    if (regresult == ERROR_SUCCESS) {
+//        /* allocate enough memory for the OEM name text ... */
+//        name = (char *) malloc(regsize);
+//        if (name) {
+//            /* ... and read it from the registry */
+//            regresult = RegQueryValueExA(hKey,
+//                                         REGSTR_VAL_JOYOEMNAME, 0, 0,
+//                                         (LPBYTE) name, &regsize);
+//        }
+//    }
+//    RegCloseKey(hKey);
+//
+//    return (name);
+//}
 
 
 #endif // PLATFORM_WINDOWS

@@ -61,7 +61,7 @@ int Mnu_Part_DrawVScrollbar (int left, int top, int width, int height, int butto
 }
 
 // Return offset.
-void Mnu_Part_DrawSlider (int x, int top, float _range_clampf, int numticks)
+void Mnu_Part_DrawSlider (int x, int top, float _range_clampf, int numticks, cbool is_gamma)
 {
 	const int SLIDER_RANGE_10 = 10;
 	float range = CLAMP(0, _range_clampf, 1);
@@ -85,7 +85,7 @@ void Mnu_Part_DrawSlider (int x, int top, float _range_clampf, int numticks)
 	RECT_SET(hs->r_track1,		hs->r_track.left,					top,		thumb_offset,						height);
 	RECT_SET(hs->r_track2,		RECT_RIGHTOF(hs->r_thumb),			top,		hs->r_button2.left - RECT_RIGHTOF(hs->r_thumb), height);
 
-
+	hs->is_gamma = is_gamma;
 	hs->possible_first_rows = numticks;
 
 #if 0

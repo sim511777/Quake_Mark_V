@@ -918,8 +918,6 @@ void APIENTRY d3d9mh_glTexImage2D (GLenum target, GLint level, GLint internalfor
 
 		d3d_texture_t *tex = d3d_Context->TMU[d3d_Context->State.CurrentTMU].boundtexture;
 
-		if (!tex->TexImage) tex->Initialize ();
-
 		// create the texture if level 0 is seen; Open GL allows specification of texture levels in any order, as well as
 		// incomplete specification, but D3D doesn't.  to fully mimic the OpenGL behaviour in D3D we would copy all of the
 		// pixel data and params off to system memory, then only actually create a texture the first time it is used for

@@ -56,12 +56,66 @@ void context_t::Clear (DWORD ClearFlags)
 	{
 		this->FlushGeometry ();
 
-		// D3D clear is clipped to the viewport; because FitzQuake has (probably) left us with a smaller viewport at the
-		// end of the previous frame, we must set it back to the full rendertarget dimensions
-		this->ResetViewport ();
+		// OpenGL behaviour: clears affect the full render target
+		// Direct3D behaviour: clears are clipped to the viewport rect
+		// we want to replicate OpenGL behaviour so we must save off the current viewport, then set a new viewport to the full window dimensions,
+		// then do the clear, then restore the saved off viewport.
+		D3DVIEWPORT9 saved;
+		saved.X = this->State.Viewport.X;
+		saved.Y = this->State.Viewport.Y;
+		saved.Width = this->State.Viewport.Width;
+		saved.Height = this->State.Viewport.Height;
+		saved.MinZ = this->State.Viewport.MinZ;
+		saved.MaxZ = this->State.Viewport.MaxZ;
 
-		// back to normal operation
-		this->Device->Clear (0, NULL, ClearFlags, this->State.Clear.Color, this->State.Clear.Depth, this->State.Clear.Stencil);
+		// now reset and update it
+		this->ResetViewport ();
+		this->UpdateViewport ();
+
+		// OpenGL behaviour: clears are affected by the current write masks
+		// Direct3D behaviour: they are not
+		// we want to replicate OpenGL behaviour so we must peek at the write mask render states and adjust accordingly
+		// exception - we cannot selectively clear individual components of the color buffer in D3D
+		if (!this->State.RenderStates[D3DRS_COLORWRITEENABLE]) ClearFlags &= ~D3DCLEAR_TARGET;
+		if (!this->State.RenderStates[D3DRS_ZWRITEENABLE]) ClearFlags &= ~D3DCLEAR_ZBUFFER;
+		if (!this->State.RenderStates[D3DRS_STENCILWRITEMASK]) ClearFlags &= ~D3DCLEAR_STENCIL;
+
+		// now run the clear
+		// OpenGL behaviour: clears are clipped to the current scissor rect
+		// Direct3D behaviour: they are not
+		// we want to replicate OpenGL behaviour so we must peek at the scissor states and adjust accordingly
+		if (this->State.RenderStates[D3DRS_SCISSORTESTENABLE])
+		{
+			// it is assumed that the DirectX runtime will cache this locally and therefore avoid a round-trip to the GPU and the
+			// associated pipeline stall.  if this ever becomes a problem we'll just do it ourselves.
+			RECT sr;
+			this->Device->GetScissorRect (&sr);
+
+			//  SSSS   IIII   GGGGG   HH  HH
+			// SS  SS   II   GG   GG  HH  HH
+			// SS       II   GG       HH  HH
+			//  SSSS    II   GG  GGG  HHHHHH
+			//     SS   II   GG   GG  HH  HH
+			// SS  SS   II   GG   GG  HH  HH
+			//  SSSS   IIII   GGGGG   HH  HH
+			D3DRECT clearRect;
+			clearRect.x1 = sr.left;
+			clearRect.y1 = sr.top;
+			clearRect.x2 = sr.right;
+			clearRect.y2 = sr.bottom;
+
+			this->Device->Clear (1, &clearRect, ClearFlags, this->State.Clear.Color, this->State.Clear.Depth, this->State.Clear.Stencil);
+		}
+		else this->Device->Clear (0, NULL, ClearFlags, this->State.Clear.Color, this->State.Clear.Depth, this->State.Clear.Stencil);
+
+		// now restore the viewport to what was saved
+		this->State.Viewport.X = saved.X;
+		this->State.Viewport.Y = saved.Y;
+		this->State.Viewport.Width = saved.Width;
+		this->State.Viewport.Height = saved.Height;
+		this->State.Viewport.MinZ = saved.MinZ;
+		this->State.Viewport.MaxZ = saved.MaxZ;
+		this->UpdateViewport ();
 	}
 }
 

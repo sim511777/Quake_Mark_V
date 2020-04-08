@@ -453,15 +453,6 @@ void WINAPI Direct3D9_glMultiTexCoord2fv (GLenum target, GLfloat *st);
 void WINAPI Direct3D9_glClientActiveTexture (GLenum texture);
 void WINAPI Direct3D9_glTexStorage2D (GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 
-struct modedesc_t
-{
-	int Width;
-	int Height;
-	BOOL Windowed;
-	BOOL VSync;
-	D3DFORMAT dsFmt;
-};
-
 class context_t
 {
 public:
@@ -473,12 +464,18 @@ public:
 	char GLExtensions[1024]; // never go above this because Q1 itself writes them into a buffer this size
 	D3DADAPTER_IDENTIFIER9 AdapterID;
 
-	D3DPRESENT_PARAMETERS *SetupPresentParams (modedesc_t *mode);
 	D3DPRESENT_PARAMETERS *SetupPresentParams (int width, int height, BOOL windowed, BOOL vsync);
 
 	HWND Window;
 
-	modedesc_t DisplayMode;
+	struct modedesc_t
+	{
+		int Width;
+		int Height;
+		BOOL Windowed;
+		BOOL VSync;
+		D3DFORMAT dsFmt;
+	} DisplayMode;
 
 	geometry_t Geometry;
 	state_t State;
@@ -578,7 +575,7 @@ public:
 	void GetMatrix (GLenum pname, GLfloat *params);
 
 	void PreReset (void);
-	void ResetDevice (void);
+	void ResetDevice (D3DPRESENT_PARAMETERS *PresentParams);
 	
 	// Baker: The extra information is for window positioning and to restrict resize precisely in WM_GETMINMAX
 	void ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height);

@@ -202,12 +202,6 @@ void context_t::InitializeStates (void)
 }
 
 
-D3DPRESENT_PARAMETERS *context_t::SetupPresentParams (modedesc_t *mode)
-{
-	return this->SetupPresentParams (mode->Width, mode->Height, mode->Windowed, mode->VSync);
-}
-
-
 D3DPRESENT_PARAMETERS *context_t::SetupPresentParams (int width, int height, BOOL windowed, BOOL vsync)
 {
 	static D3DPRESENT_PARAMETERS PresentParams;
@@ -270,6 +264,7 @@ context_t::context_t (HDC hdc)
 
 	RECT clientrect;
 	LONG winstyle;
+	RECT workarea;
 
 	// we can't extern mainwindow as it may be called something else depending on the codebase used
 	if ((this->Window = WindowFromDC (hdc)) == NULL) System_Error ("Direct3D9_wglCreateContext: could not determine application window");
@@ -279,6 +274,29 @@ context_t::context_t (HDC hdc)
 
 	// see are we fullscreen
 	winstyle = GetWindowLong (this->Window, GWL_STYLE);
+
+	// still unsure of the best way to handle this, or even if it should be handled in the wrapper
+#if 0
+	// validate window dimensions for windowed modes to prevent setting modes >= the desktop work area;
+	// http://www.celephais.net/board/view_thread.php?id=61375&start=860
+	if (!(winstyle & WS_POPUP))
+	{
+		if (SystemParametersInfo (SPI_GETWORKAREA, 0, &workarea, 0))
+		{
+			RECT windowrect;
+			CopyRect (&windowrect, &clientrect);
+			AdjustWindowRect (&windowrect, winstyle, FALSE);
+
+			// width
+			if (windowrect.right - windowrect.left >= workarea.right - workarea.left)
+				System_Error ("context_t::context_t : window width is too large");
+
+			// height
+			if (windowrect.bottom - windowrect.top >= workarea.bottom - workarea.top)
+				System_Error ("context_t::context_t : window height is too large");
+		}
+	}
+#endif
 
 	// the window is always created in a windowed mode and may then be switched to fullscreen after
 	// this is conformant with DXGI requirements on Vista+ and a lot of other annoying crap just goes away
@@ -332,6 +350,13 @@ context_t::context_t (HDC hdc)
 
 	if (this->Device == NULL) System_Error ("created NULL Direct3D device");
 
+	// check if a FS mode and switch to the mode as soon as possible
+	if (winstyle & WS_POPUP)
+	{
+		// and reset; there's no need for a full release/recreate because no objects have been created yet
+		this->Device->Reset (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, FALSE, this->DisplayMode.VSync));
+	}
+
 	// build extensions string
 	this->GLExtensions[0] = 0;
 
@@ -364,14 +389,6 @@ context_t::context_t (HDC hdc)
 
 	// get adapter ID for glGetString (renderer/vendor) stuff
 	d3d_Globals.Object->GetAdapterIdentifier (0, 0, &this->AdapterID);
-
-	// check if a FS mode
-	if (winstyle & WS_POPUP)
-	{
-		// and reset; there's no need for a full release/recreate because no objects have been created yet
-		this->DisplayMode.Windowed = FALSE;
-		this->Device->Reset (this->SetupPresentParams (&this->DisplayMode));
-	}
 
 	this->DeviceLost = FALSE;
 	this->ClientActiveTexture = 0;
@@ -463,7 +480,7 @@ void context_t::ResetMode (int width, int height, BOOL windowed, int client_left
 	this->DisplayMode.Windowed = windowed;
 
 	// reset present params and reset the device
-	this->ResetDevice ();
+	this->ResetDevice (this->SetupPresentParams (width, height, windowed, this->DisplayMode.VSync));
 
 	if (windowed)
 	{
@@ -548,9 +565,6 @@ void context_t::ResetMode (int width, int height, BOOL windowed, int client_left
 
 void context_t::BeginScene (void)
 {
-	// do nothing if a lost device
-	if (this->DeviceLost) return;
-
 	// check for a beginscene
 	if (!this->State.SceneBegun)
 	{
@@ -597,7 +611,7 @@ void context_t::EndScene (void)
 		case D3DERR_DEVICENOTRESET:
 			// device is ready to be reset
 			this->PreReset ();
-			if (FAILED (this->Device->Reset (this->SetupPresentParams (&this->DisplayMode))))
+			if (FAILED (this->Device->Reset (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, this->DisplayMode.Windowed, this->DisplayMode.VSync))))
 				System_Error ("device reset failed");
 			break;
 
@@ -651,7 +665,7 @@ void context_t::EndScene (void)
 }
 
 
-void context_t::ResetDevice (void)
+void context_t::ResetDevice (D3DPRESENT_PARAMETERS *PresentParams)
 {
 	this->FlushGeometry ();
 	this->PreReset ();
@@ -660,7 +674,7 @@ void context_t::ResetDevice (void)
 		Sleep (1);
 
 	// reset device
-	if (FAILED (this->Device->Reset (this->SetupPresentParams (&this->DisplayMode))))
+	if (FAILED (this->Device->Reset (PresentParams)))
 		System_Error ("context_t::ResetDevice : failed");
 
 	while (this->Device->TestCooperativeLevel () != D3D_OK)
@@ -674,8 +688,7 @@ void context_t::ResetDevice (void)
 void context_t::SetVSync (int interval)
 {
 	// doing it this way because interval can be values other than 0 or 1
-	this->DisplayMode.VSync = interval ? TRUE : FALSE;
-	this->ResetDevice ();
+	this->ResetDevice (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, this->DisplayMode.Windowed, interval ? TRUE : FALSE));
 }
 
 
@@ -705,8 +718,7 @@ void context_t::Release (void)
 	if (this->Device)
 	{
 		// switch to windowed before destroying the device; this is for conformance with DXGI requirements on Vista+
-		this->DisplayMode.Windowed = TRUE;
-		this->Device->Reset (this->SetupPresentParams (&this->DisplayMode));
+		this->Device->Reset (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, TRUE, this->DisplayMode.VSync));
 	}
 
 	// now destroy the device

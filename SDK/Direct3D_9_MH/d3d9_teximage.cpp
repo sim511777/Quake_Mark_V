@@ -463,20 +463,27 @@ void context_t::CopyFrameBufferToTexture (d3d_texture_t *tex, GLint level, GLint
 			// we would need to go through the (much slower) D3DXLoadSurfaceFromSurface path
 			tex->CheckRenderTarget (this);
 
-			if (SUCCEEDED (tex->TexImage->GetSurfaceLevel (level, &dstsurf)))
+			if (!tex->TexImage)
 			{
-				if (SUCCEEDED (dstsurf->GetDesc (&dstdesc)))
+				tex->CreateParms.Usage &= ~D3DUSAGE_RENDERTARGET;
+			}
+
+			if (tex->TexImage) {
+				if (SUCCEEDED (tex->TexImage->GetSurfaceLevel (level, &dstsurf)))
 				{
-					RECT srcrect;
-					RECT dstrect;
-
-					Adjust_BottomLeftToTopLeft (&srcrect, x, y, width, height, srcdesc.Height);
-					Adjust_BottomLeftToTopLeft (&dstrect, xoffset, yoffset, width, height, dstdesc.Height);
-
-					this->Device->StretchRect (srcsurf, &srcrect, dstsurf, &dstrect, D3DTEXF_NONE);
+					if (SUCCEEDED (dstsurf->GetDesc (&dstdesc)))
+					{
+						RECT srcrect;
+						RECT dstrect;
+	
+						Adjust_BottomLeftToTopLeft (&srcrect, x, y, width, height, srcdesc.Height);
+						Adjust_BottomLeftToTopLeft (&dstrect, xoffset, yoffset, width, height, dstdesc.Height);
+	
+						this->Device->StretchRect (srcsurf, &srcrect, dstsurf, &dstrect, D3DTEXF_NONE);
+					}
+	
+					SAFE_RELEASE (dstsurf);
 				}
-
-				SAFE_RELEASE (dstsurf);
 			}
 		}
 

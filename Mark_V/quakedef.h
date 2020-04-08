@@ -28,8 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __QUAKEDEF_H__
 
 // COMMENT THESE OUT TO ENABLE DIRECT3D9 STENCIL SHADOWS / SKY DRAWS
-#define DIRECT3D9_STENCIL_DISABLE_BLOCK_OR	|| vid.direct3d == 9
-#define DIRECT3D9_STENCIL_DISABLE_BLOCK_AND && vid.direct3d != 9
+#define DIRECT3D9_STENCIL_DISABLE_BLOCK_OR	// || vid.direct3d == 9
+#define DIRECT3D9_STENCIL_DISABLE_BLOCK_AND //&& vid.direct3d != 9
 
 
 // quakedef.h -- primary header for client
@@ -43,8 +43,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.26
-#define	ENGINE_BUILD			1026			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_VERSION			1.27
+#define	ENGINE_BUILD			1027			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01

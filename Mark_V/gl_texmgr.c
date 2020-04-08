@@ -188,7 +188,7 @@ void TexMgr_TextureMode_f (cvar_t *var)
 	Sbar_Changed (); // sbar graphics need to be redrawn with new filter mode.  Baker: Or at least they used to.  I think I corrected that.
 
 	// Make the name one of the constant values
-	Cvar_SetQuick (&gl_texturemode, glmodes[n].name); // Set cvar string manually
+	Cvar_SetQuick (&gl_texturemode, glmodes[glmode_idx].name); // Set cvar string manually
 
 	recursion_blocker --;
 }

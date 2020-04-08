@@ -196,9 +196,9 @@ void VID_Renderer_Set_Direct3D8 (void)
 	ewglGetCurrentDC        = Direct3D8_wglGetCurrentDC;
 	ewglMakeCurrent         = Direct3D8_wglMakeCurrent;
 	ewglGetProcAddress		= Direct3D8_wglGetProcAddress;
-	
+
 	eSwapBuffers			= Direct3D8_SwapBuffers;
-	
+
 	eChoosePixelFormat		= ChoosePixelFormat; // The real winapi one
 	eDescribePixelFormat	= DescribePixelFormat; // The real winapi one
 	eSetPixelFormat         = Direct3D8_SetPixelFormat;
@@ -315,7 +315,7 @@ void VID_Renderer_Set_OpenGL (void)
 	const char *binary_folder		= Folder_Binary_Folder_URL ();
 	const char *opengl32_dll_url	= va("%s/opengl32.dll", binary_folder);
 
-	
+
 	if (File_Exists (opengl32_dll_url)) {
 		const char *Shell_Windows_Folder_System32 (void);
 		const char *sys32dir = Shell_Windows_Folder_System32 (); // ("SYSTEM");
@@ -453,12 +453,15 @@ void VID_Renderer_Set_OpenGL (void)
 			// FreeLibrary (hOpenGL32);  // Don't do that!
 			return;
 		}
-		
+
 	}
 	// If we are here, on Windows there was no opengl32.dll in the folder.
 
+	{
+		HMODULE hOpenGL32 = LoadLibraryA ("opengl32.dll"); // Hit it here. MH fix dwere.
+		GetProcAddress (hOpenGL32, "glBegin");
+	}
 #endif // PLATFORM_WINDOWS // Even SDL needs this
-
 
 	eglAlphaFunc            = glAlphaFunc;
 	eglBegin                = glBegin;
@@ -558,7 +561,7 @@ void VID_Renderer_Set_OpenGL (void)
 
 void VID_Renderer_Setup (void)
 {
-	
+
 #if defined(DIRECT3D8_WRAPPER) // DX8 Wrapper build
 	VID_Renderer_Set_Direct3D8 ();
 #elif defined(DIRECT3D9_WRAPPER)  // DX9 Wrapper build

@@ -792,13 +792,24 @@ void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void)
 {
 	extern byte *hunk_base;
 
-	// called at startup and whenever the video mode changes
-	for (vid.maxwarpwidth = 1; vid.maxwarpwidth < vid.screen.width; vid.maxwarpwidth <<= 1);
-	for (vid.maxwarpheight = 1; vid.maxwarpheight < vid.screen.height; vid.maxwarpheight <<= 1);
+	if (renderer.gl_texture_non_power_of_two && !r_waterwarp_downscale.value)
+	{
+		// let them choose if they don't want this
+		vid.maxwarpwidth = vid.screen.width;
+		vid.maxwarpheight = vid.screen.height;
+	}
+	else
+	{
+		// called at startup and whenever the video mode changes
+		for (vid.maxwarpwidth = 1; vid.maxwarpwidth < vid.screen.width; vid.maxwarpwidth <<= 1);
+		for (vid.maxwarpheight = 1; vid.maxwarpheight < vid.screen.height; vid.maxwarpheight <<= 1);
+	
+		// take a power of 2 down from the screen res so that we can maintain perf if warping
+		vid.maxwarpwidth >>= 1;
+		vid.maxwarpheight >>= 1;
+	}
 
-	// take a power of 2 down from the screen res so that we can maintain perf if warping
-	vid.maxwarpwidth >>= 1;
-	vid.maxwarpheight >>= 1;
+	Con_DPrintLinef ("Waterwrap texture size is %d, %d", vid.maxwarpwidth, vid.maxwarpheight);
 
 	// note - OpenGL allows specifying NULL data to create an empty texture, but FitzQuake's texmgr doesn't.  So we need to do hunk
 	// shenanigans to work around it; if you  modify the texmgr to allow for this, you could just specify NULL data and get rid of
@@ -810,6 +821,12 @@ void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void)
 	eglCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, vid.maxwarpwidth, vid.maxwarpheight);
 }
 
+
+void TexMgr_Warp_Downscale_f (cvar_t *var)
+{
+	vid.warp_stale = true;
+
+}
 
 
 void TexMgr_GreyScale_f (cvar_t *var)

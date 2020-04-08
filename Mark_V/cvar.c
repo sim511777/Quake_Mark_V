@@ -1127,6 +1127,8 @@ void GL_Fullbrights_f (cvar_t *var) {}
 void GL_Overbright_f (cvar_t *var) {}
 void TexMgr_Anisotropy_f (cvar_t *var) {}
 void TexMgr_GreyScale_f (cvar_t *var) {}
+void TexMgr_Warp_Downscale_f (cvar_t *var) {}
+
 void SCR_Conwidth_f (cvar_t *var) { }
 void R_SetClearColor_f (cvar_t *var) {}
 void R_VisChanged (cvar_t *var) {}
@@ -1159,6 +1161,7 @@ extern void SV_Cheats_f (cvar_t *var);
 extern void S_Snd_Speed_Notify_f (cvar_t *var);
 extern void Stain_Change_f (cvar_t *var);
 extern void TexMgr_Anisotropy_f (cvar_t *var);
+extern void TexMgr_Warp_Downscale_f (cvar_t *var);
 extern void TexMgr_GreyScale_f (cvar_t *var);
 extern void VID_Local_Multisample_f (cvar_t *var);
 extern void VID_Local_Vsync_f (cvar_t *var);

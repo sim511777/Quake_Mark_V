@@ -292,17 +292,12 @@ void R_SetupView_UpdateWarpTextures (void)
 }
 
 #if 1 // UNDERWATER WARP  R_WATERWARP
-static void GL_Warp_CalcUnderwaterCoords (float x, float y)
+static void GL_Warp_CalcUnderwaterCoords (float x, float y, float CYCLE_X, float CYCLE_Y, float AMP_X, float AMP_Y)
 {
-	// ripped this from vkQuake at https://github.com/Novum/vkQuake/blob/master/Shaders/screen_warp.comp
-	// our x and y coords are already incoming at 0..1 range so we don't need to rescale them.
-	// i did change the calculation of AMP from 1/300 to 1/100 because the effect was too small at 1/300
-	// i suspect this should be different for x and y and derived from the vrect dimensions (likewise cycle)
-	const float CYCLE = M_PI * 5.0f;
-	const float AMP = 1.0f / 100.0f; // original was 300, 100 looks better, tune it or cvarize it all you wish
-
-	const float texX = (x + (sin (y * CYCLE + cl.time) * AMP)) * (1.0f - AMP * 2.0f) + AMP;
-	const float texY = (y + (sin (x * CYCLE + cl.time) * AMP)) * (1.0f - AMP * 2.0f) + AMP;
+	// vkQuake is actually 99% of the way there; all that it's missing is a sign flip and it's AMP is half what it should be.
+	// this is now extremely close to consistency with mankrip's tests
+	const float texX = (x - (sin (y * CYCLE_X + cl.time) * AMP_X)) * (1.0f - AMP_X * 2.0f) + AMP_X;
+	const float texY = (y - (sin (x * CYCLE_Y + cl.time) * AMP_Y)) * (1.0f - AMP_Y * 2.0f) + AMP_Y;
 
 	eglTexCoord2f (texX, texY);
 	eglVertex2f (x, y);
@@ -313,6 +308,14 @@ extern gltexture_t *r_underwaterwarptexture;
 void GL_WarpScreen (void)
 {
 	int x, y;
+
+	// ripped this from vkQuake at https://github.com/Novum/vkQuake/blob/master/Shaders/screen_warp.comp
+	// our x and y coords are already incoming at 0..1 range so we don't need to rescale them.
+	const float aspect = (float) r_refdef.vrect.width / (float) r_refdef.vrect.height;
+	const float CYCLE_X = M_PI * r_waterwarp_cycle.value; // tune or cvarize as you wish
+	const float CYCLE_Y = CYCLE_X * aspect;
+	const float AMP_X = 1.0f / r_waterwarp_amp.value; // tune or cvarize as you wish
+	const float AMP_Y = AMP_X * aspect;
 
 	// copy over the texture
 	GL_Bind (r_underwaterwarptexture);
@@ -352,8 +355,8 @@ void GL_WarpScreen (void)
 
 		for (y = 0; y <= 32; y++)
 		{
-			GL_Warp_CalcUnderwaterCoords ((float) x / 32.0f, (float) y / 32.0f);
-			GL_Warp_CalcUnderwaterCoords ((float) (x + 1) / 32.0f, (float) y / 32.0f);
+			GL_Warp_CalcUnderwaterCoords ((float) x / 32.0f, (float) y / 32.0f, CYCLE_X, CYCLE_Y, AMP_X, AMP_Y);
+			GL_Warp_CalcUnderwaterCoords ((float) (x + 1) / 32.0f, (float) y / 32.0f, CYCLE_X, CYCLE_Y, AMP_X, AMP_Y);
 		}
 
 		eglEnd();

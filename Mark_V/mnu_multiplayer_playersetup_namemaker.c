@@ -33,17 +33,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* NAME EDITOR MENU */    // From JoeQuake 0.15 Dev
 //=============================================================================
 
-#define	NAMEMAKER_TABLE_SIZE	16
+#define	NAMEMAKER_TABLE_SIZE_16	16
 static int namemaker_cursor_x, namemaker_cursor_y;
 
 //
 // Draw
 //
 
+#define NAME_ROW_16			16
+#define HS_SHADOW_4			4
+#define HS_OUTLINE_1		1
+#define LOCAL_ROWS_COUNT	(NAMEMAKER_TABLE_SIZE_16 - 1) // 15
+#define LOCAL_COLS_COUNT	(NAMEMAKER_TABLE_SIZE_16 - 0) // 16
+
 LOCAL_EVENT (Draw) (void)
 {
 	int	x, y;
-#define NAME_ROW_16 16
+
 	M_Print (48, 16, "Your name");
 	M_DrawTextBox (120, 8, NAME_ROW_16, 1, 0 /* no hotspot */);
 	M_PrintWhite (128, NAME_ROW_16, cl_name.string);
@@ -52,28 +58,28 @@ LOCAL_EVENT (Draw) (void)
 
 
 	// Sad thing is we could draw this in one shot.
-	for (y = 1; y < NAMEMAKER_TABLE_SIZE; y++) {
+	for (y = 1; y < NAMEMAKER_TABLE_SIZE_16; y++) {
 		int top = 22 + 10 * y;
-		for (x = 0; x < NAMEMAKER_TABLE_SIZE; x++) {
+		for (x = 0; x < NAMEMAKER_TABLE_SIZE_16; x++) {
 			int left = 32 + (16 * x);
-			int ch = NAMEMAKER_TABLE_SIZE * y + x;
+			int ch = NAMEMAKER_TABLE_SIZE_16 * y + x;
 			if (ch == 255)
 				continue; // Quake totally hates that character.
-#define HS_OUTLINE 1
-			Hotspots_Add (left - HS_OUTLINE -4, top - HS_OUTLINE, 8 +  ( HS_OUTLINE * 2) + 8, 8 + HS_OUTLINE *2, 1, hotspottype_button_line);
-			M_DrawCharacter (left, top, NAMEMAKER_TABLE_SIZE * y + x);
+
+			Hotspots_Add (left - HS_OUTLINE_1 - 4, top - HS_OUTLINE_1, 8 +  ( HS_OUTLINE_1 * 2) + 8, 8 + HS_OUTLINE_1 * 2, 1, hotspottype_button_line);
+			M_DrawCharacter (left, top, NAMEMAKER_TABLE_SIZE_16 * y + x);
 		}
 	}
 
-//	if (namemaker_cursor_y == NAMEMAKER_TABLE_SIZE - 1)
+//	if (namemaker_cursor_y == NAMEMAKER_TABLE_SIZE_16 - 1)
 //		M_DrawCharacter (128, 184, 12 + ((int)(realtime*4)&1));
 //	else
 		M_DrawCharacter (24 + 16 * namemaker_cursor_x, 22  + 10 + 10 * namemaker_cursor_y, 12 + ((int)(realtime*4)&1));
 
 	{
 		char s[] = "Press ESC to exit";
-#define HS_SHADOW 4
-		Hotspots_Add (144 - HS_SHADOW, 188 - HS_SHADOW, ARRAY_STRLEN(s) * 8 + (HS_SHADOW * 2), 8 + (HS_SHADOW * 2), 1, hotspottype_button);
+
+		Hotspots_Add (144 - HS_SHADOW_4, 188 - HS_SHADOW_4, ARRAY_STRLEN(s) * 8 + (HS_SHADOW_4 * 2), 8 + (HS_SHADOW_4 * 2), 1, hotspottype_button);
 		M_Print (144, 188, s);
 	}
 }
@@ -84,7 +90,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int	lengthus;
 #define NAMEMAKER_ESCAPE_HOTSPOT_239 239
@@ -119,17 +125,13 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 											Cbuf_AddTextLinef ("name " QUOTED_S, Clipboard_Get_Text_Line() );
 									}
 									else if (lengthus < 15) {
-										// int newchar = NAMEMAKER_TABLE_SIZE * namemaker_cursor_y + namemaker_cursor_x;
+										// int newchar = NAMEMAKER_TABLE_SIZE_16 * namemaker_cursor_y + namemaker_cursor_x;
 										SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 										stringbuf[buflen + 1] = 0;
 										stringbuf[buflen] = Key_Alt_Down() ? key | 128 : key;
 										Cbuf_AddTextLinef ("name " QUOTED_S, stringbuf);
 									}
 
-//#define LOCAL_ROWS_COUNT (NAMEMAKER_TABLE_SIZE - 2)
-//#define LOCAL_COLS_COUNT (NAMEMAKER_TABLE_SIZE - 1)
-#define LOCAL_ROWS_COUNT (NAMEMAKER_TABLE_SIZE - 1)
-#define LOCAL_COLS_COUNT (NAMEMAKER_TABLE_SIZE - 0)
 	case_break K_ESCAPE:			Mnu_PlayerSetup_Enter_f (NULL);
 	case_break K_UPARROW:			cursor_wrap_increment_0_count (namemaker_cursor_y, -1, LOCAL_ROWS_COUNT);
 	case_break K_DOWNARROW:			cursor_wrap_increment_0_count (namemaker_cursor_y, +1, LOCAL_ROWS_COUNT);
@@ -146,7 +148,7 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 	case_break K_ENTER:
 			lengthus = strlen (cl_name.string);
 			if (lengthus < 15) {
-				int newchar = NAMEMAKER_TABLE_SIZE * (namemaker_cursor_y + 1) + namemaker_cursor_x;
+				int newchar = NAMEMAKER_TABLE_SIZE_16 * (namemaker_cursor_y + 1) + namemaker_cursor_x;
 				SETBUF (cl_name.string); // Sets stringbuf, len = buflen
 				stringbuf[buflen + 1] = 0;
 //				if (newchar == 0 || (newchar <= 13))

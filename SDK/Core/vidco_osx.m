@@ -6,6 +6,8 @@ Copyright (C) 2013-2014 Baker
 
 #include "environment.h"
 
+#ifdef PLATFORM_GUI_OSX
+
 // For now ... since we aren't using pure on Mac yet ..   def PLATFORM_GUI_OSX  // Not SDL build; not console build
 
 
@@ -580,7 +582,7 @@ int main (int argc, const char **pArgv)
     return NSApplicationMain (argc, pArgv);
 }
 
-
+#endif // I guess?
 #endif // PLATFORM_GUI_OSX
 
 

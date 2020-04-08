@@ -219,11 +219,77 @@ void M_Init (void)
 }
 
 
+#define QUAKE_COLOR_19 19
+#define QUAKE_COLOR_171 171
 
 void M_Draw (void)
 {
-	if (sMenu.menu_state == menu_state_None_0 || key_dest != key_menu)
-		return;
+	// Ok missing something here?  Yes.  If touch_screen isn't active, we don't want to draw unless we are in the menu.	
+	if (vid.touch_screen_active) {
+		// DRAW EXTRA HOTSPOTS.  ESCAPE BOX IS A MINIMUM.
+		int ymax		= /*focus0.game_viewport[1] +*/ focus0.game_viewport[3]; // y + h
+		int wh			= c_max (clwidth, clheight) / 16;
+		RECT_SET (focus0.escape_box, 0, 0, wh, wh);
+		
+		Draw_SetCanvas (CANVAS_DEFAULT);
+
+		// DRAW ESCAPE SUPER-HOTSPOT
+		Draw_Triangle_Corner	(RECT_SEND(focus0.escape_box), QUAKE_COLOR_19);
+		
+		// DRAW GAME CONTROLS WHEN APPLICABLE
+		if (vid.touch_screen_game_controls_on) {
+			int button_height	= clheight / 8; // 1/8th of total screen
+			int button_width	= button_height;
+
+			int width_pad	= button_width / 8;
+			int height_pad = button_height / 8;
+
+			switch (vid.touch_screen_game_controls_on) {
+			default:
+				RECT_SET ( focus0.touch_buttons[touch_button_left].r, width_pad, ymax - button_height - height_pad, button_width, button_height );
+				RECT_SET ( focus0.touch_buttons[touch_button_back].r, RECT_RIGHTOF(focus0.touch_buttons[touch_button_left].r) + width_pad, focus0.touch_buttons[touch_button_left].r.top, button_width, button_height );
+				RECT_SET ( focus0.touch_buttons[touch_button_right].r, RECT_RIGHTOF(focus0.touch_buttons[touch_button_back].r) + width_pad, focus0.touch_buttons[touch_button_left].r.top, button_width, button_height );
+				
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_left_1].r, focus0.touch_buttons[touch_button_left].r.left,  focus0.touch_buttons[touch_button_left].r.top - button_height - height_pad, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_forward].r, focus0.touch_buttons[touch_button_back].r.left, focus0.touch_buttons[touch_button_forward_left_1].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_right].r, focus0.touch_buttons[touch_button_right].r.left, focus0.touch_buttons[touch_button_forward_left_1].r.top, button_width, button_height);
+
+				RECT_SET ( focus0.touch_buttons[touch_button_next_weapon].r, focus0.game_viewport[2] - focus0.touch_buttons[touch_button_left].r.width - width_pad, focus0.touch_buttons[touch_button_left].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_jump].r, focus0.touch_buttons[touch_button_next_weapon].r.left, 
+					focus0.touch_buttons[touch_button_next_weapon].r.top - button_height - height_pad, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_attack].r, focus0.touch_buttons[touch_button_next_weapon].r.left, focus0.touch_buttons[touch_button_jump].r.top - button_height - height_pad, button_width, button_height);
+
+				RECT_SET ( focus0.touch_buttons[touch_button_turnleft].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_turnright].r, 0, 0, 0, 0 );
+
+			case_break 2:
+				RECT_SET ( focus0.touch_buttons[touch_button_attack].r, width_pad, ymax - button_height - height_pad, button_width, button_height );
+				RECT_SET ( focus0.touch_buttons[touch_button_jump].r, RECT_RIGHTOF(focus0.touch_buttons[touch_button_attack].r) + width_pad, 
+					focus0.touch_buttons[touch_button_attack].r.top, button_width * 2, button_height );
+				RECT_SET ( focus0.touch_buttons[touch_button_next_weapon].r, focus0.touch_buttons[touch_button_attack].r.left,  focus0.touch_buttons[touch_button_attack].r.top - button_height - height_pad, button_width, button_height);
+				
+				RECT_SET ( focus0.touch_buttons[touch_button_turnright].r, focus0.game_viewport[2] - button_width - width_pad, focus0.touch_buttons[touch_button_attack].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_back].r, focus0.touch_buttons[touch_button_turnright].r.left - button_width - width_pad, focus0.touch_buttons[touch_button_turnright].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_turnleft].r, focus0.touch_buttons[touch_button_back].r.left - button_width - width_pad, focus0.touch_buttons[touch_button_turnright].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_forward].r, focus0.touch_buttons[touch_button_back].r.left, focus0.touch_buttons[touch_button_back].r.top - button_height - height_pad, button_width, button_height);
+
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_left_1].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_right].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_left].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_right].r, 0, 0, 0, 0 );
+
+			}
+
+			{ int n; for (n = touch_button_forward_left_1; n < touch_button_COUNT; n ++ ) {
+				if (focus0.touch_buttons[n].r.width)
+					Draw_Alpha_Spot (RECT_SEND(focus0.touch_buttons[n].r), QUAKE_COLOR_19);
+			}}
+
+		}
+	}
+
+	if (sMenu.menu_state == menu_state_None_0)
+		return; // We aren't in the menu per se.
 
 	if (!sMenu.recursiveDraw)
 	{
@@ -252,20 +318,23 @@ void M_Draw (void)
 
 	Draw_SetCanvas (CANVAS_MENU); //johnfitz
 	
-	if (!hotspot_menu_group.focus && menux[sMenu.menu_state].hover && !isin2(menux[sMenu.menu_state].hover->hotspottype, hotspottype_screen, hotspottype_inert) ) {
-		crect_t *r = &menux[sMenu.menu_state].hover->rect;
-		if (menux[sMenu.menu_state].hover->hotspottype == hotspottype_button_line) {
-			// Outline highlight
-			Draw_Fill (PRECT_SEND(r),				QUAKE_RED_251, 1);
-			Draw_Fill (PRECT_SEND_INSET(r, 1),		QUAKE_BLACK_0, 1);
-		}
-		else {
-#ifdef WINQUAKE_RENDERER_SUPPORT
-			// Nothing because it is ugly?
-			Draw_Fill (PRECT_SEND(r), QUAKE_BLACK_0, 1);
-#else // !WINQUAKE_RENDERER_SUPPORT
-			Draw_Fill (PRECT_SEND(r), QUAKE_TAN_125, 0.10); // GL
-#endif // !WINQUAKE_RENDERER_SUPPORT
+	if (!vid.touch_screen_active) {
+		// Do not draw hover in touch screen mode		
+		if (!hotspot_menu_group.focus && menux[sMenu.menu_state].hover && !isin2(menux[sMenu.menu_state].hover->hotspottype, hotspottype_screen, hotspottype_inert) ) {
+			crect_t *r = &menux[sMenu.menu_state].hover->rect;
+			if (menux[sMenu.menu_state].hover->hotspottype == hotspottype_button_line) {
+				// Outline highlight
+				Draw_Fill (PRECT_SEND(r),				QUAKE_RED_251, 1);
+				Draw_Fill (PRECT_SEND_INSET(r, 1),		QUAKE_BLACK_0, 1);
+			}
+			else {
+	#ifdef WINQUAKE_RENDERER_SUPPORT
+				// Nothing because it is ugly?
+				Draw_Fill (PRECT_SEND(r), QUAKE_BLACK_0, 1);
+	#else // !WINQUAKE_RENDERER_SUPPORT
+				Draw_Fill (PRECT_SEND(r), QUAKE_TAN_125, 0.10); // GL
+	#endif // !WINQUAKE_RENDERER_SUPPORT
+			}
 		}
 	}
 
@@ -285,8 +354,11 @@ void M_Draw (void)
 }
 
 
-void M_Keydown (key_scancode_e key, int hotspot)
+void M_KeyPress (key_scancode_e key, int hotspot)
 {
+	if (vid.is_mobile_ios_keyboard && key == K_GRAVE /*the tilde*/) // PLATFORM_IOS
+		key = K_ESCAPE; // Hope.  Can't verify easily on Windows due to DeadkeyIssue fix by ericw that scans fixed physical position, if I recall.
+
 	{ // Fire the key function
 		menux_t *this_menu = &menux[sMenu.menu_state];
 
@@ -308,8 +380,6 @@ void M_Keydown (key_scancode_e key, int hotspot)
 
 		this_menu->Key_Function (key, hotspot); 
 	}
-
-
 }
 
 

@@ -95,8 +95,8 @@ void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py, cbool 
 //	if (SDL_GetGlobalMouseState (&x, &y) != 0) // Returns 0 on success
 //		log_debug ("Unable to get mouse position");
 //
-//	REQUIRED_ASSIGN (px, x);
-//	REQUIRED_ASSIGN (py, y);
+	REQUIRED_ASSIGN (px, -1);
+	REQUIRED_ASSIGN (py, -1);  // Let's set -1 here and we will just see what happens
 }
 
 
@@ -259,7 +259,7 @@ void Input_Local_SendKeyEvents (void)
 			// Update the UI on the main thread.
 		  });
 	});
-	NSLog (@"k"); // Called by cl_parse.c Install command, console.c Con_NotifyBox, Modal message.
+//	NSLog (@"k"); // Called by cl_parse.c Install command, console.c Con_NotifyBox, Modal message.
 }
 
 // Baker: Stops drag flag on Mac (when activation is received by a mouseclick on title bar and user drags it.

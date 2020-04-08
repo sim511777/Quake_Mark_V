@@ -132,7 +132,7 @@ LOCAL_EVENT (Draw) (void) // Save
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot) // Save
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot) // Save
 {
 	int dir = 0; cbool did_move = false;
 	switch (key) {
@@ -219,7 +219,7 @@ LOCAL_EVENT (Draw) (void) // Load
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot) // Load
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot) // Load
 {
 	int dir = 0; cbool did_move = false;
 

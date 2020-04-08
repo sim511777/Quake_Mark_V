@@ -699,6 +699,54 @@ Draw_Fill
 Fills a box of pixels with a single color
 =============
 */
+
+
+void Draw_Triangle_Corner (int _x, int _y, int wh, int _wh, int c)
+{
+	int w = wh, h = wh;
+	// Clamping?
+	// Baker: Alpha is ignored at this time
+	int x = _x + canvas.x; // Baker: Canvas
+	int y = _y + canvas.y; // Baker: Canvas
+#if 0
+	int x = CLAMP(0, _x + canvas.x, vid.width - 1)
+	int y = CLAMP(0, _y + canvas.y, vid.height - 1)
+	int w = CLAMP(0, _w, vid.width - x);  // draw at 350 w 100 vidwidth 400 so 399 is max.  w = 400-1-350=49
+	int h = CLAMP(0, _h, vid.height - y);
+#endif
+	byte			*dest;
+	int				u, v;
+
+	dest = vid.buffer + y*vid.rowbytes + x;
+	for (v = 0 ; v < h ; v++, dest += vid.rowbytes) {
+		for (u = 0 ; u < w ; u++)
+			dest[u] = vid.alpha50map[/*front*/ c + /*behind*/ dest[u] * 256];
+		w --;
+	}
+}
+
+void Draw_Alpha_Spot (int _x, int _y, int w, int h, int c)
+{
+	// Clamping?
+	// Baker: Alpha is ignored at this time
+	int x = _x + canvas.x; // Baker: Canvas
+	int y = _y + canvas.y; // Baker: Canvas
+#if 0
+	int x = CLAMP(0, _x + canvas.x, vid.width - 1)
+	int y = CLAMP(0, _y + canvas.y, vid.height - 1)
+	int w = CLAMP(0, _w, vid.width - x);  // draw at 350 w 100 vidwidth 400 so 399 is max.  w = 400-1-350=49
+	int h = CLAMP(0, _h, vid.height - y);
+#endif
+	byte			*dest;
+	int				u, v;
+
+	dest = vid.buffer + y*vid.rowbytes + x;
+	for (v = 0 ; v < h ; v++, dest += vid.rowbytes) {
+		for (u = 0 ; u < w ; u++)
+			dest[u] = vid.alpha50map[/*front*/ c + /*behind*/ dest[u] * 256];
+	}
+}
+
 void Draw_Fill (int _x, int _y, int w, int h, int c, float alpha)
 {
 	// Clamping?
@@ -807,6 +855,7 @@ void Draw_SetCanvas (canvastype newcanvas)
 			focus0.menu_viewport[3] = 200 * s;
 			//eglViewport (clx + (clwidth - 320 * s) / 2, ybot, 320 * s, 200 * s);
 			
+			// Let's Keep It Simple!  Make a screen_to_canvas func for mouse if needed.
 			Mat4_Identity_Set (&focus0.menu_modelview);
 			Mat4_Identity_Set (&focus0.menu_projection);
 			Mat4_Ortho (&focus0.menu_projection, 0, 320, 200, 0, -99999, 99999); // Different formula but better result?						

@@ -93,6 +93,15 @@ float Math_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float roll
 
 #define DoublePrecisionDotProduct(x,y) ((double)x[0]*y[0]+(double)x[1]*y[1]+(double)x[2]*y[2])
 
+///////////////////////////////////////////////////////////////////////////////
+//  Drag Look for Touch Screen
+///////////////////////////////////////////////////////////////////////////////
+
+void QGetPitchYaw (reply float *pitch_delta_out, reply float *yaw_delta_out, 
+	int mouse_x, int mouse_y, required const int *viewport, const glmatrix *m_projection3d, 
+	const glmatrix *m_modelview, const vec3_t qcamera_angles, int screenheight, int winy, float znear, float zfar);
+
+
 #endif // ! __Q_MATHLIB_H__
 
 

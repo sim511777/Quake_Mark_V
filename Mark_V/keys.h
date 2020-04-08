@@ -31,16 +31,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef QUAKE_GAME
 
 
+
 enum keyname_s {key_local_name, key_export_name};
 typedef enum { ENUM_FORCE_INT_GCC_ (keydest) key_game = 1, key_console = 2, key_message = 3, key_menu = 4} keydest_e;
 typedef enum { ENUM_FORCE_INT_GCC_ (cursor) cursor_reset, cursor_reset_abs, select_clear, cursor_select, cursor_select_all} cursor_t;
 void Key_Console_Cursor_Move(int netchange, cursor_t action);
 
+void Key_Console_Exo_Submit (void);
 
 extern keydest_e	key_dest;
-//#define MAX_KEYS_256 256
 
 
+#define KEYMAP_Q_USABLE_MAX_500		500 // Touchscreen fake keys.  Ignore for customize controls. Replaces KEYMAP_COUNT_512 in some functions.
 
 #ifdef SUPPORTS_KEYBIND_FLUSH
 typedef struct {
@@ -73,6 +75,8 @@ void Key_Init (void);
 void Key_Release_Keys (cvar_t* var);
 void Key_Release_Mouse_Buttons (void);
 
+void Key_Message (int key);
+
 #define K_SHIFT    K_LSHIFT
 #define K_CTRL     K_LCTRL
 #define K_ALT      K_LALT
@@ -90,13 +94,6 @@ void Key_Release_Mouse_Buttons (void);
 #define SCANCODE_0	0
 #define NO_WINDOW_NULL NULL
 	
-// Feb 22 2018
-// Most of these are not used and are duplicates/similar to core.h defines
-// Should the core.h defines be moved here?  What should live/die?
-//#define K_SHIFT_MASK_1	1
-//#define K_CTRL_MASK_2		2
-//#define K_ALT_MASK_4		4
-//#define K_COMMAND_MASK_8	8
 
 // Not fond of the name.
 typedef enum { ENUM_FORCE_INT_GCC_(dir)
@@ -154,11 +151,7 @@ typedef enum { ENUM_FORCE_INT_GCC_(textaction)
 	textaction_ignore_0 = 0,
 } textaction_e;
 
-typedef enum { ENUM_FORCE_INT_GCC_ (mouseaction)
-	mouseaction_down	= -1,
-	mouseaction_move	=  0,
-	mouseaction_up		=  1,
-} mouseaction_e;
+
 //#pragma message ("mouseaction_e defined")
 
 //void Key_Mouse_Button (void *ptr, key_scancode_e scancode, mouseaction_e mouseaction, int ascii, int unicode, int shift, cbool havemouse, int rawx, int rawy);

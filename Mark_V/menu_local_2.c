@@ -56,7 +56,7 @@ menux_t	menux[menu_state_COUNT] = {
 		Mnu_ ## NAME ## _InitOnce,							\
 		Mnu_ ## NAME ## _Enter_f,							\
 		Mnu_ ## NAME ## _Draw,								\
-		Mnu_ ## NAME ## _Key,								\
+		Mnu_ ## NAME ## _KeyPress,							\
 	}, // Ender
 	#include "menu_definitions_sheet.h"
 };

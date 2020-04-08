@@ -33,7 +33,7 @@ void M_DrawPicCentered (int y, qpic_t *pic);
 
 void M_Init (void);
 void M_Draw (void);
-void M_Keydown (key_scancode_e key, int hotspot);
+void M_KeyPress (key_scancode_e key, int hotspot);
 
 
 int Mnu_Part_DrawVScrollbar (int left, int top, int width, int height, int buttonsize, int thumbsize, int firstrow, int pagerows, int totalrows);

@@ -1562,6 +1562,8 @@ void SCR_UpdateScreen (void)
 	//	SCR_DrawNotifyString ();
 	//}
 	//else 
+
+
 	if (scr_drawloading) //loading
 	{
 		SCR_DrawLoading ();
@@ -1579,7 +1581,7 @@ void SCR_UpdateScreen (void)
 		if (cl.intermission > 1)   SCR_CheckDrawCenterString (); //
 		SCR_DrawPause ();
 		SCR_DrawConsole ();
-		M_Draw ();
+		M_Draw (); // March 10 2018 --- Hmmmm.  Everyone ends with M_Draw.
 	}
 	else
 	{
@@ -1607,3 +1609,8 @@ void SCR_UpdateScreen (void)
 
 	VID_EndRendering ();
 }
+
+
+
+
+

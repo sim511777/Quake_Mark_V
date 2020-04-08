@@ -151,6 +151,11 @@ zlib1.dll
 	#include <fcntl.h>
 #endif // ! PLATFORM_WINDOWS
 
+#ifdef CORE_NEEDS_MEMICMP // Non-Microsoft compilers don't have this function
+int memicmp (const void *s1, const void *s2, size_t n);
+#endif // CORE_NEEDS_MEMICMP
+
+
 #ifdef CORE_PTHREADS
 #include "pthreads_core.h"
 #endif // PTHREADS
@@ -187,28 +192,28 @@ zlib1.dll
 
 #ifndef optional // optional is used when a NULL can be provided for special input. 
 	#define optional // Extra information that may be provided ... optional between_text - might be ", " or NULL.
-#endif // We can't include core.h
+#endif
 
 #ifndef required // A pointer sent that is not optional (can/do we evolve this to set 100% of time when it doesn't error?)
 	#define required
-#endif // We can't include core.h
+#endif
 
 #ifndef modify // A required pointer that is modified.  IN AND OUT behavior.  REQUIRED
 	#define modify // Note we hardly ever use this.
-#endif // We can't include core.h
+#endif
 
 #ifndef writeonly// A write only pointer that is required
 	#define writeonly // Note we hardly ever use this.
-#endif // We can't include core.h
+#endif
 
-#ifndef readonly// A read only pointer that is required
-	#define readonly const // Note we hardly ever use this.
-#endif // We can't include core.h
+#ifndef read_only_ // A read only pointer that is required
+	#define read_only_ const // Note we hardly ever use this.
+#endif // Mac hates readonly being defined ... Mar 8 2018 -- so we weird up the name some
 
 
 #ifndef unconstanting // Note unconst
 	#define unconstanting
-#endif // We can't include core.h
+#endif
 
 // In the future I would prefer to remove the star in *printline_fn_t because it hides the fact this is a pointer.
 // However, the counter argument is that function pointers can never NOT be a pointer it doesn't matter.
@@ -245,8 +250,9 @@ typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__forma
 //  CORE: Basic function setup
 ///////////////////////////////////////////////////////////////////////////////
 
+#define KEYMAP_COUNT_512			512
+#define KEYMAP_HARDWARE_TILDE_511	(KEYMAP_COUNT_512 - 1)
 
-#define KEYMAP_COUNT_512 512
 #define NUM_MOUSE_BUTTONS_5 5
 extern int keymap [KEYMAP_COUNT_512][5]; // Decimal representation, Platform constant, Our constant, Special instruction, Special instruction value
 extern keyvalue_t key_scancodes_table [108]; // Why 108?  Yes this is a thing.  Feb 16 2018
@@ -273,6 +279,12 @@ typedef enum { ENUM_FORCE_INT_GCC_(mousebuttonbits)
 	mousebuttonbits_mouse5_bit_16	= 16,
 } mousebuttonbits_e;
 
+typedef enum { ENUM_FORCE_INT_GCC_ (mouseaction)
+	mouseaction_down_0			= 0,
+	mouseaction_move			= 1,
+	mouseaction_up				= 2,
+	mouseaction_cancelled		= 3, // Touch screen in particular for now
+} mouseaction_e;
 
 // Make a 2 value table.
 // Quake name	Core Name	 //

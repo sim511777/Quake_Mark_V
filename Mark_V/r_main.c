@@ -364,9 +364,10 @@ void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect)
 	if (!r_dowarp) {
 		// As good a place as any to calculate the projection matrix and viewport.
 		Mat4_Identity_Set (&focus0.game_projection);
-		
-		// Viewport?
-		// Stretch?
+		// Don't put rotation for vid.is_screen_portrait in the matrix.
+		// Let us manually convert vid.is_screen_portrait mouse coords
+		// Likewise don't put stretch into the matrix.
+		// Let's Keep It Simple!  Make a screen_to_canvas func for mouse if needed.
 		{
 			#define NEARCLIP_1		1
 			#define FARCLIP_16384	16384

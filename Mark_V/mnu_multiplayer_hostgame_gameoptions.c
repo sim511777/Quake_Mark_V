@@ -381,7 +381,7 @@ void M_NetStart_Change (int dir)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	if (key == K_ENTER && local_menu->cursor != opt_begin_game_0) key = K_RIGHTARROW;
 

@@ -59,7 +59,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	//if (hotspot == 0)
 	//	key = K_ENTER;

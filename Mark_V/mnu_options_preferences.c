@@ -213,7 +213,7 @@ LOCAL_EVENT (Draw) (void)
 		switch (e->q_control) {
 		default:							// Shouldn't happen
 		case_break q_control_labeltoggle:{	const char *s = NULL;
-											size_t s_len;
+											int s_len; // Would be better as size_t
 											const char *our_commadic_text = e->comma_text;
 		
 #ifdef WINQUAKE_RENDERER_SUPPORT // Override text if winquake only string exists
@@ -224,7 +224,7 @@ LOCAL_EVENT (Draw) (void)
 											// if (e->basket_value == IDX_NOT_FOUND_NEG1) alert ("Invalid value"); debug
 
 											s = String_Instance (our_commadic_text, ',', e->basket_value + 1, &s_len);
-											memcpy (e->basket_text, s, s_len);
+											strlcpy (e->basket_text, s, s_len + 1);
 
 											e->basket_text[s_len] = 0;
 
@@ -257,7 +257,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int help_idx = local_menu->hover ? local_menu->hover->idx : local_menu->cursor;
 	mnu_ent_t *e = &mnu_ent_table[local_menu->cursor];

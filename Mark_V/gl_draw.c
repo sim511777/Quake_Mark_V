@@ -958,6 +958,38 @@ Draw_Fill
 Fills a box of pixels with a single color
 =============
 */
+
+void Draw_Triangle_Corner (int x, int y, int wh, int _wh, int c)
+{
+	int w = wh, h = wh;
+	float alpha = 0.65;
+	byte *pal = (byte *)vid.d_8to24table; //johnfitz -- use d_8to24table instead of host_basepal
+
+	eglDisable (GL_TEXTURE_2D);
+	eglEnable (GL_BLEND); //johnfitz -- for alpha
+	eglDisable (GL_ALPHA_TEST); //johnfitz -- for alpha
+	eglColor4f (pal[c*4]/255.0, pal[c*4+1]/255.0, pal[c*4+2]/255.0, alpha); //johnfitz -- added alpha
+
+	eglBegin (GL_TRIANGLE_FAN);
+	eglVertex2f (x,y);
+	eglVertex2f (x+w, y);
+	//eglVertex2f (x+w, y+h);
+	eglVertex2f (x, y+h);
+	eglEnd ();
+
+	eglColor3f (1,1,1);
+	eglDisable (GL_BLEND); //johnfitz -- for alpha
+	eglEnable (GL_ALPHA_TEST); //johnfitz -- for alpha
+	eglEnable (GL_TEXTURE_2D);
+}
+
+void Draw_Alpha_Spot (int x, int y, int w, int h, int c)
+{
+	float alpha = 0.50;
+	Draw_Fill (x, y, w, h, c, alpha);
+}
+
+
 void Draw_Fill (int x, int y, int w, int h, int c, float alpha)
 {
 	byte *pal = (byte *)vid.d_8to24table; //johnfitz -- use d_8to24table instead of host_basepal
@@ -1063,6 +1095,10 @@ void Draw_SetCanvas (canvastype newcanvas)
 		eglViewport (clx + (clwidth - 320*s) / 2, ybot, 320*s, 200*s);
 
 		if (newcanvas ==  CANVAS_MENU) {
+			// Don't put rotation for vid.is_screen_portrait in the matrix.
+			// Let us manually convert vid.is_screen_portrait mouse coords
+			// Likewise don't put stretch into the matrix.
+			// Let's Keep It Simple!  Make a screen_to_canvas func for mouse if needed.
 			eglGetIntegerv	(GL_VIEWPORT, focus0.menu_viewport);
 			eglGetFloatv	(GL_MODELVIEW_MATRIX, focus0.menu_projection.m16); // Store off the model view matrix.  (r_world_matrix)
 			eglGetFloatv	(GL_PROJECTION_MATRIX, focus0.menu_modelview.m16); // Store off the model view matrix.  (r_world_matrix)

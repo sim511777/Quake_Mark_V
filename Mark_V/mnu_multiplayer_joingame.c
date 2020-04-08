@@ -81,9 +81,9 @@ LOCAL_EVENT (Draw) (void)
 	case_break 2 /*only ipv6*/:		M_Print (basex + 9 * M_CHAR_WIDTH_8, 52,     my_ipv6_address);
 	}
 		
-	Hotspots_Add	(basex - 8, lanConfig_cursor_table[opt_port_0], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_text);
+	Hotspots_Add	(basex - 8, lanConfig_cursor_table[opt_port_0], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_textbutton);
 	M_Print			(basex, lanConfig_cursor_table[opt_port_0], "Port");
-	M_DrawTextBox	(basex + 8 * M_CHAR_WIDTH_8, lanConfig_cursor_table[opt_port_0] - 8, 6, 1, 0 /* no hotspot */); // Since we did it ourselves?
+	M_DrawTextBox	(basex + 8 * M_CHAR_WIDTH_8, lanConfig_cursor_table[opt_port_0] - 8, 6, 1, NO_HOTSPOTS_0); // Since we did it ourselves?
 	M_Print			(basex + 9 * M_CHAR_WIDTH_8, lanConfig_cursor_table[opt_port_0], lanConfig_portname);
 	
 // Join Game
@@ -95,7 +95,7 @@ LOCAL_EVENT (Draw) (void)
 	M_Print			(basex, 108, "Join game at:");
 
 	Hotspots_Add	(basex - 8, lanConfig_cursor_table[opt_join_game_at_3], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_text);
-	M_DrawTextBox	(basex + 8, lanConfig_cursor_table[opt_join_game_at_3] - 8, 22, 1, 0 /* no hotspot */);
+	M_DrawTextBox	(basex + 8, lanConfig_cursor_table[opt_join_game_at_3] - 8, 22, 1, NO_HOTSPOTS_0);
 	M_Print			(basex + 16, lanConfig_cursor_table[opt_join_game_at_3], lanConfig_joinname);
 
 	M_DrawCharacter	(basex - 8, lanConfig_cursor_table [local_menu->cursor], 12+((int)(realtime*4)&1));
@@ -116,7 +116,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int		len, port;
 
@@ -157,18 +157,27 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 		if (local_menu->cursor == opt_join_game_at_3 && strlen(lanConfig_joinname)) lanConfig_joinname[strlen(lanConfig_joinname)-1] = 0;
 		
 	case_break K_ENTER:
-		if (local_menu->cursor == opt_port_0) // Port
-			break;
 
 		// Baker: At this point, all 3 cause a network operation to happen
 		// enable/disable net systems to match desired config
-		Cbuf_AddTextLine ("stopdemo"); // Baker:  Ah, cute.
-		net_hostport = lanConfig_port;
+		if (local_menu->cursor != opt_port_0) {
+			Cbuf_AddTextLine ("stopdemo"); // Baker:  Ah, cute.
+			net_hostport = lanConfig_port;
+		}
 
 		switch (local_menu->cursor) {
-		default /*OPT_PORT_0*/:				// Port.  Enter doesn't do anything
+		default:							// Can this even happen?
+		case_break opt_port_0:				// Port.  Enter doesn't do anything unless mobile.
+											if (vid.touch_screen_active) {
+												Mnu_OnScreenKeyboard_PromptText (
+													"Port", NULL, lanConfig_portname, sizeof(lanConfig_portname),
+													LOCAL_MENU_STATE
+												);	
+											}
+											return;	 // Legacy code says we must get out.
+
 		case_break opt_search_local_1:  	Mnu_Search_Enter_f ((lparse_t *)SLIST_LAN);				// 1: Search for local games
-		case_break opt_search_public_2:  	Mnu_Search_Enter_f ((lparse_t *)SLIST_INTERNET);			// 2: Search for public games
+		case_break opt_search_public_2:  	Mnu_Search_Enter_f ((lparse_t *)SLIST_INTERNET);		// 2: Search for public games
 		case_break opt_join_game_at_3:		sMenu.return_state = sMenu.menu_state;					// 3: Join Game At
 											sMenu.return_onError = true;
 											Key_SetDest (key_game);

@@ -173,7 +173,12 @@ automatic byte swapping
 
 void SwapPic (qpic_t *pic)
 {
-	pic->width = LittleLong(pic->width);
-	pic->height = LittleLong(pic->height);
+	// Baker: March 9 2018 - This is doing a pointless reassignment 
+	// and a needless access violation for built-in resources.
+	// In unwritable memory.  Besides Big Endian is basically dead.
+	if (host_bigendian) {
+		pic->width = LittleLong(pic->width);
+		pic->height = LittleLong(pic->height);
+	}
 }
 

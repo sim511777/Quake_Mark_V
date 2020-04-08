@@ -65,14 +65,14 @@ LOCAL_EVENT (Draw) (void)
 	p = Draw_CachePic ("gfx/p_multi.lmp");
 	M_DrawPicCentered (4, p);
 	
-	Hotspots_Add (local_menu->column1, 40, local_menu->colwidth, 8, 1, hotspottype_text);
+	Hotspots_Add (local_menu->column1, 40, local_menu->colwidth, 8, 1, hotspottype_textbutton); // Formerly the inert hotspottype_text
 	M_Print (64, 40, "Hostname");
-	M_DrawTextBox (160, 32, 16, 1, 0 /* no hotspot */);
+	M_DrawTextBox (160, 32, 16, 1, NO_HOTSPOTS_0);
 	M_PrintWhite (168, 40, hostname.string);
 
 	Hotspots_Add (local_menu->column1, 56, local_menu->colwidth, 8, 1, hotspottype_textbutton);
 	M_Print (64, 56, "Your name");
-	M_DrawTextBox (160, 48, 16, 1, 0 /* no hotspot */);
+	M_DrawTextBox (160, 48, 16, 1, NO_HOTSPOTS_0);
 	M_PrintWhite (168, 56, cl_name.string); // Baker 3.83: Draw it correctly
 
 	Hotspots_Add (local_menu->column1, 80, local_menu->colwidth, 8, 1, hotspottype_toggle);
@@ -114,7 +114,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int setup_top = SETUP_TOP_COLOR, setup_bottom = SETUP_BOTTOM_COLOR; // Just to have them available.
 	int	lengthus;
@@ -199,6 +199,14 @@ forward:
 	case_break K_ENTER:
 		switch (local_menu->cursor) {
 		default:						// The other options do nothing
+		case_break opt_host_name_0:		// Typically we do nothing.
+										if (vid.touch_screen_active) {
+											Mnu_OnScreenKeyboard_PromptText (
+												"Hostname", &hostname, /*no buffer*/ NULL, /*sizeof buf*/ 16,
+												LOCAL_MENU_STATE
+											);
+										}
+
 		case_break opt_your_name_1:		Mnu_NameMaker_Enter_f (NULL);
 		case_break opt_shirt_color_2:	goto forward;
 		case_break opt_pants_color_3:	goto forward;

@@ -138,11 +138,11 @@ LOCAL_EVENT (Draw) (void)
 
 
 //
-// Key - input.c various -> M_Keydown -> here
+// Key - input.c various -> M_KeyPress -> here
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int daction = daction_none_0;
 

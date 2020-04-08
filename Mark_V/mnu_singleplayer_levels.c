@@ -201,10 +201,10 @@ LOCAL_EVENT (Draw) (void)
 		float repeat_time = 0;
 		switch (f->focus_part) {
 		default:	goto no_action; // Thumb or something.  Do nothing.
-		case_break focus_part_button1: LOCAL_FN (Key) (K_MOUSEWHEELUP, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
-		case_break focus_part_button2: LOCAL_FN (Key) (K_MOUSEWHEELDOWN, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
-		case_break focus_part_track1:  LOCAL_FN (Key) (K_PAGEUP, NO_HOTSPOT_HIT_NEG1);				repeat_time = 0; // Don't
-		case_break focus_part_track2:  LOCAL_FN (Key) (K_PAGEDOWN, NO_HOTSPOT_HIT_NEG1);			repeat_time = 0; // Don't
+		case_break focus_part_button1: LOCAL_FN (KeyPress) (K_MOUSEWHEELUP, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
+		case_break focus_part_button2: LOCAL_FN (KeyPress) (K_MOUSEWHEELDOWN, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
+		case_break focus_part_track1:  LOCAL_FN (KeyPress) (K_PAGEUP, NO_HOTSPOT_HIT_NEG1);				repeat_time = 0; // Don't
+		case_break focus_part_track2:  LOCAL_FN (KeyPress) (K_PAGEDOWN, NO_HOTSPOT_HIT_NEG1);			repeat_time = 0; // Don't
 		}
 		f->focus_event_msgtime_ext = repeat_time ? realtime + repeat_time : -1; // -1 = never.
 
@@ -272,7 +272,7 @@ no_action:
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	// If we have a hotspot we can't use the cursor (a list's cursor is funky)
 	if (HS_LIST_IS_LISTINDEX(hotspot)) { // listitem emission list index

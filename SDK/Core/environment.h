@@ -43,23 +43,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		// iOS Simulator
 //		#pragma message ("IPHONE DETECTED")
 		# define PLATFORM_IOS
-		# define PLATFORM_NAME "Apple iOS"
-		# define PLATFORM_SHORTNAME "iOS"
-		# define PLATFORM_ENUM os_enum_iphone
+		# define PLATFORM_NAME				"Apple iOS"
+		# define PLATFORM_SHORTNAME			"iOS"
+		# define PLATFORM_ENUM				os_enum_iphone
 		# define PLATFORM_GUI_IOS
 		# define DISPATCH_BANDAGES_IOS
-		# define PLATFORM_SCREEN_FLIPPED_Y 1 // Screen 0,0 is *bottom* left
-		# define PLATFORM_SCREEN_PORTRAIT 1 // Mobile screen, iPhone, Android, etc., Android, IOS
-		# define PLATFORM_IOS_BPP_32 32 // Not best place for this
+		# define PLATFORM_SCREEN_FLIPPED_Y	1				// Screen 0,0 is *bottom* left
+		# define PLATFORM_SCREEN_PORTRAIT	1				// Mobile screen, iPhone, Android, etc., Android, IOS
+		# define PLATFORM_IOS_BPP_32		32				// Not best place for this
 	#elif TARGET_OS_MAC
 		# define PLATFORM_OSX
-		# define PLATFORM_NAME "Mac OS X"
-		# define PLATFORM_SHORTNAME "Mac"
-		# define PLATFORM_ENUM os_enum_mac
+		# define PLATFORM_NAME				"Mac OS X"
+		# define PLATFORM_SHORTNAME			"Mac"
+		# define PLATFORM_ENUM				os_enum_mac
 		# define PLATFORM_GUI_OSX
 		# define DISPATCH_BANDAGES_OSX
-		# define PLATFORM_SCREEN_FLIPPED_Y 1 // Screen 0,0 is *bottom* left
-		# define PLATFORM_SCREEN_PORTRAIT 0 // Not mobile screen
+		# define PLATFORM_SCREEN_FLIPPED_Y	1				// Screen 0,0 is *bottom* left
+		# define PLATFORM_SCREEN_PORTRAIT	0				// Not mobile screen
 	#else
 		// Unsupported platform
 		#pragma message ("UNKNOWN APPLE PLATFORM")
@@ -71,30 +71,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
  	# define PLATFORM_WINDOWS
 	# define FILESYSTEM_WINDOWS
-	# define PLATFORM_NAME "Windows"
-	# define PLATFORM_SHORTNAME "Windows"
-	# define PLATFORM_ENUM os_enum_windows
+	# define PLATFORM_NAME					"Windows"
+	# define PLATFORM_SHORTNAME				"Windows"
+	# define PLATFORM_ENUM					os_enum_windows
 	# define PLATFORM_GUI_WINDOWS
 	# define DISPATCH_BANDAGES_WINDOWS
-	# define PLATFORM_SCREEN_FLIPPED_Y 0 // Screen 0,0 is top left
-	# define PLATFORM_SCREEN_PORTRAIT 0 // Not mobile screen
+	# define PLATFORM_SCREEN_FLIPPED_Y		0				// Screen 0,0 is top left
+	# define PLATFORM_SCREEN_PORTRAIT		0				// Not mobile screen
 #endif // _WIN32
 
 #if defined (__linux__) || defined (__linux)
 	#ifdef __ANDROID__
 		# define PLATFORM_ANDROID
-		# define PLATFORM_NAME "Android"
-		# define PLATFORM_SHORTNAME "Android"
-		# define PLATFORM_ENUM os_enum_android
-		# define PLATFORM_SCREEN_FLIPPED_Y 0 // Screen 0,0 is top left
-		# define PLATFORM_SCREEN_PORTRAIT 1 // Mobile screen, Android, IOS
+		# define PLATFORM_NAME				"Android"
+		# define PLATFORM_SHORTNAME			"Android"
+		# define PLATFORM_ENUM				os_enum_android
+		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
+		# define PLATFORM_SCREEN_PORTRAIT	1				// Mobile screen, Android, IOS
 	#else
     # define PLATFORM_LINUX
-	# define PLATFORM_NAME "Linux"
-	# define PLATFORM_SHORTNAME "Linux"
-		# define PLATFORM_ENUM os_enum_linux
-		# define PLATFORM_SCREEN_FLIPPED_Y 0 // Screen 0,0 is top left
-		# define PLATFORM_SCREEN_PORTRAIT 0 // Not mobile screen
+	# define PLATFORM_NAME					"Linux"
+	# define PLATFORM_SHORTNAME				"Linux"
+		# define PLATFORM_ENUM				os_enum_linux
+		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
+		# define PLATFORM_SCREEN_PORTRAIT	0				// Not mobile screen
 //		# pragma message ("Linux detected?")
 	#endif
 #endif
@@ -382,16 +382,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #undef false
 
 
-typedef enum { ENUM_FORCE_INT_GCC_ (cbool)
-	//#ifdef __GNUC__
-	//	___cbool_gcc_sucks_signed = -1, // To throw into enums to force fucking int like the C standards say enumerations are supposed to be :(
-	//#endif // __GNUC__
+typedef enum { ENUM_FORCE_INT_GCC_ (cbool) // To throw into enums to force fucking int like the C standards say enumerations are supposed to be :(
 	false = 0,
 	true = 1,
 } cbool;
 #define CBOOL_DEFINED
-
-#define IDX_NOT_FOUND_NEG1 -1
 
 typedef unsigned char byte;
 
@@ -405,30 +400,32 @@ typedef unsigned char byte;
 #endif
 #endif // ! PLATFORM_IOS
 
+
+///////////////////////////////////////////////////////////////////////////////
+//  Simple/Base Math and Logic
+///////////////////////////////////////////////////////////////////////////////
+
 #include <math.h> // Ulp!
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846	// matches value in gcc v2 math.h
+	#define M_PI 3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
+#define IDX_NOT_FOUND_NEG1 -1
 
-#define in_range( _lo, _v, _hi ) ( (_lo) <= (_v) && (_v) <= (_hi) )
-#define out_of_bounds( _lo, _v, _hi ) ( (_v) < (_lo) || (_hi) < (_v) ) // It's back!  And bigger than ever!
-#define range_length(_start,_end)	 ((_end) - (_start) + 1)
-#define range_end   (_start,_length) ((_start) + (_length) - 1)
-#define in_range_beyond(_start, _v, _beyond ) ( (_start) <= (_v) && (_v) < (_beyond) )
-
-
+#define in_range( _lo, _v, _hi )					( (_lo) <= (_v) && (_v) <= (_hi) )
+#define out_of_bounds( _lo, _v, _hi )				( (_v) < (_lo) || (_hi) < (_v) ) // It's back!  And bigger than ever!
+#define range_length(_start,_end)					((_end) - (_start) + 1)
+#define range_end(_start,_length)					((_start) + (_length) - 1)
+#define in_range_beyond(_start, _v, _beyond )		( (_start) <= (_v) && (_v) < (_beyond) )
 
 #define	CLAMP(_minval, x, _maxval)		\
 	((x) < (_minval) ? (_minval) :		\
 	 (x) > (_maxval) ? (_maxval) : (x))
 
 // Returns if true if would clamp
-#define WOULDCLAMP(_minval, x, _maxval)		\
-	((x) < (_minval) ? true :				\
+#define WOULDCLAMP(_minval, x, _maxval)	\
+	((x) < (_minval) ? true :			\
 	 (x) > (_maxval) ? true : false)
-
-
 
 #define SQUARED(x)	((x)*(x))
 
@@ -443,7 +440,6 @@ typedef unsigned char byte;
 typedef void  (*voidfunc_t)			(void);
 typedef cbool (*progress_fn_t )		(void *id, int oldamt, int newamt); // Allows boundary checks easier
 typedef cbool (*boolfunc_t )		(void);
-
 
 extern const char * const empty_string;  // Why?  A decent compiler would combine them anyway, but may allow us to specifically identify an unchanged string (?)
 
@@ -466,6 +462,7 @@ extern const char * const empty_string;  // Why?  A decent compiler would combin
 #endif // !PLATFORM_WINDOWS
 
 #define SYSTEM_STRING_SIZE_1024 1024
+typedef void *sys_handle_t;								// Used often.
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Command Support
@@ -477,34 +474,57 @@ extern const char * const empty_string;  // Why?  A decent compiler would combin
 // And nothing needs 80 args.  For a general splitter, we should make a new
 // function.
 
-typedef int cmdret_t; // 0 = successful, non-zero = error
 #define MAX_CMD_256 256
 #define MAX_ARGS_80	80
 
+// Lets see who complains ...
+
+typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
+	VR_RT_CANT_RUN_EMPTY_BYTECODE_NEG4 = -4,		// Differs from uncompiled as we are trying to run it.  We shouldn't, would be VB6 coding mistake.
+	VR_RT_STOPPED_BY_USER_NEG3 = -3,				// Possibly ... I may change my mind
+	VR_RT_BREAK_NEG2 = -2,							// Possibly ... I may change my mind
+	VR_CT_UNCOMPILED_NEG1 = -1,						// FOR EXTERN USE ONLY
+	VR_OK_0 = 0,
+	VR_ERROR_ANY_1 = 1,
+	VR_VARTYPE_OVERFLOW = 2,							// Divide by zero?
+	_VRESULT_MAXNUM
+} VRESULT;
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Macros
 ///////////////////////////////////////////////////////////////////////////////
 
-// example:  int frogs[32]; ARRAY_SIZE(frogs);
-// output:   static int _num_frogs = 32
-#define ARRAY_COUNT(_array)			(sizeof(_array) / sizeof(_array[0]))
-#define ARRAY_STRLEN(s) (ARRAY_COUNT(s) - sizeof(s[0]))  // Tags: STRING_LENGTH STRING_LEN STRLEN  (size - 1)
-#define ARRAY_BOUNDS_FAIL(_n, _count) ((_n) < 0 || (_count) <= (_n))
+#define case_break						break; { } case							// MVP.  Used tons.  default: much come first in switch.
+#define STRINGIFY(x)					#x										// MVP.  Used tons.
 
-//#define ARRAY_COUNT_STATIC(_array)	static const int _array ## _count = sizeof(_array) / sizeof(_array[0])
+#define ARRAY_COUNT(_array)				(sizeof(_array) / sizeof(_array[0]))	// Used tons.
+#define ARRAY_STRLEN(s)					(ARRAY_COUNT(s) - sizeof(s[0]))			// Indispensible.  Tags: STRING_LENGTH STRING_LEN STRLEN  (size - 1)
+#define ARRAY_BOUNDS_FAIL(_n, _count)	((_n) < 0 || (_count) <= (_n))			// Not used.
 
-#define OFFSET_ZERO_0 0
-
-#define TRUISM(_x) ((_x) || 1) // Result of express is always true
-#define STRINGIFY(x) #x
+#define OFFSET_ZERO_0 0															// Happens to be not used?
 
 ///////////////////////////////////////////////////////////////////////////////
-//  Objects
+//  Reply Simplification/Varadic Simplification
 ///////////////////////////////////////////////////////////////////////////////
 
-// Future?  Parent, Children, Next, Prev?
+#define VA_ARGSCOPY_START(_text)				\
+	va_list		__arglist_source, argscopy;		\
+	va_start (__arglist_source, _text);			\
+	va_copy	 (argscopy, __arglist_source)
 
+#define VA_ARGSCOPY_END							\
+	va_end (argscopy);							\
+	va_end (__arglist_source);
+
+#define NOT_MISSING_ASSIGN(pvar,val)		if (pvar) (*(pvar)) = val		// Used much.  Simplifies a reply return
+#define REQUIRED_ASSIGN(pvar,val)			(*(pvar)) = val					// Used much.  Simplifies a reply return
+#define REQUIRED_INCREMENT(PVAR,AMOUNT)		(*(PVAR))+= AMOUNT				// Unused at this time.  Would simplify an accumulator.
+#define REQUIRED_DECREMENT(PVAR,AMOUNT)		(*(PVAR))-= AMOUNT				// Unused at this time.  Would simplify an accumulator.
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  Endangered Species Section - Some are slight used.
+///////////////////////////////////////////////////////////////////////////////
 
 typedef void  (*MShutdown)			(void *);
 
@@ -524,55 +544,16 @@ typedef void  (*MShutdown)			(void *);
 		_x->Shutdown	= (MShutdown *)Shutdown; \
 	}
 
-
-///////////////////////////////////////////////////////////////////////////////
-//  Vile Hacks
-///////////////////////////////////////////////////////////////////////////////
-
-#define case_break break; { } case  // EVIL!  And so awesome.
-
-#define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :    // EVIL!  And so awesome.
-#define SWITCH_DEFAULT(_val) (_val)
-
-#define block_start__ {
+#define TRUISM(_x) ((_x) || 1) // Result of expression is always true.  Unused.  Endangered.  Used for enhanced for-loop/if logic
+#define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :		// EVIL!  And so awesome.  Endangered because unclear to the casual read.
+#define SWITCH_DEFAULT(_val) (_val)						// Endangered because unclear to the casual read.
+#define block_start__ {									// Endangered.
 #define __block_end }
-
-typedef void *sys_handle_t;
-
-#define XORY(x, y) ((x) ? (x) : (y))
-
-#define BATCHSIZE_8 8
-
-#define VA_ARGSCOPY_START(_text)				\
-	va_list		__arglist_source, argscopy;		\
-	va_start (__arglist_source, _text);			\
-	va_copy	 (argscopy, __arglist_source)
-
-#define VA_ARGSCOPY_END							\
-	va_end (argscopy);							\
-	va_end (__arglist_source);
-
-#define NOT_MISSING_ASSIGN(pvar,val) if (pvar) (*(pvar)) = val
-#define REQUIRED_ASSIGN(pvar,val) (*(pvar)) = val
-#define REQUIRED_INCREMENT(PVAR,AMOUNT) (*(PVAR))+= AMOUNT
-#define REQUIRED_DECREMENT(PVAR,AMOUNT) (*(PVAR))-= AMOUNT
+#define XORY(x, y) ((x) ? (x) : (y))					// Endangered.  Unused.
+#define BATCHSIZE_8 8									// Endangered.  Unused.
+#define BYTE_POSITION(_dest, _n)			(((byte *)(_dest))[_n])			// Used just once.  Rename/simplify or clarify.
 
 
-#define BYTE_POSITION(_dest, _n) (((byte *)(_dest))[_n])
-
-// Lets see who complains ...
-
-
-typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
-	VR_RT_CANT_RUN_EMPTY_BYTECODE_NEG4 = -4,		// Differs from uncompiled as we are trying to run it.  We shouldn't, would be VB6 coding mistake.
-	VR_RT_STOPPED_BY_USER_NEG3 = -3,				// Possibly ... I may change my mind
-	VR_RT_BREAK_NEG2 = -2,							// Possibly ... I may change my mind
-	VR_CT_UNCOMPILED_NEG1 = -1,						// FOR EXTERN USE ONLY
-	VR_OK_0 = 0,
-	VR_ERROR_ANY_1 = 1,
-	VR_VARTYPE_OVERFLOW = 2,							// Divide by zero?
-	_VRESULT_MAXNUM
-} VRESULT;
 
 
 #endif // ! __ENVIRONMENT_H__

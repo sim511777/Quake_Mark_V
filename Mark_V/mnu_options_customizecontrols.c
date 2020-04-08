@@ -73,7 +73,7 @@ static void Mnu_Keys_FindKeysForCommand_ (const char *command, int *threekeys)
 	leng = strlen(command);
 	count = 0;
 
-	for (j = 0; j < KEYMAP_COUNT_512; j++) {
+	for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; j++) {
 #ifdef SUPPORTS_KEYBIND_FLUSH
 		// What we want to do here is show the current
 		// effective key bindings
@@ -101,7 +101,7 @@ static void Mnu_Keys_UnbindCommand_ (const char *command)
 	int		j;
 	const char *b;
 
-	for (j = 0; j < KEYMAP_COUNT_512 ; j ++) {
+	for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/ ; j ++) {
 #ifdef SUPPORTS_KEYBIND_FLUSH
 // We want the server and user binds unbound
 // Key_SetBinding should handle this situation properly in all cases.
@@ -179,7 +179,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	char	cmd[80];
 	int		keys[3];
@@ -193,7 +193,7 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 			Cbuf_InsertText (cmd);
 		}
 
-		sMenu.keys_bind_grab = false;
+		sMenu.keys_bind_grab = false; sMenu.keys_bind_grab_off_time = realtime;
 		return;
 	}
 

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // q_mathlib.c -- math primitives
 
 #include "quakedef.h"
+#include "q_mathlib.h" // Courtesy
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -395,3 +396,59 @@ float Math_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float roll
 	return side*sign;
 
 }
+
+// Baker: Wow this requires tons of information
+void QGetPitchYaw (reply float *pitch_delta_out, reply float *yaw_delta_out, 
+	int mouse_x, int mouse_y, required const int *viewport, const glmatrix *m_projection3d, 
+	const glmatrix *m_modelview, const vec3_t qcamera_angles, int screenheight, int winy, float znear, float zfar)
+{
+	position3d		pfar, pnear;
+
+	// This is if we want center of pixel.
+	// m.view has the camera rolled into it, so I think it's ok.
+	//	gg.inps.raw_x = gg.client_canvas.width / 2 + 0.5;
+	//	gg.inps.raw_y = gg.client_canvas.height / 2 + 0.5;
+
+	// Make sure height isn't stale?
+	Mat4_UnProject_Smart (mouse_x, mouse_y,  /* near */ 0, m_modelview, m_projection3d, viewport, clheight, &pnear.x, &pnear.y, &pnear.z);
+	Mat4_UnProject_Smart (mouse_x, mouse_y,  /* far */  1, m_modelview, m_projection3d, viewport, clheight, &pfar.x,  &pfar.y,  &pfar.z );
+
+	{
+		vec3_t	slope;
+		
+		slope[0] /*pitch*/ = pfar.x - pnear.x; // far - near
+		slope[1] /*roll*/  = pfar.y - pnear.y; // far - near
+		slope[2] /*yaw*/   = pfar.z - pnear.z; // far - near
+
+		{
+			float raylength = VectorLength(slope); // normalize the length to distance where sum of all = 1.
+			vec3_t	slope_normalized;
+
+			// I disagree with this because it pitch/roll/raw should be degrees, right?  But we are a true vector here.
+			slope_normalized[0]	= slope[0] / raylength;  // Pitch
+			slope_normalized[1]	= slope[1] / raylength;  // Roll
+			slope_normalized[2]	= slope[2] / raylength;  // Yaw
+			
+			//slope_normalized[2] = 0; // For Quake this is roll.  We don't want it.
+			{
+#if 1
+				vec3_t	degrees;  VectorToAngles (slope_normalized, degrees);; //
+
+#else
+				vec3_t	degrees;  //QVector_To_Angles_Rollless (slope_normalized, degrees);; // We need to get the roll out of the pitch
+				c_swapf (&slope_normalized[1], &slope_normalized[2]);
+				QVector_To_Angles_Rollless (slope_normalized, degrees); // <--- I don't trust
+				//son of a bitch!  IT IS A SPHERE!  We are in a sphere.  The yaw and pitch do change
+				//We want the literal yaw and pitch on the screen
+#endif
+//				degrees[0] = angledelta_maybe_wrap (degrees[0] - qcamera_angles[PITCH /*0*/], NULL);  // Pitch is fine.
+//				degrees[2] = angledelta_maybe_wrap (degrees[2] - qcamera_angles[YAW   /*2*/], NULL);  // OpenGL yaw and Quake yaw and different index.
+				// It's giving me 315 to 40
+
+				NOT_MISSING_ASSIGN (pitch_delta_out, angledelta_maybe_wrap(-degrees[0], NULL));
+				NOT_MISSING_ASSIGN (yaw_delta_out,   angledelta_maybe_wrap(degrees[1], NULL));
+			}
+		}
+	}
+}
+

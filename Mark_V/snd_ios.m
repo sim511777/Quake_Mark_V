@@ -79,7 +79,7 @@ cbool SNDDMA_Init(void)
 		alcGetIntegerv(device, ALC_MAJOR_VERSION, 1, &major);
 		alcGetIntegerv(device, ALC_MINOR_VERSION, 1, &minor);
 		
-		Con_PrintLinef ("Using sound device: %s OpenAL %d.%d", deviceName, major, minor);
+		Con_SafePrintLinef ("Using sound device: %s OpenAL %d.%d", deviceName, major, minor);
 		
 		context = alcCreateContext(device, contextAttributes);
 		alcMakeContextCurrent(context);

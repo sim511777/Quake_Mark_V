@@ -165,7 +165,7 @@ typedef struct
 
 
 #define MRECT_PRINT(_x) _x.left, _x.top, _x.right, _x.bottom, _x.center_x, _x.center_y
-enum { GET_IT = 1, LOSE_IT = 2 };
+enum { GET_IT_1 = 1, LOSE_IT_2 = 2 };
 
 
 keyvalue_t input_state_text [] =
@@ -198,12 +198,28 @@ void Input_Think (void) { }
 #else
 void Input_Think (void)
 {
-	input_state_t	newstate = (inps.initialized && vid.ActiveApp && !vid.Minimized && !vid.Hidden) ? input_have_keyboard : input_none;
-	cbool		windowed_mouse_grab = !cl.paused && !console1.forcedup && ( key_dest == key_game  || key_dest == key_message || (key_dest == key_menu && sMenu.keys_bind_grab));
-	cbool		mouse_grab = (vid.screen.type == MODESTATE_FULLSCREEN || windowed_mouse_grab) && !(key_dest == key_menu);
+	cbool			is_touch_screen_active = vid.touch_screen_active /*<-- assignment*/ = (vid.is_mobile || vid_touchscreen.value);
 
-	cbool		disable_windows_key = input_have_keyboard && vid.screen.type == MODESTATE_FULLSCREEN;
-//	cbool		can_mouse_track = inps.initialized && !vid.Minimized && !vid.Hidden) && dont have mouse
+	input_state_t	newstate = (inps.initialized && vid.ActiveApp && !vid.Minimized && !vid.Hidden) ? input_have_keyboard : input_none;
+
+	// We want windowed mousegrab in windowed mode if we are in the menu with keygrab
+	//    OR
+	//  We are not paused.  We don't have the console up and we are in-game or message mode2.
+
+	// For full-screen.
+	cbool			windowed_mouse_grab = 
+						(key_dest == key_menu && sMenu.keys_bind_grab) 
+						|| 
+						(!is_touch_screen_active && !cl.paused && !console1.forcedup && isin2 (key_dest, key_game, key_message));
+
+	// Any time we want the mouse in windowed mode, we want in fullscreen mode.
+	// Plus
+	// How does "No mouse" figure into this? FULL IGNORE SOMEHOW, HAHA
+	cbool			mouse_grab =  windowed_mouse_grab; // ||
+//			(vid.screen.type == MODESTATE_FULLSCREEN && key_dest != key_menu && !vid_tablet_mode.value;
+
+	cbool			disable_windows_key = input_have_keyboard && vid.screen.type == MODESTATE_FULLSCREEN;
+//	cbool			can_mouse_track = inps.initialized && !vid.Minimized && !vid.Hidden) && dont have mouse
 
 	if (disable_windows_key != inps.disabled_windows_key)
 	{
@@ -223,17 +239,49 @@ void Input_Think (void)
 	// newstate upgrades from should have "keyboard" to should have "mouse"
 	// If the key_dest is game or we are binding keys in the menu
 	if (newstate == input_have_keyboard && mouse_grab && in_nomouse.value == 0 && vid.nomouse == 0)
-		newstate = input_have_mouse_keyboard;
+		newstate = input_have_mouse_keyboard; // Upgrade from Keyboard to Keyboard + mouse.
 
 #if 0
 	Con_PrintLinef ("current_state: %s (init %d active %d mini %d)", Keypair_String (input_state_text, inps.current_state),
 		inps.initialized, vid.ActiveApp, vid.Minimized);
 #endif
 
+
+	{
+		int		old_touch_screen_game_controls  = vid.touch_screen_game_controls_on;
+		//cbool	new_touch_screen_game_controls	= vid.touch_screen_active && key_dest == key_game && !cl.intermission && !cls.demoplayback;
+		cbool	bnew_touch_screen_game_controls	= vid.touch_screen_active && key_dest == key_game && !cl.intermission && (!cls.demoplayback || vid_touchscreen.value > 1);
+		int		new_touch_screen_game_controls  = bnew_touch_screen_game_controls ? (vid_touchscreen.value >=2 ? 2 : 1) : 0;
+
+		cbool	did_change	= new_touch_screen_game_controls != old_touch_screen_game_controls;
+
+		if (did_change) {
+			// Cancel any touch_stamps, release any buttons
+			touch_button_t *canvas_surface = &focus0.touch_buttons[touch_button_canvas_0];
+
+			if (canvas_surface->touch_stamp) {
+				Key_Game_Button_UnPair (canvas_surface);
+				Key_Game_Canvas_PressUp ();
+			}
+
+			{ int n; for (n = touch_button_forward_left_1; n < touch_button_COUNT; n++) {
+				touch_button_t *btn = &focus0.touch_buttons[n];
+				if (btn->touch_stamp) {
+					Key_Game_Button_Action (n, /*is down*/ false); // Perform release action.
+					Key_Game_Button_UnPair (btn);
+				}
+			}}
+
+		}
+
+		vid.touch_screen_game_controls_on = new_touch_screen_game_controls;
+	
+	}
+
 	if (newstate != inps.current_state)
 	{ // New state.
-		char	mouse_action	= ( newstate == input_have_mouse_keyboard && inps.have_mouse == false) ? GET_IT :  (( newstate != input_have_mouse_keyboard && inps.have_mouse == true) ? LOSE_IT : 0);
-		char	keyboard_action = ( newstate != input_none && inps.have_keyboard == false) ? GET_IT :  (( newstate == input_none && inps.have_keyboard == true) ? LOSE_IT : 0);
+		char	mouse_action	= ( newstate == input_have_mouse_keyboard && inps.have_mouse == false) ? GET_IT_1 :  (( newstate != input_have_mouse_keyboard && inps.have_mouse == true) ? LOSE_IT_2 : 0);
+		char	keyboard_action = ( newstate != input_none && inps.have_keyboard == false) ? GET_IT_1 :  (( newstate == input_none && inps.have_keyboard == true) ? LOSE_IT_2 : 0);
 
 #if 0
 		Con_PrintLinef ("State change");
@@ -241,14 +289,14 @@ void Input_Think (void)
 
 		switch (keyboard_action)
 		{
-		case GET_IT:
+		case GET_IT_1:
 			// Sticky keys
 			if (vid.system_enhanced_keys) Shell_Input_KeyBoard_Capture (true /*capture*/, true /*act on stickey*/, vid.screen.type == MODESTATE_FULLSCREEN /*act on windows key*/);
 
 			inps.have_keyboard = true;
 			break;
 
-		case LOSE_IT:
+		case LOSE_IT_2:
 			// Note we still need our key ups when entering the console
 			// Sticky keys, Window key reenabled
 
@@ -261,7 +309,7 @@ void Input_Think (void)
 
 		switch (mouse_action)
 		{
-		case GET_IT:
+		case GET_IT_1:
 
 			// Load window screen coords to mouse_clip_screen_rect
 			// And clip the mouse cursor to that area
@@ -279,7 +327,7 @@ void Input_Think (void)
 			inps.have_mouse = true;
 			break;
 
-		case LOSE_IT:
+		case LOSE_IT_2:
 			// Baker: We have to release the mouse buttons because we can no longer receive
 			// mouse up events.
 			Key_Release_Mouse_Buttons ();
@@ -309,198 +357,7 @@ void Input_Think (void)
 	// End of function
 }
 
-// A specific mouse action.
-// TODO focus and hotspots.  Wave.  Be plentiful!
-// Sigh.
-// How does multitouch fit into this?
 
-// Wow this requires tons of information
-void QGetPitchYaw (reply float *pitch_delta_out, reply float *yaw_delta_out, 
-	int mouse_x, int mouse_y, required const int *viewport, const glmatrix *m_projection3d, 
-	const glmatrix *m_modelview, const vec3_t qcamera_angles, int screenheight, int winy, float znear, float zfar)
-{
-	position3d		pfar, pnear;
-
-	// This is if we want center of pixel.
-	// m.view has the camera rolled into it, so I think it's ok.
-	//	gg.inps.raw_x = gg.client_canvas.width / 2 + 0.5;
-	//	gg.inps.raw_y = gg.client_canvas.height / 2 + 0.5;
-
-	// Make sure height isn't stale?
-	Mat4_UnProject_Smart (mouse_x, mouse_y,  /* near */ 0, m_modelview, m_projection3d, viewport, clheight, &pnear.x, &pnear.y, &pnear.z);
-	Mat4_UnProject_Smart (mouse_x, mouse_y,  /* far */  1, m_modelview, m_projection3d, viewport, clheight, &pfar.x,  &pfar.y,  &pfar.z );
-
-	{
-		vec3_t	slope;
-		
-		slope[0] /*pitch*/ = pfar.x - pnear.x; // far - near
-		slope[1] /*roll*/  = pfar.y - pnear.y; // far - near
-		slope[2] /*yaw*/   = pfar.z - pnear.z; // far - near
-
-		{
-			float raylength = VectorLength(slope); // normalize the length to distance where sum of all = 1.
-			vec3_t	slope_normalized;
-
-			// I disagree with this because it pitch/roll/raw should be degrees, right?  But we are a true vector here.
-			slope_normalized[0]	= slope[0] / raylength;  // Pitch
-			slope_normalized[1]	= slope[1] / raylength;  // Roll
-			slope_normalized[2]	= slope[2] / raylength;  // Yaw
-			
-			//slope_normalized[2] = 0; // For Quake this is roll.  We don't want it.
-			{
-#if 1
-				vec3_t	degrees;  VectorToAngles (slope_normalized, degrees);; //
-
-#else
-				vec3_t	degrees;  //QVector_To_Angles_Rollless (slope_normalized, degrees);; // We need to get the roll out of the pitch
-				c_swapf (&slope_normalized[1], &slope_normalized[2]);
-				QVector_To_Angles_Rollless (slope_normalized, degrees); // <--- I don't trust
-				//son of a bitch!  IT IS A SPHERE!  We are in a sphere.  The yaw and pitch do change
-				//We want the literal yaw and pitch on the screen
-#endif
-//				degrees[0] = angledelta_maybe_wrap (degrees[0] - qcamera_angles[PITCH /*0*/], NULL);  // Pitch is fine.
-//				degrees[2] = angledelta_maybe_wrap (degrees[2] - qcamera_angles[YAW   /*2*/], NULL);  // OpenGL yaw and Quake yaw and different index.
-				// It's giving me 315 to 40
-
-				NOT_MISSING_ASSIGN (pitch_delta_out, angledelta_maybe_wrap(-degrees[0], NULL));
-				NOT_MISSING_ASSIGN (yaw_delta_out,   angledelta_maybe_wrap(degrees[1], NULL));
-			}
-		}
-	}
-}
-
-
-//typedef struct {
-//	void			*something_here;		// Translation from game portal to 
-//	float			game_projection[16];	// Projection for the view.
-//	int				game_viewport[4];
-//	float			r_foxy, r_fovy;
-//	vec3_t			game_org, game_angles;	// We eventually want double click
-//
-//	//
-//	void			*focused;
-//	int				focus_num;
-//	ticktime_t		last_up;				// For comparing.  We cannot assume game is 0 for multitouch.
-//	cbool			is_down;
-//	int				downx, downy;
-//} focusor_t;
-
-
-// We kind of need the buttons?
-// Howz this going to work with 16 presses
-void LoadupI (int newx, int newy, reply int *storex, reply int *storey)
-{
-	NOT_MISSING_ASSIGN (storex, newx);
-	NOT_MISSING_ASSIGN (storey, newy);
-
-}
-
-void LoadupF (float newx, float newy, reply float *storex, reply float *storey)
-{
-	NOT_MISSING_ASSIGN (storex, newx);
-	NOT_MISSING_ASSIGN (storey, newy);
-
-}
-
-
-
-void Key_Game_ButtonPressMove (mousebuttonbits_e mousebuttons, int rawx, int rawy)
-{
-	float newpitch, newyaw; QGetPitchYaw (&newpitch, &newyaw, rawx, rawy, focus0.game_viewport, &focus0.game_projection, &focus0.game_modelview, focus0.game_angles, clwidth, 0 /* winy */, focus0.znear, focus0.zfar); // pitch 0, yaw 2 for 77
-
-	if (Flag_Check_Bool (mousebuttons, mousebuttonbits_mouse1_bit_1) && focus0.is_down) {
-		float oldpitch, oldyaw; QGetPitchYaw (&oldpitch, &oldyaw, focus0.downx, focus0.downy, focus0.game_viewport, &focus0.game_projection, &focus0.game_modelview, focus0.game_angles, clwidth, 0 /* winy */, focus0.znear, focus0.zfar); // pitch 0, yaw 2 for 77
-		
-		if (focus0.downx != rawx || focus0.downy != rawy)  {
-			float delta_pitch	= angledelta_maybe_wrap (newpitch - oldpitch, NULL);	// I think this takes the shortest path?
-			float delta_yaw	    = angledelta_maybe_wrap (newyaw - oldyaw, NULL);
-
-			// STUPIDITY: Quake pitch is 90 (full down) to -90 (full up)
-			cl.viewangles[PITCH] = angle_maybe_wrap (cl.viewangles[PITCH] - delta_pitch, NULL);
-			cl.viewangles[YAW]   = angle_maybe_wrap (cl.viewangles[YAW] - delta_yaw, NULL);
-
-			// Baker: OOF!
-			if (cl.viewangles[PITCH] > 180)
-				cl.viewangles[PITCH] = cl.viewangles[PITCH] - 360; // 358?  ---> -2   320? ---> -40
-
-			CL_BoundViewPitch (cl.viewangles);
-
-			View_StopPitchDrift (); // Stop drift?  Did this work?			
-			LoadupI (rawx, rawy, &focus0.downx, &focus0.downy);
-		}
-	}
-	if (Flag_Check_Bool (mousebuttons, mousebuttonbits_mouse2_bit_2) && focus0.is_attack_click) {
-		// Update it.
-		if (newpitch > 180)
-			newpitch = newpitch - 360; // 358?  ---> -2   320? ---> -40
-
-		VectorSet (focus0.attack_angles, newpitch, newyaw, 0);	CL_BoundViewPitch (focus0.attack_angles); // No roll
-	}
-
-}
-
-focusor_t focus0;
-
-// Up off hotspot is not a click
-// Then again if the hotspot is continuous, we want the down.
-void IN_AttackDown (lparse_t* line);
-static void Key_Game_ButtonPressDown (key_scancode_e scancode, int rawx, int rawy)
-{
-	float newpitch, newyaw; QGetPitchYaw (&newpitch, &newyaw, rawx, rawy, focus0.game_viewport, &focus0.game_projection, &focus0.game_modelview, focus0.game_angles, clwidth, 0 /* winy */, focus0.znear, focus0.zfar); // pitch 0, yaw 2 for 77
-
-	switch (scancode) {
-	default:
-	case_break K_MOUSE1:
-		// Move
-		if (focus0.is_down) 
-			break; // If somehow this happens get out!
-
-		LoadupI (rawx, rawy, &focus0.downx, &focus0.downy);
-		focus0.is_down	= true;
-
-	case_break K_MOUSE2:
-
-		if (focus0.is_attack_click) break; // If somehow this happens get out!
-
-		if (newpitch > 180)
-			newpitch = newpitch - 360; // 358?  ---> -2   320? ---> -40
-		
-		VectorSet (focus0.attack_angles, newpitch, newyaw, 0);	CL_BoundViewPitch (focus0.attack_angles); // No roll
-
-		IN_AttackDown (NULL);
-		focus0.is_attack_firing  = true;						// Begin firing?
-		focus0.is_attack_click	= true;							// Stays true until release
-	}
-
-}
-
-
-// This by definition must be with mousedown?
-void IN_AttackUp (lparse_t *line);
-static void Key_Game_ButtonPressUp (key_scancode_e scancode, int rawx, int rawy)
-{
-	float newpitch, newyaw; QGetPitchYaw (&newpitch, &newyaw, rawx, rawy, focus0.game_viewport, &focus0.game_projection, &focus0.game_modelview, focus0.game_angles, clwidth, 0 /* winy */, focus0.znear, focus0.zfar); // pitch 0, yaw 2 for 77
-	switch (scancode) {
-	case_break K_MOUSE1:
-		if (!focus0.is_down)			break; // Get out if not applicable
-		View_StopPitchDrift (); // Stop drift?  Did this work?
-		focus0.is_down		 = false;
-			
-	case_break K_MOUSE2:
-		
-		if (!focus0.is_attack_click)	break; // Get out if not applicable
-
-		if (newpitch > 180)
-			newpitch = newpitch - 360; // 358?  ---> -2   320? ---> -40
-
-		VectorSet (focus0.attack_angles, newpitch, newyaw, 0);	CL_BoundViewPitch (focus0.attack_angles); // No roll
-
-		IN_AttackUp (NULL);
-
-		focus0.is_attack_click = false;
-	}
-
-}
 
 focus_part_e Focus_Part (hotspot_menu_item_t *hs, int left, int top)
 {
@@ -524,251 +381,138 @@ focus_part_e Focus_Part (hotspot_menu_item_t *hs, int left, int top)
 	return 0;
 }
 
+
+
+
+
+
+// Two things:  What if something like a Surface Pro and touch but touchscreen mode off?
+//     Answer: Should collide with the menu items but not the game buttons
+//
+
+void Touch_Action (void *touch_stamp, mouseaction_e mouseaction, int rawx, int rawy)
+{
+
+	int stamp_idx		  = (mouseaction == mouseaction_down_0) ? Touch_Stamp_New_Idx (touch_stamp) : Touch_Stamp_Find_Idx (touch_stamp);
+	touch_stamp_t *touche = &focus0.touch_stamps[stamp_idx];
+
+#ifdef WINQUAKE_RENDERER_SUPPORT
+	if (!vid.is_screen_portrait) {
+		rawx /= vid.stretch_x;
+		rawy /= vid.stretch_y;
+	}
+#endif // WINQUAKE_RENDERER_SUPPORT
+
+
+//	Con_PrintLinef("Touch %d state %d", (int)touch_stamp, (int)mouseaction);
+
+	Key_Surface_Action (touche, mouseaction, rawx, rawy);
+	
+	if (isin2(mouseaction, mouseaction_up, mouseaction_cancelled )) {
+		Touch_Stamp_Kill_Idx (touche->idx);
+	}
+}
+
+// All mouse presses come through here.
+// Warning: For mouse move we receive button bits!
 static void Key_Mouse_Button (key_scancode_e scancode, mouseaction_e mouseaction, cbool havemouse, int rawx, int rawy)
 {
-	hotspot_menu_group_t *f = &hotspot_menu_group;
-
-	// TODO:  Release non-mode?
-	if (havemouse) {
-		// Game mode
-		if (mouseaction == mouseaction_down)	Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	switch (havemouse) {
+	default: /*true*/	// Captured mouse game mode.
+		if (mouseaction == mouseaction_down_0)	Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 		if (mouseaction == mouseaction_up)		Key_Event_Ex (NO_WINDOW_NULL, scancode, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
-	}
-	else
-	{
-#ifdef WINQUAKE_RENDERER_SUPPORT
-		rawx /= vid.stretch_x; 
-		rawy /= vid.stretch_y;
+	
+	case_break false:
+		
+		// We don't have mouse
+		#pragma message ("Make sure key binds still work ok")
+		
+		if (scancode == K_MOUSE1 || (mouseaction == mouseaction_move && (scancode & mousebuttonbits_mouse1_bit_1))/**/ ) {
+			#define MOUSE1_AS_TOUCH_STAMP ((void *) K_MOUSE1) // Faking it just needs an id
+			int stamp_idx		  = (mouseaction == mouseaction_down_0) ? Touch_Stamp_New_Idx (MOUSE1_AS_TOUCH_STAMP) : Touch_Stamp_Find_Idx (MOUSE1_AS_TOUCH_STAMP);
+			touch_stamp_t *touche = &focus0.touch_stamps[stamp_idx];
+			
+			if (mouseaction == mouseaction_move)
+				mouseaction = mouseaction_move;
 
-#endif
-		//extern cbool scr_drawdialog; // Sigh
+			Key_Surface_Action (touche, mouseaction, /*havemouse,*/ rawx, rawy); // Green light!
 
-		// Not game mode
-		if (key_dest == key_game) {
-			// We will receive a mousedown or mouseup.  To do mousemove.
-			#pragma message ("Mouse cancel")
-			#pragma message ("Mouse move")
-
-			switch (mouseaction) {
-			case mouseaction_down:	Key_Game_ButtonPressDown (scancode, rawx, rawy); break;
-			case mouseaction_move:	Key_Game_ButtonPressMove (scancode, rawx, rawy); break;
-			case mouseaction_up:	Key_Game_ButtonPressUp   (scancode, rawx, rawy); break;
+			if (isin2(mouseaction, mouseaction_up, mouseaction_cancelled )) {
+				Touch_Stamp_Kill_Idx (touche->idx);
 			}
-			goto dont_have_mouse_done;
+
+			break;
 		}
-		else if (key_dest == key_menu /*&& scr_drawdialog == false*/) {
-			// I can't help but think we are missing clx and cly or something?
-			// Doesn't matter because of viewport?  But is that true for winquake?
 
-			//VID_Set_Window_Title ("%g %g %g --> %d", x, y, z, hit ? hit->idx : -1)
-//#pragma message ("Behavior if grab key?  Well it shouldn't reach here because grab mouse is false.  That is a weird situation.")
 
-			hotspot_menu_item_t *hit = menux[sMenu.menu_state].hover = 
-				Menu_Hotspot_Refresh_For_Mouse (rawx, rawy, &menux[sMenu.menu_state].hoverx, &menux[sMenu.menu_state].hovery);
-			int left = menux[sMenu.menu_state].hoverx, top  = menux[sMenu.menu_state].hovery;
+		if (mouseaction == mouseaction_move) {
+			// K_MOUSE2, K_MOUSE3 or even no mouse button down ... these can perform as mousemoves.
+			Key_Surface_Action (/*touch stamp*/ NULL, mouseaction, /*havemouse,*/ rawx, rawy); // Green light!
+			break;
+		}
 
-			// We do this here to degrade it to a mousemove
-			if (mouseaction == mouseaction_up && f->focus) {
-				// No need to degrade it to a mousemove.  Above should hover it ok.
-				f->focus = NULL; // Wipe it
-				goto dont_have_mouse_done;
+		if (scancode == K_MOUSE2 && key_dest == key_menu && mouseaction == mouseaction_up) {
+			if (realtime > sMenu.keys_bind_grab_off_time + 0.25) {
+				M_KeyPress (K_ESCAPE, NO_HOTSPOT_HIT_NEG1);
 			}
+			break;
+		}
 
+// In Mark V 1036:
+//    If we were in full screen, mouse is captured in menu ALWAYS during or not key grab.
+//    If we were in windowed, mouse is never captured in menu EXCEPT during key grab.  Key Grab captures the mouse.
+//		Make sure mouse buttons can be captured.
+//		Make sure moues3 can be captured.
+// goal: avoid mouse2 exit.  mgrabmousetime > 0.25 secs?
+// what about mouse1?
+// 
 
-			switch (mouseaction) 
-			{
-			default: break;
-			case_break mouseaction_move:
+// problem #2 table full?  WHEN?
+// .... IS IT JUST CUSTOMIZE CONTROLS?
 
-				//
-				// MOUSEMOVE - Mostly scrollbars
-				//
+// problem #3 - ensure touches cannot become key binds, right?
 
-				// CHECK FOR FOCUS HERE!
-				if (!f->focus)
-					break; // We have no focus
-
-				switch (f->focus->hotspottype) {
-				default:							break; // If not a vscroll we do nothing special.
-				case_break hotspottype_vscroll: {
-					int local_top;
-
-					if (f->focus_part != focus_part_thumb)
-						break; // Do not want!
-					
-					f->focus_move_y				= top;
-					f->focus_move_thumb_offset	= f->focus_down_thumb_offset; // 7 or such
-					f->focus_move_thumb_top		= top - f->focus_down_thumb_offset; // Thumb is higher than top.  This is screen Y.
-					local_top					= f->focus_move_thumb_top - f->focus_down_track_top; // 0 is true top.
-					local_top					= CLAMP (0, local_top, f->focus_down_track_usable - 1);
-					f->focus_move_thumb_top		= f->focus_down_track_top + local_top;
-
-					// Pencil in event
-					f->focus_event				= focus_event_thumb_position;
-					//f->focus_event_msgtime_ext	= 0;
-					f->focus_event_thumb_top	= local_top;
-					//VID_Set_Window_Title ("New thumb top relative %d", f->focus_event_thumb_top);
-				
-				} // End of vscroll
-				case_break hotspottype_hscroll: {
-					int local_top;
-
-					if (f->focus_part != focus_part_thumb)
-						break; // Do not want!
-					
-					f->focus_move_y				= left;
-					f->focus_move_thumb_offset	= f->focus_down_thumb_offset; // 7 or such
-					f->focus_move_thumb_top		= left - f->focus_down_thumb_offset; // Thumb is higher than top.  This is screen Y.
-					local_top					= f->focus_move_thumb_top - f->focus_down_track_top; // 0 is true top.
-					local_top					= CLAMP (0, local_top, f->focus_down_track_usable - 1);
-					f->focus_move_thumb_top		= f->focus_down_track_top + local_top;
-
-					// Pencil in event
-					f->focus_event				= focus_event_thumb_position;
-					//f->focus_event_msgtime_ext	= 0;
-					f->focus_event_thumb_top	= local_top;
-					//VID_Set_Window_Title ("New thumb top relative %d", f->focus_event_thumb_top);
-				
-				} // End of hscroll
-				} // End of hotspot switch
-
-			case_break mouseaction_up: {
-
-#pragma message ("This should be also if we have no current focus, like scrollbar in progress")
-				//
-				// MOUSEUP - About everything
-				//
-				// CHECK FOR FOCUS HERE!
-				hotspottype_e hotspottype = hit ? hit->hotspottype : hotspottype_none_0;
-
-				if (scancode == K_MOUSE2) {
-					M_Keydown (K_ESCAPE, NO_HOTSPOT_HIT_NEG1);
-					goto dont_have_mouse_done; // K_MOUSE2 is always ESC.  No exceptions.
-				}
-				if (scancode >  K_MOUSE2) {
-					goto dont_have_mouse_done; // Not sure what to do.
-				}
-
-				switch (hotspottype) {
-				default:	break; // I guess
-				case_break hotspottype_none_0:		// No hotspot was hit
-				case_break hotspottype_inert:		// An inert (placeholder) was hit.  We do nothing.
-				case_break hotspottype_toggle:		M_Keydown (scancode, hit->idx); // 2 or more choices.  We aren't supporting reverse.
-				case_break hotspottype_slider:		
-													//if (in_range (hit->slider_start, menux[sMenu.menu_state].hoverx, hit->slider_end)) {
-													//	key_scancode_e emitk = 0;
-													//	if      (menux[sMenu.menu_state].hoverx < hit->slider_midstart)	emitk = K_LEFTARROW;
-													//	else if (menux[sMenu.menu_state].hoverx < hit->slider_midbeyond)	emitk = 0; // Ignore
-													//	else														emitk = K_RIGHTARROW;
-													//	if (emitk) 
-													//		M_Keydown (emitk, hit->idx); // Slider.					Responds to left and right.
-													//}
-				
-				case_break hotspottype_button:		//
-													M_Keydown (scancode, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
-				case_break hotspottype_button_line:	//if (scancode == K_MOUSE1) M_Keydown (K_ENTER, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
-													M_Keydown (scancode, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
-
-				
-				case_break hotspottype_listitem:	// if (scancode == K_MOUSE1) M_Keydown (K_ENTER, HS_LIST_LISTINDEX_ENCODE(hit->listindex) ); // A list item
-													M_Keydown (scancode, HS_LIST_LISTINDEX_ENCODE(hit->listindex) ); // A list item
-				case_break hotspottype_text:		// Do nothing.  Used.
-				case_break hotspottype_textbutton:	//M_Keydown (K_ENTER, hit->idx); // Used for "your name" to go to name maker.
-													M_Keydown (scancode, hit->idx); // Used for "your name" to go to name maker.
-													
-				case_break hotspottype_screen:		M_Keydown (scancode, hit->idx); // Help menu pages.
-				case_break hotspottype_vscroll:		// What about other parts of the scrollbar?  Track2, button1, etc.
-													break;
-				case_break hotspottype_hscroll:		break;
-				} // End of switch hotspottype
-
-			} // End of mouseup
-
-			case_break mouseaction_down:
-				
-#pragma message ("Not only clear hover, but clear is_down?  Do we need to erase the members?")
-#pragma message ("Also keep in mind as we scroll number of hotspots can change!  Perhaps we paint inert ones when a scroll bar is involved?")
-				//
-				// MOUSEDOWN - Mostly scrollbars
-				//
-
-				if (scancode >  K_MOUSE2) {
-					goto dont_have_mouse_done; // Not sure what to do.
-				}
-
-				if (!hit)
-					goto dont_have_mouse_done; // Not sure what to do.
-
-#ifdef _DEBUG
-					if (f->focus == hit) { alert ("Already attached?"); break; }
-					if (f->focus != NULL) { alert ("Already have focus?"); break; }
-#endif // _DEBUG
-
-				if (isin2(hit->hotspottype, hotspottype_vscroll, hotspottype_hscroll)) {
-					f->focus					= hit;
-					f->focus_menu_state			= sMenu.menu_state;
-					f->focus_idx				= hit->idx;
-					f->focus_part				= Focus_Part (hit, left, top);
-
-					f->focus_event				= focus_event_none_0;	// Down does not have a message.
-					f->focus_event_msgtime_ext	= 0;					// Down does not have a time.
-					f->focus_event_thumb_top	= 0;					// For completion.
-
-					// Event vars for when move happens.
-					f->focus_move_y				= 0;
-					f->focus_move_thumb_offset	= 0;
-					f->focus_move_thumb_top		= 0;
-
-					f->focus_down_possibles		= hit->possible_first_rows;
-
-					// Information at the time of down.  Where mouse was.  Thumb top.  The offset by extension.
-					switch (hit->hotspottype) {
-					default: break; // If not a vscroll we do nothing special.
-					case_break hotspottype_vscroll:
-						f->focus_down_y				= top;
-						f->focus_down_thumb_top		= hit->r_thumb.top;
-						f->focus_down_thumb_offset	= RECT_HIT_Y_OFFSET(hit->r_thumb, top);
-						f->focus_down_track_top		= hit->r_track.top;
-						f->focus_down_track_usable	= hit->r_track.height - hit->r_thumb.height + 1;						
-					
-					case_break hotspottype_hscroll:
-						f->focus_down_y				= left;
-						f->focus_down_thumb_top		= hit->r_thumb.left;
-						f->focus_down_thumb_offset	= RECT_HIT_X_OFFSET(hit->r_thumb, left);
-						f->focus_down_track_top		= hit->r_track.left;
-						f->focus_down_track_usable	= hit->r_track.width - hit->r_thumb.width + 1;						
-						
-					} // End of switch
-					//VID_Set_Window_Title ("Focus gained down at %d, thumb %d offset %d", f->focus_down_y, f->focus_down_thumb_top, f->focus_down_thumb_offset);
-				} // End of hotspot switch
-
-			} // End of if hscroll/vscroll block
-				
-		} // End of key menu
-
-dont_have_mouse_done:
-		(0); // Dummy statement required in C after goto, right?
-	} // End of don't have mouse
-
-
+	}					
 }
 
 
+// A touch event may turning into a mouse1 event.
+// DOWN: can turn into a K_MOUSE1 event IF all the following is true.
+//       1) Doesn't hit a touch button or canvas.  Another way of saying not in "active game".
+//       2) Number of touches down is 0.
+// MOVE: can turn into a K_MOUSE1 even IF all the following is true.
+//       1) Number of touches down is 1.  (We should be that touch.)
+//       2) No touch button is down (And there better not be).
+// UP:   1) Number of touches down is 1.  (We should be that touch)
+//       2) No touch button is down
+// Therefore, by extension ..
+//  Mouse Check - the above conditions
+//  Touch Check - key_game with not demo/intermission.  We never check for ESCAPE in touch system.
+// Touch system is in-game system.
 
 
-void Input_Mouse_Button_Event (int mstate, cbool is_mousemove, int rawx, int rawy)
+
+
+
+// Main entry point for all mouse presses from system specific input.  Final canvas conversion of X/Y occurs here.
+void Input_Mouse_Button_Event (mousebuttonbits_e mouse_button_bits, cbool is_mousemove, int rawx, int rawy)
 {
-	cbool is_attached = inps.have_mouse || (key_dest == key_menu && sMenu.keys_bind_grab);
+	cbool is_attached = inps.have_mouse || (key_dest == key_menu && sMenu.keys_bind_grab); // Baker Mar 12 2018 - I am skeptical inps.have_mouse didn't already consider menu grab mouse.
+	
+#ifdef WINQUAKE_RENDERER_SUPPORT
+	if (!vid.is_screen_portrait) {
+		rawx /= vid.stretch_x;
+		rawy /= vid.stretch_y;
+	}
+#endif // WINQUAKE_RENDERER_SUPPORT
 
 	if (host_initialized) //inps.have_mouse || (key_dest == key_menu && sMenu.keys_bind_grab) )
 	{  // perform button actions
-		int i;
-		for (i = 0 ; i < INPUT_NUM_MOUSE_BUTTONS ; i ++)
-		{
-			int button_bit = (1 << i);
-			cbool button_pressed  =  (mstate & button_bit) && !(inps.mouse_old_button_state & button_bit);
-			cbool button_released = !(mstate & button_bit) &&  (inps.mouse_old_button_state & button_bit);
-			cbool nochange		  =  ((mstate & button_bit) == (inps.mouse_old_button_state & button_bit));
+		{ int n; for (n = 0 ; n < INPUT_NUM_MOUSE_BUTTONS ; n ++) {
+			int button_bit = (1 << n);
+			cbool button_pressed  =  (mouse_button_bits & button_bit) && !(inps.mouse_old_button_state & button_bit);
+			cbool button_released = !(mouse_button_bits & button_bit) &&  (inps.mouse_old_button_state & button_bit);
+			cbool nochange		  =  ((mouse_button_bits & button_bit) == (inps.mouse_old_button_state & button_bit));
 			int reference		  = inps.mouse_old_button_state;
 
 			// Modal message is a clusterfuck, we can re-enter here recursively and also have statements not taking effect.
@@ -780,11 +524,11 @@ void Input_Mouse_Button_Event (int mstate, cbool is_mousemove, int rawx, int raw
 			// However, the quit menu is non-blocking so we would need to feed it a function to run on a YES.
 
 			// mousecancel?
-			if (button_pressed)		Key_Mouse_Button (K_MOUSE1 + i, mouseaction_down, is_attached, rawx, rawy);
-			if (is_mousemove)		Key_Mouse_Button (mstate,       mouseaction_move, is_attached, rawx, rawy); // Touches are independent, though.
-			if (button_released)	Key_Mouse_Button (K_MOUSE1 + i, mouseaction_up,   is_attached, rawx, rawy);
-		}
-		inps.mouse_old_button_state = mstate;
+			if (button_pressed)		Key_Mouse_Button (K_MOUSE1 + n,       mouseaction_down_0, is_attached, rawx, rawy);
+			if (is_mousemove)		Key_Mouse_Button (mouse_button_bits,  mouseaction_move,  is_attached, rawx, rawy); // Touches are independent, though.
+			if (button_released)	Key_Mouse_Button (K_MOUSE1 + n,       mouseaction_up,    is_attached, rawx, rawy);
+		}}
+		inps.mouse_old_button_state = mouse_button_bits;
 	}
 }
 
@@ -954,3 +698,301 @@ void Input_System_Enhanced_Keys_Changed (cvar_t *var)
 		Con_PrintLinef ("System enhanced keys changed.  Requires engine restart to take effect.");
 	}
 }
+
+
+// We have a touch.  It may be up, down or move.
+// We came from system or we are a mouse event without the mouse (menu, console, messagemode, demoplay, intermission)
+
+#pragma message ("I don't want hover highlight in touchscreen mode?  Or just on true mobile?")
+#pragma message ("Lets do some pointless dragging and see what happens?")
+
+// To support proper mouse, we must allow for mousemoves without a button.
+void Key_Surface_Action (touch_stamp_t *touche, mouseaction_e mouseaction, int x, int y)
+{	
+
+#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+	#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+	#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+	#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+	#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+	#pragma message ("MAKE SURE MOUSE 2 ESC WORKS!")
+
+	// Find or assign a touch stamp idx.
+	
+	if (focus0.touch_buttons_num_down > 1)
+		focus0.touch_buttons_num_down = focus0.touch_buttons_num_down;
+	
+//	if (mouseaction == mouseaction_move && stamp_idx == IDX_NOT_FOUND_NEG1) {
+//		Con_PrintLinef ("Unwanted mouse move");
+//		return;
+//	}
+	
+	// 1. TOUCH SCREEN GAME CONTROLS
+	if (vid.touch_screen_game_controls_on && touche != NULL /*exclude mouse move with no button from going here*/) {
+		// Active game canvas and tablet mode
+
+		if (mouseaction == mouseaction_down_0) {
+			Touch_Button_Hit_Set_Stamp (touche, x, y);
+			switch (touche->touch_button_idx) {
+			default:							Key_Game_Button_Action(touche->touch_button_idx, /*is down*/ true);
+			case_break IDX_NOT_FOUND_NEG1:		// Did not hit a button or the touch was rejected (probably being 2nd touch on same button)
+			case_break touch_button_canvas_0:	Key_Game_Canvas_PressDown(x, y);
+			}												
+		}
+
+		else if (mouseaction == mouseaction_move) {
+			switch (touche->touch_button_idx) {
+			default:							// The buttons do not do moves
+			case_break IDX_NOT_FOUND_NEG1:		// Not paired.  Do nothing.
+			case_break touch_button_canvas_0:	Key_Game_Canvas_PressMove (x, y); // Canvas performs moves.
+			}
+		}
+
+		else if (mouseaction == mouseaction_up) {
+			
+			switch (touche->touch_button_idx) {
+			default:							Key_Game_Button_Action (touche->touch_button_idx, /*is down*/ false);												
+
+			case_break IDX_NOT_FOUND_NEG1:		// Check for ESC box collision.  Toggle menu if so.
+												if (ESCAPE_BOX_COLLISION(x, y))
+													M_ToggleMenu_f (NULL);
+
+			case_break touch_button_canvas_0:	Key_Game_Canvas_PressMove (x, y); // Give canvas a final move
+												Key_Game_Canvas_PressUp (); // Do the up
+			}
+
+
+			if (touche->touch_button_idx != IDX_NOT_FOUND_NEG1) {
+				touch_button_t *btn = &focus0.touch_buttons[touche->touch_button_idx];
+				Key_Game_Button_UnPair (btn);
+			}
+
+			
+		}
+		
+		else {
+			x=x; // Can we end up here?
+		
+		}
+
+	}
+
+
+	// 2. ESCAPE Super hotspot always available in touch-screen mode.
+	else if (vid.touch_screen_active && ESCAPE_BOX_COLLISION(x, y) && mouseaction == mouseaction_up) {
+		// We do nothing.
+		switch (key_dest) {
+		default:				// Can't happen
+		case_break key_message:	Key_Message (K_ESCAPE);
+		case_break key_menu:	M_KeyPress (K_ESCAPE, NO_HOTSPOT_HIT_NEG1);
+		case_break key_game:	M_ToggleMenu_f (NULL);
+		case_break key_console:	M_ToggleMenu_f (NULL);
+		}
+	}
+
+	// 3. TOUCH SCREEN + CONSOLE tap release brings up
+	else if (vid.touch_screen_active && key_dest == key_console) {
+		if  (mouseaction == mouseaction_up) {
+			// Active game canvas and tablet mode
+			Mnu_OnScreenKeyboard_PromptText (
+				"Console", NULL, /*buffer to fill*/ &history_lines[edit_line][1], /*sizeof buf*/ 24,
+				menu_state_None_0
+			);
+		}
+	}
+
+	// 4. TOUCH SCREEN + INTERMISSION TAP tap release brings up
+	else if (vid.touch_screen_active && key_dest == key_game && cl.intermission) {
+		if  (mouseaction == mouseaction_up) {
+			// Active game canvas and tablet mode
+			Cbuf_AddTextLinef ("+jump; wait;");
+			Cbuf_AddTextLinef ("-jump");
+		}
+	}
+
+
+	// 4. NOT IN MENU and not any of the above -- so just get out.
+	else if (key_dest != key_menu) {
+		// Get out.  Nothing to do for message mode or game.
+
+	}
+
+	// 5. MENU
+	else {
+		hotspot_menu_group_t *f = &hotspot_menu_group;
+		hotspot_menu_item_t *hit = menux[sMenu.menu_state].hover = 
+			Menu_Hotspot_Refresh_For_Mouse (x, y, &menux[sMenu.menu_state].hoverx, &menux[sMenu.menu_state].hovery);		
+		int left = menux[sMenu.menu_state].hoverx, top  = menux[sMenu.menu_state].hovery;
+
+		// We do this here to degrade it to a mousemove
+		if (mouseaction == mouseaction_up && f->focus) {
+			// No need to degrade it to a mousemove.  Above should hover it ok.
+			f->focus = NULL; // Wipe it
+			return; // GET OUT
+		}
+
+
+		switch (mouseaction) 
+		{
+		default: break;
+		case_break mouseaction_move:
+
+			//
+			// MOUSEMOVE - Mostly scrollbars
+			//
+
+			// CHECK FOR FOCUS HERE!
+			if (!f->focus)
+				break; // We have no focus
+
+			switch (f->focus->hotspottype) {
+			default:							break; // If not a vscroll we do nothing special.
+			case_break hotspottype_vscroll: {
+				int local_top;
+
+				if (f->focus_part != focus_part_thumb)
+					break; // Do not want!
+				
+				f->focus_move_y				= top;
+				f->focus_move_thumb_offset	= f->focus_down_thumb_offset; // 7 or such
+				f->focus_move_thumb_top		= top - f->focus_down_thumb_offset; // Thumb is higher than top.  This is screen Y.
+				local_top					= f->focus_move_thumb_top - f->focus_down_track_top; // 0 is true top.
+				local_top					= CLAMP (0, local_top, f->focus_down_track_usable - 1);
+				f->focus_move_thumb_top		= f->focus_down_track_top + local_top;
+
+				// Pencil in event
+				f->focus_event				= focus_event_thumb_position;
+				//f->focus_event_msgtime_ext	= 0;
+				f->focus_event_thumb_top	= local_top;
+				//VID_Set_Window_Title ("New thumb top relative %d", f->focus_event_thumb_top);
+			
+			} // End of vscroll
+			case_break hotspottype_hscroll: {
+				int local_top;
+
+				if (f->focus_part != focus_part_thumb)
+					break; // Do not want!
+				
+				f->focus_move_y				= left;
+				f->focus_move_thumb_offset	= f->focus_down_thumb_offset; // 7 or such
+				f->focus_move_thumb_top		= left - f->focus_down_thumb_offset; // Thumb is higher than top.  This is screen Y.
+				local_top					= f->focus_move_thumb_top - f->focus_down_track_top; // 0 is true top.
+				local_top					= CLAMP (0, local_top, f->focus_down_track_usable - 1);
+				f->focus_move_thumb_top		= f->focus_down_track_top + local_top;
+
+				// Pencil in event
+				f->focus_event				= focus_event_thumb_position;
+				//f->focus_event_msgtime_ext	= 0;
+				f->focus_event_thumb_top	= local_top;
+				//VID_Set_Window_Title ("New thumb top relative %d", f->focus_event_thumb_top);
+			
+			} // End of hscroll
+			} // End of hotspot switch
+
+		case_break mouseaction_up: {
+
+#pragma message ("This should be also if we have no current focus, like scrollbar in progress")
+			//
+			// MOUSEUP - About everything
+			//
+			// CHECK FOR FOCUS HERE!
+			hotspottype_e hotspottype = hit ? hit->hotspottype : hotspottype_none_0;
+
+
+			switch (hotspottype) {
+			default:	break; // I guess
+			case_break hotspottype_none_0:		// No hotspot was hit
+			case_break hotspottype_inert:		// An inert (placeholder) was hit.  We do nothing.
+			case_break hotspottype_toggle:		M_KeyPress (K_MOUSE1, hit->idx); // 2 or more choices.  We aren't supporting reverse.
+			case_break hotspottype_slider:		
+												//if (in_range (hit->slider_start, menux[sMenu.menu_state].hoverx, hit->slider_end)) {
+												//	key_scancode_e emitk = 0;
+												//	if      (menux[sMenu.menu_state].hoverx < hit->slider_midstart)	emitk = K_LEFTARROW;
+												//	else if (menux[sMenu.menu_state].hoverx < hit->slider_midbeyond)	emitk = 0; // Ignore
+												//	else														emitk = K_RIGHTARROW;
+												//	if (emitk) 
+												//		M_KeyPress (emitk, hit->idx); // Slider.					Responds to left and right.
+												//}
+			
+			case_break hotspottype_button:		//
+												M_KeyPress (K_MOUSE1, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
+			case_break hotspottype_button_line:	//if (scancode == K_MOUSE1) M_KeyPress (K_ENTER, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
+												M_KeyPress (K_MOUSE1, hit->idx);	// Execute.					Example: Single Player: Reset Defaults
+
+			
+			case_break hotspottype_listitem:	// if (scancode == K_MOUSE1) M_KeyPress (K_ENTER, HS_LIST_LISTINDEX_ENCODE(hit->listindex) ); // A list item
+												M_KeyPress (K_MOUSE1, HS_LIST_LISTINDEX_ENCODE(hit->listindex) ); // A list item
+			case_break hotspottype_text:		// Do nothing.  Used.
+			case_break hotspottype_textbutton:	//M_KeyPress (K_ENTER, hit->idx); // Used for "your name" to go to name maker.
+												M_KeyPress (K_MOUSE1, hit->idx); // Used for "your name" to go to name maker.
+												
+			case_break hotspottype_screen:		M_KeyPress (K_MOUSE1, hit->idx); // Help menu pages.
+			case_break hotspottype_vscroll:		// What about other parts of the scrollbar?  Track2, button1, etc.
+												break;
+			case_break hotspottype_hscroll:		break;
+			} // End of switch hotspottype
+
+		} // End of mouseup
+
+		case_break mouseaction_down_0:
+			
+#pragma message ("Not only clear hover, but clear is_down?  Do we need to erase the members?")
+#pragma message ("Also keep in mind as we scroll number of hotspots can change!  Perhaps we paint inert ones when a scroll bar is involved?")
+			//
+			// MOUSEDOWN - Mostly scrollbars
+			//
+
+			if (!hit)
+				break; // Does this get us out?  //goto dont_have_mouse_done; // Not sure what to do.
+
+#ifdef _DEBUG
+				if (f->focus == hit) { alert ("Already attached?"); break; }
+				if (f->focus != NULL) { alert ("Already have focus?"); break; }
+#endif // _DEBUG
+
+			if (isin2(hit->hotspottype, hotspottype_vscroll, hotspottype_hscroll)) {
+				f->focus					= hit;
+				f->focus_menu_state			= sMenu.menu_state;
+				f->focus_idx				= hit->idx;
+				f->focus_part				= Focus_Part (hit, left, top);
+
+				f->focus_event				= focus_event_none_0;	// Down does not have a message.
+				f->focus_event_msgtime_ext	= 0;					// Down does not have a time.
+				f->focus_event_thumb_top	= 0;					// For completion.
+
+				// Event vars for when move happens.
+				f->focus_move_y				= 0;
+				f->focus_move_thumb_offset	= 0;
+				f->focus_move_thumb_top		= 0;
+
+				f->focus_down_possibles		= hit->possible_first_rows;
+
+				// Information at the time of down.  Where mouse was.  Thumb top.  The offset by extension.
+				switch (hit->hotspottype) {
+				default: break; // If not a vscroll we do nothing special.
+				case_break hotspottype_vscroll:
+					f->focus_down_y				= top;
+					f->focus_down_thumb_top		= hit->r_thumb.top;
+					f->focus_down_thumb_offset	= RECT_HIT_Y_OFFSET(hit->r_thumb, top);
+					f->focus_down_track_top		= hit->r_track.top;
+					f->focus_down_track_usable	= hit->r_track.height - hit->r_thumb.height + 1;						
+				
+				case_break hotspottype_hscroll:
+					f->focus_down_y				= left;
+					f->focus_down_thumb_top		= hit->r_thumb.left;
+					f->focus_down_thumb_offset	= RECT_HIT_X_OFFSET(hit->r_thumb, left);
+					f->focus_down_track_top		= hit->r_track.left;
+					f->focus_down_track_usable	= hit->r_track.width - hit->r_thumb.width + 1;						
+					
+				} // End of switch
+				//VID_Set_Window_Title ("Focus gained down at %d, thumb %d offset %d", f->focus_down_y, f->focus_down_thumb_top, f->focus_down_thumb_offset);
+			} // End of hotspot switch
+
+		} // End of if hscroll/vscroll block
+			
+	} // End of key menu
+
+} // End of don't have mouse
+
+
+

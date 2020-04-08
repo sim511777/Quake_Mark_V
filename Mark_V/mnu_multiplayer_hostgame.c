@@ -80,7 +80,7 @@ LOCAL_EVENT (Draw) (void)
 	else if (ipv6Available)
 		M_Print (basex + 9 * M_CHAR_WIDTH_8, 52, my_ipv6_address);
 
-	Hotspots_Add (basex - 8, lanConfig_cursor_table[opt_port_0], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_text);
+	Hotspots_Add (basex - 8, lanConfig_cursor_table[opt_port_0], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_textbutton);
 	M_Print (basex, lanConfig_cursor_table[opt_port_0], "Port");
 	M_DrawTextBox (basex + 8 * M_CHAR_WIDTH_8, lanConfig_cursor_table[opt_port_0] - 8, 6, 1, 0 /* no hotspot */); // Since we did it ourselves?
 	M_Print (basex+9*8, lanConfig_cursor_table[opt_port_0], lanConfig_portname);
@@ -105,7 +105,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int		len, port;
 
@@ -143,7 +143,14 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 		if (local_menu->cursor == opt_port_0) {
 			if (local_menu->cursor != opt_port_0)
 				local_menu->cursor = opt_port_0; // Let's set the focus if it doesn't have it.
-			break;
+
+			if (vid.touch_screen_active) {
+				Mnu_OnScreenKeyboard_PromptText (
+					"Port", NULL, /*buffer to fill*/ lanConfig_portname, /*sizeof buf*/ sizeof(lanConfig_portname),
+					LOCAL_MENU_STATE
+				);
+			}
+			return; // !!!!!
 		}
 
 		// OPT_OK_1 is only other option so ...

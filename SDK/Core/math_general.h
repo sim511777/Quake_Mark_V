@@ -173,18 +173,27 @@ int aligned_size (int size, int alignsize);
 
 #define RECT_SEND_LRBT(rect) (rect).left, (rect).left + (rect).width - 1, (rect).top + (rect).height - 1, (rect).top
 
-#define RECT_RIGHTOF(rect) ((rect).left + (rect).width)			// first pixel BELOW a rectangle that isn't part of it.  "Bottom of" it.
-#define RECT_RIGHT  (rect) ((rect).left + (rect).width - 1)
-#define RECT_BOTTOMOF(rect) ((rect).top + (rect).height)
-#define RECT_BOTTOM(rect) ((rect).top + (rect).height - 1)
+#define RECT_RIGHTOF(rect)		((rect).left + (rect).width)			// first pixel BELOW a rectangle that isn't part of it.  "Bottom of" it.
+#define RECT_RIGHT(rect)		((rect).left + (rect).width - 1)
+#define RECT_BOTTOMOF(rect)		((rect).top + (rect).height)
+#define RECT_BOTTOM(rect)		((rect).top + (rect).height - 1)
+
+#define RECT_WIDTH(_rect)		((_rect).right - (_rect).left)
+#define RECT_HEIGHT(_rect)		((_rect).bottom - (_rect).top)
+
 
 #define RECT_SET(rect, _left, _top, _width, _height) (rect).left = _left, (rect).top = _top, (rect).width = _width, (rect).height = _height
 #define RECT_SET_LEFT_TOP(rect, _left, _top) (rect).left = _left, (rect).top = _top
 
 #define RECT_HIT_X(rect, x) in_range_beyond((rect).left, x, (rect).left + (rect).width)
 #define RECT_HIT_Y(rect, y) in_range_beyond((rect).top, y,  (rect).top  + (rect).height)
+
+#define RECT_HIT(rect, x, y) (RECT_HIT_X(rect, x) && RECT_HIT_Y(rect, y))
+
 #define RECT_HIT_X_OFFSET(rect, x) (x - (rect).left)
 #define RECT_HIT_Y_OFFSET(rect, y) (y - (rect).top)
+
+#define PRECT_SET(PRB, LEFT,TOP,WIDTH,HEIGHT) (PRB)->left = LEFT, (PRB)->top = TOP, (PRB)->width = WIDTH, (PRB)->height = HEIGHT //, (PRB)->right = RECT_RIGHT((*(PRB))), (PRB)->bottom = RECT_BOTTOM((*(PRB))) // Ender  
 
 #endif // ! __MATH_GENERAL_H__
 

@@ -148,8 +148,9 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 			int key = ((int) lparam >> 16) & 255;
 //			Con_PrintLinef ("lparam %d key %d", lparam, key);
 			// Top position, right?
-			if (key == 41) {
-				Key_Event_Ex (NO_WINDOW_NULL, (KEYMAP_COUNT_512 - 1), down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits());
+			#define TOP_LEFT_HARDWARE_KEY_41 41 // The top left key on the keyboard.  US = tilde, varies with some keyboards.
+			if (key == TOP_LEFT_HARDWARE_KEY_41) {
+				Key_Event_Ex (NO_WINDOW_NULL, KEYMAP_HARDWARE_TILDE_511, down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits());
 				Shell_Input_ResetDeadKeys ();
 				holy_key = true;
 				return true;
@@ -235,7 +236,8 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 	case WM_XBUTTONDOWN:
 	case WM_XBUTTONUP:
 
-
+		// Baker: We sometimes get WM_MOUSEFIRST or WM_MOUSEMOVE messages that may be the result
+		// Of cursor capture.
 		if (1) {
 			int buttons, shift, x, y;
 			

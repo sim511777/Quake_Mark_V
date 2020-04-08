@@ -319,7 +319,7 @@ static void Mnu_Options_Do_ResetConfig_ (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	int key_action_cursor = local_menu->cursor;
 

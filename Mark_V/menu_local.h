@@ -85,7 +85,6 @@ extern int buflen;
 #define MENU_TOGGLE_SOFT_SOUND()		S_LocalSound ("misc/menu3.wav") // Move up or down a row
 
 #define MENU_DELIM_COMMA_CHAR	','
-#define QUAKE_CURSOR_STRING		"\x0D" // 13 in hex.
 void sClear_Hover (void);
 
 #endif // ! __MENU_LOCAL_H__

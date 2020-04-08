@@ -215,20 +215,75 @@ typedef struct
 	
 // Brave New World
 	cbool			is_mobile;				// Probably prevent from vid_restart?
-	cbool			mobile_interface;		// Use the mobile interface.
 	cbool			is_mobile_ios_keyboard;
 	cbool			is_screen_portrait;
 	cbool			mobile_keyup;
 
-
-
+	int				touch_screen_game_controls_on;		// Recalc with every Input_Think just like "have mouse"
+	cbool			touch_screen_active;
 } viddef_t;
+
+
 
 extern	viddef_t	vid;				// global video state
 
 extern	int clx, cly, clwidth, clheight;
 
+typedef enum { ENUM_FORCE_INT_GCC_ (tap_type)
+	tap_type_none_0,		// Nothing is down.
+	tap_type_looking_1,		// First down is always a look.
+	tap_type_firing_2,		// A second down that is fast and within small tolerance is a fire.
+} tap_type_e;
 
+
+
+typedef enum { ENUM_FORCE_INT_GCC_(touch_button)
+	touch_button_canvas_0 = 0,		// Missing everything is canvas
+	touch_button_forward_left_1,
+	touch_button_forward,
+	touch_button_forward_right,
+	touch_button_left,
+	touch_button_back,
+	touch_button_right,
+	
+	touch_button_attack,
+	touch_button_jump,
+	touch_button_next_weapon,
+
+	touch_button_turnleft,
+	touch_button_turnright,
+
+	touch_button_COUNT					// More of a maxnum, but whatever ...
+} touch_button_e;
+
+
+#define QKEY_TABLET_FORWARD_LEFT_500	499 + touch_button_forward_left_1
+#define QKEY_TABLET_FORWARD				499 + touch_button_forward // 501 ...
+#define QKEY_TABLET_FORWARD_RIGHT		499 + touch_button_forward_right
+#define QKEY_TABLET_LEFT				499 + touch_button_left // 503
+#define QKEY_TABLET_BACK				499 + touch_button_back
+#define QKEY_TABLET_RIGHT				499 + touch_button_right // 505
+#define QKEY_TABLET_ATTACK				499 + touch_button_attack
+#define QKEY_TABLET_NEXT_WEAPON			499 + touch_button_next_weapon // 507
+#define QKEY_TABLET_JUMP				499 + touch_button_jump // 508
+#define QKEY_TABLET_TURNLEFT			499 + touch_button_turnleft // 509
+#define QKEY_TABLET_TURNRIGHT			499 + touch_button_turnright // 510
+
+
+
+typedef struct {
+	crect_t r;
+	void	*touch_stamp;
+} touch_button_t;
+
+typedef struct {
+	void			*touch_stamp;
+	int				idx;
+	cbool			is_dead;
+	touch_button_e  touch_button_idx;
+} touch_stamp_t;
+
+#define MAX_TOUCH_STAMPS_16 16
 typedef struct {
 	void			*something_here;				// Translation from game portal to 
 	glmatrix		game_projection;				// Projection for the view.
@@ -248,20 +303,39 @@ typedef struct {
 	glmatrix		menu_modelview;
 
 	//
-	void			*focused;
-	int				focus_num;
+	//void			*focused;
+	//int				focus_num;
+	
+	cbool			*phave_mouse;					// Silly reference to the global.
 
-	ticktime_t		last_up;				// For comparing.  We cannot assume game is 0 for multitouch.
-	cbool			is_down;
-	int				downx, downy;
+// Tablet hotspots
+	crect_t			escape_box;								// Super hotspot.
 
-	cbool			*phave_mouse;			// Gay
+	struct {
+		void		*touch_stamp;
+		tap_type_e	tap_is_down;
+		int			down_x, down_y;
+		cbool		is_attack_firing;
+		ticktime_t	last_down_time;					// For comparing.  We cannot assume game is 0 for multitouch.
+		float		angle_accum;					// Only from mouse movement.
+		float		last_delta;
+		vec3_t		attack_angles;					// Regardless of what is going on, send these.  One message.
+		//int			deltaframe;
+	} canvas;
+	
+	touch_button_t	touch_buttons[touch_button_COUNT];
+	int				touch_buttons_num_down;
 
-	cbool			is_attack_click;
-	cbool			is_attack_firing;
-	vec3_t			attack_angles;			// Regardless of what is going on, send these.  One message.
-	int				deltaframe;
+	touch_stamp_t	touch_stamps[MAX_TOUCH_STAMPS_16];
+	int				touch_stamps_num_down;
+				// Does this include the canvas?  >>> YES? <<<<
+													// What if ESC pressed as third touch?  DENIED.
+													// If K_MOUSE1 is down, we ignore all touches.
+													// But for ESC we only check the UP!
 } focusor_t;
+// Need to cease the touches when:  don't have key game.  Or exit key_Game.  Enter intermission.  Start a demo.
+// We could do that in M_Draw.
+
 
 extern focusor_t focus0;
 

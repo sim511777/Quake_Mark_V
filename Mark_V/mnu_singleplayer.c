@@ -107,7 +107,7 @@ static void Mnu_SinglePlayer_Do_NewGame_ (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	switch (key) {
 	default:				// Nothing

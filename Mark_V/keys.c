@@ -287,6 +287,29 @@ void Key_Console_Delete_Selection_Move_Cursor (char *workline)
 	Key_Console_Cursor_Move (cursormovement, select_clear); // Selection clear
 }
 
+void Key_Console_Exo_Submit (void)
+{
+	char *workline = history_lines[edit_line];
+	// The first crazy thing we need to do is put the text there?
+	Partial_Reset (); Con_Undo_Clear ();
+	Cbuf_AddTextLine (&workline[1]);	// skip the prompt
+	Con_PrintLinef ("%s", workline);
+
+	// If the last two lines are identical, skip storing this line in history
+	// by not incrementing edit_line
+	if (strcmp(workline, history_lines[(edit_line-1) & (HISTORY_LINES_64 - 1)]))
+		edit_line = (edit_line + 1) & (HISTORY_LINES_64 - 1);
+
+	history_line = edit_line;
+	history_lines[edit_line][0] = ']';
+	history_lines[edit_line][1] = 0; //johnfitz -- otherwise old history items show up in the new edit line
+
+	Key_Console_Cursor_Move (0, cursor_reset); // Reset selection
+	if (cls.state == ca_disconnected)
+		SCR_UpdateScreen (); // force an update, because the command may take some time
+	return;
+
+}
 
 void Key_Console (int key)
 {
@@ -897,10 +920,24 @@ const char *Key_ListExport (void)
 #ifdef SUPPORTS_KEYBIND_FLUSH
 const char *Key_GetBinding (int keynum)
 {
-	if (keynum == (KEYMAP_COUNT_512 - 1))
-		return "toggleconsole";
+	switch (keynum) {
+	default:	// Nothing
+	case_break QKEY_TABLET_FORWARD_LEFT_500:	return "";
+	case_break QKEY_TABLET_FORWARD:				return "+forward";
+	case_break QKEY_TABLET_FORWARD_RIGHT:		return "";
+	case_break QKEY_TABLET_LEFT:				return "+moveleft";
+	case_break QKEY_TABLET_BACK:				return "+back";
+	case_break QKEY_TABLET_RIGHT:				return "+moveright";
+	case_break QKEY_TABLET_ATTACK:				return "+attack"; // impulse 12 is the one with less support.
+	case_break QKEY_TABLET_NEXT_WEAPON:			return "impulse 10"; // impulse 12 is the one with less support.
+	case_break QKEY_TABLET_JUMP:				return "+jump"; // impulse 12 is the one with less support.
+	case_break QKEY_TABLET_TURNLEFT:			return "+left";
+	case_break QKEY_TABLET_TURNRIGHT:			return "+right";
 
-	if (!in_range(0, keynum, KEYMAP_COUNT_512)) {
+	case_break KEYMAP_HARDWARE_TILDE_511:		return "toggleconsole";
+	}
+
+	if (!in_range(0, keynum, KEYMAP_COUNT_512 /* Mar 13 2018 touch screen - this is FINE*/)) {
 		Con_WarningLinef  ("Key_GetBinding: '%c' (%d) is not a valid key", keynum, keynum);
 		return "";
 	}
@@ -960,7 +997,7 @@ void Key_SetBinding (int keynum, const char *binding)
 #ifdef SUPPORTS_KEYBIND_FLUSH
 void Keys_Flush_ServerBinds (void)
 {
-	int j; for (j = 0; j < KEYMAP_COUNT_512; j++) {
+	int j; for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; j++) {
 		if (!keybindings[j].server)
 			continue; // No bind
 		Z_Free (keybindings[j].server);
@@ -1013,7 +1050,7 @@ void Key_Unbindall_f (lparse_t *line)
 		Con_WarningLinef ("Server sent unbindall command.  Ignoring.");
 		return;
 	}
-	for (i = 0 ; i < KEYMAP_COUNT_512; i++)
+	for (i = 0 ; i < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; i++)
 	{
 #if !defined(SUPPORTS_KEYBIND_FLUSH)
 		if (keybindings[i])
@@ -1033,7 +1070,7 @@ void Key_Bindlist_f (void)
 	int	k, count;
 
 	count = 0;
-	for (k = 0; k < (KEYMAP_COUNT_512 - 1) /* -1 because of hard toggle console key*/ ; k ++)
+	for (k = 0; k < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/ ; k ++)
 	{
 		const char *binding = Key_GetBinding (k);
 		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: " QUOTED_S ")",  keybindings[k].real) : "";
@@ -1118,7 +1155,7 @@ void Key_WriteBindings (FILE *f)
 	// unbindall before loading stored bindings:
 	if (cfg_unbindall.value)
 		fprintlinef (f, "unbindall");
-	for (i = 0; i < KEYMAP_COUNT_512; i++)
+	for (i = 0; i < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; i++)
 	{
 #ifdef SUPPORTS_KEYBIND_FLUSH
 		// Always use real when writing.  Never the server bind.
@@ -1206,7 +1243,7 @@ void Key_Init (void)
 	//johnfitz
 
 	// For USA keymap
-	for (i = 0; i < KEYMAP_COUNT_512; i++)
+	for (i = 0; i < KEYMAP_COUNT_512 /* Mar 13 2018 touch screen - this is FINE*/; i++)
 		keyshift[i] = i;
 	for (i= 'a' ; i <= 'z' ; i++)
 		keyshift[i] = i - 'a' + 'A';
@@ -1364,7 +1401,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 	// Route it.
 	switch (desto) {
 	case key_message:	Key_Message (sendkey);  break;
-	case key_menu:		M_Keydown (sendkey, NO_HOTSPOT_HIT_NEG1);	break;
+	case key_menu:		M_KeyPress (sendkey, NO_HOTSPOT_HIT_NEG1);	break;
 	case key_game:		// Fall through ... may happen in rude disconnect/Host_Error scenarios.
 	case key_console:	Key_Console (sendkey);  break;
 	}
@@ -1546,7 +1583,7 @@ int Key_Event (int key, cbool down, int special)
 			Key_Message (key);
 			break;
 		case key_menu:
-			M_Keydown (key, NO_HOTSPOT_HIT_NEG1);
+			M_KeyPress (key, NO_HOTSPOT_HIT_NEG1);
 			break;
 		case key_game:
 		case key_console:
@@ -1737,7 +1774,7 @@ int Key_Event (int key, cbool down, int special)
 		// If we are binding a key, we should send the scancode.
 
 		if (special && !sMenu.keys_bind_grab) return key_menu;
-		M_Keydown (key, NO_HOTSPOT_HIT_NEG1);
+		M_KeyPress (key, NO_HOTSPOT_HIT_NEG1);
 		break;
 
 	case key_game:
@@ -1773,7 +1810,7 @@ void Key_Release_Keys (cvar_t* var)
 {
    int      i;
 
-	for (i = 0 ; i < KEYMAP_COUNT_512 ; i++)
+	for (i = 0 ; i < KEYMAP_COUNT_512 /* Mar 13 2018 touch screen - this is FINE*/ ; i++)
 	{
 		if (keydown[i])
 #ifdef PLATFORM_OSX // Crusty Mac

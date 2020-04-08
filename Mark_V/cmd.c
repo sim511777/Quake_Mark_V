@@ -880,6 +880,8 @@ cbool cmd_from_server;
 VRESULT Cmd_ExecuteString (const char *text, cmd_source_t src)
 {
 	cmd_source = src;
+	if (strlen(text) == 0)
+		return VR_OK_0; // Baker - March 8 2018 - if it is just blank, return 0.
 
 #ifdef SUPPORTS_CUTSCENE_PROTECTION
 	if (text[0] == CUTSCENE_CHAR_START_5 && text[1] == 0)

@@ -33,9 +33,27 @@ void Input_Move (usercmd_t *cmd);
 void Input_Mouse_Move (usercmd_t *cmd);
 void Input_Joystick_Move (usercmd_t *cmd);
 void Input_Mouse_Accumulate (void); // Accumulates and re-centers only (for slow frames)
-void Input_Mouse_Button_Event (int mstate, cbool is_mousemove, int rawx, int rawy);
+void Input_Mouse_Button_Event (mousebuttonbits_e mouse_button_bits, cbool is_mousemove, int rawx, int rawy);
+void Input_Touch_Event (void *touch_stamp, mouseaction_e mouseaction, int rawx, int rawy);
 
 void Input_System_Enhanced_Keys_Changed (cvar_t *var);
+void Touch_Action (void *touch_stamp, mouseaction_e mouseaction, int rawx, int rawy);
+
+int Touch_Stamp_New_Idx (void *touch_stamp);
+int Touch_Stamp_Find_Idx (void *touch_stamp);
+void Touch_Stamp_Kill_Idx (int idx);
+
+void Key_Game_Canvas_PressDown (int x, int y);
+void Key_Game_Canvas_PressMove (int x, int y);
+void Key_Game_Canvas_PressUp (void);
+void Key_Game_Button_UnPair (touch_button_t *btn);
+
+void Key_Game_Button_Action (touch_button_e touch_button, cbool is_down);
+void Key_Surface_Action (touch_stamp_t *touche, mouseaction_e mouseaction, int x, int y);
+
+#define ESCAPE_BOX_COLLISION(x, y)  RECT_HIT (focus0.escape_box, x, y)
+
+cbool Touch_Button_Hit_Set_Stamp (touch_stamp_t *te, int x, int y);
 
 //cmd void Input_Info_f (void);
 

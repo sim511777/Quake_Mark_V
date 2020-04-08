@@ -270,6 +270,15 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 	sysplat.mainwindow = CreateWindowEx (exstyle, nm, nm, style, x, y, w, h, NULL, NULL, sysplat.hInstance, NULL);
 #if 1 // Modal gCoreWindow
 	gCore_Window = sysplat.mainwindow; // Keep it in sync, please!
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
+#pragma message ("Are we syncing this for every platform?")
 #endif
 
 
@@ -417,7 +426,11 @@ cbool VID_Local_SetMode (int modenum)
 	}
 
 	sysplat.gl_context = wglHRC;
-
+#pragma message ("Are we syncing gl_context for every platform?")
+#pragma message ("Are we syncing gl_context for every platform?")
+#pragma message ("Are we syncing gl_context for every platform?")
+#pragma message ("Are we syncing gl_context for every platform?")
+#pragma message ("Are we syncing gl_context for every platform?")
 #if 1
 	if (!restart)
 	{

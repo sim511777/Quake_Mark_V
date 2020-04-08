@@ -122,10 +122,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  OPENGL: Patch up stuff missing from gl.h and friends
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PLATFORM_OPENGLES // Hmmmm.  I'm not sure this will survive.  I would wire the functions to glActiveTexture and glMultiTexCoord2f or whatever its name is.
+//#ifndef PLATFORM_OPENGLES // Hmmmm.  I'm not sure this will survive.  I would wire the functions to glActiveTexture and glMultiTexCoord2f or whatever its name is.
 	typedef void (APIENTRY *PFNGLMULTITEXCOORD2FARBPROC) (GLenum, GLfloat, GLfloat);
 	typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
-#endif // PLATFORM_OPENGL_DESKTOP
+//#endif // PLATFORM_OPENGL_DESKTOP
 
 #ifndef GL_CLAMP_TO_EDGE
 	#define GL_CLAMP_TO_EDGE 0x812F

@@ -29,5 +29,6 @@ CMD_DEF (	Quit, 						0,			0,		0,		0			)
 
 //==================================
 CMD_DEF ( Dialog, 						0,			0,		0,		0			)
+CMD_DEF ( OnScreenKeyboard, 			0,			0,		0,		0			)
 #undef CMD_DEF
 

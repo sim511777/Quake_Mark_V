@@ -893,6 +893,10 @@ sys_socket_t UDP6_Init (void)
 	if (COM_CheckParm ("-noudp") || COM_CheckParm ("-noudp6"))
 		return INVALID_SOCKET;
 
+#ifdef PLATFORM_IOS
+		return INVALID_SOCKET; // Strange but ipv6 does not appear to work on iPad/iPhone.
+#endif // PLATFORM_IOS
+
 	if (!UDP_Platform_Startup())
 		return INVALID_SOCKET; // UDP_Platform_Startup already printed a fail message
 

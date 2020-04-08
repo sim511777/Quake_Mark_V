@@ -70,9 +70,14 @@ extern menux_t menux[menu_state_COUNT]; // Super-global
 	void Mnu_ ## NAME ## _InitOnce (struct _menux_t_s *self);		/*Like: void Mnu_Main_InitOnce (menux_t self) */					\
 	void Mnu_ ## NAME ## _Enter_f (lparse_t *unused);				/*Like: void Mnu_Main_Enter_f (lparse_t *unused) */					\
 	void Mnu_ ## NAME ## _Draw (void);								/*Like: void Mnu_Main_Draw (void) */								\
-	void Mnu_ ## NAME ## _Key (key_scancode_e ascii, int hotspot);	/*Like: void Mnu_Main_Key (key_scancode_e ascii, int hotspot) */	\
+	void Mnu_ ## NAME ## _KeyPress (key_scancode_e ascii, int hotspot);	/*Like: void Mnu_Main_Key (key_scancode_e ascii, int hotspot) */	\
 	// Ender
 	#include "menu_definitions_sheet.h"
+
+
+void Mnu_Levels_NewGame (void);
+void Mnu_Demos_NewGame (void);
+void Mnu_OnScreenKeyboard_PromptText (const char *prompt, cvar_t *cvar_to_set, char *buffer_to_fill, int buffer_sizeof, menu_state_e return_dest);
 
 #define QUAKE_BLACK_0		0
 #define QUAKE_GRAY_6		6
@@ -87,12 +92,13 @@ extern menux_t menux[menu_state_COUNT]; // Super-global
 typedef struct {
 	menu_state_e	menu_state;
 	menu_state_e	menu_state_reenter;
-	cbool			entersound;		// play after drawing a frame, so caching won't disrupt the sound
+	cbool			entersound;					// play after drawing a frame, so caching won't disrupt the sound
 	cbool			recursiveDraw;
-	menu_state_e	return_state;		// Extern
-	cbool			return_onError;	// Extern
+	menu_state_e	return_state;				// Extern
+	cbool			return_onError;				// Extern
 	char			return_reason [32];
 	cbool			keys_bind_grab;
+	ticktime_t		keys_bind_grab_off_time;	// Disallow the binding of K_MOUSE2 to also cause us problems in customize controls.
 } sMenu_t; // This is a super-global.
 
 extern sMenu_t sMenu; // This is a super-global.
@@ -113,17 +119,13 @@ struct _hotspot_menu_item_t_s *Menu_Hotspot_Refresh_For_Mouse (int mousex, int m
 
 void M_Init (void);
 void M_Draw (void);
-void M_Keydown (key_scancode_e key, int hotspot);
+void M_KeyPress (key_scancode_e key, int hotspot);
 void M_ToggleMenu_f (lparse_t *unused);
 void M_Exit (void); // Exiting the menu, sets sMenu.menu_state = menu_state_None_0;
 
 void M_Print (int cx, int cy, const char *str);
 void M_PrintWhite (int cx, int cy, const char *str);
 
-
-//cmd void Mnu_Quit_Enter_f (void);
-void Mnu_Levels_NewGame (void);
-void Mnu_Demos_NewGame (void);
 
 
 void VID_Menu_Init (void);	// Still exists!
@@ -149,7 +151,8 @@ void M_DrawPic (int x, int y, qpic_t *pic);
 void M_DrawPicCentered (int y, qpic_t *pic);
 
 extern int normal_singleplayer_menu;
-#define QUAKE_CURSOR_STRING		"\x0D" // 13 in hex.
+#define QUAKE_MENU_CURSOR_STRING		"\x0D" // 13 in hex.
+#define QUAKE_TEXT_CURSOR_STRING		"\x0A" // 11 in hex.
 
 #endif // ! __MENU_H__
 

@@ -14,15 +14,10 @@
 
 
 
-
+#define logc Con_PrintLinef
 
 
 int touches_count;
-void *touch_id; // First touch is the one we will track movement for
-// Time?
-float touch_last_x;
-float touch_last_y;
-//int client_left, client_top;
 
 UIWindow *mine;
 
@@ -224,7 +219,7 @@ bool keyDown;
 	if (shiftoid) {
 		int scancode = shiftoid;
 		// We aren't doing shift support right now so no SHIFT, CTRL, COMMAND ... yet
-		Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0 , UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1, -1, -1);
+		Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0 , UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 		// Down comes later!  Should allow limited shifting.
 	}
 
@@ -284,7 +279,7 @@ bool keyDown;
 			scancode = 0; // If isn't one of the above, just nuke it
 		}
 		else {
-			Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0 , UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1, -1, -1);
+			Key_Event_Ex (NO_WINDOW_NULL, scancode, true,  ASCII_0 , UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 			
 #if 0 // MULTIKEY
 			Key_Event_Ex (NO_WINDOW_NULL, scancode, false, ASCII_0 , UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
@@ -308,88 +303,92 @@ bool keyDown;
 }
 
 
--(void) touchGetCoord:(UITouch *) touch touchStamp:(void **)touch_stamp x:(int *)x y:(int *)y
+
+// Consider this static
+-(void) touchGetCoord:(UITouch *) touch fullSet:(NSSet *)touches touchStamp:(void **)touch_stamp x:(int *)x y:(int *)y
 {
-//	CGPoint _clickPoint 	= [touch locationInView:self.view];	// Extract the in-view coordinates of the touch location
-//	CGPoint clickPoint = [mine convertPoint:_clickPoint toWindow:nil];
-//
-//
-//	CGRect rect			= [self.view bounds]; 
-////Eek!  bounds and frame are not same.  Should we have used frame whole time?  Wouldn't have made clickpoint work though
-////But let's kill bounds, that's stupud
-//	float screen_height = rect.size.height; // This could be very specific to the ios version on Alex's ipod touch.
-//	if (mainus.device_type == device_type_ipodtouch)
-//		screen_height -= (mainus.statusbar_height / 2 - 1);
-//	//logc ("%g", clickPoint.y);
-//	float final_point_y = screen_height - c_rint(clickPoint.y);
-//	REQUIRED_ASSIGN (x, c_rint(clickPoint.x));
-//	REQUIRED_ASSIGN (y, rect.size.height - final_point_y - 1); // - 1?
-//	REQUIRED_ASSIGN (touch_stamp, (__bridge void *) touch);	
+	CGPoint _clickPoint 	= [touch locationInView:self.view];	// Extract the in-view coordinates of the touch location
+	CGPoint clickPoint = [mine convertPoint:_clickPoint toWindow:nil];
+
+	CGRect rect			= [self.view bounds]; 
+
+	//Eek!  bounds and frame are not same.  Should we have used frame whole time?  Wouldn't have made clickpoint work though
+	//But let's kill bounds, that's stupud
+
+	float screen_height = rect.size.height; // This could be very specific to the ios version on this ipod touch.
+	if (sysplat.iphone_device_type == device_type_ipodtouch)
+		screen_height -= (sysplat.statusbar_height / 2 - 1);
+	//logc ("%g", clickPoint.y);
+	float final_point_y = screen_height - c_rint(clickPoint.y);
+	
+	// Not telling us anything useful ... NSLog(@"id %d Phase %d Tap count %d Type %d",
+	// (int)touch_stamp, (int) touch.phase, (int) touch.tapCount, (int) touch.timestamp);
+	
+	// March 14 2018 - Potential improvement would be to iterate [[event allTouches]count]
+	
+	REQUIRED_ASSIGN (x, c_rint(clickPoint.x));
+	REQUIRED_ASSIGN (y, rect.size.height - final_point_y - 1); // - 1?
+	
+	if (vid.is_screen_portrait) { // And it is ...
+		int rawx_orig = (*x);
+		(*x) = vid.desktop.height - (*y);
+		(*y) = rawx_orig;
+		
+#ifdef WINQUAKE_RENDERER_SUPPORT
+		// For WinQuake, we are running with a 320x240 ... convert the coords to that
+		(*x) = (*x) * (320.0 / vid.desktop.height);
+		(*y) = (*y) * (240.0 / vid.desktop.width);
+#endif // WINQUAKE_RENDERER_SUPPORT
+	}
+	
+	REQUIRED_ASSIGN (touch_stamp, (__bridge void *) touch);	
 }
 
 -(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-//	void *touch_stamp; ik kk nt x, y; [self touchGetCoord:[touches anyObject] touchStamp:&touch_stamp x:&x y:&y];
-//	
-//	if (touch_stamp != touch_id)
-//		return;
-//	
-//	logc ("%s: %d %d %p", __func__, x, y, touch_stamp);
-//	touch_last_x = x, touch_last_y = y;
-//	
-//    if (mainus.event.mouseaction_fn) {
-//        int buttons, shift;
-//        getmousebits (&buttons, &shift); //x -= client_left, y += client_top;
-//		mainus.event.mouseaction_fn (ptr, buttons, shift, x, y);
-//    }
+{	
+	NSArray *allTouches = [touches allObjects];
+    for (int n = 0; n < [touches count]; n++) {
+		UITouch *toucho = allTouches[n];
+		void *touch_stamp; int x, y; [self touchGetCoord:toucho fullSet:touches touchStamp:&touch_stamp x:&x y:&y];
+
+        Touch_Action (touch_stamp, mouseaction_move, x, y);
+	} // end for
 }
 
 
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event 
 {
-//	void *touch_stamp; int x, y; [self touchGetCoord:[touches anyObject] touchStamp:&touch_stamp x:&x y:&y];
-//	
-//	if (touches_count == 0) {
-//		touch_id = touch_stamp;
-//	}
-//	
-//	touches_count ++;
-//	if (touches_count > 1) {
-//		return; // Only one down event.
-//	}
-//	
-//	logc ("%s: %d %d %p", __func__, x, y, touch_stamp);
-//	touch_last_x = x, touch_last_y = y;
-//
-//    if (mainus.event.mouseaction_fn) {
-//        int buttons, shift;
-//        getmousebits (&buttons, &shift); //x -= client_left, y += client_top;
-//		mainus.event.mouseaction_fn (ptr, buttons, shift, x, y);
-//    }
+	NSArray *allTouches = [touches allObjects];
+    for (int n = 0; n < [touches count]; n++) {
+		UITouch *toucho = allTouches[n];
+		void *touch_stamp; int x, y; [self touchGetCoord:toucho fullSet:touches touchStamp:&touch_stamp x:&x y:&y];
+
+        Touch_Action (touch_stamp, mouseaction_down_0, x, y);
+	} // end for
 }
+
+-(void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	NSArray *allTouches = [touches allObjects];
+    for (int n = 0; n < [touches count]; n++) {
+		UITouch *toucho = allTouches[n];
+		void *touch_stamp; int x, y; [self touchGetCoord:toucho fullSet:touches touchStamp:&touch_stamp x:&x y:&y];
+		
+        Touch_Action (touch_stamp, /*mouseaction_cancelled*/ mouseaction_up, x, y);
+	} // end for
+}
+
 
 -(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event 
 {
-//	void *touch_stamp; int x, y; [self touchGetCoord:[touches anyObject] touchStamp:&touch_stamp x:&x y:&y];
-//	
-//	touches_count --;
-//	if (touches_count > 0) {
-//		return; // Only one down event.
-//	}
-//	
-//	logc ("%s: %d %d %p", __func__, x, y, touch_stamp);
-//	touch_last_x = x, touch_last_y = y;
-//
-//    if (mainus.event.mouseaction_fn) {
-//        int buttons, shift;
-//        getmousebits (&buttons, &shift); //x -= client_left, y -= client_top;  // We asked for the whole screen, the scaling is wrong too.
-//		mainus.event.mouseaction_fn (ptr, buttons, shift, x, y);
-//    }
-//	
-//	if (!touches_count) {
-//		touch_id = NULL;
-//	}
+	NSArray *allTouches = [touches allObjects];
+    for (int n = 0; n < [touches count]; n++) {
+		UITouch *toucho = allTouches[n];
+		void *touch_stamp; int x, y; [self touchGetCoord:toucho fullSet:touches touchStamp:&touch_stamp x:&x y:&y];
+
+        Touch_Action (touch_stamp, mouseaction_up, x, y);
+	} // End for
 }
 
 
@@ -592,6 +591,7 @@ void *ptr;
 	[EAGLContext setCurrentContext:mGLKView.context ]; // Make current equivalent?
 	
     mGLKViewController = [[myView /*GLKViewController*/ alloc] initWithNibName:nil bundle:nil]; // 1
+	mGLKView.multipleTouchEnabled = YES;
     mGLKViewController.view = mGLKView; // 2
     mGLKViewController.delegate = self; // 3
     mGLKViewController.preferredFramesPerSecond = sysplat.fps_desired; // c_rint(1.0 / sysplat.max_wait_seconds); // 4 mainus_t

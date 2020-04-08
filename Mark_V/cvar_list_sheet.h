@@ -391,6 +391,7 @@ CVAR_DEF( VID_Init    , VIDEO     ,  DEP_FREQ , vid_refreshrate           , "vid
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_VSYNC, vid_vsync                 , "vid_vsync"               , "0"       , CVAR_ARCHIVE      , VID_Local_Vsync_f   ,  "Toggle use of vsync to eliminate tearing."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_width                 , "vid_width"               , "640"     , CVAR_ARCHIVE      , NULL                 ,  "Requested video mode width."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_sound_thread		  , "vid_sound_thread"        , "1"       , CVAR_ARCHIVE      , NULL                 ,  "(TODO: Unused)"            )
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_touchscreen			  , "vid_touchscreen"         , "0"       , CVAR_ARCHIVE      , NULL                 ,  "(TODO: Unused)"            )
 CVAR_DEF( Chase_Init  , VIEW      ,  DEP_NONE , chase_active              , "chase_active"            , "0"       , CVAR_NONE         , NULL                 ,  "Toggle the use of a chase camera."            )
 CVAR_DEF( Chase_Init  , VIEW      ,  DEP_NONE , chase_back                , "chase_back"              , "100"     , CVAR_NONE         , NULL                 ,  "Distance chase camera behind the player."            )
 CVAR_DEF( Chase_Init  , VIEW      ,  DEP_NONE , chase_right               , "chase_right"             , "0"       , CVAR_NONE         , NULL                 ,  "Distance chase camera to the right of the player."            )

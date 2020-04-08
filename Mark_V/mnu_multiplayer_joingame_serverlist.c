@@ -80,7 +80,7 @@ LOCAL_EVENT (Draw) (void) // Search
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot) // Search
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot) // Search
 {
 	// It is a transition screen while server are queried ...
 	// Nothing to do ...
@@ -175,7 +175,7 @@ LOCAL_EVENT (Draw) (void) // ServerList
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot) // ServerList
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot) // ServerList
 {
 	if (HS_LIST_IS_LISTINDEX(hotspot)) /* listitem emission list index*/
 	{

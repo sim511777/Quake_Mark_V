@@ -416,9 +416,9 @@ void CL_SendMove (const usercmd_t *cmd)
 #else
 		if (cl.protocol == PROTOCOL_NETQUAKE)
 #endif
-			MSG_WriteAngle (&buf, focus0.is_attack_firing ? focus0.attack_angles[i] :  cl.viewangles[i]);
+			MSG_WriteAngle (&buf, focus0.canvas.is_attack_firing ? focus0.canvas.attack_angles[i] :  cl.viewangles[i]);
 		else
-			MSG_WriteAngle16 (&buf, focus0.is_attack_firing ? focus0.attack_angles[i] :  cl.viewangles[i]); // MOUSECLICK FIRE
+			MSG_WriteAngle16 (&buf, focus0.canvas.is_attack_firing ? focus0.canvas.attack_angles[i] :  cl.viewangles[i]); // MOUSECLICK FIRE
 	}
 		//johnfitz
 
@@ -450,10 +450,6 @@ void CL_SendMove (const usercmd_t *cmd)
 	if (cls.demoplayback)
 		return;
 
-#if 1 // Endangered?
-	if (focus0.is_attack_firing && !focus0.is_attack_click) // MOUSECLICK FIRE
-		focus0.is_attack_firing  = false; // Cease firing!
-#endif
 
 //
 // always dump the first two message, because it may contain leftover inputs

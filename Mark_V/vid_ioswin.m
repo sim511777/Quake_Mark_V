@@ -295,6 +295,7 @@ void TexQuad_Draw (float s1, float t1, float left, float top, float right, float
 		/* bottom */ s1, t1, 
 		/* left:  */ 0,  t1,
 	};
+
 	GLfloat verts2d [] =
 	{
 		left,  top,

@@ -18,7 +18,7 @@
 
 COMPILE_TIME_ASSERT(char, sizeof(char) == 1);
 COMPILE_TIME_ASSERT(float, sizeof(float) == 4);
-COMPILE_TIME_ASSERT(long, sizeof(long) == 4);
+COMPILE_TIME_ASSERT(long, sizeof(long) >= 4);
 COMPILE_TIME_ASSERT(int, sizeof(int) == 4);
 COMPILE_TIME_ASSERT(unsigned, sizeof(unsigned) == 4);
 COMPILE_TIME_ASSERT(short, sizeof(short) == 2);
@@ -56,6 +56,9 @@ COMPILE_TIME_ASSERT(enum, sizeof(THE_DUMMY_ENUM) == sizeof(int));
 	#define DEBUG_ONLY(x)
 #endif
 
+// Debatable whether or not to have the trailing semi-colon in this macro ... probably doesn't matter.
+#define DEBUG_ASSERT(condition) DEBUG_ONLY (if(!(condition)) log_fatal ("Assertion failure: %s", STRINGIFY(condition)));
+
 
 #define SPRINTSFUNC_ "%s: " // To help standardize "print __func__"
 //#define //#define test(...) test_ (&_funcinfo_obj, __VA_ARGS__) WORKS in 2008 just fine!
@@ -63,13 +66,6 @@ COMPILE_TIME_ASSERT(enum, sizeof(THE_DUMMY_ENUM) == sizeof(int));
 ///////////////////////////////////////////////////////////////////////////////
 //  Run-Time Assert - Active in debug build only
 ///////////////////////////////////////////////////////////////////////////////
-
-//#define DEBUG_ASSERT(condition, message) DEBUG_ONLY (if (!(condition)) log_fatal ("Assertion failure: %s",  message));
-#define DEBUG_ASSERT(condition) DEBUG_ONLY (if (!(condition)) log_fatal ("Assertion failure: %s", STRINGIFY(condition))); // Superior, right?
-#define DEBUG_ASSERT_MSG(condition, message) DEBUG_ONLY (if (!(condition)) log_fatal ("Assertion failure: %s",  message));
-#define DEBUG_NASSERT_MSG(condition, message) DEBUG_ONLY (if ((condition)) log_fatal ("Assertion failure: %s",  message));
-#define DEBUG_NASSERT(condition) DEBUG_ONLY (if ((condition)) log_fatal ("Assertion failure: %s occured", STRINGIFY(condition)));
-
 
 #ifdef _DEBUG // Heavier.  Kept because it is slightly used.  Not sure the advantage over assert?  Assert doesn't log or say why.
 	// This function should be culled by the compiler in any given source file if nothing uses it.

@@ -45,6 +45,10 @@ typedef enum { ENUM_FORCE_INT_GCC_ (opt)
 	opt_texturefilter,
 #endif // WINQUAKE_RENDERER_SUPPORT
 
+
+	opt_touchscreen, // Arguably PLATFORM_IOS should not show this.
+
+
 	opt_COUNT // Ender
 } opt_e;
 
@@ -54,9 +58,9 @@ typedef enum { ENUM_FORCE_INT_GCC_ (opt)
 extern int glmode_idx; // Used by key and draw
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-	int	video_cursor_table[] = {48, 56, 72, 88, 96};	// mode, fullscreen, stretch, test, apply)
+	int	video_cursor_table[] = {48, 56, 72, 88, 96, 112};	// mode, fullscreen, stretch, test, apply, tablet mode)
 #else
-	int	video_cursor_table[] = {48, 56, 72, 80, 112, 120};	// mode, fullscreen, test, apply, gamma, pixels
+	int	video_cursor_table[] = {48, 56, 72, 80, 112, 120, 136};	// mode, fullscreen, test, apply, gamma, pixels, tablet mode
 #endif // !WINQUAKE_RENDERER_SUPPORT
 
 
@@ -220,12 +224,22 @@ LOCAL_EVENT (Draw) (void)
 	M_Print (184, video_cursor_table[vid_idx],	glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ? "Smooth (Default)" :
 						glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ? "Pixelated" : "Pixelated/Rough" /* TEXMODE_GL_NEAREST_0*/				
 		);
+	vid_idx++;
 	
+#endif // !WINQUAKE_RENDERER_SUPPORT
+
+	Hotspots_Add (local_menu->column1, video_cursor_table[vid_idx], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_toggle);
+	M_Print (16, video_cursor_table[vid_idx], "      Touch Screen");
+	M_Print (184, video_cursor_table[vid_idx],	vid.touch_screen_active ? "ON" : "OFF");
+	vid_idx++;
+
+
+#ifdef GLQUAKE_RENDERER_SUPPORT
 	{
 		// Help uses hover
 		int help_idx = local_menu->hover ? local_menu->hover->idx : local_menu->cursor;
 		if (help_idx == opt_texturefilter) {
-			M_PrintWhite (16, video_cursor_table[vid_idx] + 24,  
+			M_PrintWhite (16, video_cursor_table[vid_idx - 1] + 24,  
 				glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ?  "     Filter: GL_LINEAR_MIPMAP_LINEAR" : 
 				glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ?  "     Filter: GL_NEAREST_MIPMAP_NEAREST" : 
 				glmode_idx == TEXMODE_GL_NEAREST_0				  ? "     Filter: GL_NEAREST" : 
@@ -233,11 +247,8 @@ LOCAL_EVENT (Draw) (void)
 			);
 		}
 	}
-
-
-	vid_idx++;
-
 #endif // !WINQUAKE_RENDERER_SUPPORT
+
 
 
 	// cursor
@@ -256,7 +267,7 @@ LOCAL_EVENT (Draw) (void)
 //
 
 // Since key can be upper or lower case it isn't quite a scancode
-LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
+LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 {
 	// For everything except "test" and "apply" ... ENTER might as well be right arrow.  K_MOUSE1 results in "K_ENTER"
 	if (key == K_ENTER && !isin2(local_menu->cursor, opt_test, opt_apply)) key = K_RIGHTARROW;
@@ -297,6 +308,8 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 			case_break TEXMODE_GL_NEAREST_0:				Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_NEAREST");
 			}
 #endif //WINQUAKE_RENDERER_SUPPORT
+
+		case_break opt_touchscreen:						MENU_TOGGLE_SOFT_SOUND();  Cbuf_AddTextLine ("toggle vid_touchscreen");
 		}
 		//////////////////////////////////////////////////////////////////////////////////////
 
@@ -327,6 +340,7 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 			} // end switch (glmode_idx)
 			/////////////////////////////////////
 #endif //WINQUAKE_RENDERER_SUPPORT
+		case_break opt_touchscreen:						MENU_TOGGLE_SOFT_SOUND();  Cbuf_AddTextLine ("toggle vid_touchscreen");
 		} // End switch (local_menu->cursor) for 
 		//////////////////////////////////////////////////////////////////////////////////////
 
@@ -346,6 +360,7 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 #endif //WINQUAKE_RENDERER_SUPPORT
 		case_break opt_test:			Cbuf_AddTextLine ("vid_test");
 		case_break opt_apply:			Cbuf_AddTextLine ("vid_restart");
+		case_break opt_touchscreen:		Cbuf_AddTextLine ("toggle vid_touchscreen");
 		} // end switch (local_menu->cursor)
 		//////////////////////////////////////////////////////////////////////////////////////
 	} // End switch (key)

@@ -713,12 +713,14 @@ void TexMgr_R_SetupView_RecalcWarpImageSize (void)
 	//
 	//oldsize = gl_warpimagesize;
 
-	gl_warpimagesize = TexMgr_SafeTextureSize (512);
+	gl_warpimagesize = TexMgr_SafeTextureSize (512); // Baker: This determines the largest that the texture can be.
 
+	// Baker: This finds a power of 2 square smaller than the current width and height
 	while (gl_warpimagesize > clwidth)
-		gl_warpimagesize >>= 1;
+		gl_warpimagesize >>= 1; // Divide by 2
 	while (gl_warpimagesize > clheight)
-		gl_warpimagesize >>= 1;
+		gl_warpimagesize >>= 1; // Divide by 2.
+
 
 	// ericw -- removed early exit if (gl_warpimagesize == oldsize).
 	// after vid_restart TexMgr_ReloadImage reloads textures
@@ -729,23 +731,21 @@ void TexMgr_R_SetupView_RecalcWarpImageSize (void)
 	// resize the textures in opengl
 	//
 
-	if (vid.direct3d != 8 /*vid.direct3d*/ )
+	mark = Hunk_LowMark();
+	dummy = (byte *) Hunk_AllocName (gl_warpimagesize * gl_warpimagesize * RGBA_4, "warpbuf");
+
+	for (glt=active_gltextures; glt; glt=glt->next)
 	{
-		mark = Hunk_LowMark();
-		dummy = (byte *) Hunk_AllocName (gl_warpimagesize*gl_warpimagesize * RGBA_4, "warpbuf");
-
-		for (glt=active_gltextures; glt; glt=glt->next)
+		if (glt->flags & TEXPREF_WARPIMAGE)
 		{
-			if (glt->flags & TEXPREF_WARPIMAGE)
-			{
-				GL_Bind (glt);
-				eglTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, gl_warpimagesize, gl_warpimagesize, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummy);
-				glt->width = glt->height = gl_warpimagesize;
-			}
+			GL_Bind (glt);
+			eglTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, gl_warpimagesize, gl_warpimagesize, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummy);
+			glt->width = glt->height = gl_warpimagesize;
 		}
-
-		Hunk_FreeToLowMark (mark);
 	}
+
+	Hunk_FreeToLowMark (mark);
+	
 }
 
 
@@ -830,7 +830,7 @@ void TexMgr_Init (void)
 	TexMgr_R_SetupView_RecalcWarpImageSize (); // This must be here.
 	TexMgr_R_SetupView_InitUnderwaterWarpTexture (); // This must be here  // UNDERWATER_WARP
 
-	GL_Bloom_Init (); 
+	GL_Bloom_Init_Once (); 
 
 	vid.warp_stale = true; // <--- means warp needs recalculated.
 }
@@ -848,6 +848,8 @@ void TexMgr_Init (void)
 TexMgr_Pad -- return smallest power of two greater than or equal to s
 ================
 */
+// Baker
+// Endangered:  Use Image_Power_Of_Two_Size for consistency instead
 int TexMgr_Pad (int s)
 {
 	int i;
@@ -1770,7 +1772,7 @@ static void TexMgr_LoadImage8 (gltexture_t *glt, byte *data, byte *palette_data)
 		padbyte = 255;
 	}
 
-	// pad each dimention, but only if it's not going to be downsampled later
+	// pad each dimension, but only if it's not going to be downsampled later
 	if (glt->flags & TEXPREF_PAD)
 	{
 		if ((int) glt->width < TexMgr_SafeTextureSize(glt->width))

@@ -1,4 +1,4 @@
-
+#ifdef GLQUAKE
 
 /*
 Copyright (C) 2002-2003, Dr Labman, A. Nourai
@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // gl_rpart.c
 
 #include "quakedef.h"
-#ifdef GLQUAKE_SUPPORTS_QMB
 #include <assert.h>
 
 #include "mark_v_qmb.h"
@@ -82,6 +81,7 @@ __part_type_invalid_gcc_sucks = -1, // Force int enum
 	p_streaktrail,
 	p_streakwave,
 	p_lightningbeam,
+	p_laserfire,
 	p_glow,
 	p_missilefire,
 	p_q3blood,
@@ -115,6 +115,7 @@ typedef	enum
 	ptex_blood3,
 	ptex_lightning,
 	ptex_explosion,
+	ptex_laserfire,
 	ptex_q3blood,
 	ptex_q3smoke,
 	num_particletextures, // part_tex_max,
@@ -317,7 +318,8 @@ gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, con
 	switch (ordinal) {
 	case 0:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_particlefont_png, sizeof(qmb_particlefont_png), &width, &height, qmb_particlefont_png); break;
 	case 1:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_zing_png, sizeof(qmb_zing_png), &width, &height, qmb_zing_png); break;
-	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height, qmb_explosion_png); break;
+	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_laser_png, sizeof(qmb_laser_png), &width, &height, qmb_laser_png); break;
+	case 3:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height, qmb_explosion_png); break;
 	default: break;
 	}
 	if (!rgba_data)
@@ -403,7 +405,13 @@ const char *QMB_InitParticles_Error (void)
 
 	ADD_PARTICLE_TEXTURE(ptex_lightning, load_texture, 0, 1,   0,   0, 256, 256);
 
-	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[2], 2, "gfx/particles/explosion", "qmb:explosion", false /*force 256 */);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[2], 2, "gfx/particles/laserfire", "qmb:laserfire", false /*force 256 */);
+	if (!load_texture)
+		return "gfx/particles/laserfire not loaded";
+
+	ADD_PARTICLE_TEXTURE(ptex_laserfire, load_texture, 0, 1,   0,   0, 256, 256);
+
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[3], 3, "gfx/particles/explosion", "qmb:explosion", false /*force 256 */);
 	if (!load_texture)
 		return "gfx/particles/explosion not loaded";
 	ADD_PARTICLE_TEXTURE(ptex_explosion, load_texture, 0, 1,   0,   0, 256, 256);
@@ -453,6 +461,7 @@ const char *QMB_InitParticles_Error (void)
 	ADD_PARTICLE_TYPE(p_lightningbeam,	pd_beam,		GL_SRC_ALPHA,	GL_ONE,					ptex_lightning, 255,   0,     0, pm_die,		 0		);
 	ADD_PARTICLE_TYPE(p_glow,			pd_billboard,	GL_SRC_ALPHA,	GL_ONE,					ptex_generic,	204,   0,     0, pm_die,		 0		);
 	ADD_PARTICLE_TYPE(p_explosion,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE_MINUS_SRC_ALPHA, ptex_explosion, 255,   0,     0, pm_static,		-1		);
+	ADD_PARTICLE_TYPE(p_laserfire,		pd_beam,		GL_SRC_ALPHA,	GL_ONE,					ptex_laserfire, 255,   0,     0, pm_die,		 0		);
 //	ADD_PARTICLE_TYPE(p_q3blood,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE_MINUS_SRC_ALPHA, ptex_q3blood,	255,-1.5,     0, pm_normal,		 0		);
 //	ADD_PARTICLE_TYPE(p_q3smoke,		pd_billboard,	GL_SRC_ALPHA,	GL_ONE,					ptex_q3smoke,	140,   3,     0, pm_normal,		 0		);
 
@@ -1069,6 +1078,7 @@ __inline static void AddParticle (part_type_e type, const vec3_t org, int count,
 
 		case p_streaktrail:
 		case p_lightningbeam:
+		case p_laserfire:
 			VectorCopy (org, p->org);
 			VectorCopy (dir, p->endorg);
 			VectorClear (p->vel);
@@ -1796,6 +1806,17 @@ void QMB_LightningSplash (const vec3_t org)
 }
 
 
+void QMB_LaserFire (const vec3_t start, const vec3_t end)
+{
+	float frametime = fabs(cl.ctime - cl.oldtime);
+	color_vec4b_t color = {255, 77, 0, 255};
+	
+	if (frametime) {
+		AddParticle (p_laserfire, start, 1, 80 /*100*/, frametime * 2, color, end);
+	}
+}
+
+
 void QMB_LightningBeam (const vec3_t start, const vec3_t end)
 {
 	float	frametime = fabs(cl.ctime - cl.oldtime);
@@ -1830,28 +1851,29 @@ void QMB_GenSparks (const vec3_t org, byte col[3], float count, float size, floa
 	}
 }
 
-void QMB_Lightning_Splash (const vec3_t org)
-{
-	int	i, j;
-	vec3_t	neworg, angle;
-	color_vec4b_t	color;
-
-	ColorSetRGB (color, 40, 40, 128);
-	VectorClear (angle);
-
-	for (i=0 ; i<5 ; i++)
-	{
-		angle[2] = 0;
-		for (j=0 ; j<5 ; j++)
-		{
-			AngleVectors (angle, NULL, NULL, neworg);
-			VectorMA (org, 20, neworg, neworg);
-			AddParticle (p_sparkray, org, 1, 6 + (i & 3), 5, color, neworg);
-			angle[2] += 360 / 5;
-		}
-		angle[0] += 180 / 5;
-	}
-}
+// Nothing calls this??  It's true.
+//void QMB_Lightning_Splash (const vec3_t org)
+//{
+//	int	i, j;
+//	vec3_t	neworg, angle;
+//	color_vec4b_t	color;
+//
+//	ColorSetRGB (color, 40, 40, 128);
+//	VectorClear (angle);
+//
+//	for (i = 0 ; i < 5 ; i++)
+//	{
+//		angle[2] = 0;
+//		for (j = 0 ; j < 5 ; j++)
+//		{
+//			AngleVectors (angle, NULL, NULL, neworg);
+//			VectorMA (org, 20, neworg, neworg);
+//			AddParticle (p_sparkray, org, 1, 6 + (i & 3), 5, color, neworg);
+//			angle[2] += 360 / 5;
+//		}
+//		angle[0] += 180 / 5;
+//	}
+//}
 
 int	particle_mode = 0;	// 0: classic (default), 1: QMB, 2: mixed
 
@@ -1985,4 +2007,4 @@ ready:
 #endif // GLQUAKE_SUPPORTS_QMB
 
 
-#endif
+#endif // GLQUAKE

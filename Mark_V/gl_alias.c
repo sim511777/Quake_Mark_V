@@ -677,6 +677,7 @@ void R_DrawAliasModel (entity_t *e)
 	
 	int						command_offset = paliashdr->commands;
 	cbool					did_set_texture_matrix = false;
+	cbool					combine_pass_engine_issue_dx9 = 0;
 
 	//
 	// setup pose/lerp data -- do it first so we don't miss updates due to culling
@@ -793,6 +794,8 @@ void R_DrawAliasModel (entity_t *e)
 	if (!tx)
 		tx = whitetexture; //Baker: Part of missing skins fix
 
+	combine_pass_engine_issue_dx9 = ( vid.direct3d == 9 && Flag_Check (tx->flags, TEXPREF_ALPHA) && !developer.value); // Only alpha masked models ... which are non-existent in Quake
+
 // Baker: MH's tip to use texture matrix
 	GL_DisableMultitexture();
 
@@ -874,7 +877,7 @@ void R_DrawAliasModel (entity_t *e)
 	}
 	else if (overbright)
 	{
-		if  (renderer.gl_texture_env_combine && renderer.gl_mtexable && renderer.gl_texture_env_add && fb) //case 1: everything in one pass
+		if  (renderer.gl_texture_env_combine &&  !combine_pass_engine_issue_dx9 && renderer.gl_mtexable && renderer.gl_texture_env_add && fb) //case 1: everything in one pass
 		{
 			GL_Bind (tx);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
@@ -891,7 +894,7 @@ void R_DrawAliasModel (entity_t *e)
 			GL_DisableMultitexture();
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		}
-		else if (renderer.gl_texture_env_combine) //case 2: overbright in one pass, then fullbright pass
+		else if (renderer.gl_texture_env_combine && !combine_pass_engine_issue_dx9 ) //case 2: overbright in one pass, then fullbright pass
 		{
 		// first pass
 			GL_Bind(tx);

@@ -373,16 +373,26 @@ static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
 
 	if (gl_overbright.value)
 	{
-		if (renderer.gl_texture_env_combine && renderer.gl_mtexable) //case 1: texture and lightmap in one pass, overbright using texture combiners
+		cbool combine_pass_engine_issue_dx9 = ( vid.direct3d == 9 && Flag_Check (s->flags, SURF_DRAWFENCE) && !developer.value);
+		if (renderer.gl_texture_env_combine && renderer.gl_mtexable && !combine_pass_engine_issue_dx9) //case 1: texture and lightmap in one pass, overbright using texture combiners
 		{
 			GL_DisableMultitexture(); // selects TEXTURE0
 			GL_Bind (t->gltexture);
-			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+#if 1 // Spike workaround
+#define GL_SOURCE0_ALPHA_ARB 0x8588
+#define GL_SOURCE1_ALPHA_ARB 0x8589
+#endif 
+			eglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_ARB, GL_PRIMARY_COLOR);
+			eglTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_ARB, GL_TEXTURE);
+			eglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+
 			GL_EnableMultitexture(); // selects TEXTURE1
 			GL_Bind (lightmap[s->lightmaptexturenum].texture);
 			R_RenderDynamicLightmaps (s);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+			
+			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 2.0f);

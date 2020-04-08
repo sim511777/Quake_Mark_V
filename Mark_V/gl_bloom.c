@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#include "r_local.h"
 #include "quakedef.h"
+
 /* 
 ============================================================================== 
  
@@ -31,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ============================================================================== 
 */ 
 
-#define TEXPREF_WARPIMAGE 0 // Baker: evil override for the moment
+//#define TEXPREF_WARPIMAGE 0 // Baker: evil override for the moment
 
 static float Diamond8x[8][8] = 
 { 
@@ -63,33 +64,32 @@ static float Diamond4x[4][4] =
         0.3f, 0.4f, 0.4f, 0.3f 
 };
 
-static int g_bloom_size;
+static int glt_bloom_effect_size;
 
-//cvar_t	r_bloom					= {"r_bloom", "0", true};
-//cvar_t	gl_bloom_alpha			= {"gl_bloom_alpha", "0.3", true};
-//cvar_t	gl_bloom_diamond_size	= {"gl_bloom_diamond_size", "8", true};
-//cvar_t	gl_bloom_intensity		= {"gl_bloom_intensity", "1", true};
-//cvar_t	gl_bloom_darken			= {"gl_bloom_darken", "4", true};
-//cvar_t	gl_bloom_sample_size		= {"gl_bloom_sample_size", "320", true};
-//cvar_t	gl_bloom_fast_sample		= {"gl_bloom_fast_sample", "0", true};
-//
-static gltexture_t *glt_bloomscreentexture;
-static gltexture_t *glt_bloomeffecttexture;
-static gltexture_t *glt_bloombackuptexture;
-static gltexture_t *glt_bloomdownsamplingtexture;
+static gltexture_t *glt_bloom_screen;
+static gltexture_t *glt_bloom_effect;
+static gltexture_t *glt_bloom_screen_backup;
+static gltexture_t *glt_bloom_screen_downsample;
 
-static int g_screendownsamplingtexture_size;
-static int g_screen_texture_width_pow2, g_screen_texture_height_pow2;
-//static int  r_screenbackuptexture_size;
-static int g_screenbackuptexture_width, g_screenbackuptexture_height; 
+static int glt_bloom_screen_downsample_size;
+static int glt_bloom_screen_downsample_width, glt_bloom_screen_downsample_height;
 
-//current refdef size:
+static int glt_bloom_screen_width_pow2, glt_bloom_screen_height_pow2;
+
+static int glt_bloom_screen_backup_size; // Set to zero to ignore it.
+static int glt_bloom_screen_backup_width, glt_bloom_screen_backup_height; 
+
+cbool r_bloom_temp_disable = true;
+
+
+
+// current refdef size -- Baker ... 0,0,clwidth,clheight at moment.
 static int	curView_x;
 static int  curView_y;
 static int  curView_width;
 static int  curView_height;
 
-//texture coordinates of screen data inside screentexture
+// texture coordinates of screen data inside screentexture
 static float screenText_tcw;
 static float screenText_tch;
 
@@ -97,19 +97,19 @@ static int g_sample_width;
 static int g_sample_height;
 
 //texture coordinates of adjusted textures
-static float g_sampleText_tcw;
-static float g_sampleText_tch;
+static float glt_bloom_screen_downsample_width_tcw;
+static float glt_bloom_screen_downsample_height_tch;
 
 //this macro is in sample size workspace coordinates
 #define sGL_Bloom_SamplePass(xpos, ypos)                            \
     eglBegin(GL_QUADS);                                             \
-    eglTexCoord2f	(0, g_sampleText_tch);							\
+    eglTexCoord2f	(0, glt_bloom_screen_downsample_height_tch);							\
     eglVertex2f		(xpos, ypos);									\
     eglTexCoord2f	(0, 0);											\
     eglVertex2f		(xpos, ypos + g_sample_height);					\
-    eglTexCoord2f	(g_sampleText_tcw, 0);							\
+    eglTexCoord2f	(glt_bloom_screen_downsample_width_tcw, 0);							\
     eglVertex2f		(xpos + g_sample_width, ypos + g_sample_height);\
-    eglTexCoord2f	(g_sampleText_tcw, g_sampleText_tch);			\
+    eglTexCoord2f	(glt_bloom_screen_downsample_width_tcw, glt_bloom_screen_downsample_height_tch);			\
     eglVertex2f		(xpos + g_sample_width, ypos);					\
     eglEnd();
 
@@ -127,185 +127,63 @@ static float g_sampleText_tch;
 
 
 #pragma message ("clheight is wrong, it's refdef.height or what not")
-/*
-=================
-sGL_Bloom_InitBackUpTexture
-=================
-*/
-void sGL_Bloom_InitBackUpTexture (int width, int height)
-{
-	
- 
-	g_screenbackuptexture_width  = width;
-    g_screenbackuptexture_height = height;
-
-	//glt_bloombackuptexture = GL_LoadTexture  ("bloomtex", width, height, data, TEX_LUMA, 4);
-	{
-		unsigned *dummy_data = calloc (g_screenbackuptexture_width * g_screenbackuptexture_height, sizeof(unsigned) /*RGBA_4*/);
-		glt_bloombackuptexture = TexMgr_LoadImage (
-			NULL,							// Model owner
-			-1,								// BSP texture number
-			"glt_bloombackuptexture",		// Description
-			g_screenbackuptexture_width,	// Width
-			g_screenbackuptexture_height,	// Height
-			SRC_RGBA,						// Source format src_format_e
-			dummy_data,						// Data
-			"",								// Source filename (qpath)
-			(src_offset_t)dummy_data,		// Offset into file or offset into memory offset_t or uintptr_t
-
-			// Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us
-			// But TEXPREF_WARPIMAGE may end up giving a size we don't want during recalc?
-			TEXPREF_WARPIMAGE | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED
-		);
-
-		free (dummy_data);
-	}
-}
-
-/*
-=================
-sGL_Bloom_InitEffectTexture
-=================
-*/
-void sGL_Bloom_InitEffectTexture (void)
-{
-    if (gl_bloom_sample_size.value < 32)
-        Cvar_SetValueQuick (&gl_bloom_sample_size, 32);
-
-    //make sure bloom size is a power of 2
-    g_bloom_size = Image_Power_Of_Two_Size (gl_bloom_sample_size.value);
-
-    // make sure bloom size doesn't have stupid values
-    if (g_bloom_size > g_screen_texture_width_pow2 || g_bloom_size > g_screen_texture_height_pow2)
-        g_bloom_size = c_min (g_screen_texture_width_pow2, g_screen_texture_height_pow2);
-
-	// make the cvar reflect the accepted value
-    if (g_bloom_size != gl_bloom_sample_size.value)
-        Cvar_SetValueQuick (&gl_bloom_sample_size, g_bloom_size);
-
-	{ 
-		unsigned *dummy_data = calloc (g_bloom_size * g_bloom_size, sizeof(unsigned) /*RGBA_4*/);
-		// Baker: Make sure txgamma doesn't affect this.  Make sure is like warp texture and not reloaded.  But like warp texture, must size adjust.
-		
-		glt_bloomeffecttexture = TexMgr_LoadImage (
-			NULL,							// Model owner
-			-1,								// BSP texture number
-			"glt_bloomeffecttexture",		// Description
-			g_bloom_size,					// Width
-			g_bloom_size,					// Height
-			SRC_RGBA,						// Source format src_format_e
-			dummy_data,						// Data
-			"",								// Source filename (qpath)
-			(src_offset_t)dummy_data,		// Offset into file or offset into memory offset_t or uintptr_t
-
-			// Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us
-			TEXPREF_WARPIMAGE | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED
-		);
-			
-		free (dummy_data);
-		//ORIGINAL: glt_bloomeffecttexture = GL_LoadTexture  ("***glt_bloomeffecttexture***", g_bloom_size, g_bloom_size, data, TEX_LUMA, 4);
-		// See also: glt_bloomeffecttexture = LoadATex ( /*rgba store*/ &pt_persist_tex[0], 0, "gfx/particles/particlefont", "qmb:particlefont", true /*force 256 */);    
-	}
-}
+///*
+//=================
+//sGL_Bloom_InitEffectTexture
+//=================
+//*/
+//void sGL_Bloom_InitEffectTexture (void)
+//{
+//    if (gl_bloom_sample_size.value < 32)
+//        Cvar_SetValueQuick (&gl_bloom_sample_size, 32);
+//
+//    //make sure bloom size is a power of 2
+//    glt_bloom_effect_size = Image_Power_Of_Two_Size (gl_bloom_sample_size.value);
+//
+//    // make sure bloom size doesn't have stupid values
+//    if (glt_bloom_effect_size > glt_bloom_screen_width_pow2 || glt_bloom_effect_size > glt_bloom_screen_height_pow2)
+//        glt_bloom_effect_size = c_min (glt_bloom_screen_width_pow2, glt_bloom_screen_height_pow2);
+//
+//	// make the cvar reflect the accepted value
+//    if (glt_bloom_effect_size != gl_bloom_sample_size.value)
+//        Cvar_SetValueQuick (&gl_bloom_sample_size, glt_bloom_effect_size);
+//
+//	{ 
+//		unsigned *dummy_data = calloc (glt_bloom_effect_size * glt_bloom_effect_size, sizeof(unsigned) /*RGBA_4*/);
+//		// Baker: Make sure txgamma doesn't affect this.  Make sure is like warp texture and not reloaded.  But like warp texture, must size adjust.
+//		
+//		glt_bloom_effect = TexMgr_LoadImage (
+//			NULL,							// Model owner
+//			-1,								// BSP texture number
+//			"glt_bloom_effect",		// Description
+//			glt_bloom_effect_size,					// Width
+//			glt_bloom_effect_size,					// Height
+//			SRC_RGBA,						// Source format src_format_e
+//			dummy_data,						// Data
+//			"",								// Source filename (qpath)
+//			(src_offset_t)dummy_data,		// Offset into file or offset into memory offset_t or uintptr_t
+//
+//			// Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us
+//			TEXPREF_WARPIMAGE | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED
+//		);
+//			
+//		free (dummy_data);
+//		//ORIGINAL: glt_bloom_effect = GL_LoadTexture  ("***glt_bloom_effect***", glt_bloom_effect_size, glt_bloom_effect_size, data, TEX_LUMA, 4);
+//		// See also: glt_bloom_effect = LoadATex ( /*rgba store*/ &pt_persist_tex[0], 0, "gfx/particles/particlefont", "qmb:particlefont", true /*force 256 */);    
+//	}
+//}
 
 /*
 =================
 sGL_Bloom_InitTextures
 =================
 */
-static void sGL_Bloom_Init_InitTextures (void)
-{
-
-	if (vid.direct3d == 8)
-		return;  // No CopyTexImage
-
-    // find closer power of 2 to screen size 
-    g_screen_texture_width_pow2   = Image_Power_Of_Two_Size  (clwidth);
-	g_screen_texture_height_pow2  = Image_Power_Of_Two_Size (clheight);
-
-    //disable blooms if we can't handle a texture of that size
-	
-	if (g_screen_texture_width_pow2 > renderer.gl_max_texture_size || g_screen_texture_height_pow2 > renderer.gl_max_texture_size)
-		System_Error ("Required power of 2 size too large.  Fix me.  Or disable the feature or something.");
-	
-    //init the screen texture
-	{
-		size_t bytes_size = g_screen_texture_width_pow2 * g_screen_texture_height_pow2 * sizeof(unsigned) /* RGBA_4*/;
-		unsigned *data = malloc(bytes_size);
-		memset (data, 255, bytes_size);	// White fill
-    
-	//  glt_bloomscreentexture = R_LoadPic ("***r_bloomscreentexture***", &data, g_screen_texture_width_pow2, g_screen_texture_height_pow2, IT_NOMIPMAP|IT_NOCOMPRESS|IT_NOPICMIP|IT_NOALPHA, 3);
-	//	r_bloomscreentexture = GL_LoadTexture  ("***r_screenbackuptexture***", g_screen_texture_width_pow2, g_screen_texture_height_pow2, data, TEX_LUMA, 4);
-		glt_bloomscreentexture = TexMgr_LoadImage (
-			NULL,							// Model owner
-			-1,								// BSP texture number
-			"glt_bloomscreentexture",		// Description
-			g_screen_texture_width_pow2,	// Width
-			g_screen_texture_height_pow2,	// Height
-			SRC_RGBA,						// Source format src_format_e
-			data,							// Data
-			"",								// Source filename (qpath)
-			(src_offset_t)data,				// Offset into file or offset into memory offset_t or uintptr_t
-
-			// Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us
-			TEXPREF_WARPIMAGE | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED
-		);
-
-		free (data);
-	}
-
-    // validate bloom size and init the bloom effect texture
-    sGL_Bloom_InitEffectTexture ();
-
-    // if screensize is more than 2x the bloom effect texture, set up for stepped downsampling
-    glt_bloomdownsamplingtexture = NULL;
-    g_screendownsamplingtexture_size = 0;
-    if (clwidth > (g_bloom_size * 2) && gl_bloom_fast_sample.value == 0) // Baker: What about height?  This is biased towards width always > height
-    {
-		int width_height_size = g_screendownsamplingtexture_size = (int)(g_bloom_size * 2);
-		unsigned *dummy_data = calloc (g_screendownsamplingtexture_size * g_screendownsamplingtexture_size, RGBA_4);
-		glt_bloomdownsamplingtexture = TexMgr_LoadImage (
-			NULL,							// Model owner
-			-1,								// BSP texture number
-			"glt_bloomdownsamplingtexture",	// Description
-			width_height_size,				// Width
-			width_height_size,				// Height
-			SRC_RGBA,						// Source format src_format_e
-			dummy_data,						// Data
-			"",								// Source filename (qpath)
-			(src_offset_t)dummy_data,		// Offset into file or offset into memory offset_t or uintptr_t
-
-			// Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us
-			TEXPREF_WARPIMAGE | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED
-		);
-
-		free (dummy_data);
-		// ORIGINAL: glt_bloomdownsamplingtexture = R_LoadPic ("***r_bloomdownsamplingtexture***", &data, g_screendownsamplingtexture_size, g_screendownsamplingtexture_size, IT_NOMIPMAP|IT_NOCOMPRESS|IT_NOPICMIP|IT_NOALPHA, 3);
-    }
-
-    // Init the screen backup texture
-    if (g_screendownsamplingtexture_size)
-        sGL_Bloom_InitBackUpTexture (g_screendownsamplingtexture_size, g_screendownsamplingtexture_size);
-    else
-        sGL_Bloom_InitBackUpTexture (g_bloom_size, g_bloom_size);
-}
 
 /*
 =================
 R_InitBloomTextures
 =================
 */
-void GL_Bloom_Init (void)
-{
-return; // Baker ... for now
-
-    g_bloom_size = 0;
-
-//	if (!gl_bloom.value)  Baker: BULLSHIT
-//        return; 
-
-    sGL_Bloom_Init_InitTextures ();
-}
 
 
 /*
@@ -313,12 +191,12 @@ return; // Baker ... for now
 sGL_Bloom_DrawEffect
 =================
 */
-static void sGL_Bloom_DrawEffect (void)
+static void sGL_BloomBlend_DrawEffect (void)
 {
 	float bloom_alpha = CLAMP(0, gl_bloom_alpha.value, 1);
-    //GL_Bind(0, glt_bloomeffecttexture);
-	//glBindTexture(GL_TEXTURE_2D, glt_bloomeffecttexture);
-	GL_Bind			(glt_bloomeffecttexture);
+    //GL_Bind(0, glt_bloom_effect);
+	//glBindTexture(GL_TEXTURE_2D, glt_bloom_effect);
+	GL_Bind			(glt_bloom_effect);
     eglEnable		(GL_BLEND);
 //  eglBlendFunc	(GL_ONE, GL_ONE);
 	eglBlendFunc	(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
@@ -327,16 +205,16 @@ static void sGL_Bloom_DrawEffect (void)
     eglTexEnvf		(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     eglBegin		(GL_QUADS);                         
 
-    eglTexCoord2f	(0, g_sampleText_tch);  
+    eglTexCoord2f	(0, glt_bloom_screen_downsample_height_tch);  
     eglVertex2f		(curView_x, curView_y);      
 	
     eglTexCoord2f	(0, 0);              
     eglVertex2f		(curView_x, curView_y + curView_height);  
 
-    eglTexCoord2f	(g_sampleText_tcw, 0);
+    eglTexCoord2f	(glt_bloom_screen_downsample_width_tcw, 0);
     eglVertex2f		(curView_x + curView_width, curView_y + curView_height);  
 
-    eglTexCoord2f	(g_sampleText_tcw, g_sampleText_tch);  
+    eglTexCoord2f	(glt_bloom_screen_downsample_width_tcw, glt_bloom_screen_downsample_height_tch);  
     eglVertex2f		(curView_x + curView_width, curView_y);
 
 	eglEnd			();
@@ -363,9 +241,9 @@ static void sGL_BloomBlend_GeneratexDiamonds (void)
     eglMatrixMode			(GL_MODELVIEW);
     eglLoadIdentity			();
 
-    //copy small scene into glt_bloomeffecttexture
-    //GL_Bind(0, glt_bloomeffecttexture);
-	GL_Bind					(glt_bloomeffecttexture);
+    //copy small scene into glt_bloom_effect
+    //GL_Bind(0, glt_bloom_effect);
+	GL_Bind					(glt_bloom_effect);
     eglCopyTexSubImage2D	(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_sample_width, g_sample_height);
 
     //start modifying the small scene corner
@@ -397,13 +275,13 @@ static void sGL_BloomBlend_GeneratexDiamonds (void)
 		{
             for (j = 0; j < gl_bloom_diamond_size.value; j++) 
 			{
-				// Baker: Seriously?
-				if (chase_active.value || gl_overbright.value || cl.viewent_gun.model->name == NULL)
+				
+				if (gl_overbright.value /*chase_active.value || cl.viewent_gun.model->name == NULL ... Baker <--- seriously?*/)
 					intensity = gl_bloom_intensity.value * 0.1 * Diamond8x[i][j];
 				else
 					intensity = gl_bloom_intensity.value * 0.3 * Diamond8x[i][j];
 
-                if (intensity < 0.01f) continue;
+                if (intensity < 0.01) continue;
                 eglColor4f (intensity, intensity, intensity, 1.0);
                 sGL_Bloom_SamplePass (i - 4, j - 4);
             }
@@ -429,7 +307,7 @@ static void sGL_BloomBlend_GeneratexDiamonds (void)
 					continue;
 
                 eglColor4f (intensity, intensity, intensity, 1.0);
-                sGL_Bloom_SamplePass (i-3, j-3);
+                sGL_Bloom_SamplePass (i - 3, j - 3);
             }
         }
     } 
@@ -477,40 +355,38 @@ void sGL_BloomBlend_DownsampleView (void)
     eglColor4f (1.0, 1.0, 1.0, 1.0);
 
     // stepped downsample
-    if (g_screendownsamplingtexture_size)
+    if (glt_bloom_screen_downsample_size)
     {
-        int midsample_width = g_screendownsamplingtexture_size * g_sampleText_tcw;
-        int midsample_height = g_screendownsamplingtexture_size * g_sampleText_tch;
+        int midsample_width		= glt_bloom_screen_downsample_size * glt_bloom_screen_downsample_width_tcw;
+        int midsample_height	= glt_bloom_screen_downsample_size * glt_bloom_screen_downsample_height_tch;
         
         //copy the screen and draw resized
-//      GL_Bind(0, r_bloomscreentexture);
-		GL_Bind					(glt_bloomscreentexture);
+		GL_Bind					(glt_bloom_screen);
         eglCopyTexSubImage2D	(GL_TEXTURE_2D, 0, 0, 0, curView_x, clheight - (curView_y + curView_height), curView_width, curView_height);
-        sGL_Bloom_Quad			(0, clheight-midsample_height, midsample_width, midsample_height, screenText_tcw, screenText_tch );
+        sGL_Bloom_Quad			(0, clheight - midsample_height, midsample_width, midsample_height, screenText_tcw, screenText_tch );
         
         //now copy into Downsampling (mid-sized) texture
         //GL_Bind(0, r_bloomdownsamplingtexture);
-		GL_Bind					(glt_bloomdownsamplingtexture);
+		GL_Bind					(glt_bloom_screen_downsample);
         eglCopyTexSubImage2D	(GL_TEXTURE_2D, 0, 0, 0, 0, 0, midsample_width, midsample_height);
 
         //now draw again in bloom size
         eglColor4f				(0.5, 0.5, 0.5, 1.0);
-        sGL_Bloom_Quad			(0, clheight-g_sample_height, g_sample_width, g_sample_height, g_sampleText_tcw, g_sampleText_tch);
+        sGL_Bloom_Quad			(0, clheight - g_sample_height, g_sample_width, g_sample_height, glt_bloom_screen_downsample_width_tcw, glt_bloom_screen_downsample_height_tch);
         
         //now blend the big screen texture into the bloom generation space (hoping it adds some blur)
         eglEnable				(GL_BLEND);
         eglBlendFunc			(GL_ONE, GL_ONE);
         eglColor4f				(0.5, 0.5, 0.5, 1.0);
-        //GL_Bind(0, r_bloomscreentexture);
-		GL_Bind					(glt_bloomscreentexture);
-        sGL_Bloom_Quad			(0, clheight-g_sample_height, g_sample_width, g_sample_height, screenText_tcw, screenText_tch);
+        
+		GL_Bind					(glt_bloom_screen);
+        sGL_Bloom_Quad			(0, clheight - g_sample_height, g_sample_width, g_sample_height, screenText_tcw, screenText_tch);
         eglColor4f				(1.0, 1.0, 1.0, 1.0);
         eglDisable				(GL_BLEND);
 
-    } else {    //downsample simple
-
-        //GL_Bind(0, r_bloomscreentexture);
-		GL_Bind					(glt_bloomscreentexture);
+    } else {    
+		// downsample simple
+		GL_Bind					(glt_bloom_screen);
         eglCopyTexSubImage2D	(GL_TEXTURE_2D, 0 /*level*/, 0 /* xoffset within texture */, 0 /*y offset within texture*/, curView_x, clheight - (curView_y + curView_height), curView_width, curView_height);
         sGL_Bloom_Quad			(0, clheight - g_sample_height, g_sample_width, g_sample_height, screenText_tcw, screenText_tch);
     }
@@ -523,15 +399,19 @@ GL_BloomBlend
 */
 void GL_BloomBlend (void)
 {
-return; // For now ...
-    if (!gl_bloom.value || vid.direct3d == 8) // DX8 - doesn't have CopyTexSubImage
+    if (!gl_bloom.value || vid.direct3d /* == 8 even DX9 at the moment... likely my fault somehow */) // DX8 - doesn't have CopyTexSubImage
         return;
 
-    if (!g_bloom_size)
-		System_Error ("Bloom_InitTextures never called, g_bloom_size is zero");
+	if (r_bloom_temp_disable)
+		return;
 
-    if (g_screen_texture_width_pow2 < g_bloom_size || g_screen_texture_height_pow2 < g_bloom_size)
+    if (!glt_bloom_effect_size)
+		System_Error ("Bloom_InitTextures never called, glt_bloom_effect_size is zero");
+
+	if (glt_bloom_screen_width_pow2 < glt_bloom_effect_size || glt_bloom_screen_height_pow2 < glt_bloom_effect_size) {
+		logd ("Screen size %d %d smaller than bloom size %d, %d.", glt_bloom_screen_width_pow2, glt_bloom_screen_height_pow2, glt_bloom_effect_size, glt_bloom_effect_size);
         return; // Baker: Isn't this an error?
+	}
 
     // set up full screen workspace
     eglViewport			(0, 0, clwidth, clheight);
@@ -547,31 +427,33 @@ return; // For now ...
     eglEnable			(GL_TEXTURE_2D);
     eglColor4f			(1, 1, 1, 1);
 
-    //set up current sizes
-//  curView_x = fd->x;
-//  curView_y = fd->y;
+    // set up current sizes.  Baker: This should be r_refdef.x, y, width, height but fuck it because 
+	// I'm not impressed with the performance at all.
 	curView_x = 0;
 	curView_y = 0;
     curView_width = clwidth;
     curView_height = clheight;
-    screenText_tcw = (float)clwidth / g_screen_texture_width_pow2;
-    screenText_tch = (float)clheight / g_screen_texture_height_pow2;
+
+	// Calc texture coords
+    screenText_tcw = (float)clwidth / glt_bloom_screen_width_pow2;
+    screenText_tch = (float)clheight / glt_bloom_screen_height_pow2;
 
     if (clheight > clwidth) {
-        g_sampleText_tcw = (float)clwidth / (float)clheight;
-		g_sampleText_tch = 1.0;
+        glt_bloom_screen_downsample_width_tcw = (float)clwidth / (float)clheight;
+		glt_bloom_screen_downsample_height_tch = 1.0;
     } 
 	else {
-        g_sampleText_tcw = 1.0;
-        g_sampleText_tch = (float)clheight / (float)clwidth;
+        glt_bloom_screen_downsample_width_tcw = 1.0;
+        glt_bloom_screen_downsample_height_tch = (float)clheight / (float)clwidth;
     }
 
-    g_sample_width  = g_bloom_size * g_sampleText_tcw;
-    g_sample_height = g_bloom_size * g_sampleText_tch;
+	// Sample size
+    g_sample_width  = glt_bloom_effect_size * glt_bloom_screen_downsample_width_tcw;
+    g_sample_height = glt_bloom_effect_size * glt_bloom_screen_downsample_height_tch;
     
     // copy the screen space we'll use to work into the backup texture
-	GL_Bind						(glt_bloombackuptexture);
-    eglCopyTexSubImage2D		(GL_TEXTURE_2D, 0, 0, 0, 0, 0, g_screenbackuptexture_width, g_screenbackuptexture_height);  
+	GL_Bind						(glt_bloom_screen_backup);
+    eglCopyTexSubImage2D		(GL_TEXTURE_2D, 0 /*level*/, 0, 0 /* <-- offset x, y*/, 0, 0, glt_bloom_screen_backup_width, glt_bloom_screen_backup_height);  
 	
     // create the bloom image
 	sGL_BloomBlend_DownsampleView ();
@@ -579,16 +461,111 @@ return; // For now ...
 
     //restore the screen-backup to the screen
     eglDisable					(GL_BLEND);
-	GL_Bind						(glt_bloombackuptexture);
+	GL_Bind						(glt_bloom_screen_backup);
     eglColor4f					(1, 1, 1, 1);
-    sGL_Bloom_Quad				(0, clheight - g_screenbackuptexture_height, g_screenbackuptexture_width, g_screenbackuptexture_height, 1.0, 1.0);
-	sGL_Bloom_DrawEffect		();
+    sGL_Bloom_Quad				(0, clheight - glt_bloom_screen_backup_height, glt_bloom_screen_backup_width, glt_bloom_screen_backup_height, 1.0, 1.0);
+	sGL_BloomBlend_DrawEffect	();
 	eglColor3f					(1, 1, 1);   
     eglDisable					(GL_BLEND); 
     eglEnable					(GL_TEXTURE_2D);   
 	eglEnable					(GL_DEPTH_TEST);
     eglBlendFunc				(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);   
 	eglViewport					(clx, cly, clwidth, clheight);
+}
+
+#define TEX_REUPLOAD(_myglt, _fillbyte, _mywidth, _myheight)													\
+	{																											\
+		size_t bytes_size = (_mywidth) * (_myheight) * sizeof(unsigned) /* RGBA_4*/;							\
+		unsigned *pels_rgba_alloced = calloc(bytes_size, 1);													\
+		if ( (_fillbyte) ) memset (pels_rgba_alloced, (_fillbyte), bytes_size);									\
+																												\
+		GL_Bind ( (_myglt) );																					\
+		eglTexImage2D (GL_TEXTURE_2D, 0 /*miplevel*/, GL_RGBA /*gl_alpha_format*/, (_mywidth), (_myheight),		\
+			0 /*border*/, GL_RGBA, GL_UNSIGNED_BYTE, pels_rgba_alloced);										\
+		(_myglt)->width = (_mywidth), (_myglt)->height = (_myheight);											\
+		free (pels_rgba_alloced);																				\
+	} /* end of macro */
+
+void GL_Bloom_RecalcImageSize (void)
+{
+	if  (vid.direct3d /* == 8 even DX9 at the moment... likely my fault somehow */)
+		return;  // No CopyTexImage
+
+    // find screen size power of 2 size
+    glt_bloom_screen_width_pow2   = Image_Power_Of_Two_Size (clwidth);
+	glt_bloom_screen_height_pow2  = Image_Power_Of_Two_Size (clheight);
+
+    // disable blooms if we can't handle a texture of that size
+	if (glt_bloom_screen_width_pow2 > renderer.gl_max_texture_size || glt_bloom_screen_height_pow2 > renderer.gl_max_texture_size) {
+		// This theoretical situation is nearly impossible.
+		r_bloom_temp_disable = true;
+		logd ("Required power of 2 size too large.  Fix me.  Or disable the feature or something.");
+		return;
+	} else r_bloom_temp_disable = false;
+
+	// BLOOM SCREEN TEXTURE - (white filled, pow2 size of screen)
+	TEX_REUPLOAD (glt_bloom_screen, 255 /*white*/, glt_bloom_screen_width_pow2, glt_bloom_screen_height_pow2) // No closure
+		
+	// BLOOM EFFECT TEXTURE
+	if (gl_bloom_sample_size.value < 32)  Cvar_SetValueQuick (&gl_bloom_sample_size, 32); // If cvar set below 32, fix it.
+    glt_bloom_effect_size = Image_Power_Of_Two_Size (gl_bloom_sample_size.value); // POW2 size if necessary.
+
+    if (glt_bloom_effect_size > glt_bloom_screen_width_pow2)  glt_bloom_effect_size = glt_bloom_screen_width_pow2;  // Shrink to fit screen width pow2 if needed
+	if (glt_bloom_effect_size > glt_bloom_screen_height_pow2) glt_bloom_effect_size = glt_bloom_screen_height_pow2; // Shrink to fit screen height pow2 if needed
+
+	TEX_REUPLOAD (glt_bloom_effect, 0 /*white*/, glt_bloom_effect_size, glt_bloom_effect_size) // No closure
+
+	// BLOOM SCREEN DOWNSAMPLE TEXTURE
+	// - if screensize is more than 2x the bloom effect texture, set up for stepped downsampling if gl_bloom_fast_sample is 0.
+    
+	if (gl_bloom_fast_sample.value) {
+		if (clwidth > glt_bloom_effect_size * 2 || clheight > glt_bloom_effect_size * 2) {
+			glt_bloom_screen_downsample_size = glt_bloom_screen_downsample_width = glt_bloom_screen_downsample_height = glt_bloom_effect_size * 2;
+			TEX_REUPLOAD (glt_bloom_screen_downsample, 0 /*white*/, glt_bloom_screen_downsample_width, glt_bloom_screen_downsample_height) // No closure
+		}
+	} else glt_bloom_screen_downsample_size = 0;
+
+    // BLOOM SCREEN BACKUP TEXTURE - Init the screen backup texture
+	glt_bloom_screen_backup_size		= glt_bloom_screen_downsample_size ? glt_bloom_screen_downsample_size : glt_bloom_effect_size;
+	glt_bloom_screen_backup_width		= glt_bloom_screen_backup_size;
+    glt_bloom_screen_backup_height		= glt_bloom_screen_backup_size;
+
+	TEX_REUPLOAD (glt_bloom_screen_backup, 0 /*white*/, glt_bloom_screen_backup_width, glt_bloom_screen_backup_height) // No closure
+}
+
+
+#define TEXUPLOADFAKE(gltname, iwidth, iheight, pdata)																	\
+	gltname = TexMgr_LoadImage (																									\
+		NULL,					/* Model owner					*/														\
+		-1,						/* BSP texture number			*/														\
+		STRINGIFY(gltname),		/* Description					*/														\
+		iwidth,					/* Width						*/														\
+		iheight,				/* Height						*/														\
+		SRC_RGBA,				/* Source format src_format_e	*/														\
+		pdata,					/* Data							*/														\
+		"",						/* Source filename (qpath)		*/														\
+		(src_offset_t)pdata,	/* Offset into file or offset into memory offset_t or uintptr_t */						\
+																														\
+		/* Flags ... Recalculate, alpha, nearest, persistent, don't picmip, blended means don't txgamma us */			\
+		TEXPREF_BLOOMSCREEN | TEXPREF_ALPHA | TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP | TEXPREF_BLENDED	\
+	);
+
+void GL_Bloom_Init_Once (void)
+{
+	#define dummy_width_32		32
+	#define dummy_height_32		32
+	byte dummy_texture[dummy_width_32 * dummy_height_32 * RGBA_4]; // Don't think this even needs to be static.
+
+	if (vid.direct3d /* == 8 even DX9 at the moment... likely my fault somehow */)
+		return;  // No CopyTexImage
+
+	// Baker:  Create all 4 textures with inappropriate sizes
+	TEXUPLOADFAKE (glt_bloom_screen, dummy_width_32, dummy_height_32, dummy_texture); // White filled
+	TEXUPLOADFAKE (glt_bloom_effect, dummy_width_32, dummy_height_32, dummy_texture); // Black filled
+	TEXUPLOADFAKE (glt_bloom_screen_downsample, dummy_width_32, dummy_height_32, dummy_texture); // Black
+	TEXUPLOADFAKE (glt_bloom_screen_backup, dummy_width_32, dummy_height_32, dummy_texture); // Black
+
+	GL_Bloom_RecalcImageSize ();
 }
 
 

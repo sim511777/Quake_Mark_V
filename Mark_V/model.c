@@ -606,6 +606,7 @@ static modhint_e GameHacks_IsSpecialQuakeAliasModel (const char *model_name)
 	else if (String_Does_Match_Caseless (model_name, "progs/spike.mdl")	)		return MOD_SPIKE_7;
 	else if (String_Does_Match_Caseless (model_name, "progs/s_spike.mdl")	)	return MOD_SPIKE_7;
 	else if (String_Does_Match_Caseless (model_name, "progs/shambler.mdl")	)	return MOD_SHAMBLER_8;
+	else if (String_Does_Match_Caseless (model_name, "progs/laser.mdl")	)		return MOD_LASER_11;
 
 	return MOD_NORMAL_0;
 }

@@ -1289,7 +1289,7 @@ typedef void (APIENTRY *PFNGLGETCOLORTABLEPARAMETERFVEXTPROC)
 #define GLD3D_SUBTRACT                       0x84E7
 #define GLD3D_CONSTANT                       0x8576
 #define GLD3D_PRIMARY_COLOR                  0x8577
-#define GLD3D_PREVIOUS                       0x8578
+#define GLD3D_PREVIOUS                       0x8578		// GL_PREVIOUS
 #define GLD3D_DOT3_RGB                       0x86AE
 #define GLD3D_DOT3_RGBA                      0x86AF
 

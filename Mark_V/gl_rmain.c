@@ -422,7 +422,7 @@ void R_SetupView (void)
 	}
 	//johnfitz
 
-	if (frame.in_mirror_draw == false) {
+	if (frame.in_mirror_draw == false /* because if true we already did all of this for the frame ... well mostly */) {
 		R_SetFrustum (r_fovx, r_fovy); //johnfitz -- use r_fov* vars
 		R_MarkSurfaces (); //johnfitz -- create texture chains from PVS
 		R_CullSurfaces (); //johnfitz -- do after R_SetFrustum and R_MarkSurfaces
@@ -431,6 +431,7 @@ void R_SetupView (void)
 		{
 			TexMgr_R_SetupView_RecalcWarpImageSize ();
 			TexMgr_R_SetupView_InitUnderwaterWarpTexture ();
+			GL_Bloom_RecalcImageSize ();
 			vid.warp_stale = false;
 		}
 

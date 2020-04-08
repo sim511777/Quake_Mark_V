@@ -1131,7 +1131,7 @@ cbool Clasic_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 {
 	// Apparently these are all based on the trails flag
-	if (!ent->model->modelflags) return false;
+	if (!ent->model->modelflags && ent->model->modhint != MOD_LASER_11 /* laser exception because we are hacking on a trail*/) return false;
 	
 	// IF we pass the buck, we must restore these to what classic Quake particle system expects VectorCopy (ent->origin, oldorg);
 	if (!ent->traildrawn || !VectorL2Compare(ent->trail_origin, ent->origin, 140))
@@ -1142,6 +1142,7 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 	}
 	else VectorCopy (ent->trail_origin, oldorg);
 
+	// If it isn't a rocket ...
 	if ( ! Flag_Check(ent->model->modelflags, EF_ROCKET) )
 		return false;	// Classic will emit it just fine.
 
@@ -1151,7 +1152,7 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 
 		if (!qmb_trail_lavaball.value) {
 			R_AnyTrail (ent, oldorg, ent->origin, &ent->trail_origin, LAVA_TRAIL_7); // Faked
-			DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1,1 /*baker1*/,1 /*baker1*/);
+			DLight_Add (i, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1, 1 /*baker1*/, 1 /*baker1*/);
 			return false;  // Unwanted
 		}
 
@@ -1208,7 +1209,7 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 
 
 
-cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg)
+cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg, int entnum)
 {
 #if 0 // Killed.  Bubble replacement now occurs in gl_sprite.c
 	if (ent->modelindex == cl_modelindex[mi_bubble] && qmb_bubbles.value) {
@@ -1236,6 +1237,17 @@ cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg)
 		QMB_AnyTrail (oldorg, ent->origin, &ent->trail_origin, BUBBLE_TRAIL_8);
 		return false;  // We still want the spike to render
 	}
+
+	if (qmb_laserfire.value && ent->model->modhint == MOD_LASER_11) {
+		DLight_Add (entnum, ent->origin, 200, 0, cl.time + 0.01, /*rgb: */ 1, 0.3 /*baker1*/, 0 /*baker1*/);
+		QMB_AnyTrail (oldorg, ent->origin, &ent->trail_origin, TRACER2_HELLKNIGHT_TRAIL_5);
+		QMB_LaserFire (oldorg, ent->origin);
+		
+		if (qmb_laserfire.value >= 2)
+			return false; // Keep the laser model.
+		return true; // Remove the laser model.
+	}
+
 	return false; // Didn't do anything
 }
 #endif // GLQUAKE_SUPPORTS_QMB

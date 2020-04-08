@@ -177,7 +177,8 @@ Point3D R_EmitSurfaceHighlight (entity_t *enty, msurface_t *surf, rgba4_t color,
 //  Bloom -- Baker
 ///////////////////////////////////////////////////////////////////////////////
 
-void GL_Bloom_Init (void);
+void GL_Bloom_Init_Once (void);
+void GL_Bloom_RecalcImageSize (void); // Screensize changes, similar to TexMgr_R_SetupView_RecalcWarpImageSize
 void GL_BloomBlend (void);
 
 ///////////////////////////////////////////////////////////////////////////////

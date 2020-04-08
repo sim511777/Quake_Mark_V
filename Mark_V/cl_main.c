@@ -559,7 +559,7 @@ static void CL_RelinkEntities (void)
 	cl.numvisedicts = 0;
 
 // interpolate player info
-	for (i=0 ; i<3 ; i++)
+	for (i = 0 ; i < 3 ; i++)
 		cl.velocity[i] = cl.mvelocity[1][i] + frac * (cl.mvelocity[0][i] - cl.mvelocity[1][i]);
 
 	if (cls.demoplayback || cl.last_angle_time > cl.time)
@@ -642,9 +642,9 @@ static void CL_RelinkEntities (void)
 			//johnfitz
 
 		// interpolate the origin and angles
-			for (j=0 ; j<3 ; j++)
+			for (j = 0; j < 3; j++)
 			{
-				ent->origin[j] = ent->msg_origins[1][j] + f*delta[j];
+				ent->origin[j] = ent->msg_origins[1][j] + f* delta[j];
 
 				d = ent->msg_angles[0][j] - ent->msg_angles[1][j];
 
@@ -750,7 +750,7 @@ static void CL_RelinkEntities (void)
 
 #ifdef GLQUAKE_SUPPORTS_QMB
 		if (frame.qmb)   
-			if (QMB_MaybeInsertEffect (ent, oldorg)) // Bubble, Shambler, Spikes.
+			if (QMB_MaybeInsertEffect (ent, oldorg, i)) // Bubble, Shambler, Spikes, Laser.  Although Bubble removed.
 				continue; // We inserted an effect.  Bubble or something.
 #endif // GLQUAKE_SUPPORTS_QMB
 

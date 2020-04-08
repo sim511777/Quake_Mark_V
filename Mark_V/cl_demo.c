@@ -406,9 +406,9 @@ void CL_Record_f (lparse_t *line)
 		char autodemo0_url[MAX_OSPATH];
 		int checkit;
 
-		FS_FullPath_From_QPath (autodemo2_url, "autodemo_2.dem");
-		FS_FullPath_From_QPath (autodemo1_url, "autodemo_1.dem");
-		FS_FullPath_From_QPath (autodemo0_url, "autodemo_0.dem");
+		FS_FullPath_From_QPath (autodemo2_url, "auto_demo_2.dem");
+		FS_FullPath_From_QPath (autodemo1_url, "auto_demo_1.dem");
+		FS_FullPath_From_QPath (autodemo0_url, "auto_demo_0.dem");
 
 		if (File_Exists (autodemo2_url))
 			checkit = File_Delete (autodemo2_url);

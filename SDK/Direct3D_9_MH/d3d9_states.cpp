@@ -87,7 +87,7 @@ void context_t::GetRenderStates (void)
 	this->Device->GetRenderState (D3DRS_ZENABLE, &this->State.RenderStates[D3DRS_ZENABLE]);
 	this->Device->GetRenderState (D3DRS_FILLMODE, &this->State.RenderStates[D3DRS_FILLMODE]);
 	this->Device->GetRenderState (D3DRS_SHADEMODE, &this->State.RenderStates[D3DRS_SHADEMODE]);
-	this->Device->GetRenderState(D3DRS_ZWRITEENABLE, &this->State.RenderStates[D3DRS_ZWRITEENABLE]);
+	this->Device->GetRenderState (D3DRS_ZWRITEENABLE, &this->State.RenderStates[D3DRS_ZWRITEENABLE]);
 	this->Device->GetRenderState (D3DRS_ALPHATESTENABLE, &this->State.RenderStates[D3DRS_ALPHATESTENABLE]);
 	this->Device->GetRenderState (D3DRS_LASTPIXEL, &this->State.RenderStates[D3DRS_LASTPIXEL]);
 	this->Device->GetRenderState (D3DRS_SRCBLEND, &this->State.RenderStates[D3DRS_SRCBLEND]);

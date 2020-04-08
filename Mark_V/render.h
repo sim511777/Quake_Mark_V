@@ -267,13 +267,14 @@ void QMB_ColorMappedExplosion (const vec3_t org, int colorStart, int colorLength
 void QMB_LavaSplash (const vec3_t org);
 void QMB_TeleportSplash (const vec3_t org);
 void QMB_LightningBeam (const vec3_t start, const vec3_t end);
+void QMB_LaserFire (const vec3_t start, const vec3_t end);
 
 cbool QMB_FlameModelSetState (entity_t *ent);
 void QMB_StaticBubble (entity_t *ent, const vec3_t origin);
 void QMB_ShamblerCharge (const vec3_t org);
 void QMB_MissileFire (const vec3_t org, const vec3_t start, const vec3_t end);
 
-cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg);
+cbool QMB_MaybeInsertEffect (entity_t *ent, vec3_t oldorg, int entnum);
 cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg);
 Point3D QMB_GetDlightColor (dlighttype_e colornum, dlighttype_e def, cbool random);
 

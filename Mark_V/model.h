@@ -541,6 +541,7 @@ typedef enum {
 	MOD_SHAMBLER_8,			// 8
 	MOD_SPR_9,				// 9		WHY?
 	MOD_SPR32_10,			// 10		WHY?
+	MOD_LASER_11,			// 11
 } modhint_e;
 
 

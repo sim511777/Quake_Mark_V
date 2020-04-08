@@ -40,6 +40,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TEXPREF_WARPIMAGE		0x0800	// resize this texture when warpimagesize changes
 #define TEXPREF_FLOODFILL		0x1000	// skin, part of MH floodfill fix
 #define TEXPREF_BLENDED			0x2000	// Don't gamma me bro.  Cheating for lightning gun for now.
+#define TEXPREF_BLOOMSCREEN		0x4000	// resize this texture when screensize changes
+
 
 enum srcformat_e
 {

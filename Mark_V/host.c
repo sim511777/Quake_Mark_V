@@ -1023,32 +1023,30 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 	}
 
 
-	for (i = 0, var = list[i]; var; i++, var = list[i])
-	{
+	for (i = 0, var = list[i]; var; i++, var = list[i]) {
 		char sbuf[32] = {0};
 		float value;
 
-		if (var == &vid_width)
-			var = var;
 		{
-		cbool found = COM_Parse_Float_From_String (&value, config_buffer, var->name, sbuf, sizeof(sbuf));
+			cbool found = COM_Parse_Float_From_String (&value, config_buffer, var->name, sbuf, sizeof(sbuf));
+	
+	#if 0
+			alert (va("Cvar %s was %s and is %g", video_cvars[i]->name, found ? "Found" : "Not found", found ? value : 0));
+	#endif
+			if (found == false)
+				continue;
+	
+			found_any_cvars = true;
+			if (Flag_Check_Bool (var->flags, CVAR_STRINGISH)) {
+				// This one is primarily a string
+				Cvar_SetQuick ((unconstanting cvar_t *)var, sbuf);
+				continue;
+			}
+	
+			Cvar_SetValueQuick ((unconstanting cvar_t *)var, value);
 
-#if 0
-		alert (va("Cvar %s was %s and is %g", video_cvars[i]->name, found ? "Found" : "Not found", found ? value : 0));
-#endif
-		if (found == false)
-			continue;
-
-		found_any_cvars = true;
-		if (Flag_Check_Bool (var->flags, CVAR_STRINGISH)) {
-			// This one is primarily a string
-			Cvar_SetQuick ((unconstanting cvar_t *)var, sbuf);
-			continue;
-		}
-
-		Cvar_SetValueQuick ((unconstanting cvar_t *)var, value);
-
-		}}
+		} // end block
+	} // End for
 
 	return found_any_cvars;
 }

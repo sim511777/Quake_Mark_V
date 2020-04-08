@@ -68,7 +68,7 @@ static void Mnu_Keys_FindKeysForCommand_ (const char *command, int *threekeys)
 	int		j;
 	int		leng;
 	const	char *b;
-	int		maxxus = Input_Local_Is_Joystick () ? KEYMAP_Q_USABLE_MAX_494 : KEYMAP_Q_JOYLESS_MAX_265;
+	int		maxxus = Input_Local_Is_Joystick () ? KEYMAP_Q_USABLE_MAX_494 : KEYMAP_Q_JOYLESS_COUNT_266;
 
 	threekeys[0] = threekeys[1] = threekeys[2] = -1;
 	leng = strlen(command);

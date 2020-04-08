@@ -43,7 +43,8 @@ extern keydest_e	key_dest;
 
 
 #define KEYMAP_Q_USABLE_MAX_494		494							// Touchscreen fake keys.  Ignore for customize controls. Replaces KEYMAP_COUNT_512 in some functions.
-#define KEYMAP_Q_JOYLESS_MAX_265	K_MOUSEWHEELDOWN /*265*/	// 
+//#define KEYMAP_Q_JOYLESS_MAX_265	K_MOUSEWHEELDOWN /*265*/	// 
+#define KEYMAP_Q_JOYLESS_COUNT_266	K_MOUSEWHEELDOWN + 1 /*265*/	// 
 
 #ifdef SUPPORTS_KEYBIND_FLUSH
 typedef struct {

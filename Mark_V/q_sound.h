@@ -156,7 +156,7 @@ extern	channel_t   snd_channels[MAX_CHANNELS];
 
 extern volatile dma_t *shm;
 
-extern	int			total_channels;
+extern int		total_channels;
 extern int		paintedtime;
 
 //

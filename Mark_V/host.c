@@ -998,21 +998,28 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 		config_buffer [bytes_read] = 0; // Null terminate just in case
 		FS_fclose (f);
 
+		// Clipboard_Set_Text (config_buffer);
 
+#ifndef PLATFORM_ANDROID // NOT
 		// Nevermind, we don't need this.  We'll still get the settings, just not early.  And we can live with whatever unwanted video mode.
-		if (String_Does_Match_Caseless(config_file_name, CONFIG_CFG) && (size_t)bytes_read > strlen(ENGINE_FAMILY_NAME) + 3 && String_Does_Not_Start_With_Caseless(config_file_name + 3, ENGINE_FAMILY_NAME /* "// Mark V" */)) {
-			// Ok try ours
-			const char *retryname = va("%s/%s/%s", Folder_Caches_URL (), File_URL_SkipPath (game_startup_dir), config_file_name);
-			size_t bytesread, copysize; byte *data = File_To_Memory_Alloc (retryname, &bytesread);
-			if (!data)
-				return false; // Get out!  We failed.
+		if (String_Does_Match_Caseless(config_file_name, CONFIG_CFG)) {
+			if ((size_t)bytes_read > strlen(ENGINE_FAMILY_NAME) + 3) {  
+				if (String_Does_Not_Start_With_Caseless(config_buffer + 3, ENGINE_FAMILY_NAME /* "// Mark V" */)) {
+					// Ok try ours
+					const char *retryname = va("%s/%s/%s", Folder_Caches_URL (), File_URL_SkipPath (game_startup_dir), config_file_name);
+					size_t bytesread, copysize; byte *data = File_To_Memory_Alloc (retryname, &bytesread);
+					if (!data)
+						return false; // Get out!  We failed.
 
-			// Copy smaller of the size of the buffer -1 or the length of the read
-			copysize = c_min (bytesread, sizeof(config_buffer) - 1);
-			memcpy (config_buffer, data, copysize);
-			config_buffer[copysize] = 0; // Null terminate.
-			free (data);
-		}
+					// Copy smaller of the size of the buffer -1 or the length of the read
+					copysize = c_min (bytesread, sizeof(config_buffer) - 1);
+					memcpy (config_buffer, data, copysize);
+					config_buffer[copysize] = 0; // Null terminate.
+					free (data);
+				} // doesn't have mark v stamp
+			} // read len large enough
+		} // config.cfg
+#endif // PLATFORM_ANDROID not
 	}
 
 
@@ -1020,12 +1027,15 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 	{
 		char sbuf[32] = {0};
 		float value;
+
+		if (var == &vid_width)
+			var = var;
+		{
 		cbool found = COM_Parse_Float_From_String (&value, config_buffer, var->name, sbuf, sizeof(sbuf));
 
 #if 0
 		alert (va("Cvar %s was %s and is %g", video_cvars[i]->name, found ? "Found" : "Not found", found ? value : 0));
 #endif
-
 		if (found == false)
 			continue;
 
@@ -1038,7 +1048,7 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 
 		Cvar_SetValueQuick ((unconstanting cvar_t *)var, value);
 
-	}
+		}}
 
 	return found_any_cvars;
 }

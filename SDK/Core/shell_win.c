@@ -120,7 +120,7 @@ const char *_Shell_Folder_Caches_By_AppName (const char *appname)
 // resourceHacker.exe -addoverwrite MyProg.exe, MyProgNew.exe, NewImage.bmp , bitmap,128,
 // resourceHacker.exe -addoverwrite my.exe, mynew.exe, bundle.pak, RCDATA,2, // I think!  WORKS!
 
-#if defined(_MSC_VER) || !defined(CORE_SDL)
+#if defined(_MSC_VER) || !defined(CORE_SDL) // For GCC + SDL in CodeBlocks on Windows we are using the ld method!
 const void *Shell_Data_From_Resource (size_t *mem_length, cbool *must_free)
 {
 // Resourcing it up!

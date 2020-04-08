@@ -46,7 +46,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  PLATFORM: DISPATCH.  AT LEAST THE DEFAULT ONE.
 ///////////////////////////////////////////////////////////////////////////////
 
-#define JOYID_NOT_FOUND_NEG1 -1
+#define JOYID_NOT_FOUND_NEG1			-1
+#define STICK_THRESHOLD_0_9				0.9
+#define TRIGGER_THRESHOLD_NEG_0_01		-0.01
+
 static cbool				joy_disabled_commandline	= false;
 static int					joy_active_instance_idx		= JOYID_NOT_FOUND_NEG1;
 static cbool				first_read = false;
@@ -335,7 +338,7 @@ void Input_Local_Joystick_Commands (void)
 {
 	joyaxisstate_t newaxisstate;
 
-	const float stickthreshold = 0.9;
+	const float stickthreshold = STICK_THRESHOLD_0_9;
 	const float triggerthreshold = joy_deadzone_trigger.value;
 	if (joy_disabled_commandline || joy_active_instance_idx == JOYID_NOT_FOUND_NEG1 || !joy_enable.value /*|| !joy_active_joystick*/)
 		return;
@@ -359,6 +362,7 @@ void Input_Local_Joystick_Commands (void)
 		newaxisstate.axisvalue[n] = ((*mControllerAxis[n]) - 32768.0) / 32768.0f;
 	}}
 
+
 	// emit emulated arrow keys so the analog sticks can be used in the menu
 	if (key_dest != key_game)
 	{
@@ -380,7 +384,7 @@ void Input_Local_Joystick_Commands (void)
 		IN_JoyKeyEvent(joy_axisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] > triggerthreshold,  newaxisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] > triggerthreshold, K_RTRIGGER, &joy_emulatedkeytimer[8]);
 		IN_JoyKeyEvent(joy_axisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] > triggerthreshold, newaxisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] > triggerthreshold, K_LTRIGGER, &joy_emulatedkeytimer[9]);
 #else
-		IN_JoyKeyEvent(joy_axisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] < -0.01,  newaxisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] < -0.01, K_RTRIGGER, &joy_emulatedkeytimer[8]);
+		IN_JoyKeyEvent(joy_axisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] < TRIGGER_THRESHOLD_NEG_0_01,  newaxisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] < TRIGGER_THRESHOLD_NEG_0_01, K_RTRIGGER, &joy_emulatedkeytimer[8]);
 		IN_JoyKeyEvent(joy_axisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] > triggerthreshold, newaxisstate.axisvalue[SDL_CONTROLLER_AXIS_TRIGGERLEFT] > triggerthreshold, K_LTRIGGER, &joy_emulatedkeytimer[9]);
 #endif
 //	}
@@ -482,9 +486,8 @@ void Input_Local_Joystick_Move (usercmd_t *cmd)
 
 cbool Input_Local_Joystick_Startup (void)
 {
-
 	//alert ("Input_Local_Joystick_Startup");
-	if (COM_CheckParm("-nojoy")) {
+	if (!COM_CheckParm("-joystick")) {
 		joy_disabled_commandline = true;
 		return false;
 	}
@@ -509,14 +512,14 @@ cbool Input_Local_Joystick_Startup (void)
 				ji.dwFlags = JOY_RETURNCENTERED;
 
 				if ((mmr = joyGetPosEx(n, &ji)) == JOYERR_NOERROR) {
-					// Accepted
-					//static char *GetJoystickName_Alloc (int index, const char *szRegKey);
-					//char *name =  GetJoystickName_Alloc (n, "");
+					// There is a joystick here.
+					//static char *GetJoystickName_Alloc (int index, const char *szRegKey); char *name =  GetJoystickName_Alloc (n, "");					
 
+					// ACCEPTED
 					joy_provisional_idx = n;
-					break;
-				}
-			}}
+					break;					
+				} // End if joystick found
+			}} // End for loop
 
 			// abort startup if we didn't find a valid joystick
 			//if (mmr != JOYERR_NOERROR /* which is zero*/)

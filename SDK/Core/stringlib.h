@@ -60,6 +60,7 @@ int fprintlinef (FILE *stream, const char *fmt, ...) __core_attribute__((__forma
 	#define NEWLINE_CHAR_10				10
 	#define CARRIAGE_RETURN_CHAR_13		13
 	#define SPACE_CHAR_32				32
+	#define DQUOTE_CHAR_34				34
 	#define MAX_ASCII_PRINTABLE_126		126 // TILDE
 	#define MAX_ASCII_DELETE_CHAR_127	127 // DELETE CHAR, which might be a key, but isn't really printable.  
 												// Depending on situation may be desirable (key input) or undesirable (printing ... usually ...)

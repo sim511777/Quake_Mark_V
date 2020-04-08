@@ -12,9 +12,12 @@
 //  Compile Time Assert
 ///////////////////////////////////////////////////////////////////////////////
 
-#define	COMPILE_TIME_ASSERT(name, x)	\
-	typedef int dummy_ ## name[(x) * 2 - 1]
-
+#ifdef _DEBUG // This is debug only ...
+#define	COMPILE_TIME_ASSERT(HINT_ERROR_WORD, CONDITION_THAT_MUST_BE_TRUE)	\
+	typedef int dummy_ ## HINT_ERROR_WORD[(CONDITION_THAT_MUST_BE_TRUE) * 2 - 1]
+#else
+	#define COMPILE_TIME_ASSERT(name, x)	// Nothing!
+#endif
 
 COMPILE_TIME_ASSERT(char, sizeof(char) == 1);
 COMPILE_TIME_ASSERT(float, sizeof(float) == 4);

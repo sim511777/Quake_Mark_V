@@ -103,9 +103,7 @@ zlib1.dll
 		#ifdef PLATFORM_IOS
 			#import <GLKit/GLKit.h>
 			#import <UIKit/UIKit.h>
-#ifndef PLATFORM_OSX // Crusty Mac
 			#import "VidUIWindow.h"
-#endif  // Crusty Mac
 		#endif
 
 	#endif
@@ -166,6 +164,7 @@ int memicmp (const void *s1, const void *s2, size_t n);
 #endif // PLATFORM_ANDROID
 
 // DON'T DEFINE THIS UNTIL AFTER SYSTEM LIBRARIES!!!
+
 #ifndef reply // Should probably be guantaneed if a successful return, but lots of 
 	#define reply // ALWAYS OPTIONAL. We use this as a hint keyword in conjunction with NOT_MISSING_ASSIGN  (optional is vague, a reply is always optional)
 #endif // We can't include core.h. <---- well, we have to be careful where particularly on Apple.
@@ -193,19 +192,19 @@ int memicmp (const void *s1, const void *s2, size_t n);
 
 #ifndef optional // optional is used when a NULL can be provided for special input. 
 	#define optional // Extra information that may be provided ... optional between_text - might be ", " or NULL.
-#endif
+#endif // We can't include core.h
 
 #ifndef required // A pointer sent that is not optional (can/do we evolve this to set 100% of time when it doesn't error?)
 	#define required
-#endif
+#endif // We can't include core.h
 
 #ifndef modify // A required pointer that is modified.  IN AND OUT behavior.  REQUIRED
 	#define modify // Note we hardly ever use this.
-#endif
+#endif // We can't include core.h
 
 #ifndef writeonly// A write only pointer that is required
 	#define writeonly // Note we hardly ever use this.
-#endif
+#endif // We can't include core.h
 
 #ifndef read_only_ // A read only pointer that is required
 	#define read_only_ const // Note we hardly ever use this.
@@ -250,6 +249,7 @@ typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__forma
 ///////////////////////////////////////////////////////////////////////////////
 //  CORE: Basic function setup
 ///////////////////////////////////////////////////////////////////////////////
+
 
 #define KEYMAP_COUNT_512			512
 #define KEYMAP_HARDWARE_TILDE_511	(KEYMAP_COUNT_512 - 1)

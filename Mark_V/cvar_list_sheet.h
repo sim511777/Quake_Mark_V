@@ -6,21 +6,22 @@
 // Remember, we cannot ifdef away any of these to ensure they preserve.
 //            																																					Try for keywords, begin capital.  End with period.
 	#define LOOKSPRING_DEFAULT "0"	// NO, not now. Vertically orients view to level after a few steps forward.  Preferable for typical mobile controls.
-	#define POLYLITE_DEFAULT "1"	// Quake has too intense hues especially for ring
 	#define RING_DEFAULT "1"		// Translucent weapon when invisible.
 
 #if defined(PLATFORM_ANDROID) || defined(PLATFORM_IOS)
 	// Mobile has different defaults for certain settings to be more pleasing by default.
 	// SCR_CLOCK defaults -1 deathmatch only just like we want.
-	#define CONTRAST_DEFAULT "1.5"	// Brighter.  Better than too dark.
+	#define CONTRAST_DEFAULT "1.5"	// Contrasty.  Better than too dark.
 	#define PQLOCS_DEFAULT "0"		// So few deathmatch players remain ...
 	#define SCALEAUTO_DEFAULT "3"	// Big for small screens.  Large screens can shrink it.
 	#define HWGAMMA_DEFAULT "0"		// Doesn't have hardware gamma.
+	#define POLYLITE_DEFAULT "1"	// Quake has too intense hues especially for ring
 #else
-	#define CONTRAST_DEFAULT "2"	// Contrasty
+	#define CONTRAST_DEFAULT "1"	// Desktop default.
 	#define PQLOCS_DEFAULT "0"		// So few deathmatch players remain ...
 	#define SCALEAUTO_DEFAULT "1"	// So few deathmatch players remain ...
 	#define HWGAMMA_DEFAULT "0"		// Let's always do non-hardware gamma now
+	#define POLYLITE_DEFAULT "0"	// Quake has too intense hues especially for ring
 #endif
 
 CVAR_DEF( Movie_Init  , AVI       ,  DEP_AVI  , capture_codec             , "capturevideo_codec"      , "auto"    , CVAR_ARCHIVE      , CaptureCodec_Validate,  "4 character video capture compression codec (XVID, DIVX, H264, VP80, etc).  Codec must already be installed on operating system.  XVID is fast.")

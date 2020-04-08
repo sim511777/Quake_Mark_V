@@ -399,6 +399,8 @@ typedef enum { ENUM_FORCE_INT_GCC_ (cbool) // To throw into enums to force fucki
 } cbool;
 #define CBOOL_DEFINED
 
+#define IDX_NOT_FOUND_NEG1 -1
+
 typedef unsigned char byte;
 
 #ifndef PLATFORM_IOS
@@ -421,7 +423,6 @@ typedef unsigned char byte;
 #ifndef M_PI
 	#define M_PI 3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
-#define IDX_NOT_FOUND_NEG1 -1
 
 #define in_range( _lo, _v, _hi )					( (_lo) <= (_v) && (_v) <= (_hi) )
 #define out_of_bounds( _lo, _v, _hi )				( (_v) < (_lo) || (_hi) < (_v) ) // It's back!  And bigger than ever!
@@ -534,7 +535,7 @@ typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//  Endangered Species Section - Some are slight used.
+//  Endangered Species Section - Some are slighty used.
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef void  (*MShutdown)			(void *);
@@ -555,14 +556,15 @@ typedef void  (*MShutdown)			(void *);
 		_x->Shutdown	= (MShutdown *)Shutdown; \
 	}
 
-#define TRUISM(_x) ((_x) || 1) // Result of expression is always true.  Unused.  Endangered.  Used for enhanced for-loop/if logic
+#define TRUISM(_x) ((_x) || 1) 							// Result of expression is always true.  Unused.  Endangered.  Used for enhanced for-loop/if logic
 #define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :		// EVIL!  And so awesome.  Endangered because unclear to the casual read.
 #define SWITCH_DEFAULT(_val) (_val)						// Endangered because unclear to the casual read.
+
 #define block_start__ {									// Endangered.
 #define __block_end }
 #define XORY(x, y) ((x) ? (x) : (y))					// Endangered.  Unused.
 #define BATCHSIZE_8 8									// Endangered.  Unused.
-#define BYTE_POSITION(_dest, _n)			(((byte *)(_dest))[_n])			// Used just once.  Rename/simplify or clarify.
+#define BYTE_POSITION(_dest, _n) (((byte *)(_dest))[_n])			// Used just once.  Rename/simplify or clarify.
 
 
 

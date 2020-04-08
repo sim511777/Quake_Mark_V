@@ -56,89 +56,98 @@ cbool COM_ListMatch (const char *liststr, const char *itemstr)
 	return false;
 }
 
+char *Find_BOL (char *master, char *child)
+{
+	char *cursor = child;
+	while (cursor >= master) {
+		if (cursor[0] == '\n')
+			return cursor + 1;
+		cursor --;
+	}
+	return NULL; // Didn't find.
+}
+
+char *Find_EOL (char *master, char *child)
+{
+	char *cursor = child;
+	while (cursor[0]) {
+		if (cursor[0] == '\n' || cursor[0] == '\r')
+			return cursor;
+		cursor ++;
+	}
+	return NULL; // Didn't find.
+}
+
+
 // Baker: Used to read config early; lots of work to look around the file and find information.
 cbool COM_Parse_Float_From_String (float *retval, const char *string_to_search, const char *string_to_find, char *string_out, size_t string_out_size)
 {
-	int beginning_of_line, value_spot, value_spot_end;
-	int spot, end_of_line, i;
-	char *cursor;
+	char *found_string  = strstr(string_to_search, string_to_find);
+	int slen			= strlen(string_to_find);
 
-	cursor = strstr(string_to_search, string_to_find);
-
-	while (1)
-	{
-		if (cursor == NULL)
-			return false; // Didn't find it.
-
-		spot = cursor - string_to_search; // Offset into string.
-
-		// Find beginning of line.  Go from location backwards until find newline or hit beginning of buffer
-
-		for (i = spot - 1, beginning_of_line = -1 ; i >= 0 && beginning_of_line == -1; i-- )
-			if (string_to_search[i] == '\n')
-				beginning_of_line = i + 1;
-			else if (i == 0)
-				beginning_of_line = 0;
-
-		if (beginning_of_line == -1)
-			return false; // Didn't find beginning of line?  Errr.  This shouldn't happen
-
-		if (beginning_of_line != spot)
-		{
-			// Be skeptical of matches that are not beginning of the line
-			// These might be aliases or something and the engine doesn't write the config
-			// in this manner.  So advance the cursor past the search result and look again.
-			cursor = strstr(cursor + strlen(string_to_find), string_to_find);
-			continue; // Try again
-		}
-
-		break;
+	char *bol			= found_string ? Find_BOL(string_to_search, found_string) : NULL;
+	char *eol			= found_string ? Find_EOL(string_to_search, found_string + slen) : NULL;
+	
+	if (!found_string) {
+		return false; // Didn't find string
 	}
 
-	// Find end of line. Go from location ahead of string and stop at newline or it automatically stops at EOF
+	if (found_string[slen] != SPACE_CHAR_32) {
+		return false; // Expect a space here
+	}
 
-	for (i = spot + strlen(string_to_find), end_of_line = -1; string_to_find[i] && end_of_line == -1; i++ )
-		if (string_to_search[i] == '\r' || string_to_search[i] == '\n')
-			end_of_line = i - 1;
+	if (bol && bol != found_string) {
+		return false; // Isn't at beginning of line.
+	}
 
-	if (end_of_line == -1) // Hit null terminator
-		end_of_line = strlen(string_to_search) - 1;
-
-	// We have beginning of line and end of line.  Go from spot + strlen forward and skip spaces and quotes.
-	for (i = spot + strlen(string_to_find), value_spot = -1, value_spot_end = -1; i <= end_of_line && (value_spot == -1 || value_spot_end == -1); i++)
-		if (string_to_search[i] == ' ' || string_to_search[i] == '\"')
-		{
-			// If we already found the start, we are looking for the end and just found it
-			// Otherwise we are just skipping these characters because we ignore them
-			if (value_spot != -1)
-				value_spot_end = i - 1;
-
+	else {
+		int ch_eol = IDX_NOT_FOUND_NEG1;
+		char linus[256] = {0};
+		if (eol) {
+			ch_eol = eol[0];
+			eol[0] = 0;
+			c_strlcpy (linus, found_string);
+			eol[0] = ch_eol;
 		}
-		else if (value_spot == -1)
-			value_spot = i; // We didn't have the start but now we found it
+		else {
+			c_strlcpy (linus, found_string);
+		}
 
-	// Ok check what we found
+		// alert ("(%s) ", linus);
 
-	if (value_spot == -1)
-		return false; // No value
+		{	char *start = &linus[slen] + 1; // Beyond the space			
+			if (start[0] == DQUOTE_CHAR_34) {
+				start ++;
+			}
+			if (start[0] == DQUOTE_CHAR_34) {
+				return false; // Empty string
+			}
+		
+			{	
+				char *cursor = start;
+				char valus[256] = {0};
+				cbool did_copy = false;
+				while (cursor[0]) {
+					if (cursor[0] == DQUOTE_CHAR_34) {
+						int ch_temp = cursor[0];
+						cursor[0] = 0;
+						c_strlcpy (valus, start);
+						cursor[0] = ch_temp;
+						did_copy = true;
+						break;
+					}
+					cursor ++;
+				}
+				if (!did_copy) {
+					c_strlcpy (valus, start);
+				}
+				//alert ("(%s) ... val: (%s)", linus, valus);
+				strlcpy (string_out, valus, string_out_size);
+				*retval = atof (valus);
+			}
 
-	if (value_spot_end == -1)
-		value_spot_end = end_of_line;
-
-	do
-	{
-		// Parse it and set return value
-		char temp = string_to_search[value_spot_end + 1];
-		char *temptermspot = (char*)&string_to_search[value_spot_end + 1]; // slightly evil
-
-		//string_to_search[value_spot_end + 1] = 0;
-		*temptermspot = 0;
-		strlcpy (string_out, &string_to_search[value_spot], string_out_size);
-		*retval = atof (&string_to_search[value_spot]);
-		*temptermspot = temp;
-
-	} while (0);
-
+		}		
+	}
 	return true;
 }
 

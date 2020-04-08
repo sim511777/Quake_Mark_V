@@ -332,6 +332,7 @@ void Sky_Stencil_Draw (void)
 
 // Baker: Where drawn (doesn't z-fail), replace with 1
 // in the stencil buffer.
+	eglClearStencil (0); // Sky must clear to 0
 	eglClear(GL_STENCIL_BUFFER_BIT);
 	eglStencilFunc (GL_ALWAYS, 1, ~0 );
 	eglStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);

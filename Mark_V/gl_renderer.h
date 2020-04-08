@@ -30,10 +30,8 @@ typedef struct
 
 	GLenum		TEXTURE0, TEXTURE1; //johnfitz
 
-	PFNGLMULTITEXCOORD2FARBPROC GL_MTexCoord2fFunc;
-	PFNGLACTIVETEXTUREARBPROC GL_SelectTextureFunc;
-	qGLColorTableEXT GLColorTableEXT;
-	qgl3DfxSetPaletteEXT GLSetPaletteEXT; 
+	PFNGLMULTITEXCOORD2FARBPROC GL_MTexCoord2fFunc; // glMultiTexCoord2
+	PFNGLACTIVETEXTUREARBPROC GL_SelectTextureFunc; // glActiveTexture ?
 
 //	glColorTableEXT
 //		glColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE,

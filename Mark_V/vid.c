@@ -290,7 +290,7 @@ void VID_Resize_Check (int resize_level) // 1 = dynamic resize, 2 = setmode
 // Called by VID_BeginRendering
 static void VID_BeginRendering_Resize_Think (void)
 {
-    if (vid.resized || vid.client_window.width == 0)
+    if (vid.direct3d == 9 /* MH is want this every frame as a test*/ || vid.resized || vid.client_window.width == 0)
     {
         VID_BeginRendering_Resize_Think_Resize_Act ();
 

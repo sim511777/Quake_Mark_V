@@ -3295,12 +3295,12 @@ ALIAS MODELS
 
 aliashdr_t	*pheader;
 
-stvert_t	stverts[MAXALIASVERTS];
-mtriangle_t	triangles[MAXALIASTRIS];
+stvert_t	stverts[MAXALIASVERTS_3984];
+mtriangle_t	triangles[MAXALIASTRIS_4096];
 
 // a pose is a single set of vertexes.  a frame may be
 // an animating sequence of poses
-trivertx_t	*poseverts[MAXALIASFRAMES];
+trivertx_t	*poseverts[MAXALIASFRAMES_256];
 int			posenum;
 
 byte		**player_8bit_texels_tbl;
@@ -3772,16 +3772,16 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 	if (pheader->numverts <= 0)
 		Host_Error ("Mod_LoadAliasModel: model %s has no vertices", mod->name);
 
-	if (pheader->numverts > MAXALIASVERTS)
-		Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS);	// GLQUAKE
+	if (pheader->numverts > MAXALIASVERTS_3984)
+		Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS_3984);	// GLQUAKE
 
 	pheader->numtris = LittleLong (pinmodel->numtris);
 
 	if (pheader->numtris <= 0)
 		Host_Error ("Mod_LoadAliasModel: model %s has no triangles", mod->name);
 
-	if (pheader->numtris > MAXALIASTRIS) // Baker: This technically does not apply to WinQuake only GLQuake.
-		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
+	if (pheader->numtris > MAXALIASTRIS_4096) // Baker: This technically does not apply to WinQuake only GLQuake.
+		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS_4096);  //Spike -- added this check, because I'm segfaulting out.
 
 	pheader->numframes = LittleLong (pinmodel->numframes);
 	numframes = pheader->numframes;
@@ -3892,7 +3892,7 @@ aliashdr_t	*pheader;
 
 // a pose is a single set of vertexes.  a frame may be
 // an animating sequence of poses
-trivertx_t	*poseverts[MAXALIASFRAMES];
+trivertx_t	*poseverts[MAXALIASFRAMES_256];
 int			posenum;
 
 /*
@@ -4229,11 +4229,11 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 	if (pheader->numverts <= 0)
 		Host_Error ("Mod_LoadAliasModel: model %s has no vertices", mod->name);
 
-	if (pheader->numverts > MAXALIASVERTS)
-		Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS);	//WINQUAKE
+	if (pheader->numverts > MAXALIASVERTS_3984)
+		Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS_3984);	//WINQUAKE
 	
-	if (pheader->numtris > MAXALIASTRIS) // Baker: This technically does not apply to WinQuake only GLQuake ... but for consistency ...
-		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
+	if (pheader->numtris > MAXALIASTRIS_4096) // Baker: This technically does not apply to WinQuake only GLQuake ... but for consistency ...
+		Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS_4096);  //Spike -- added this check, because I'm segfaulting out.
 
 	R_CheckAliasVerts (pmodel->numverts);
 
@@ -4243,9 +4243,9 @@ void Mod_LoadAliasModel (qmodel_t *mod, void *buffer)
 	if (pheader->numtris <= 0)
 		Host_Error ("Mod_LoadAliasModel: model %s has no triangles", mod->name);
 
-	if (pheader->numtris > MAXALIASTRIS)
+	if (pheader->numtris > MAXALIASTRIS_4096)
 	{	//Spike -- added this check, because I'm segfaulting out.
-		Host_Error ("model %s has too many triangles (%d > %d)", mod->name, pheader->numtris, MAXALIASTRIS);
+		Host_Error ("model %s has too many triangles (%d > %d)", mod->name, pheader->numtris, MAXALIASTRIS_4096);
 	}
 
 

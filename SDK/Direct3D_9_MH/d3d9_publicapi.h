@@ -1487,6 +1487,7 @@ BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESC
 
 // our fake CDS replacement
 LONG WINAPI /* Baker added WINAPI */  Direct3D9_ChangeDisplaySettings (LPDEVMODE lpDevMode, DWORD dwflags);
+BOOL WINAPI /* Baker added WINAPI */ Direct3D9_EnumDisplaySettings (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode);
 
 // remove cds
 // Baker: I always call these in the Direct3D build, but I refer to them by their true name like Direct3D9_ChangeDisplaySettings
@@ -1505,14 +1506,10 @@ LONG WINAPI /* Baker added WINAPI */  Direct3D9_ChangeDisplaySettings (LPDEVMODE
 // So I would prefer it to mirror the above function prototype.
 // So when I hook it up we don't get the compiler complaining about the function prototype not matching.
 BOOL WINAPI /* Baker didn't add WINAPI here */ Direct3D9_SwapBuffers (HDC unused);
-BOOL WINAPI /* Baker added WINAPI */ Direct3D9_EnumDisplaySettings (LPCSTR lpszDeviceName, DWORD iModeNum, LPDEVMODE lpDevMode);
+
 
 // replacement for mode resets
-//void Direct3D9_ResetMode (int width, int height, int bpp, BOOL windowed, int window_style, int window_ex_style);
-//void Direct3D9_ResetMode (int width, int height, BOOL windowed); // MH wants it this way.
 void Direct3D9_ResetMode (int width, int height, BOOL windowed, int client_left, int client_top, int desktop_width, int desktop_height, int is_resize, int *pborder_width, int *pborder_height); // Baker: Center screen if possible
-// MH killed this: void Direct3D9_ResizeWindow (int width, int height, int bpp);
-// MH killed this apparently: void Direct3D9_ResetDevice (void);
 
 // extra stencil op modes
 #define GL_INCR_WRAP                      0x8507

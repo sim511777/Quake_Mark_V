@@ -148,6 +148,11 @@ void R_DrawAliasModel_ShowTris (entity_t *e);
 void R_DrawParticles_ShowTris (void);
 
 void GL_DrawAliasShadow (entity_t *e);
+
+void RB_ShadowVolumeBegin (void);	// Baker: Clear the stencil buffer if applicable  MH Shadow Volumes
+void RB_ShadowVolumeFinish (void);	// Baker: Render  MH Shadow Volumes
+
+
 void DrawGLPoly (glpoly_t *p, int renderfx);
 void DrawGLTriangleFan (glpoly_t *p, int renderfx);
 void DrawWaterPoly (glpoly_t *p, cbool isteleporter);

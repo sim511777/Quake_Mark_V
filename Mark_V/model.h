@@ -427,10 +427,8 @@ typedef struct
 #ifdef GLQUAKE_RENDERER_SUPPORT
 	int					poseverts;
 	int					posedata;	// numposes*poseverts trivert_t
-	int					commands;	// gl command list with embedded s/t
-#ifdef DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
-	int					commands_d3d8_no_external_skins;	// gl command list with embedded s/t
-#endif // DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
+	int					commands;	// gl command list with embedded s/t	Baker: This is an offset_t into the alias allocation.
+	int					commands_d3d8_no_external_skins;	// gl command list with embedded s/t  Baker: This is an offset_t into the alias allocation.  DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
 	struct gltexture_s	*gltextures[MAX_SKINS][4]; //johnfitz
 	struct gltexture_s	*fbtextures[MAX_SKINS][4]; //johnfitz
 	int					texels[MAX_SKINS];	// only for player skins
@@ -446,16 +444,16 @@ typedef struct
 } aliashdr_t;
 
 // Baker: Ben Jardrup's engine 3984 //2000	//3985 seems to crash assembler(?)
-#define	MAXALIASVERTS	3984	// johnfitz -- was 1024.  Baker: 1024 is GLQuake original limit.  2000 is WinQuake original limit. Baker 2000->3984
-#define	MAXALIASFRAMES	256
-#define	MAXALIASTRIS	4096	/// Baker 2048 to Ben Jardrup limit of 4096  // Baker: Spike uses this but WinQuake renderer seems to not use.  GLQuake structure.
+#define	MAXALIASVERTS_3984	3984	// johnfitz -- was 1024.  Baker: 1024 is GLQuake original limit.  2000 is WinQuake original limit. Baker 2000->3984
+#define	MAXALIASFRAMES_256	256
+#define	MAXALIASTRIS_4096	4096	/// Baker 2048 to Ben Jardrup limit of 4096  // Baker: Spike uses this but WinQuake renderer seems to not use.  GLQuake structure.
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
-//#define	MAXALIASTRIS	2048 // Have WinQuake check this even though does not use it because is error in GLQuake
+//#define	MAXALIASTRIS_4096	2048 // Have WinQuake check this even though does not use it because is error in GLQuake
 extern	aliashdr_t	*pheader;
-extern	stvert_t	stverts[MAXALIASVERTS];
-extern	mtriangle_t	triangles[MAXALIASTRIS];
-extern	trivertx_t	*poseverts[MAXALIASFRAMES];
+extern	stvert_t	stverts[MAXALIASVERTS_3984];
+extern	mtriangle_t	triangles[MAXALIASTRIS_4096];
+extern	trivertx_t	*poseverts[MAXALIASFRAMES_256];
 #endif // GLQUAKE_RENDERER_SUPPORT
 
 //===================================================================

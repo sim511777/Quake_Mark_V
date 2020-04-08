@@ -222,6 +222,10 @@ void context_t::FinishGammaAndContrast (void)
 	this->Device->DrawPrimitiveUP (D3DPT_TRIANGLEFAN, 2, verts, sizeof (gandcvert_t));
 
 	this->Device->SetPixelShader (NULL);
+
+	// resolves "cannot render to a render target that is also used as a texture" because the RT will still be bound at
+	// the start of the next frame
+	this->SetTexture (0, NULL);
 }
 
 

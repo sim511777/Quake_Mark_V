@@ -307,13 +307,6 @@ void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr)
 	trivertx_t	*verts;
 	int		count; //johnfitz -- precompute texcoords for padded skins
 	int		*loadcmds; //johnfitz
-#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-	float	hscale, vscale; //johnfitz -- padded skins
-	//johnfitz -- padded skins
-	hscale = (float)hdr->skinwidth/(float)TexMgr_PadConditional(hdr->skinwidth);
-	vscale = (float)hdr->skinheight/(float)TexMgr_PadConditional(hdr->skinheight);
-	//johnfitz
-#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 
 	aliasmodel = m;
 	paliashdr = hdr;	// (aliashdr_t *)Mod_Extradata (m);
@@ -349,31 +342,37 @@ void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr)
 	}
 	//johnfitz
 
-#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-	cmds = (int *) Hunk_Alloc (numcommands * 4);
-	paliashdr->commands_d3d8_no_external_skins = (byte *)cmds - (byte *)paliashdr;
+	if (vid.direct3d == 8) {
+		// If Direct3D 8, make the alternate set of texture coordinates available for external textures.
+		// #ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
+		float	hscale = (float)hdr->skinwidth/(float)TexMgr_PadConditional(hdr->skinwidth);	//johnfitz -- padded skins
+		float   vscale = (float)hdr->skinheight/(float)TexMgr_PadConditional(hdr->skinheight);
 
-	//johnfitz -- precompute texcoords for padded skins
-	loadcmds = commands;
-	while(1)
-	{
-		*cmds++ = count = *loadcmds++;
+		cmds = (int *) Hunk_Alloc (numcommands * 4);
+		paliashdr->commands_d3d8_no_external_skins = (byte *)cmds - (byte *)paliashdr;
 
-		if (!count)
-			break;
-
-		if (count < 0)
-			count = -count;
-
-		do
+		//johnfitz -- precompute texcoords for padded skins
+		loadcmds = commands;
+		while(1)
 		{
-			*(float *)cmds++ = hscale * (*(float *)loadcmds++);
-			*(float *)cmds++ = vscale * (*(float *)loadcmds++);
+			*cmds++ = count = *loadcmds++;
 
-		} while (--count);
+			if (!count)
+				break;
+
+			if (count < 0)
+				count = -count;
+
+			do
+			{
+				*(float *)cmds++ = hscale * (*(float *)loadcmds++);
+				*(float *)cmds++ = vscale * (*(float *)loadcmds++);
+
+			} while (--count);
+		}
+		////johnfitz
+		//#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 	}
-	//johnfitz
-#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 
 	verts = (trivertx_t *) Hunk_Alloc (paliashdr->numposes * paliashdr->poseverts * sizeof(trivertx_t));
 	paliashdr->posedata = (byte *)verts - (byte *)paliashdr;

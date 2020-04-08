@@ -543,7 +543,9 @@ vmode_t WIN_Vid_GetDesktopProperties (void)
 {
 	DEVMODE	devmode;
 	vmode_t desktop = {0};
-
+#ifndef CORE_GL
+	#define eEnumDisplaySettings EnumDisplaySettings
+#endif // !CORE_GL ... WinQuake
 	if (!eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
 	{
 		System_Error ("VID_UpdateDesktopProperties: eEnumDisplaySettings failed");

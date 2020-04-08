@@ -43,8 +43,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	QUAKE_VERSION			1.09
 #define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.27
-#define	ENGINE_BUILD			1027			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_VERSION			1.28
+#define	ENGINE_BUILD			1028			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -196,6 +196,7 @@ extern fn_set_t qfunction_set;
 	#define GLQUAKE_TEXTURE_POINTER
 	#define GLQUAKE_VIDBUFFER_ACCESS
 	#define GLQUAKE_VIEW_BLENDS
+	#define SHADOW_VOLUMES
 
 #ifndef DIRECT3D9_WRAPPER // dx9 - we don't have texture gamma integrated
 	#define GLQUAKE_TEXTUREGAMMA_SUPPORT

@@ -1071,11 +1071,6 @@ void APIENTRY d3d9mh_glViewport (GLint x, GLint y, GLsizei width, GLsizei height
 	// translate from OpenGL bottom-left to D3D top-left
 	y = d3d_Context->DisplayMode.Height - (height + y);
 
-	if (x < 0) x = 0;
-	if (y < 0) y = 0;
-	if (width > d3d_Context->DisplayMode.Width) width = d3d_Context->DisplayMode.Width;
-	if (height > d3d_Context->DisplayMode.Height) height = d3d_Context->DisplayMode.Height;
-
 	d3d_Context->State.Viewport.X = x;
 	d3d_Context->State.Viewport.Y = y;
 	d3d_Context->State.Viewport.Width = width;

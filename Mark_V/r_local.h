@@ -204,7 +204,7 @@ void R_InitTurb (void);
 // Alias models
 //=========================================================
 
-//#define MAXALIASVERTS		2000	// TODO: tune this
+//#define MAXALIASVERTS_3984 moved to model.h
 #define ALIAS_Z_CLIP_PLANE	5
 
 extern int				numverts;

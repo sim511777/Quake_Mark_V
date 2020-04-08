@@ -407,7 +407,7 @@ context_t::context_t (HDC hdc)
 
 	// combine and add - because d3d caps are MUCH more granular than a single monolithic GL extension, we just
 	// expose these 2 extensions on Ps 2.0 or better hardware
-	if (D3DSHADER_VERSION_MAJOR (d3d_Globals.DeviceCaps.PixelShaderVersion) > 2)
+	if (D3DSHADER_VERSION_MAJOR (d3d_Globals.DeviceCaps.PixelShaderVersion) >= 2)
 	{
 		strcat (this->GLExtensions, "GL_ARB_texture_env_add ");
 		strcat (this->GLExtensions, "GL_ARB_texture_env_combine ");
@@ -499,11 +499,6 @@ void context_t::ResetMode (int width, int height, BOOL windowed, int client_left
 		SetWindowLong (this->Window, GWL_STYLE, WS_POPUP); // Fullscreen goes to 0,0
 		SetWindowPos (this->Window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 	}
-
-//	// set up the new mode
-//	this->DisplayMode.Width = width;
-//	this->DisplayMode.Height = height;
-//	this->DisplayMode.Windowed = windowed;
 
 	// reset present params and reset the device
 	this->ResetDevice (this->SetupPresentParams (width, height, windowed, this->DisplayMode.VSync));

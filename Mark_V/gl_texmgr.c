@@ -1637,7 +1637,7 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 		eglTexImage2D (GL_TEXTURE_2D, 0, internalformat, glt->width, glt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, myData);
 
 		// upload mipmaps
-		if (glt->flags & TEXPREF_MIPMAP)
+		if (Flag_Check(glt->flags, TEXPREF_MIPMAP) && vid.direct3d != 9) // MH says DX9 NO MIPMAP doesn't need to mipmap.
 		{
 			mipwidth = glt->width;
 			mipheight = glt->height;

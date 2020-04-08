@@ -86,12 +86,12 @@ void VID_Local_AddFullscreenModes (void)
 
 	// Baker: Run through every display mode and get information
 
-	while ( (stat = eEnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
+	while ( (stat = EnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
 		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
-		cbool width_ok	= in_range (MIN_MODE_WIDTH, devmode.dmPelsWidth, MAX_MODE_WIDTH);
-		cbool height_ok	= in_range (MIN_MODE_HEIGHT, devmode.dmPelsHeight, MAX_MODE_HEIGHT);
+		cbool width_ok	= in_range (MIN_MODE_WIDTH_640, devmode.dmPelsWidth, MAX_MODE_WIDTH_10000);
+		cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, devmode.dmPelsHeight, MAX_MODE_HEIGHT_10000);
 		cbool qualified	= (bpp_ok && width_ok && height_ok);
 
 		devmode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;

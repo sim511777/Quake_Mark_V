@@ -30,8 +30,9 @@ Copyright (C) 2013-2014 Baker
 		BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
 		BOOL  (WINAPI *eSwapBuffers) (HDC);
 	#endif // CORE_GL + PLATFORM_WINDOWS
-
-#endif // CORE_GL
+#else // ^^ CORE_GL
+	#define eEnumDisplaySettings EnumDisplaySettings
+#endif // !CORE_GL
 
 static const char *WIN_STRPROP_MINW = "minw";
 static const char *WIN_STRPROP_MINH = "minh";

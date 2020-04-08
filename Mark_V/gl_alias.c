@@ -35,8 +35,8 @@ gltexture_t *playertextures[MAX_COLORMAP_SKINS_1024];
 
 
 
-float	r_avertexnormals[NUMVERTEXNORMALS_162][3] = {
-#include "anorms.h"
+float r_avertexnormals[NUMVERTEXNORMALS_162][3] = {
+	#include "anorms.h"
 };
 
 vec3_t	shadevector;
@@ -44,12 +44,12 @@ vec3_t	shadevector;
 extern vec3_t	lightcolor; //johnfitz -- replaces "float shadelight" for lit support
 
 // precalculated dot products for quantized angles
-#define SHADEDOT_QUANT 16
-float	r_avertexnormal_dots[SHADEDOT_QUANT][256] =
-#include "anorm_dots.h"
+#define SHADEDOT_QUANT_16 16
+float	r_avertexnormal_dots[SHADEDOT_QUANT_16][256] =
+	#include "anorm_dots.h"
 ;
 
-extern	vec3_t			lightspot;
+extern vec3_t lightspot;
 
 float	*shadedots = r_avertexnormal_dots[0];
 
@@ -59,30 +59,27 @@ cbool	overbright; //johnfitz
 
 cbool shading = true; //johnfitz -- if false, disable vertex shading for various reasons (fullbright, r_lightmap, showtris, etc)
 
-
 /*
 =============
-GL_DrawAliasFrame -- johnfitz -- rewritten to support colored light, lerping, entalpha, multitexture, and r_drawflat
+GL_DrawAliasFrame_QMB_Flame_And_Shadows -- johnfitz -- rewritten to support colored light, lerping, entalpha, multitexture, and r_drawflat.  Baker: Modified
 =============
 */
 
-#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-cbool direct3d8_external_textures_workaround;
-#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool truncate_flame)
-{
-	float 	vertcolor[4];
-    trivertx_t *verts1, *verts2;
-	int		*commands;
-	int		count;
-	float	u,v;
-	float	blend, iblend;
-	cbool lerping;
 
-	if (lerpdata.pose1 != lerpdata.pose2)
+void GL_DrawAliasFrame_QMB_Flame_And_Shadows (aliashdr_t *paliashdr, lerpdata_t lerpdata, int commands_offset, cbool truncate_flame, float mdl_entalpha)
+{
+	int				*commands = (int *)((byte *)paliashdr + commands_offset); //paliashdr->commands); // Not always!
+    trivertx_t 		*verts2, *verts1 = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+	float			blend, iblend;
+	cbool			lerping = (lerpdata.pose1 != lerpdata.pose2);
+	int				count;
+	float			u, v;
+	float 			vertcolor[4];
+
+	vertcolor[3] = mdl_entalpha; //never changes, so there's no need to put this inside the loop	
+
+	if (lerping) 
 	{
-		lerping = true;
-		verts1  = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 		verts2  = verts1;
 		verts1 += lerpdata.pose1 * paliashdr->poseverts;
 		verts2 += lerpdata.pose2 * paliashdr->poseverts;
@@ -91,21 +88,11 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool trunca
 	}
 	else // poses the same means either 1. the entity has paused its animation, or 2. r_lerpmodels is disabled
 	{
-		lerping = false;
 		verts1  = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 		verts2  = verts1; // avoid bogus compiler warning
 		verts1 += lerpdata.pose1 * paliashdr->poseverts;
 		blend = iblend = 0; // avoid bogus compiler warning
 	}
-
-#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-	if (!direct3d8_external_textures_workaround)
-		commands = (int *)((byte *)paliashdr + paliashdr->commands_d3d8_no_external_skins);
-	else
-#endif // DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-		commands = (int *)((byte *)paliashdr + paliashdr->commands);
-
-	vertcolor[3] = entalpha; //never changes, so there's no need to put this inside the loop
 
 	while (1)
 	{
@@ -194,6 +181,410 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata, cbool trunca
 	rs_aliaspasses += paliashdr->numtris;
 }
 
+//#ifdef SHADOW_VOLUMES
+typedef struct lerpedvert_s
+{
+	float position[3];	// point3
+	float color[4];		// color4
+	float texcoord[2];	// clampf s, t
+} lerpedvert_t;
+
+#define MAX_LERPED_VERTS_3984		MAXALIASVERTS_3984	// Baker: Right?
+#define MAX_LERPED_INDEXES_12000	12000
+
+lerpedvert_t r_lerped_verts[MAX_LERPED_VERTS_3984];
+unsigned int r_lerped_indexes[MAX_LERPED_INDEXES_12000];
+
+int r_num_lerped_verts;
+int r_num_lerped_indexes;
+
+// Baker:	For the moment, nuking true lightpoint knowing it is easy to add back in later.
+//			My first goal is to get this functional
+
+void GL_LerpVerts (aliashdr_t *paliashdr, lerpdata_t lerpdata, int commands_offset, vec3_t mdl_scale, vec3_t mdl_scale_origin, float mdl_entalpha)
+{
+    int				*commands = (int *)((byte *)paliashdr + commands_offset); //paliashdr->commands); // Not always!
+	trivertx_t 		*verts2, *verts1 = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+	float			blend, iblend;
+	cbool			lerping = (lerpdata.pose1 != lerpdata.pose2);
+	lerpedvert_t	*lv  = r_lerped_verts;
+	unsigned int	*ndx = r_lerped_indexes;
+
+	r_num_lerped_verts = 0;
+	r_num_lerped_indexes = 0;
+
+
+	if (lerping) 
+	{
+		verts2  = verts1;
+		verts1 += lerpdata.pose1 * paliashdr->poseverts;
+		verts2 += lerpdata.pose2 * paliashdr->poseverts;
+		blend = lerpdata.blend;
+		iblend = 1.0f - blend;
+	}
+	else // poses the same means either 1. the entity has paused its animation, or 2. r_lerpmodels is disabled
+	{
+		verts1  = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+		verts2  = verts1; // avoid bogus compiler warning
+		verts1 += lerpdata.pose1 * paliashdr->poseverts;
+		blend = iblend = 0; // avoid bogus compiler warning
+	}
+
+	while (1)
+	{
+		// get the vertex count and primitive type
+		int count = *commands++;
+		int i;
+
+		if (!count)
+			break;		// done
+
+		if (count < 0) // GL_TRIANGLE_FAN
+		{
+			for (i = 2, count = -count; i < count; i++, ndx += 3, r_num_lerped_indexes += 3)
+			{
+				ndx[0] = r_num_lerped_verts + 0;
+				ndx[1] = r_num_lerped_verts + (i - 1);
+				ndx[2] = r_num_lerped_verts + i;
+			}
+		}
+		else // GL_TRIANGLE_STRIP
+		{
+			for (i = 2; i < count; i++, ndx += 3, r_num_lerped_indexes += 3)
+			{
+				ndx[0] = r_num_lerped_verts + i - 2;
+				ndx[1] = r_num_lerped_verts + ((i & 1) ? i : (i - 1));
+				ndx[2] = r_num_lerped_verts + ((i & 1) ? (i - 1) : i);
+			}
+		}
+
+		do
+		{
+			lv->texcoord[0] = ((float *)commands)[0];
+			lv->texcoord[1] = ((float *)commands)[1];
+			commands += 2;
+
+			if (r_drawflat_cheatsafe)
+			{
+				srand(count * (unsigned int)(src_offset_t) commands);
+				lv->color[0] = (rand () % 256) / 255.0f;
+				lv->color[1] = (rand () % 256) / 255.0f;
+				lv->color[2] = (rand () % 256) / 255.0f;
+			}
+			else if (lerping)
+			{
+				lv->color[0] = (shadedots[verts1->lightnormalindex]*iblend + shadedots[verts2->lightnormalindex]*blend) * lightcolor[0];
+				lv->color[1] = (shadedots[verts1->lightnormalindex]*iblend + shadedots[verts2->lightnormalindex]*blend) * lightcolor[1];
+				lv->color[2] = (shadedots[verts1->lightnormalindex]*iblend + shadedots[verts2->lightnormalindex]*blend) * lightcolor[2];
+			}
+			else
+			{
+				lv->color[0] = shadedots[verts1->lightnormalindex] * lightcolor[0];
+				lv->color[1] = shadedots[verts1->lightnormalindex] * lightcolor[1];
+				lv->color[2] = shadedots[verts1->lightnormalindex] * lightcolor[2];
+			}
+
+			lv->color[3] = mdl_entalpha;
+
+			if (lerping)
+			{
+				lv->position[0] = verts1->v[0] * iblend + verts2->v[0] * blend;
+				lv->position[1] = verts1->v[1] * iblend + verts2->v[1] * blend;
+				lv->position[2] = verts1->v[2] * iblend + verts2->v[2] * blend;
+				verts1++;
+				verts2++;
+			}
+			else
+			{
+				lv->position[0] = verts1->v[0];
+				lv->position[1] = verts1->v[1];
+				lv->position[2] = verts1->v[2];
+				verts1++;
+			}
+
+			lv->position[0] = lv->position[0] * mdl_scale[0] + mdl_scale_origin[0];
+			lv->position[1] = lv->position[1] * mdl_scale[1] + mdl_scale_origin[1];
+			lv->position[2] = lv->position[2] * mdl_scale[2] + mdl_scale_origin[2];
+
+			r_num_lerped_verts++;
+			lv++;
+		} while (--count);
+	}
+}
+
+// This function prototype needs to match GL_DrawAliasFrame_QMB_Flame_And_Shadows
+// So we can transparently reroute QMB flame to here
+void GL_DrawAliasFrame_New (aliashdr_t *paliashdr, lerpdata_t lerpdata, int unused_int, cbool unused_cbool, float unused_float)
+{
+	int		*commands;
+	int		count;
+	lerpedvert_t *lv;
+
+	commands = (int *)((byte *)paliashdr + paliashdr->commands);
+	lv = r_lerped_verts;
+
+	while (1)
+	{
+		// get the vertex count and primitive type
+		count = *commands++;
+
+		if (!count)
+			break;		// done
+
+		if (count < 0)
+		{
+			count = -count;
+			eglBegin (GL_TRIANGLE_FAN);
+		}
+		else eglBegin (GL_TRIANGLE_STRIP);
+
+		do
+		{
+			if (mtexenabled)
+			{
+				renderer.GL_MTexCoord2fFunc (renderer.TEXTURE0, lv->texcoord[0], lv->texcoord[1]);
+				renderer.GL_MTexCoord2fFunc (renderer.TEXTURE1, lv->texcoord[0], lv->texcoord[1]);
+			}
+			else eglTexCoord2fv (lv->texcoord);
+
+			if (shading)
+				eglColor4fv (lv->color);
+
+			eglVertex3fv (lv->position);
+
+			commands += 2;
+			lv++;
+		} while (--count);
+
+		eglEnd ();
+	}
+
+	rs_aliaspasses += paliashdr->numtris;
+}
+
+
+typedef struct edgeDef_s
+{
+	int		i2;
+	int		facing;
+} edgeDef_t;
+
+#define	MAX_EDGE_DEFS_32	32
+
+static	edgeDef_t	edgeDefs[MAX_LERPED_VERTS_3984][MAX_EDGE_DEFS_32];
+static	int			numEdgeDefs[MAX_LERPED_VERTS_3984];
+static	int			facing[MAX_LERPED_INDEXES_12000 / 3];
+
+void R_AddEdgeDef (int i1, int i2, int facing)
+{
+	int	c = numEdgeDefs[i1];
+
+	if (c == MAX_EDGE_DEFS_32)
+	{
+		// overflow
+		return;
+	}
+
+	edgeDefs[i1][c].i2 = i2;
+	edgeDefs[i1][c].facing = facing;
+
+	numEdgeDefs[i1]++;
+}
+
+void R_RenderShadowEdges (void)
+{
+	int		i;
+	int		c, c2;
+	int		j, k;
+	int		i2;
+	int		hit[2];
+
+	// an edge is NOT a silhouette edge if its face doesn't face the light,
+	// or if it has a reverse paired edge that also faces the light.
+	// A well behaved polyhedron would have exactly two faces for each edge,
+	// but lots of models have dangling edges or overfanned edges
+	eglBegin (GL_QUADS);
+
+	for (i = 0; i < r_num_lerped_verts; i++)
+	{
+		c = numEdgeDefs[i];
+
+		for (j = 0; j < c; j++)
+		{
+			if (!edgeDefs[i][j].facing)
+				continue;
+
+			hit[0] = 0;
+			hit[1] = 0;
+
+			i2 = edgeDefs[i][j].i2;
+			c2 = numEdgeDefs[i2];
+
+			for (k = 0; k < c2; k++)
+			{
+				if (edgeDefs[i2][k].i2 == i)
+				{
+					hit[edgeDefs[i2][k].facing]++;
+				}
+			}
+
+			// if it doesn't share the edge with another front facing
+			// triangle, it is a sil edge
+			if (hit[1] == 0)
+			{
+				eglVertex3fv (r_lerped_verts[i + r_num_lerped_verts].position);
+				eglVertex3fv (r_lerped_verts[i2 + r_num_lerped_verts].position);
+				eglVertex3fv (r_lerped_verts[i2].position);
+				eglVertex3fv (r_lerped_verts[i].position);
+			}
+		}
+	}
+
+	eglEnd ();
+}
+
+
+void RB_ShadowTessEnd (lerpdata_t *lerpdata)
+{
+	int		i;
+	int		numTris;
+	vec3_t	lightDir = {400, 0, 400}; // this mimics the approximate angle of classic GLQuake shadows
+
+	// SHADOW_VOLUME
+	if (lerpdata->angles[0] || lerpdata->angles[1] || lerpdata->angles[2])
+	{
+		vec3_t forward, right, up, temp;
+
+		AngleVectors (lerpdata->angles, forward, right, up);
+		VectorCopy (lightDir, temp);
+
+		lightDir[0] = DotProduct (temp, forward);
+		lightDir[1] = -DotProduct (temp, right);
+		lightDir[2] = DotProduct (temp, up);
+	}
+
+	VectorNormalize (lightDir);
+
+	// project vertexes away from light direction
+	for (i = 0; i < r_num_lerped_verts; i++)
+		VectorMA (r_lerped_verts[i].position, -512, lightDir, r_lerped_verts[r_num_lerped_verts + i].position);
+
+	// decide which triangles face the light
+	memset (numEdgeDefs, 0, 4 * r_num_lerped_verts);
+
+	numTris = r_num_lerped_indexes / 3;
+
+	for (i = 0; i < numTris; i++ )
+	{
+		int		i1, i2, i3;
+		vec3_t	d1, d2, normal;
+		float	*v1, *v2, *v3;
+		float	d;
+
+		i1 = r_lerped_indexes[i * 3 + 0];
+		i2 = r_lerped_indexes[i * 3 + 1];
+		i3 = r_lerped_indexes[i * 3 + 2];
+
+		v1 = r_lerped_verts[i1].position;
+		v2 = r_lerped_verts[i2].position;
+		v3 = r_lerped_verts[i3].position;
+
+		VectorSubtract (v2, v1, d1);
+		VectorSubtract (v3, v1, d2);
+		VectorCrossProduct (d1, d2, normal);
+
+		d = DotProduct (normal, lightDir);
+
+		if (d > 0)
+			facing[i] = 1;
+		else facing[i] = 0;
+
+		// create the edges
+		R_AddEdgeDef (i1, i2, facing[i]);
+		R_AddEdgeDef (i2, i3, facing[i]);
+		R_AddEdgeDef (i3, i1, facing[i]);
+	}
+
+	// draw the silhouette edges
+	eglEnable (GL_CULL_FACE);
+	eglColorMask (GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	eglDepthMask (GL_FALSE);
+
+	eglEnable (GL_STENCIL_TEST);
+	eglStencilFunc (GL_ALWAYS, 1, 255);
+
+	// because fitzquake flipped the front-face and cull, we need to do the same here
+	// we could use separate stencil here for a slightly more sensible one-pass draw which would be easier on the CPU
+	eglCullFace (GL_FRONT);
+	eglStencilOp (GL_KEEP, GL_KEEP, GL_INCR);
+
+	R_RenderShadowEdges ();
+
+	eglCullFace (GL_BACK);
+	eglStencilOp (GL_KEEP, GL_KEEP, GL_DECR);
+
+	R_RenderShadowEdges ();
+
+	// reenable writing to the color buffer
+	eglColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	eglDepthMask (GL_TRUE);
+	eglDisable (GL_STENCIL_TEST);
+	eglCullFace (GL_BACK);
+}
+
+/*
+=================
+RB_ShadowFinish
+
+Darken everything that is in a shadow volume.
+We have to delay this until everything has been shadowed,
+because otherwise shadows from different body parts would
+overlap and double darken.
+=================
+*/
+void RB_ShadowVolumeBegin (void)
+{
+	if (gl_shadows.value < 3 || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe) // 3 = SHADOW VOLUMES
+		return;
+
+	// Baker: SHADOW_VOLUME.  
+	eglClearStencil (0); // Clear to 1.  And get out!
+	eglClear(GL_STENCIL_BUFFER_BIT);
+	frame.in_shadow_volume_draw = true;
+}
+
+void RB_ShadowVolumeFinish (void)
+{
+	// SHADOW_VOLUME
+	eglEnable (GL_STENCIL_TEST);
+	eglStencilFunc (GL_NOTEQUAL, 0, 255);
+
+	eglDisable (GL_CULL_FACE);
+	eglDisable (GL_TEXTURE_2D);
+
+	eglLoadIdentity ();
+
+	eglColor3f (0.6f, 0.6f, 0.6f);
+	eglEnable (GL_BLEND);
+	eglBlendFunc (GL_DST_COLOR, GL_ZERO);
+	eglDepthMask (1);
+
+	eglBegin (GL_QUADS);
+	eglVertex3f (-100, 100, -10);
+	eglVertex3f (100, 100, -10);
+	eglVertex3f (100, -100, -10);
+	eglVertex3f (-100, -100, -10);
+	eglEnd ();
+
+	eglColor4f (1, 1, 1, 1);
+	eglDisable (GL_STENCIL_TEST);
+	eglEnable (GL_CULL_FACE);
+	eglEnable (GL_TEXTURE_2D);
+	eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	eglDisable (GL_BLEND);
+	frame.in_shadow_volume_draw = false;
+}
+
 
 /*
 =================
@@ -261,7 +652,7 @@ void R_SetupAliasLighting (entity_t	*e)
 			lightcolor[2] = 256.0f;
 		}
 
-	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
+	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT_16 / 360.0))) & (SHADEDOT_QUANT_16 - 1)];
 	VectorScale(lightcolor, 1.0f / 200.0f, lightcolor);
 }
 
@@ -272,18 +663,25 @@ R_DrawAliasModel -- johnfitz -- almost completely rewritten
 */
 
 
+typedef void (*GL_DrawAliasFrame_Fn_t) (aliashdr_t *paliashdr, lerpdata_t lerpdata, int unused_int, cbool unused_cbool, float unused_float);
 
 void R_DrawAliasModel (entity_t *e)
 {
-	aliashdr_t	*paliashdr;
-	int			anim, skinnum;
-	gltexture_t	*tx, *fb = NULL;
-	lerpdata_t	lerpdata;
+	aliashdr_t				*paliashdr = (aliashdr_t *)Mod_Extradata (e->model);
+	GL_DrawAliasFrame_Fn_t	GL_DrawAliasFrame =	GL_DrawAliasFrame_New;
+	int						anim, skinnum;
+	gltexture_t				*tx, *fb = NULL;
+	lerpdata_t				lerpdata;
+	vec3_t					mdl_scale;
+	vec3_t					mdl_scale_origin;
 	
+	int						command_offset = paliashdr->commands;
+	cbool					did_set_texture_matrix = false;
+
 	//
 	// setup pose/lerp data -- do it first so we don't miss updates due to culling
 	//
-	paliashdr = (aliashdr_t *)Mod_Extradata (e->model);
+	// paliashdr = (aliashdr_t *)Mod_Extradata (e->model);  // moved up about 12 lines
 	R_SetupAliasFrame (paliashdr, e->frame, &lerpdata);
 	R_SetupEntityTransform (e, &lerpdata);
 
@@ -307,14 +705,20 @@ void R_DrawAliasModel (entity_t *e)
 		if (r_viewmodel_size.value)
 			scale *= CLAMP (0.5, r_viewmodel_size.value, 2);
 
-		eglTranslatef (paliashdr->scale_origin[0] * scale, paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
-		eglScalef (paliashdr->scale[0] * scale, paliashdr->scale[1], paliashdr->scale[2]);
-
+		VectorSet (mdl_scale_origin,	paliashdr->scale_origin[0] * scale, paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
+		VectorSet (mdl_scale,			paliashdr->scale[0] * scale, paliashdr->scale[1], paliashdr->scale[2]);
 	}
 	else
 	{
-		eglTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
-		eglScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
+		VectorSet (mdl_scale_origin,	paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
+		VectorSet (mdl_scale,			paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
+	}
+
+	if (e->is_fake_frame0) {
+		// Relic.  QMB flame.  It needs the old draw to chop the verts.
+		eglTranslatef (mdl_scale_origin[0], mdl_scale_origin[1], mdl_scale_origin[2]);
+		eglScalef	  (mdl_scale[0], mdl_scale[1], mdl_scale[2]);
+		GL_DrawAliasFrame = GL_DrawAliasFrame_QMB_Flame_And_Shadows; // Rewire
 	}
 
 	//
@@ -366,7 +770,6 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	anim = (int)(cl.ctime*10) & 3;
 	
-#if 1
 	skinnum = e->skinnum;
 	if ((skinnum >= paliashdr->numskins) || (skinnum < 0))
 	{
@@ -375,10 +778,6 @@ void R_DrawAliasModel (entity_t *e)
 	}
 	tx = paliashdr->gltextures[skinnum][anim];
 	fb = paliashdr->fbtextures[skinnum][anim];	
-#else	
-	tx = paliashdr->gltextures[e->skinnum][anim];
-	fb = paliashdr->fbtextures[e->skinnum][anim];
-#endif
 
 	if (e->colormap && !gl_nocolors.value && e->coloredskin)
 		tx = e->coloredskin;
@@ -386,7 +785,7 @@ void R_DrawAliasModel (entity_t *e)
 		fb = NULL;
 
 // Here we go
-	if (entalpha < 1 && (vid.direct3d == 8) && !renderer.gl_texture_env_combine) {
+	if (entalpha < 1 && vid.direct3d == 8 && !renderer.gl_texture_env_combine) {
 		fb = NULL; // Works fine now!  Oct 22 2016 - formerly overbright = false, but that didn't honor alpha.  This affects mainly Direct3D
 		overbright = false; // Added because of .alpha was not very transparent
 	}
@@ -400,16 +799,16 @@ void R_DrawAliasModel (entity_t *e)
 	if (tx->flags & TEXPREF_ALPHA) // EF_ALPHA_MASKED_MDL
 		eglEnable (GL_ALPHA_TEST);
 
-#ifdef DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-// Baker: The Direct3D wrapper doesn't have texture matrix support
-// so I am doing a workaround in the event external textures
-// are used for an alias model (aka a Quake .mdl)
-	if (tx->source_format != SRC_RGBA)
-		direct3d8_external_textures_workaround = false;
-	else direct3d8_external_textures_workaround = true;
-#else // ^^^ DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-#pragma message ("Baker: Direct3D wrapper can't handle texture matrix")
-	if (tx->source_format != SRC_RGBA)
+	//
+	// Baker: Command set improvisation for DX8
+	//
+
+	if (vid.direct3d == 8) {
+		if (tx->source_format != SRC_RGBA)
+			command_offset = paliashdr->commands_d3d8_no_external_skins;
+		// DX8 must not hit the next block because it has no texture mode support
+	}
+	else if (tx->source_format != SRC_RGBA) // DX8 must not do this. No texture matrix support.
 	{
 		float width_scale = (float) tx->source_width / tx->width;
 		float height_scale = (float) tx->source_height / tx->height;
@@ -427,10 +826,11 @@ void R_DrawAliasModel (entity_t *e)
 			GL_DisableMultitexture();
 		}
 		eglMatrixMode (GL_MODELVIEW);
+		did_set_texture_matrix = true;
 	}
-#endif // !DIRECT3D8_WRAPPER  // DX8 only -- NPO2/NPOT - Now supported in DX9
 
-
+	// pre-lerp all verts so that we can reuse the data over multiple passes
+	GL_LerpVerts (paliashdr, lerpdata, command_offset, mdl_scale, mdl_scale_origin, entalpha);
 
 	//
 	// draw it
@@ -438,7 +838,7 @@ void R_DrawAliasModel (entity_t *e)
 	if (r_drawflat_cheatsafe)
 	{
 		eglDisable (GL_TEXTURE_2D);
-		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+		GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 		eglEnable (GL_TEXTURE_2D);
 		srand((int) (cl.ctime * 1000)); //restore randomness
 	}
@@ -447,7 +847,7 @@ void R_DrawAliasModel (entity_t *e)
 		GL_Bind (tx);
 		shading = false;
 		eglColor4f(1,1,1,entalpha);
-		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+		GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 		if (fb)
 		{
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -457,7 +857,7 @@ void R_DrawAliasModel (entity_t *e)
 			eglDepthMask(GL_FALSE);
 			eglColor3f(entalpha,entalpha,entalpha);
 			Fog_StartAdditive ();
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 			Fog_StopAdditive ();
 			eglDepthMask(GL_TRUE);
 			eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -469,7 +869,7 @@ void R_DrawAliasModel (entity_t *e)
 		eglDisable (GL_TEXTURE_2D);
 		shading = false;
 		eglColor3f(1,1,1);
-		GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+		GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 		eglEnable (GL_TEXTURE_2D);
 	}
 	else if (overbright)
@@ -486,7 +886,7 @@ void R_DrawAliasModel (entity_t *e)
 			GL_Bind (fb);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 			eglEnable(GL_BLEND);
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 			eglDisable(GL_BLEND);
 			GL_DisableMultitexture();
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -500,7 +900,7 @@ void R_DrawAliasModel (entity_t *e)
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 2.0f);
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE, 1.0f);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		// second pass
@@ -514,7 +914,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+				GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -528,13 +928,13 @@ void R_DrawAliasModel (entity_t *e)
 		// first pass
 			GL_Bind(tx);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 		// second pass -- additive with black fog, to double the object colors but not the fog color
 			eglEnable(GL_BLEND);
 			eglBlendFunc (GL_ONE, GL_ONE);
 			eglDepthMask(GL_FALSE);
 			Fog_StartAdditive ();
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 			Fog_StopAdditive ();
 			eglDepthMask(GL_TRUE);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -551,7 +951,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+				GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -571,7 +971,7 @@ void R_DrawAliasModel (entity_t *e)
 			GL_Bind (fb);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 			eglEnable(GL_BLEND);
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 			eglDisable(GL_BLEND);
 			GL_DisableMultitexture();
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -581,7 +981,7 @@ void R_DrawAliasModel (entity_t *e)
 		// first pass
 			GL_Bind(tx);
 			eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+			GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 		// second pass
 			if (fb)
 			{
@@ -592,7 +992,7 @@ void R_DrawAliasModel (entity_t *e)
 				shading = false;
 				eglColor3f(entalpha,entalpha,entalpha);
 				Fog_StartAdditive ();
-				GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+				GL_DrawAliasFrame (paliashdr, lerpdata, command_offset, e->is_fake_frame0, entalpha);
 				Fog_StopAdditive ();
 				eglDepthMask(GL_TRUE);
 				eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -611,10 +1011,20 @@ cleanup:
 	eglDepthMask(GL_TRUE);
 	eglDisable(GL_BLEND);
 	eglColor3f(1,1,1);
+
+	//
+	// Shadow volumes - This excludes DX8 which does not have stencil.
+	// 
+	
+	if (frame.in_shadow_volume_draw) {
+		cbool should_shadow = (entalpha != 1 || e == &cl.viewent_gun || e->model->modelflags & MOD_NOSHADOW) ? false : true; // No shadow for gun or shadowless model like flame.
+		if (should_shadow) // SHADOW_VOLUME
+			RB_ShadowTessEnd (&lerpdata);
+	}
+
 	eglPopMatrix ();
 
-#ifndef DIRECT3D8_WRAPPER  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-	if (tx && tx->source_format != SRC_RGBA)
+	if (did_set_texture_matrix /*tx && tx->source_format != SRC_RGBA*/)
 	{
 		if (fb)
 		{
@@ -627,9 +1037,7 @@ cleanup:
 		eglLoadIdentity ();
 		eglMatrixMode (GL_MODELVIEW);
 	} 
-	else 
-#endif  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
-		GL_DisableMultitexture ();
+	else GL_DisableMultitexture ();  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 }
 
 //johnfitz -- values for shadow matrix
@@ -690,10 +1098,11 @@ void GL_DrawAliasShadow (entity_t *e)
 	eglDisable (GL_TEXTURE_2D);
 	shading = false;
 	eglColor4f(0,0,0, gl_shadows.value > 1 ? entalpha * 1 : entalpha * 0.5);
-	GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+	GL_DrawAliasFrame_QMB_Flame_And_Shadows (paliashdr, lerpdata, paliashdr->commands, false, entalpha /*I think entalpha*/);
 	eglEnable (GL_TEXTURE_2D);
 	eglDisable (GL_BLEND);
 	eglDepthMask(GL_TRUE);
+
 
 //clean up
 	eglPopMatrix ();
@@ -725,7 +1134,7 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 
 	shading = false;
 	eglColor3f(1,1,1);
-	GL_DrawAliasFrame (paliashdr, lerpdata, e->is_fake_frame0);
+	GL_DrawAliasFrame_QMB_Flame_And_Shadows (paliashdr, lerpdata, paliashdr->commands, e->is_fake_frame0, 1 /*entalpha*/);
 
 	eglPopMatrix ();
 }

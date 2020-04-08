@@ -400,6 +400,7 @@ typedef struct
 	mplane_t		*mirror_plane;
 	view_store_t	original_view;
 	view_store_t	mirror_view;
+	cbool			in_shadow_volume_draw;
 	
 } frame_render_t; // erased every frame, right?  Yes.  gl_rmain.c and r_main.c
 

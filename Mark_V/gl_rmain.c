@@ -340,6 +340,7 @@ static void R_SetupView_R_Clear (void)
 #if 1 // We should probably always do this
 	clearbits |= GL_STENCIL_BUFFER_BIT;
 #endif // We should probably always do this
+
 	eglClear (clearbits);
 
 
@@ -474,8 +475,13 @@ void R_SetupView (void)
 R_DrawEntitiesOnList
 =============
 */
+enum model_draw_type_e {
+	model_draw_type_brush = 1,
+	model_draw_type_not_brush = 2,
+	model_draw_type_any = 3,
+};
 
-static void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
+static void R_DrawEntitiesOnList (enum model_draw_type_e model_draw_type, cbool alphapass) //johnfitz -- added parameter
 {
 	int		i;
 
@@ -486,6 +492,12 @@ static void R_DrawEntitiesOnList (cbool alphapass) //johnfitz -- added parameter
 	for (i=0 ; i < cl.numvisedicts ; i++)
 	{
 		currententity = cl.visedicts[i];
+
+		if (model_draw_type == model_draw_type_brush && currententity->model->type != mod_brush)
+			continue;
+
+		if (model_draw_type == model_draw_type_not_brush && currententity->model->type == mod_brush)
+			continue;
 
 		//johnfitz -- if alphapass is true, draw only alpha entites this time
 		//if alphapass is false, draw only nonalpha entities this time
@@ -1170,16 +1182,21 @@ void R_ShowTris (void)
 R_DrawShadows
 ================
 */
+
 void R_DrawShadows (void)
 {
 	int i;
 
-	if (!gl_shadows.value || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe)
+	if (!gl_shadows.value || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe) // 3 = SHADOW VOLUMES
+		return;
+
+	if (gl_shadows.value >= 3) // SHADOW_VOLUME means we don't do this.
 		return;
 
 	//if (renderer.gl_stencilbits && vid.direct3d != 9 /*temp disable hack*/ )
 	if (renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_AND)
 	{
+		eglClearStencil (0); // Regular stencil shadows clear to 0
 		eglClear(GL_STENCIL_BUFFER_BIT);
 		eglStencilFunc(GL_EQUAL, 0, ~0); // Stencil Sky Fix - 2015 April 13 Per Spike
 		eglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
@@ -1304,15 +1321,21 @@ void R_RenderScene (void)
 
 	S_ExtraUpdate (); // don't let sound get messed up if going slow
 
-	R_DrawShadows (); //johnfitz -- render entity shadows
+	R_DrawShadows (); //johnfitz -- render entity shadows  
 
-	R_DrawEntitiesOnList (false); //johnfitz -- false means this is the pass for nonalpha entities
+	R_DrawEntitiesOnList (model_draw_type_brush, false); //johnfitz -- false means this is the pass for nonalpha entities	
 
-	Sky_Stencil_Draw (); // Baker: This will draw the sky if there is stencil.
+	Sky_Stencil_Draw (); // Baker: This will draw the sky if there is stencil.  // Baker: Shadow volumes glClearStencil (0) + glClear (It does)
+
+	RB_ShadowVolumeBegin(); // Baker: Shadow volumes glClearStencil (0) + glClear	
+	
+	R_DrawEntitiesOnList (model_draw_type_not_brush, false); //johnfitz -- false means this is the pass for nonalpha entities			
+
+	//R_DrawEntitiesOnList (true /* bmodels */, false); //johnfitz -- false means this is the pass for nonalpha entities	
 
 	R_DrawTextureChains_Water (false); //Baker -- solid warp surfaces here
 
-	R_DrawEntitiesOnList (true); //johnfitz -- true means this is the pass for alpha entities
+	R_DrawEntitiesOnList (model_draw_type_any,  true); //johnfitz -- true means this is the pass for alpha entities
 
 	R_DrawTextureChains_Water (true); //johnfitz -- drawn here since they might have transparency
 
@@ -1335,7 +1358,7 @@ void R_RenderScene (void)
 
 	R_ShowBoundingBoxes (); //johnfitz
 
-	
+	RB_ShadowVolumeFinish (); // MH SHADOW_VOLUMES  -- this disturbs the depth buffer bad enough it must be at the end.
 
 }
 
@@ -1358,13 +1381,13 @@ if (1 DIRECT3D9_STENCIL_DISABLE_BLOCK_AND) // The effect of this is that it will
 
 	R_DrawShadows (); //johnfitz -- render entity shadows
 
-	R_DrawEntitiesOnList (false); //johnfitz -- false means this is the pass for nonalpha entities
+	R_DrawEntitiesOnList (model_draw_type_any, false); //johnfitz -- false means this is the pass for nonalpha entities
 
 	R_DrawPlayerModel (&cl_entities[cl.viewentity_player]); //johnfitz -- moved here from R_RenderView
 
 	R_DrawTextureChains_Water (false); //Baker -- solid warp surfaces here
 
-	R_DrawEntitiesOnList (true); //johnfitz -- true means this is the pass for alpha entities
+	R_DrawEntitiesOnList (model_draw_type_any, true); //johnfitz -- true means this is the pass for alpha entities
 
 	R_DrawTextureChains_Water (true); //johnfitz -- drawn here since they might have transparency
 

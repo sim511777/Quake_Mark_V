@@ -222,8 +222,14 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 		vid.consize_stale = true; // This triggers a cascade of recalculations in SCR_UpdateScreen
 		vid.warp_stale = true; // Means warp needs recalculated.
 
+
 		// Since the WINAPI is blocking the way we do Quake, a Quake frame cannot occur until after resize. 
 #ifdef DIRECT3D9_WRAPPER 
+		if (!vid.resized) {
+			Con_DPrintLinef ("Window resized without event!"); // Baker: For mh/gunter
+		}
+
+
 		Direct3D9_ResetMode (vid.screen.width, vid.screen.height, true /*windowed*/, vid.client_window.left, vid.client_window.top, -1 /*width*/, -1 /*height*/, true, &vid.border_width, &vid.border_height);
 #endif // DIRECT3D9_WRAPPER
 		//vid.mouse_resized = true;  // We don't really have a way of knowing this easily.

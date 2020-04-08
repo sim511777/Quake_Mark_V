@@ -4331,22 +4331,26 @@ void M_ConfigureNetSubsystem(void)
 //==========================================================================
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-int	video_cursor_table[] = {48, 56, 72, 88, 96};
+	int	video_cursor_table[] = {48, 56, 72, 88, 96};	// mode, fullscreen, stretch, test, apply)
 #else
-int	video_cursor_table[] = {48, 56, 72, 80};
+	int	video_cursor_table[] = {48, 56, 72, 80, 112, 120};	// mode, fullscreen, test, apply, gamma, pixels
 #endif // !WINQUAKE_RENDERER_SUPPORT
 
 enum {
 	VID_OPT_MODE_0,
 	VID_OPT_FULLSCREEN_1,
-// Space
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
-	VID_OPT_STRETCH = ARRAY_COUNT(video_cursor_table) - 3,
-#endif // !WINQUAKE_RENDERER_SUPPORT
+	VID_OPT_STRETCH,
+#endif // WINQUAKE_RENDERER_SUPPORT
 
-	VID_OPT_TEST = ARRAY_COUNT(video_cursor_table) - 2,
-	VID_OPT_APPLY = ARRAY_COUNT(video_cursor_table) - 1,
+	VID_OPT_TEST,
+	VID_OPT_APPLY,
+
+#ifdef GLQUAKE_RENDERER_SUPPORT
+	VID_OPT_HWGAMMA,
+	VID_OPT_TEXTUREFILTER,
+#endif // WINQUAKE_RENDERER_SUPPORT
 
 	VIDEO_OPTIONS_ITEMS
 };
@@ -4378,19 +4382,19 @@ void VID_Menu_Init (void)
 //	vid_menudrawfn = VID_MenuDraw;
 //	vid_menukeyfn = VID_MenuKey;
 
-	for (i=1;i<vid.nummodes;i++) //start i at mode 1 because 0 is windowed mode
+	for (i = 1; i < vid.nummodes; i ++) //start i at mode 1 because 0 is windowed mode
 	{
 		w = vid.modelist[i].width;
 		h = vid.modelist[i].height;
 
-		for (j=0;j<vid_menu_nummodes;j++)
+		for (j = 0; j < vid_menu_nummodes; j++)
 		{
 			if (vid_menu_modes[j].width == w &&
 				vid_menu_modes[j].height == h)
 				break;
 		}
 
-		if (j==vid_menu_nummodes)
+		if (j == vid_menu_nummodes)
 		{
 			vid_menu_modes[j].width = w;
 			vid_menu_modes[j].height = h;
@@ -4439,14 +4443,14 @@ void VID_Menu_ChooseNextMode (int dir)
 {
 	int i;
 
-	for (i=0;i<vid_menu_nummodes;i++)
+	for (i = 0; i < vid_menu_nummodes; i++)
 	{
 		if (vid_menu_modes[i].width == vid_width.value &&
 			vid_menu_modes[i].height == vid_height.value)
 			break;
 	}
 
-	if (i==vid_menu_nummodes) //can't find it in list, so it must be a custom windowed res
+	if (i == vid_menu_nummodes) //can't find it in list, so it must be a custom windowed res
 	{
 		i = 0;
 	}
@@ -4455,8 +4459,8 @@ void VID_Menu_ChooseNextMode (int dir)
 		i+=dir;
 		if (i>=vid_menu_nummodes)
 			i = 0;
-		else if (i<0)
-			i = vid_menu_nummodes-1;
+		else if (i < 0)
+			i = vid_menu_nummodes - 1;
 	}
 
 	Cvar_SetValueQuick (&vid_width, (float)vid_menu_modes[i].width);
@@ -4472,6 +4476,7 @@ VID_MenuKey
 ================
 */
 
+extern int glmode_idx;
 void M_Video_Key (int key)
 {
 	switch (key)
@@ -4484,7 +4489,7 @@ void M_Video_Key (int key)
 
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
-		video_options_cursor--;
+		video_options_cursor --;
 		if (video_options_cursor < 0)
 			video_options_cursor = VIDEO_OPTIONS_ITEMS-1;
 		break;
@@ -4512,7 +4517,27 @@ void M_Video_Key (int key)
 			Cvar_SetValueQuick (&vid_sw_stretch, newval);
 			break;
 		}
+#else
+		case VID_OPT_HWGAMMA:
+			Cbuf_AddTextLine ("toggle vid_hardwaregamma");
+			break;
+//#define TEXMODE_GL_NEAREST_0							0
+//#define TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1			1
+//#define TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2			2
+//#define TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5			5
+		case VID_OPT_TEXTUREFILTER: // 0 (default "5"), 1 - pixelated (default), 2 - 
+			switch (glmode_idx) { // Left 0, 5, 1
+			default:
+			case TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5:		Cvar_SetQuick (&gl_texturemode, "GL_NEAREST");					break;
+			case TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1:	Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");		break;
+			case TEXMODE_GL_NEAREST_0:					Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_NEAREST");   break;
+			}
+			break;
+
 #endif //WINQUAKE_RENDERER_SUPPORT
+
+	
+
 		default:
 			break;
 		}
@@ -4534,6 +4559,21 @@ void M_Video_Key (int key)
 			Cvar_SetValueQuick (&vid_sw_stretch, newval);
 			break;
 		}
+#else
+
+		case VID_OPT_HWGAMMA:
+			Cbuf_AddTextLine ("toggle vid_hardwaregamma");
+			break;
+
+		case VID_OPT_TEXTUREFILTER:
+			switch (glmode_idx) { // Left 0, 5, 1
+			default:
+			case TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5:		Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_NEAREST");					break;
+			case TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST");		break;
+			case TEXMODE_GL_NEAREST_0:					Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");   break;
+			}
+			break;
+
 #endif //WINQUAKE_RENDERER_SUPPORT
 
 		default:
@@ -4554,6 +4594,13 @@ void M_Video_Key (int key)
 #ifdef WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_STRETCH:
 			break;
+#else
+		case VID_OPT_HWGAMMA:
+			break;
+		
+		case VID_OPT_TEXTUREFILTER:
+			break;
+
 #endif //WINQUAKE_RENDERER_SUPPORT
 		case VID_OPT_TEST:
 			Cbuf_AddTextLine ("vid_test");
@@ -4616,9 +4663,35 @@ void M_Video_Draw (void)
 	i++;
 
 	M_Print (16, video_cursor_table[i], "     Apply changes");
+	i++;
+
+#ifdef GLQUAKE_RENDERER_SUPPORT
+	M_Print (16, video_cursor_table[i], "        Brightness");
+	M_Print (184, video_cursor_table[i], (vid_hardwaregamma.value) ? "Hardware gamma" : vid.direct3d == 9 ? "Shader gamma" : "Texture gamma");
+	i++;
+
+	M_Print (16, video_cursor_table[i], "        Pixelation");
+	M_Print (184, video_cursor_table[i],	glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ? "Smooth (Default)" :
+						glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ? "Pixelated" : "Pixelated/Rough" /* TEXMODE_GL_NEAREST_0*/				
+		);
+	
+
+	if (video_options_cursor == VID_OPT_TEXTUREFILTER) {
+		M_PrintWhite (16, video_cursor_table[i] + 24,  
+			glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ?   "     Filter: GL_LINEAR_MIPMAP_LINEAR" : 
+			glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ? "     Filter: GL_NEAREST_MIPMAP_NEAREST" : 
+			glmode_idx == TEXMODE_GL_NEAREST_0				  ? "     Filter: GL_NEAREST" : 
+																"     Filter: (other)"
+		);
+	}
+
+	i++;
+
+#endif // !WINQUAKE_RENDERER_SUPPORT
+
 
 	// cursor
-	M_DrawCharacter (168, video_cursor_table[video_options_cursor], 12+((int)(realtime*4)&1));
+	M_DrawCharacter (168, video_cursor_table[video_options_cursor], 12 + ((int)(realtime*4) & 1));
 
 	// notes          "345678901234567890123456789012345678"
 //	M_Print (16, 172, "Windowed modes always use the desk- ");

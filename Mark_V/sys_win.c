@@ -348,7 +348,7 @@ void System_Init (void)
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	
+
 	sysplat.hInstance = hInstance;
 
     return Main_Central (lpCmdLine, &sysplat.mainwindow, true /* perform loop */);
@@ -634,7 +634,7 @@ LRESULT CALLBACK Session_Windows_Dispatch (
 		const char *msgtext  = msgtext_ ? msgtext_ : va("Unknown message: %x", Msg);
 		logd ("%s wparam: %x lparam %x", msgtext, wParam, lParam);
 	}
-#endif 
+#endif
 
     switch (Msg)
     {
@@ -762,7 +762,7 @@ void System_SleepUntilInput (int time)
 //
 //
 ///////////////////////////////////////////////////////////////////////////////
-//  CONSOLE:  
+//  CONSOLE:
 ///////////////////////////////////////////////////////////////////////////////
 
 //const char *Dedicated_ConsoleInput (void)
@@ -797,15 +797,19 @@ void WIN_Vid_Init_Once_CreateClass (void)
 		System_Error ("Couldn't register window class");
 }
 
+#ifndef CORE_GL
+	#define eEnumDisplaySettings EnumDisplaySettings // WinQuake
+#endif // !CORE_GL ... WinQuake
+
 vmode_t WIN_Vid_GetDesktopProperties (void)
 {
+// Baker: If vid isn't initialized, we haven't hooked up eEnumDisplaySettings yet.  Must use pure.
 	DEVMODE	devmode;
 	vmode_t desktop = {0};
-#ifndef CORE_GL
-	#define eEnumDisplaySettings EnumDisplaySettings
-#endif // !CORE_GL ... WinQuake
-	if (!eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
-	{
+	cbool result = vid.initialized ? eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode) :
+                                    EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode);
+
+	if (!result) {
 		System_Error ("VID_UpdateDesktopProperties: eEnumDisplaySettings failed");
 		return desktop;
 	}

@@ -1119,6 +1119,22 @@ void _Host_Connect (const char *name)
 		c_strlcpy (server_name, name); // JPG - 3.50
 }
 
+#ifdef _DEBUG
+void Host_Crash_f (void)
+{
+	void (*Crash_Me_Now) (void);
+
+	Crash_Me_Now = NULL;
+	Crash_Me_Now ();	// CRASH!!  To test crash protection.
+}
+
+
+void Host_SysError_f (void)
+{
+	System_Error ("User initiated System Error");
+}
+
+#endif // _DEBUG
 
 void Host_Connect_f (lparse_t *line)
 {
@@ -2673,13 +2689,28 @@ void Host_Startdemos_f (lparse_t *line)
 
 	}
 	Con_PrintLinef ("%d demo(s) in loop", c);
+#if 1
+	// Warpspasms hack
+	if (String_Does_Match_Caseless(gamedir_shortname(), "warpspasm") || String_Does_Match_Caseless(gamedir_shortname(), "warp")) {
+		if (line->count > 1) {
+			c_strlcpy (cls.demos[0], "demo1");
+			c_strlcpy (cls.demos[1], "demo2");
+			c_strlcpy (cls.demos[2], "demo3");
+			i = 4;
+			goto warpspasm_skip;
+		}
+	}
+#endif
 
-	for (i = 1 ; i < c + 1 ; i++)
+	for (i = 1; i < c + 1; i++)
 		c_strlcpy (cls.demos[i - 1], line->args[i]);
+
+
+warpspasm_skip:
 
 	// LordHavoc: clear the remaining slots
 	for ( ; i <= MAX_DEMOS_32; i++)
-		cls.demos[i-1][0] = 0;
+		cls.demos[i - 1][0] = 0;
 /*
 	if (line->count == 0)
 	{

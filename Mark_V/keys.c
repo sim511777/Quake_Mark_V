@@ -981,7 +981,7 @@ void Key_Unbind_f (lparse_t *line)
 
 	if (cmd_from_server && pq_bindprotect.value) {
 		if (pq_bindprotect.value > 1) // 1 means ignore.  2 means ignore + print
-			Con_WarningLinef ("Server key unbind, ignored: [%s]", line->original);
+			Con_WarningLinef ("Server sent key unbind attempt, ignored: [%s]", line->original);
 		return;
 	}
 

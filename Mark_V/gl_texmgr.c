@@ -65,15 +65,15 @@ typedef struct
 	const char  *name;
 } glmode_t;
 static glmode_t glmodes[] = {
-	{GL_NEAREST, GL_NEAREST,				"GL_NEAREST"},
-	{GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST,	"GL_NEAREST_MIPMAP_NEAREST"},
-	{GL_NEAREST, GL_NEAREST_MIPMAP_LINEAR,	"GL_NEAREST_MIPMAP_LINEAR"},
-	{GL_LINEAR,  GL_LINEAR,					"GL_LINEAR"},
-	{GL_LINEAR,  GL_LINEAR_MIPMAP_NEAREST,	"GL_LINEAR_MIPMAP_NEAREST"},
-	{GL_LINEAR,  GL_LINEAR_MIPMAP_LINEAR,	"GL_LINEAR_MIPMAP_LINEAR"},
+	{GL_NEAREST, GL_NEAREST,				"GL_NEAREST"},					// 0
+	{GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST,	"GL_NEAREST_MIPMAP_NEAREST"},	// 1 (crunchy?)
+	{GL_NEAREST, GL_NEAREST_MIPMAP_LINEAR,	"GL_NEAREST_MIPMAP_LINEAR"},	// 2
+	{GL_LINEAR,  GL_LINEAR,					"GL_LINEAR"},					// 3
+	{GL_LINEAR,  GL_LINEAR_MIPMAP_NEAREST,	"GL_LINEAR_MIPMAP_NEAREST"},	// 4
+	{GL_LINEAR,  GL_LINEAR_MIPMAP_LINEAR,	"GL_LINEAR_MIPMAP_LINEAR"},		// 5  (default)
 };
 #define NUM_GLMODES (int)(sizeof(glmodes)/sizeof(glmodes[0]))
-static int glmode_idx = NUM_GLMODES - 1; /* trilinear */
+int glmode_idx = NUM_GLMODES - 1; /* trilinear */
 
 const char *TexMgr_TextureModes_ListExport (void)
 {
@@ -114,7 +114,7 @@ void TexMgr_DescribeTextureModes_f (void)
 {
 	int i;
 
-	for (i=0; i<NUM_GLMODES; i++)
+	for (i=0; i < NUM_GLMODES; i++)
 		Con_SafePrintLinef ("   %2d: %s", i + 1, glmodes[i].name);
 
 	Con_PrintLinef ("%d modes", i);
@@ -158,6 +158,42 @@ static void TexMgr_SetFilterModes (gltexture_t *glt)
 TexMgr_TextureMode_f -- called when gl_texturemode changes
 ===============
 */
+void TexMgr_TextureMode_f (cvar_t *var)
+{
+	static int recursion_blocker;
+	int n, newidx;
+
+	if (recursion_blocker)
+		return; // We are setting ourselves.
+
+	recursion_blocker ++;
+
+	// glmode_idx is the thing we set
+	for (newidx = -1, n = 0; n < NUM_GLMODES; n ++) {
+		if (String_Does_Match_Caseless (glmodes[n].name, var->string)) {
+			newidx = n;
+			break;
+		}
+	}
+
+	glmode_idx = (newidx == -1) ? 0 /* it was invalid set default */ : newidx;
+
+	// Apply it to the textures
+	{
+		gltexture_t	*glt;
+		for (glt = active_gltextures; glt; glt = glt->next)
+			TexMgr_SetFilterModes (glt);
+	}
+
+	Sbar_Changed (); // sbar graphics need to be redrawn with new filter mode.  Baker: Or at least they used to.  I think I corrected that.
+
+	// Make the name one of the constant values
+	Cvar_SetQuick (&gl_texturemode, glmodes[n].name); // Set cvar string manually
+
+	recursion_blocker --;
+}
+
+#if 0
 void TexMgr_TextureMode_f (lparse_t *line)
 {
 	gltexture_t	*glt;
@@ -196,7 +232,7 @@ void TexMgr_TextureMode_f (lparse_t *line)
 			Con_PrintLinef (QUOTED_S " is not a valid texturemode", arg);
 
 stuff:
-		for (glt=active_gltextures; glt; glt=glt->next)
+		for (glt = active_gltextures; glt; glt=glt->next)
 			TexMgr_SetFilterModes (glt);
 
 		Sbar_Changed (); //sbar graphics need to be redrawn with new filter mode
@@ -209,6 +245,7 @@ stuff:
 		break;
 	}
 }
+#endif
 
 /*
 ===============

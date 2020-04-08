@@ -87,7 +87,14 @@ CMD_DEF (PR_Init     , DEP_HOST__  , "qcfuncs"                   , PR_Listfuncti
 CMD_DEF (Host_Init   , DEP_HOST__  , "begin"                     , Host_Begin_f				, "This command is used by the client to inform the server to begin sending game information."			)
 CMD_DEF (Host_Init   , DEP_HOST__  , "changelevel"               , Host_Changelevel_f		, "Change the map without dropping the connected clients from the server."			)
 CMD_DEF (Host_Init   , DEP_HOST__  , "color"                     , Host_Color_f				, "Set the color for the player's shirt and pants (color [shirt color] [pants color])."			)
+
 CMD_DEF (Host_Init   , DEP_HOST__  , "connect"                   , Host_Connect_f			, "Connect to a game server (connect quake.shmack.net or connect quake.shmack.net:26001)."			)
+
+#ifdef _DEBUG
+CMD_DEF (Host_Init   , DEP_HOST__  , "crash"                      , Host_Crash_f			, "Force a crash by calling non-existent function."			)
+CMD_DEF (Host_Init   , DEP_HOST__  , "syserror"                   , Host_SysError_f			, "Force a system error."			)
+#endif // _DEBUG
+
 //CMD_DEF (Host_Init   , DEP_HOST__  , "dir"                       , Dir_f						, ""			)
 //CMD_DEF (Host_Init   , DEP_HOST__  , "download"                  , Downloads_Download_f		, ""			)
 //CMD_DEF (Host_Init   , DEP_HOST__  , "downloadzip"               , Download_Remote_Zip_Install_f	, ""		)
@@ -228,7 +235,6 @@ CMD_DEF (S_Init      , DEP_CLIENT  , "stopsound"                 , S_StopAllSoun
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 CMD_DEF (TexMgr_Init , DEP_GL      , "gl_describetexturemodes"   , TexMgr_DescribeTextureModes_f	, "Lists all texturemodes."		)
-CMD_DEF (TexMgr_Init , DEP_GL      , "gl_texturemode"            , TexMgr_TextureMode_f		, "The mode used for rendering textures."			)
 CMD_DEF (TexMgr_Init , DEP_GL      , "imagedump"                 , TexMgr_Imagedump_f		, "Dumps all loaded textures from opengl into tga files. This shows the textures as they exist in opengl texture memory. Texture names containing '*' will be renamed with '#' instead."			)
 CMD_DEF (TexMgr_Init , DEP_GL      , "imagelist"                 , TexMgr_Imagelist_f		, "Displays a list of loaded textures, and their dimensions."			)
 CMD_DEF (TexMgr_Init , DEP_MODEL   , "texreload"                 , TexMgr_ReloadImages_f	, "Reloads all textures."			)

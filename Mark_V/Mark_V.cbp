@@ -918,6 +918,9 @@
 		<Unit filename="gl_alias.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="gl_bloom.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="gl_brush.c">
 			<Option compilerVar="CC" />
 		</Unit>

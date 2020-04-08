@@ -51,7 +51,7 @@ void VID_Local_Window_PreSetup (void)
 vmode_t VID_Local_GetDesktopProperties (void)
 {
 
-	return WIN_Vid_GetDesktopProperties ();  // Vid_Display_Properties_Get	
+	return WIN_Vid_GetDesktopProperties ();  // Vid_Display_Properties_Get
 }
 
 
@@ -59,14 +59,14 @@ vmode_t VID_Local_GetDesktopProperties (void)
 // vsync
 //
 
-void VID_Local_Vsync_f (cvar_t *var) 
+void VID_Local_Vsync_f (cvar_t *var)
 {
 	// Unsupported at the moment.
 }
 
 
 
-void VID_Local_Multisample_f (cvar_t *var) 
+void VID_Local_Multisample_f (cvar_t *var)
 {
 	// Unsupported
 }
@@ -114,7 +114,7 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 	GetWindowInfo (sysplat.mainwindow, &windowinfo); // Client screen
 
 	// Baker: Not if 0
-	if (windowinfo.rcClient.right - windowinfo.rcClient.left) <= 0) {
+	if (windowinfo.rcClient.right - windowinfo.rcClient.left <= 0) {
 		// Make sure the window is set as minimized here if it isn't?
 		return;
 	}
@@ -382,7 +382,7 @@ void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode)
 		DestroyWindow (sysplat.mainwindow);
 		sysplat.mainwindow = NULL;
 	}
-	
+
 	if (reset_video_mode)
 		ChangeDisplaySettings (NULL, 0);
 }
@@ -410,7 +410,7 @@ static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 
 		//int stretch_try = vid.stretch_old_cvar_val;
 		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
-		
+
 		switch (stretch_try) {
 		case 0:	stretch_try = 1; break;
 		case 2:	stretch_try = 9999; break;
@@ -425,7 +425,7 @@ static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 
 		vid.stretch_x = vid.stretch_y = stretch_try;
 	}
-	
+
 	vid.conwidth  = p->width  / vid.stretch_x;
 	vid.conheight  = p->height  / vid.stretch_y;
 
@@ -435,7 +435,7 @@ static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 
 	VID_CreateDIB (vid.conwidth, vid.conheight, vid.curpal);
 
-	VID_WinQuake_AllocBuffers_D_InitCaches (vid.conwidth, vid.conheight); // It never returns false. 
+	VID_WinQuake_AllocBuffers_D_InitCaches (vid.conwidth, vid.conheight); // It never returns false.
 
 }
 

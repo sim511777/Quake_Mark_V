@@ -243,10 +243,10 @@ void Sky_FrameSetup (void)
 
 	frame.skyfog = level.is_skyfog > 0 ? level.skyfog : CLAMP(0.0, gl_skyfog.value, 1.0);
 
-	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for 
+	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
-	//if (!renderer.gl_stencilbits || vid.direct3d == 9 /*temp disable hack*/) 
-	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR) 
+	//if (!renderer.gl_stencilbits || vid.direct3d == 9 /*temp disable hack*/)
+	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR)
 	{
 		Sky_DrawSky (); //johnfitz
 		return;
@@ -317,15 +317,15 @@ void Sky_Stencil_Draw (void)
 	msurface_t	*s;
 	texture_t	*t;
 
-	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for 
+	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
 
 // Baker: No sky to draw
 	if (!level.sky /*|| !frame.has_sky*/)
 		return;
 
-	//if (!renderer.gl_stencilbits || vid.direct3d = =9 /*temp disable hack*/) 
-	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR ) 
+	//if (!renderer.gl_stencilbits || vid.direct3d = =9 /*temp disable hack*/)
+	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR )
 	{
 		return;
 	}
@@ -829,7 +829,7 @@ void Sky_SetBoxVert (float s, float t, int axis, vec3_t v)
 Sky_GetTexCoord
 =============
 */
-void Sky_GetTexCoord (vec3_t v, float speed, float *s, float *t)
+void Sky_GetTexCoord (const vec3_t v, float speed, float *s, float *t)
 {
 	vec3_t	dir;
 	float	length, scroll;
@@ -1005,7 +1005,7 @@ void Sky_FitzQuake_DrawFace (int axis)
 #endif // SKY
 
 // declared this way so that we can pass glVertex3fv as a Sky_DrawFunc
-void APIENTRY Sky_MH_DrawMultitexture (float *v)
+void APIENTRY Sky_MH_DrawMultitexture (const float *v)
 {
 	float s, t;
 
@@ -1017,7 +1017,7 @@ void APIENTRY Sky_MH_DrawMultitexture (float *v)
 }
 
 
-void APIENTRY Sky_MH_DrawSolidLayer (float *v)
+void APIENTRY Sky_MH_DrawSolidLayer (const float *v)
 {
 	float s, t;
 
@@ -1027,7 +1027,7 @@ void APIENTRY Sky_MH_DrawSolidLayer (float *v)
 }
 
 
-void APIENTRY Sky_MH_DrawAlphaLayer (float *v)
+void APIENTRY Sky_MH_DrawAlphaLayer (const float *v)
 {
 	float s, t;
 
@@ -1037,7 +1037,7 @@ void APIENTRY Sky_MH_DrawAlphaLayer (float *v)
 }
 
 
-void Sky_MH_DrawPass (int axis, void (APIENTRY *Sky_DrawFunc) (float *))
+void Sky_MH_DrawPass (int axis, void (APIENTRY *Sky_DrawFunc) (const float *))
 {
 	int i, j;
 	vec3_t temp, temp2, vec[4];
@@ -1045,7 +1045,7 @@ void Sky_MH_DrawPass (int axis, void (APIENTRY *Sky_DrawFunc) (float *))
 	vec3_t		verts[4];
 	vec3_t		vup, vright;
 
-	float di = max ((int) gl_sky_quality.value, 1);
+	float di = c_max ((int) gl_sky_quality.value, 1);
 	float qi = 1.0 / di;
 	float dj = (axis < 4) ? di * 2 : di; // subdivide vertically more than horizontally on skybox sides
 	float qj = 1.0 / dj;

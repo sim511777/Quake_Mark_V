@@ -862,7 +862,7 @@ void Image_Quick_Palette_256_Alloc (int black_index)
 	}
 
 	// Baker: Allocate a buffer for all possible RGB combinations, calloc zeros the memory
-	fastpal = (byte*)calloc (256*256*256, 1);
+	fastpal = (byte*)calloc (256 * 256 * 256, 1);
 	fastblack = (byte)black_index;
 }
 

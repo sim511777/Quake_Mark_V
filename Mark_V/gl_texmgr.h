@@ -131,6 +131,12 @@ int TexMgr_SafeTextureSize (int s);
 int TexMgr_PadConditional (int s);
 
 void TexMgr_ReplaceImage_RGBA (gltexture_t *texture, unsigned *data, int width, int height);
+void TexMgr_TextureMode_f (cvar_t *var);
+
+#define TEXMODE_GL_NEAREST_0						0
+#define TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1			1
+#define TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2			2
+#define TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5			5
 
 // TEXTURE BINDING & TEXTURE UNIT SWITCHING
 

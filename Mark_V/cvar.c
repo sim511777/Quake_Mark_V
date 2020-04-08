@@ -1131,6 +1131,7 @@ void SCR_Conwidth_f (cvar_t *var) { }
 void R_SetClearColor_f (cvar_t *var) {}
 void R_VisChanged (cvar_t *var) {}
 void TexMgr_Init (void) {}
+void TexMgr_TextureMode_f  (cvar_t *var) {}
 #else
 void D_Init (void) {};
 #endif // WINQUAKE_RENDERER_SUPPORT

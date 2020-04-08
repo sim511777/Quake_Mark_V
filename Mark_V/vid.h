@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // vid.h -- video driver defs
 
 // moved here for global use -- kristian
-typedef enum { MODE_UNINIT = -1, MODE_WINDOWED = 0, MODE_FULLSCREEN = 1 } modestate_t;
+typedef enum { ENUM_FORCE_INT_GCC_ (MODESTATE) MODESTATE_UNINIT = -1 /* <- unused */, MODESTATE_WINDOWED = 0, MODESTATE_FULLSCREEN = 1 } MODESTATE_e;
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
 
@@ -68,7 +68,7 @@ enum {USER_SETTING_FAVORITE_MODE = 0, ALT_ENTER_TEMPMODE = 1};
 
 typedef struct
 {
-	modestate_t	type;
+	MODESTATE_e	type;
 #ifdef PLATFORM_OSX
 	void*		ptr;	// Baker: I use this for OS X
 #endif // PLATFORM_OSX
@@ -81,14 +81,14 @@ typedef struct
 } vmode_t;
 
 
-#define VID_MIN_CONTRAST 1.0
-#define VID_MAX_CONTRAST 2.0
+#define VID_MIN_CONTRAST_1_0 1.0
+#define VID_MAX_CONTRAST_2_0 2.0
 
-#define VID_MIN_POSSIBLE_GAMMA 0.5
-#define VID_MAX_POSSIBLE_GAMMA 4.0
+#define VID_MIN_POSSIBLE_GAMMA_0_5 0.5
+#define VID_MAX_POSSIBLE_GAMMA_4_0 4.0
 
-#define VID_MIN_MENU_GAMMA 0.5
-#define VID_MAX_MENU_GAMMA 1.0
+#define VID_MIN_MENU_GAMMA_0_5 0.5
+#define VID_MAX_MENU_GAMMA_1_0 1.0
 
 
 typedef struct mrect_s
@@ -211,12 +211,59 @@ typedef struct
 
 	int				direct3d;
 	int				multisamples;
+	
+	
+// Brave New World
+	cbool			is_mobile;				// Probably prevent from vid_restart?
+	cbool			mobile_interface;		// Use the mobile interface.
+	cbool			is_mobile_ios_keyboard;
+	cbool			is_screen_portrait;
+	cbool			mobile_keyup;
+
+
+
 } viddef_t;
 
 extern	viddef_t	vid;				// global video state
 
 extern	int clx, cly, clwidth, clheight;
 
+
+typedef struct {
+	void			*something_here;				// Translation from game portal to 
+	glmatrix		game_projection;				// Projection for the view.
+	glmatrix		game_modelview;					// refdef version
+//	glmatrix		game_playerview;				// Player view.
+// To do chase active we would probably need to a collision point because the angles would be different
+// Then we'd need to reverse out the required angles.
+
+	int				game_viewport[4];				// I think this is going to correspond to the physical rect.
+	float			r_fovx, r_fovy;					// Do we use?
+	float			znear, zfar;
+	vec3_t			game_org, game_angles;			// We eventually want double click
+	vec3_t			player_org, player_angles;		// We eventually want double click
+
+	int				menu_viewport[4];
+	glmatrix		menu_projection;
+	glmatrix		menu_modelview;
+
+	//
+	void			*focused;
+	int				focus_num;
+
+	ticktime_t		last_up;				// For comparing.  We cannot assume game is 0 for multitouch.
+	cbool			is_down;
+	int				downx, downy;
+
+	cbool			*phave_mouse;			// Gay
+
+	cbool			is_attack_click;
+	cbool			is_attack_firing;
+	vec3_t			attack_angles;			// Regardless of what is going on, send these.  One message.
+	int				deltaframe;
+} focusor_t;
+
+extern focusor_t focus0;
 
 //cmd void VID_Test (void);
 //cmd void VID_Restart_f (void);
@@ -243,7 +290,8 @@ cbool VID_Local_SetMode (int modenum);
 void VID_Shutdown (void);
 void VID_Local_Shutdown (void);
 void VID_Local_Window_Renderer_Teardown (int destroy, cbool reset_video_mode); // Many versions don't care about the resize, but WinQuake does.
-void VID_Local_Set_Window_Caption (const char *text);
+//void _VID_Local_Set_Window_Title (const char *text);
+void VID_Set_Window_Title (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))) ;
 
 // Video modes
 cbool VID_Mode_Exists (vmode_t *test, int *outmodenum);

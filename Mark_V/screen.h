@@ -40,7 +40,7 @@ void SCR_EndLoadingPlaque (void);
 void SCR_BeginLoadingPlaque_Force_NoTransition (void);
 void SCR_BeginLoadingPlaque_Force_Transition (void);
 
-int SCR_ModalMessage (const char *text, float timeout, cbool enter_out); //johnfitz -- added timeout
+//int SCR_ModalMessage (const char *text, float timeout, cbool enter_out); //johnfitz -- added timeout
 
 void SCR_ScreenShot_Clipboard_f (void);
 
@@ -64,6 +64,9 @@ extern	int			winquake_scr_copytop;
 extern	int			winquake_scr_copyeverything;
 extern	int			winquake_scr_fullupdate;	// set to 0 to force full redraw
 #endif // WINQUAKE_RENDERER_SUPPORT
+
+void SCR_TileClear (void); // Hmmm.
+void SCR_DrawNotifyString (void);
 
 #endif // ! __SCREEN_H___
 

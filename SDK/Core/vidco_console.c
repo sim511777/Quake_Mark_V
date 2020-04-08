@@ -11,10 +11,10 @@ Copyright (C) 2013-2014 Baker
 
 #define CORE_LOCAL
 #include "core.h"
-#include "vid.h" // Courtesy
+#include "vidco.h" // Courtesy
 
 static const char *unsupported_msg_text = "Windowing not supported for console applications.";
-#define UNSUPPORTED_ALERT(_x)	log_warn (unsupported_msg_text)
+#define UNSUPPORTED_ALERT(_x)	log_fatal (unsupported_msg_text)
 
 
 //void Vid_InitOnce (void)
@@ -89,7 +89,7 @@ void Vid_Handle_MaxSize (sys_handle_t cw, int width, int height)
 }
 
 
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
 {
 	UNSUPPORTED_ALERT (0);
 	return NULL;
@@ -120,7 +120,7 @@ void Vid_Handle_ZOrder (sys_handle_t cw)
 }
 
 
-void _Vid_Handle_Caption (sys_handle_t cw, const char *text)
+void _Vid_Handle_Title (sys_handle_t cw, const char *text)
 {
 	UNSUPPORTED_ALERT (0);
 }

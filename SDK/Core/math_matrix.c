@@ -205,6 +205,15 @@ glmatrix *Mat4_Rotate (glmatrix *m, float a, float x, float y, float z)
 
 
 // glFrustum
+
+glmatrix *Mat4_Frustum_By_Fov (glmatrix *m, float fovx, float fovy, double znear, double zfar)
+{
+	float xmax = znear * tan(fovx * M_PI/360.0);
+	float ymax = znear * tan(fovy * M_PI/360.0);
+	return Mat4_Frustum(m, -xmax, xmax, -ymax, ymax, znear, zfar);
+}
+
+
 glmatrix *Mat4_Frustum (glmatrix *m, double left, double right, double bottom, double top, double znear, double zfar)
 {
     // from OpenGL spec PDF:                                 can be rewritten as:
@@ -215,14 +224,17 @@ glmatrix *Mat4_Frustum (glmatrix *m, double left, double right, double bottom, d
     // invalid for: l=r, b=t, or n=f
 	glmatrix tmp;
 
+#if 1
 	c_assert (left != right); //,	"left = right");
 	c_assert (bottom != top); //,  "bottom = top");
 	c_assert (znear != zfar); //,  "znear = zfar");
-
+#endif
+#if 0 // This was to avoid a div0 problem, but I believe it was imaginary.
+	// Baker: Should be non-problem, these are deltas.  The delta is never 0.
 	c_assert (left != -right); //,	"left = right");
 	c_assert (bottom != -top); //,  "bottom = top");
 	c_assert (znear != -zfar); //,  "znear = zfar");
-
+#endif
 
 	tmp.m16[0] = (2 * znear)/(right - left);
 	tmp.m16[1] 	= 0;
@@ -374,9 +386,24 @@ glmatrix *Mat4_Perspective (glmatrix *m, float fovy, float aspect, float zNear, 
 	float cotangent = sine ? cos(radians) / sine : 0;
 
     if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
-		logd (SPRINTSFUNC "deltaz or sine or aspect = 0", __func__); // Serious?  How serious of a problem?
+		log_fatal (SPRINTSFUNC_ "deltaz or sine or aspect = 0", __func__); // Serious?  How serious of a problem?
 		return m; // Error condition
 	}
+#if 0  // For comparison
+// FOV_X = float AdaptFovx (float fov_x, float width, float height)
+	a = atan(MH_ASPECT / x * tan(fov_x_clamped / 360 * M_PI));
+	a = a * 360 / M_PI;
+
+// FOV_Y = float CalcFovy (float fov_x, float width, float height)
+    x = width/tan(fov_x_clamped/360*M_PI);
+    a = atan (height/x);
+    a = a*360/M_PI;
+
+
+	xmax = NEARCLIP_1 * tan(fovx * M_PI / 360.0);
+	ymax = NEARCLIP_1 * tan(fovy * M_PI / 360.0);
+	eglFrustum(-xmax + frustum_skew, xmax + frustum_skew, -ymax, ymax, NEARCLIP, gl_farclip.value);
+#endif
 
 	Mat4_Identity_Set (&tmp);
     tmp.m4x4[0][0] = cotangent / aspect;
@@ -555,7 +582,7 @@ static void sMultMatrixVecf (const glmatrix *src, const float *in /*[4]*/ ,
 
 // Returns NULL on failure
 cbool _Mat4_Project_Classic_Normal (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
-									float *winx, float *winy, float *winz) // Outputs
+									reply float *winx, reply float *winy, reply float *winz) // Outputs
 {
 
     float in[4] = { objx, objy, objz, 1.0 };
@@ -581,9 +608,9 @@ cbool _Mat4_Project_Classic_Normal (float objx, float objy, float objz, const gl
     in[0] = in[0] * viewport[2] + viewport[0];
     in[1] = in[1] * viewport[3] + viewport[1];
 
-    if (winx) *winx = in[0];
-    if (winy) *winy = in[1];
-    if (winz) *winz = in[2];
+    NOT_MISSING_ASSIGN (winx, in[0] );
+    NOT_MISSING_ASSIGN (winy, in[1] );
+    NOT_MISSING_ASSIGN (winz, in[2] );
 
 #ifdef GLM_TESTING
 	{
@@ -603,8 +630,11 @@ cbool _Mat4_Project_Classic_Normal (float objx, float objy, float objz, const gl
 	return true;
 }
 
+// Feb 19 2018 - I do believe screenheight is enough because only Y is flipped in GL.
+#pragma message ("I hate the name screen height but the calcs for a smaller viewport get messy to flip around.")
+#pragma message ("Might consider convert the mouse coords outside of this function as a solution.")
 cbool Mat4_Project_Smart (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
-									float *winx, float *winy, float *winz) // Outputs
+									reply float *winx, reply float *winy, reply float *winz) // Outputs
 {
 	cbool ret = _Mat4_Project_Classic_Normal (objx, objy, objz, modelview, projection, viewport, winx, winy, winz);
 // NO THE MATRIX ISN'T AFFECTED.  IT'S THE VIEWPORT Y, WHICH MAKES NO DIFFERENCE FOR A CENTERED WINDOW
@@ -620,7 +650,7 @@ cbool Mat4_Project_Smart (float objx, float objy, float objz, const glmatrix *mo
 
 
 cbool _Mat4_UnProject_Classic_Normal (float winx, float winy, float winz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
-			   float *objx, float *objy, float *objz) // Outputs
+			   reply float *objx, reply float *objy, reply float *objz) // Outputs
 {
 	glmatrix tmp;
 
@@ -650,9 +680,9 @@ cbool _Mat4_UnProject_Classic_Normal (float winx, float winy, float winz, const 
     out[1] /= out[3];
     out[2] /= out[3];
 
-    *objx = out[0];
-    *objy = out[1];
-    *objz = out[2];
+    NOT_MISSING_ASSIGN (objx, out[0] );
+    NOT_MISSING_ASSIGN (objy, out[1] );
+    NOT_MISSING_ASSIGN (objz, out[2] );
 
 #ifdef GLM_TESTING
 	{
@@ -676,7 +706,7 @@ cbool _Mat4_UnProject_Classic_Normal (float winx, float winy, float winz, const 
 
 
 cbool Mat4_UnProject_Smart (float winx, float _winy, float winz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
-			   float *objx, float *objy, float *objz) // Outputs
+			   reply float *objx, reply float *objy, reply float *objz) // Outputs
 {
 // NO THE MATRIX ISN'T AFFECTED.  IT'S THE VIEWPORT Y, WHICH MAKES NO DIFFERENCE FOR A CENTERED WINDOW
 // WELL --- methinks I am 2x wrong here.
@@ -703,5 +733,44 @@ glmatrix *Mat4_Pick (glmatrix *m, float x, float y, float deltax, float deltay, 
 	return m;
 }
 
+
+
+
+
+// Translate and scale the picked region to the entire window
+frustum_plane_t *Frustum_ViewPlane_Set (frustum_plane_t *m, double width, double height, double fov_x, double fov_y)
+{
+	double fov_x_div2 = fov_x / 2;
+	double fov_y_div2 = fov_y / 2;
+
+    m->m17[0]	= width;
+    m->m17[1]	= height;                                       // Height
+    m->m17[2]	= width / height;                               // Aspect
+    m->m17[3]	= fov_x;										// AdaptFovx(FieldOfView, height / width);         // Fov X
+    m->m17[4]	= fov_y;										// CalcFovY(m->m17[3], width, height);				// Fov y
+//    .xmax = m.options.ZNear * Tan(.fov_x * M_PI / 360)
+//    .ymax = m.options.ZNear * Tan(.fov_y * M_PI / 360)
+    m->m17[5]	= 0;                                            // Left Edge
+    m->m17[6]	= fov_x /* m->m17[3] */;						// Right Edge
+    m->m17[7]	= 0;                                            // Top Edge
+    m->m17[8]	= fov_y /* m->m17[4] */;                        // Bottom Edge
+    
+    // Slice of 180 degrees
+    m->m17[9]	= fov_x_div2; /*fov_x / 2*/						// diameter_0_to_2	// 1/2 Fov X
+    m->m17[10]	= 180 - fov_x_div2;								// 180 - 1/2 Fov X
+    m->m17[11]	= fov_y_div2;									// 1/2 Fov Y
+    m->m17[12]	= 180 - fov_y_div2;								// 180 - 1/2 Fov Y
+
+    // Debug.Print Spaced("Angles:", (180 - Frustum(3)) / 2, "-", (180 - Frustum(3)) / 2 + Frustum(3))
+
+    // Percent of 180 degrees
+    m->m17[13] = Math_Degrees_DiameterFrac(90 - fov_x_div2);
+    m->m17[14] = Math_Degrees_DiameterFrac(90 + fov_x_div2) - m->m17[13]; //' / 180 ' // Range di
+    // This isn't right, need to cos it.  Perhaps taking znear into account
+    m->m17[15] = Math_Degrees_DiameterFrac(90 - fov_y_div2);
+    m->m17[16] = Math_Degrees_DiameterFrac(90 + fov_y_div2) - m->m17[15]; //' / 180 ' // Range di
+
+	return m;
+}
 
 

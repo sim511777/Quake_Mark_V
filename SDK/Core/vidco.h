@@ -19,7 +19,7 @@ Copyright (C) 2013-2014 Baker
 //#endif
 
 #ifdef PLATFORM_GUI_OSX
-#include "vid_osx_keys.h" // I ain't including an ancient carbon framework to get the keys.
+#include "vidco_osx_keys.h" // I ain't including an ancient carbon framework to get the keys.
 #endif // PLATFORM_GUI_OSX
 
 void Vid_InitOnce (void);
@@ -67,9 +67,7 @@ int _Plat_Window_StyleEx (wdostyle_e style);	// So when we create a window with 
 
 
 // If you want no cursor, that's hidecursor
-typedef enum
-{
-    _mousepointer__fake = -1, // Force GCC to used signed enum
+typedef enum { ENUM_FORCE_INT_GCC_(mousepointer)
 	mousepointer_invalid = 0,
 
 	mousepointer_arrow,		// Default
@@ -90,7 +88,7 @@ typedef enum
 
 // Handle methods
 void Vid_Handle_Borders_Get (wdostyle_e style, cbool have_menu, reply int *left, reply int *top, reply int *width, reply int *height, reply int *right, reply int *bottom);
-void Vid_Handle_Caption (sys_handle_t cw, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3))) ;
+void Vid_Handle_Title (sys_handle_t cw, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3))) ;
 
 #ifdef CORE_GL
 	sys_handle_t Vid_Handle_Context_Get (void);
@@ -99,8 +97,8 @@ void Vid_Handle_Caption (sys_handle_t cw, const char *fmt, ...) __core_attribute
 
 void Vid_Handle_Client_RectRB_Get (sys_handle_t cw, reply int *left, reply int *top, reply int *width, reply int *height, reply int *right, reply int *bottom);
 void Vid_Handle_Client_Rect_To_Window_Rect (wdostyle_e style, cbool have_menu, modify int *left, modify int *top, modify int *width, modify int *height);
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool have_menu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out);
-sys_handle_t *Vid_Handle_Create_Solo_Client (const char *caption, int client_width, int client_height, required sys_handle_t *dc, required sys_handle_t *rc);
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool have_menu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out);
+sys_handle_t *Vid_Handle_Create_Solo_Client (const char *title, int client_width, int client_height, required sys_handle_t *dc, required sys_handle_t *rc);
 sys_handle_t *Vid_Handle_Destroy (sys_handle_t cw, required sys_handle_t *draw_context, required sys_handle_t *gl_context, cbool should_delete_context);
 void Vid_Handle_Hide (sys_handle_t cw);
 void Vid_Handle_MousePointer (sys_handle_t cw, sys_handle_t *hmouseicon, mousepointer_e mousepointer);
@@ -134,8 +132,8 @@ typedef struct {
 
 // System Makes
 	sys_handle_t		wdo, dc, glrc;
-	struct _gl_info_t	*gl_info;
-	struct _rstate_t	*hw; // base
+	struct _gl_info_t_s	*gl_info;
+	struct _rstate_t_s	*hw; // base
 	struct _texture_array_t_s		*textures;
 
 // System dictates.  At least indirectly.  Through resize
@@ -145,7 +143,7 @@ typedef struct {
 	glmatrix			*modelview;					// CONVENIENCE
 	int					viewport[4];				// CONVENIENCE
 	int                 viewport_mouse[4];          // Rendering and mouse viewport are not always same (ios content scale)
-	struct _rstate_t	*rstate;					// Desired default, convenience.
+	struct _rstate_t_s	*rstate;					// Desired default, convenience.
 	crectrb_t			border;						// CONVENIENCE
 	crect_t				frame;						// CONVENIENCE
 	crect_t				bounds;						// Similar, but left and right are 0.  Makes a return for viewport
@@ -168,9 +166,9 @@ typedef struct {
 } vid_t;
 
 // Window methods
-void Window_Alloc (vid_t **pvid, void *ptr, const char *caption, int client_width, int client_height, wdostyle_e style, void *menu);
+void Window_Alloc (vid_t **pvid, void *ptr, const char *title, int client_width, int client_height, wdostyle_e style, void *menu);
 void Window_Borders_Get (vid_t *vid, reply int *left, reply int *top, reply int *width, reply int *height, reply int *right, reply int *bottom);
-void Window_Caption (vid_t *vid, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3))) ;
+void Window_Title (vid_t *vid, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3))) ;
 void Window_Client_Rect_Get (vid_t *vid, reply int *left, reply int *top, reply int *width, reply int *height);
 void Window_Client_RectRB_Get (vid_t *vid, reply int *left, reply int *top, reply int *width, reply int *height, reply int *right, reply int *bottom);
 void Window_Client_Rect_To_Window_Rect (vid_t *vid, modify int *left, modify int *top, modify int *width, modify int *height);

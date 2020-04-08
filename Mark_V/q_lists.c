@@ -27,7 +27,7 @@ list_info_t list_info[] =
 {
 	{ list_type_none,		"commands/aliases/vars",NULL,		NULL,		},
 	{ list_type_config,		"config",	".cfg",		"exec"					},
-	{ list_type_demo,		"demo",		".dem",		"playdemo,capturedemo"	},
+	{ list_type_demo,		"demo",		".dem",		"playdemo,capturedemo,timedemo"	},
 	{ list_type_demos_menu,	"demos",	".dem",		"none"					},
 	{ list_type_game,		"game",		NULL,		"game,uninstall,hdfolder",		},
 	{ list_type_game_hud,	"-game",	NULL,		"game"					},
@@ -309,8 +309,8 @@ void Lists_NewGame (void)
 	List_Filelist_Rebuild (&list_info[list_type_mp3].plist, "/music", list_info[list_type_mp3].extension, 0, 0);
 	List_Filelist_Rebuild (&list_info[list_type_config].plist, "", list_info[list_type_config].extension, 0, 2);
 
-	M_Menu_Levels_NewGame ();
-	M_Menu_Demos_NewGame ();
+	Mnu_Levels_NewGame ();
+	Mnu_Demos_NewGame ();
 #ifdef CORE_PTHREADS
 	ReadList_NewGame ();	
 #endif // CORE_PTHREADS

@@ -1,3 +1,5 @@
+#if 0 // UNUSED
+
 /*
  Copyright (C) 2009-2014 Baker
  
@@ -113,7 +115,7 @@ cbool VID_Mode_Exists (vmode_t* test, int *outmodenum)
 	return true;
 }
 
-void VID_MakeMode (modestate_t mode_type, vmode_t *new_mode)
+void VID_MakeMode (modestate_e mode_type, vmode_t *new_mode)
 {
 }
 
@@ -329,4 +331,6 @@ void VID_Local_Multisample_f (cvar_t *var)
 
 
 cbool VID_CheckGamma (void) {return 0;}
+
+#endif // 0 // UNUSED
 

@@ -3261,7 +3261,7 @@ int Mirror_Scan_Model (qmodel_t *mdl)
 
 	msurface_t *surf = &mdl->surfaces[mdl->firstmodelsurface];  int j, count; //    &ent->model->surfaces[ent->model->firstmodelsurface];  
 	for (count = 0, j = 0 ;  j < mdl->nummodelsurfaces ; j++, surf++) {
-		if (Flag_Check (surf->flags, SURF_DRAWMIRROR)) {
+		if (Flag_Check_Bool (surf->flags, SURF_DRAWMIRROR)) {
 			GL_Mirrors_Scan_Surface (surf, j);
 #if 1
 			count ++;

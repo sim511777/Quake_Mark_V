@@ -163,8 +163,9 @@ void Cbuf_InsertText (const char *text)
 Cbuf_Execute
 ============
 */
-void Cbuf_Execute (void)
+VRESULT Cbuf_Execute (void)
 {
+	VRESULT qres = VR_OK_0;
 	int		i;
 	char	*text;
 	char	line[1024];
@@ -207,7 +208,18 @@ void Cbuf_Execute (void)
 		}
 
 // execute the command line
-		Cmd_ExecuteString (line, src_command);
+		qres = Cmd_ExecuteString (line, src_command);
+
+		if (qres) {
+			
+			// Can we print here?
+			Con_PrintLinef ("QERR on " QUOTED_S, line);
+			Con_PrintLinef ("ERROR: Therefore clearing command buffer");
+			
+			SZ_Clear (&cmd_text); // Erase everything that remains!
+
+			break; // Error occurred - error supporting command
+		}
 
 		if (cmd_wait)
 		{	// skip out while text still remains in buffer, leaving it
@@ -216,6 +228,8 @@ void Cbuf_Execute (void)
 			break;
 		}
 	}
+
+	return qres;
 }
 
 /*
@@ -243,9 +257,9 @@ void Cmd_StuffCmds_f (lparse_t *unused)
 
 	plus = true;
 	j = 0;
-	for (i = 0; cmdline.string[i]; i ++)
+	for (i = 0; host_cmdline.string[i]; i ++)
 	{
-		if (cmdline.string[i] == '+')
+		if (host_cmdline.string[i] == '+')
 		{
 			plus = true;
 			if (j > 0)
@@ -254,11 +268,11 @@ void Cmd_StuffCmds_f (lparse_t *unused)
 				cmds[j++] = ' ';
 			}
 		}
-		else if (cmdline.string[i] == '-' &&
-			(i==0 || cmdline.string[i-1] == ' ')) //johnfitz -- allow hypenated map names with +map
+		else if (host_cmdline.string[i] == '-' &&
+			(i==0 || host_cmdline.string[i-1] == ' ')) //johnfitz -- allow hypenated map names with +map
 				plus = false;
 		else if (plus)
-			cmds[j++] = cmdline.string[i];
+			cmds[j++] = host_cmdline.string[i];
 	}
 	cmds[j] = 0;
 
@@ -334,6 +348,7 @@ void Cmd_Exec_f (lparse_t *line)
 							"bind    .		+mlook  \n"
 							"bind    ,		+klook  \n"
 							"bind    MOUSE3 +zoom_key  \n"
+							"bind    MOUSE4 togglemenu  \n"
 							"unbind F11      // stupid zoom key  \n"
 							"unbind  \\      // +mlook  \n"
 							"unbind  /      // next weapon  \n"
@@ -683,8 +698,15 @@ void	Cmd_RemoveCommand (const char *cmd_name)
 
 
 // Mass commands extern
-#define CMD_DEF(_c,_d,_n,_f,_h) extern void _f (lparse_t *);
-#include "cmd_list_sheet.h" // array
+#if 0
+	#define CMD_DEF(_c,_d,_n,_f,_h) extern void _f (lparse_t *);
+	#include "cmd_list_sheet.h" // array.  Mass commands extern feed
+#else
+	#define CMD_DEF(_c,_d,_n,_f,_h) extern void _f (lparse_t *);
+	#define ALT_DEF(_c,_d,_n,_f,_h) VRESULT _f (lparse_t *);
+	#include "cmd_list_sheet.h" // array.  Mass commands extern feed
+#endif
+
 
 /*
 typedef struct mass_cmds_s
@@ -697,7 +719,8 @@ typedef struct mass_cmds_s
 
 mass_cmds_t cmd_list[] =
 {
-#define CMD_DEF(_c,_d,_n,_f,_h) { _c, _n, _f, _h },
+#define CMD_DEF(_c,_d,_n,_f,_h) { _c, _n, NULL, _f, _h },
+#define ALT_DEF(_c,_d,_n,_f,_h) { _c, _n, _f, NULL, _h },
 #include "cmd_list_sheet.h" // array
 	{ NULL }, // Trailing empty name
 };
@@ -712,7 +735,7 @@ void Cmd_AddCommands (voidfunc_t initializer)
 	for (cur = &cmd_list[0]; cur->init_func; cur ++)
 	{
 		if (cur->init_func == initializer)
-			Cmd_AddCommand (cur->cmdname, cur->cmdfunc, cur->description);
+			Cmd_AddCommand (cur->cmdname, cur->altfunc, cur->stdfunc, cur->description);
 	}
 
 
@@ -741,7 +764,7 @@ Cmd_AddCommand
 cmd_function_t	*cmd_find; // find->next will be borked.  Let's see if we can determine how it gets borked
 						// Keep an eye on host_hunklevel
 
-void Cmd_AddCommand (const char *cmd_name, xcmd_t function, const char *description)
+void Cmd_AddCommand (const char *cmd_name, vxcmd_t altfunction, xcmd_t stdfunction, const char *description)
 {
 	cmd_function_t	*cmd;
 	cmd_function_t	*cursor,*prev; //johnfitz -- sorted list insert
@@ -771,7 +794,8 @@ void Cmd_AddCommand (const char *cmd_name, xcmd_t function, const char *descript
 
 	cmd = (cmd_function_t *) Hunk_AllocName (sizeof(cmd_function_t), "cmd");
 	cmd->name = cmd_name;
-	cmd->function = function;
+	cmd->altfunction = altfunction;
+	cmd->stdfunction = stdfunction;
 	cmd->description = description;
 
 	if (!strcmp(cmd_name, "find"))
@@ -852,25 +876,20 @@ FIXME: lookupnoadd the token to speed search?
 #ifdef SUPPORTS_CUTSCENE_PROTECTION
 cbool cmd_from_server;
 #endif // SUPPORTS_CUTSCENE_PROTECTION
-void Cmd_ExecuteString (const char *text, cmd_source_t src)
+VRESULT Cmd_ExecuteString (const char *text, cmd_source_t src)
 {
-	lparse_t *line = NULL;
-
-
 	cmd_source = src;
-
-
 
 #ifdef SUPPORTS_CUTSCENE_PROTECTION
 	if (text[0] == CUTSCENE_CHAR_START_5 && text[1] == 0)
 	{
 		cmd_from_server = true;
-		return;
+		return VR_OK_0;
 	}
 	else if (text[0] == CUTSCENE_CHAR_END_6 && text[1] == 0)
 	{
 		cmd_from_server = false;
-		return;
+		return VR_OK_0;
 	}
 
 #if 0 // Debugging
@@ -882,91 +901,61 @@ void Cmd_ExecuteString (const char *text, cmd_source_t src)
 
 //	Cmd_TokenizeString (text);
 
-	line = Line_Parse_Alloc (text, false);
-	if (line->count)
 	{
+		VRESULT qres = VR_OK_0;
+		lparse_t *line = NULL;
+		cmd_function_t *cmd;
+		cmd_alias_t *alias;
+		cvar_t *var;
 
-	/*
-	// execute the command line
-		if (!Cmd_Argc())
-			return;		// no tokens
-	*/
+		line = Line_Parse_Alloc (text, false);
 
-	// check functions
-	#if 1
-		{
-			cmd_function_t *cmd = Cmd_Find (line->args[0]);
-
-			if (cmd)
-			{
-				cmd->function (line);
-				return;
+		while (line->count) {
+			
+			// check functions
+			if ( (cmd = Cmd_Find (line->args[0])) /**/) {
+				if (cmd->stdfunction) cmd->stdfunction (line); else qres = cmd->altfunction (line);  // Errorable function!
+				break; // DONE!
 			}
-		}
-	#else
-		for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
-		{
-	//		if (!strcasecmp (cmd_argv[0],cmd->name))
-			if (!strcasecmp (line.args[0],cmd->name))
-			{
-				cmd->function ();
-				return;
-			}
-		}
-	#endif
 
-	// check alias
-	#if 1
-		{
-			cmd_alias_t *alias = Alias_Find (line->args[0]);
-			if (alias)
-			{
+			// check alias
+			if ( (alias = Alias_Find (line->args[0])) /**/) {
 				Cbuf_InsertText (alias->value);
-				return;
+				break; // DONE!
 			}
-		}
-	#else
 
-		for (a=cmd_alias ; a ; a=a->next)
-		{
-			if (!strcasecmp (line.args[0], a->name))
-			{
-				Cbuf_InsertText (a->value);
-				return;
-			}
-		}
-	#endif
+		// check cvars
+		#ifdef SUPPORTS_CUTSCENE_PROTECTION
+		#if 1
 
-	// check cvars
-	#ifdef SUPPORTS_CUTSCENE_PROTECTION
-	#if 1
-		{
-			cvar_t *var = Cvar_Find (line->args[0]);
-			if (var)
-			{
+			if ( (var = Cvar_Find (line->args[0])) /**/) {
 				Cvar_Command (cmd_from_server, var, line);
-				return;
+				break;
 			}
-		}
-	#else
-		if (!Cvar_Command (cmd_from_server, &line))
-	#endif
-	#endif // SUPPORTS_CUTSCENE_PROTECTION
-		{
+		#else
+			if (!Cvar_Command (cmd_from_server, &line))
+		#endif
+		#endif // SUPPORTS_CUTSCENE_PROTECTION
+			{
 
-			// Baker: Dedicated server must be post-initialized to receive unknown command
-			// prevents spams of unknown client commands from the config.cfg, etc.
-	#pragma message ("Baker: Downside: Might not alert user to a typo from command line or server config?")
-	#pragma message ("Baker: Our new security model will make this go away and we can do another check to see")
-	#pragma message ("Baker: If it is a valid cvar that is just client only.  For commands: only bind, unbindall, sky are in a config")
-	#pragma message ("Baker: Might have some wacky stuff in a quake.rc but that's ok")
-			// DO MAKE DEDICATED NOT PRINT THAT STUFF.
-			// INSTEAD make viewsize, gamma, sensitivity, bind, unbindall have dummies for dedicated server.
-			//if (!isDedicated || host_post_initialized)
+				// Baker: Dedicated server must be post-initialized to receive unknown command
+				// prevents spams of unknown client commands from the config.cfg, etc.
+		#pragma message ("Baker: Downside: Might not alert user to a typo from command line or server config?")
+		#pragma message ("Baker: Our new security model will make this go away and we can do another check to see")
+		#pragma message ("Baker: If it is a valid cvar that is just client only.  For commands: only bind, unbindall, sky are in a config")
+		#pragma message ("Baker: Might have some wacky stuff in a quake.rc but that's ok")
+				// DO MAKE DEDICATED NOT PRINT THAT STUFF.
+				// INSTEAD make viewsize, gamma, sensitivity, bind, unbindall have dummies for dedicated server.
+				//if (!isDedicated || host_post_initialized)
 				Con_PrintLinef ("Unknown command " QUOTED_S, line->args[0]);
+				break;
+			}
+			
 		}
+		Line_Parse_Free (line);
+		return qres;
 	}
-	free (line);
+	
 }
 
 

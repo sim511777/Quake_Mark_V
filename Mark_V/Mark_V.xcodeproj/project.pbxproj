@@ -164,6 +164,12 @@
 		819CF7361ADB65DA003260C1 /* math_general.c in Sources */ = {isa = PBXBuildFile; fileRef = 819CF7341ADB65DA003260C1 /* math_general.c */; };
 		819CF7371ADB65DA003260C1 /* math_general.c in Sources */ = {isa = PBXBuildFile; fileRef = 819CF7341ADB65DA003260C1 /* math_general.c */; };
 		819CF7381ADB65DA003260C1 /* math_general.c in Sources */ = {isa = PBXBuildFile; fileRef = 819CF7341ADB65DA003260C1 /* math_general.c */; };
+		819EAC851E46608700DF8B27 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 819EAC841E46608700DF8B27 /* main.m */; };
+		819EAC881E46608700DF8B27 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 819EAC871E46608700DF8B27 /* AppDelegate.m */; };
+		819EAC8B1E46608700DF8B27 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 819EAC8A1E46608700DF8B27 /* ViewController.m */; };
+		819EAC8E1E46608700DF8B27 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 819EAC8C1E46608700DF8B27 /* Main.storyboard */; };
+		819EAC901E46608700DF8B27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 819EAC8F1E46608700DF8B27 /* Assets.xcassets */; };
+		819EAC931E46608700DF8B27 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 819EAC911E46608700DF8B27 /* LaunchScreen.storyboard */; };
 		81A993B019E89E1700B5BF1F /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 81A9935F19E89E1700B5BF1F /* core.c */; };
 		81A993B119E89E1700B5BF1F /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 81A9935F19E89E1700B5BF1F /* core.c */; };
 		81A993B619E89E1700B5BF1F /* dirent_win.c in Sources */ = {isa = PBXBuildFile; fileRef = 81A9936419E89E1700B5BF1F /* dirent_win.c */; };
@@ -607,6 +613,17 @@
 		819CF7301ADB6590003260C1 /* buffers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = buffers.h; sourceTree = "<group>"; };
 		819CF7341ADB65DA003260C1 /* math_general.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = math_general.c; sourceTree = "<group>"; };
 		819CF7351ADB65DA003260C1 /* math_general.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math_general.h; sourceTree = "<group>"; };
+		819EAC7C1E46603700DF8B27 /* GLQuake copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GLQuake copy-Info.plist"; path = "/Users/iOS/Dropbox/mark_v_source_d3d_currentor_003/Mark_V/GLQuake copy-Info.plist"; sourceTree = "<absolute>"; };
+		819EAC811E46608700DF8B27 /* GLESQuake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GLESQuake.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		819EAC841E46608700DF8B27 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		819EAC861E46608700DF8B27 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		819EAC871E46608700DF8B27 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		819EAC891E46608700DF8B27 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		819EAC8A1E46608700DF8B27 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		819EAC8D1E46608700DF8B27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		819EAC8F1E46608700DF8B27 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		819EAC921E46608700DF8B27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		819EAC941E46608700DF8B27 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		81A9935F19E89E1700B5BF1F /* core.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core.c; sourceTree = "<group>"; };
 		81A9936019E89E1700B5BF1F /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 		81A9936119E89E1700B5BF1F /* core_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_opengl.h; sourceTree = "<group>"; };
@@ -959,6 +976,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		819EAC7E1E46608700DF8B27 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D246F59A149B07FE003433EB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1019,6 +1043,30 @@
 				810977E219DA38B80092F38D /* snd_null.c */,
 			);
 			name = dedicated;
+			sourceTree = "<group>";
+		};
+		819EAC821E46608700DF8B27 /* GLESQuake */ = {
+			isa = PBXGroup;
+			children = (
+				819EAC861E46608700DF8B27 /* AppDelegate.h */,
+				819EAC871E46608700DF8B27 /* AppDelegate.m */,
+				819EAC891E46608700DF8B27 /* ViewController.h */,
+				819EAC8A1E46608700DF8B27 /* ViewController.m */,
+				819EAC8C1E46608700DF8B27 /* Main.storyboard */,
+				819EAC8F1E46608700DF8B27 /* Assets.xcassets */,
+				819EAC911E46608700DF8B27 /* LaunchScreen.storyboard */,
+				819EAC941E46608700DF8B27 /* Info.plist */,
+				819EAC831E46608700DF8B27 /* Supporting Files */,
+			);
+			path = GLESQuake;
+			sourceTree = "<group>";
+		};
+		819EAC831E46608700DF8B27 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				819EAC841E46608700DF8B27 /* main.m */,
+			);
+			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		81A9935E19E89E1700B5BF1F /* core */ = {
@@ -1384,8 +1432,10 @@
 				81A9935E19E89E1700B5BF1F /* core */,
 				D26BDD48149B0A110018D5AE /* Quake */,
 				D26BDE2D149B26700018D5AE /* Resources */,
+				819EAC821E46608700DF8B27 /* GLESQuake */,
 				D246F5A0149B07FE003433EB /* Frameworks */,
 				D246F59E149B07FE003433EB /* Products */,
+				819EAC7C1E46603700DF8B27 /* GLQuake copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1395,6 +1445,7 @@
 				D246F59D149B07FE003433EB /* Quake.app */,
 				D26BDED1149EE9710018D5AE /* GLQuake.app */,
 				818FC7E619D7EE0700B8FE44 /* dedicated */,
+				819EAC811E46608700DF8B27 /* GLESQuake.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1646,6 +1697,23 @@
 			productReference = 818FC7E619D7EE0700B8FE44 /* dedicated */;
 			productType = "com.apple.product-type.tool";
 		};
+		819EAC801E46608700DF8B27 /* GLESQuake */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 819EAC951E46608700DF8B27 /* Build configuration list for PBXNativeTarget "GLESQuake" */;
+			buildPhases = (
+				819EAC7D1E46608700DF8B27 /* Sources */,
+				819EAC7E1E46608700DF8B27 /* Frameworks */,
+				819EAC7F1E46608700DF8B27 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GLESQuake;
+			productName = GLESQuake;
+			productReference = 819EAC811E46608700DF8B27 /* GLESQuake.app */;
+			productType = "com.apple.product-type.application";
+		};
 		D246F59C149B07FE003433EB /* Quake */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D246F5BB149B07FF003433EB /* Build configuration list for PBXNativeTarget "Quake" */;
@@ -1687,6 +1755,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0500;
+				TargetAttributes = {
+					819EAC801E46608700DF8B27 = {
+						CreatedOnToolsVersion = 7.0.1;
+						DevelopmentTeam = X8ME3BD2PL;
+					};
+				};
 			};
 			buildConfigurationList = D246F597149B07FE003433EB /* Build configuration list for PBXProject "Mark_V" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1697,6 +1771,7 @@
 				English,
 				German,
 				Swedish,
+				Base,
 			);
 			mainGroup = D246F592149B07FE003433EB;
 			productRefGroup = D246F59E149B07FE003433EB /* Products */;
@@ -1706,11 +1781,22 @@
 				D246F59C149B07FE003433EB /* Quake */,
 				D26BDE67149EE9710018D5AE /* GLQuake */,
 				818FC7E519D7EE0700B8FE44 /* dedicated */,
+				819EAC801E46608700DF8B27 /* GLESQuake */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		819EAC7F1E46608700DF8B27 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				819EAC931E46608700DF8B27 /* LaunchScreen.storyboard in Resources */,
+				819EAC901E46608700DF8B27 /* Assets.xcassets in Resources */,
+				819EAC8E1E46608700DF8B27 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D246F59B149B07FE003433EB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1857,6 +1943,16 @@
 				81C0D8B01DECDE1C0067A495 /* HTTPClientAuth.c in Sources */,
 				818FC7FE19D7EE8A00B8FE44 /* d_zpoint.c in Sources */,
 				81A9969D19E8BBC000B5BF1F /* lists.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		819EAC7D1E46608700DF8B27 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				819EAC8B1E46608700DF8B27 /* ViewController.m in Sources */,
+				819EAC881E46608700DF8B27 /* AppDelegate.m in Sources */,
+				819EAC851E46608700DF8B27 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2222,6 +2318,22 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		819EAC8C1E46608700DF8B27 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				819EAC8D1E46608700DF8B27 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		819EAC911E46608700DF8B27 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				819EAC921E46608700DF8B27 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
 		D2C49D5214F05D1C00E07CC4 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2322,6 +2434,66 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
+			};
+			name = Release;
+		};
+		819EAC961E46608700DF8B27 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = GLESQuake/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.quakeone.mark-v";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		819EAC971E46608700DF8B27 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = GLESQuake/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.quakeone.mark-v";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -2478,6 +2650,7 @@
 					/Users/iOS/Dropbox/SDK/fmod,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.quakeone.mark-v";
 				PRODUCT_NAME = GLQuake;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
@@ -2505,6 +2678,7 @@
 					/Users/iOS/Dropbox/SDK/fmod,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.quakeone.mark-v";
 				PRODUCT_NAME = GLQuake;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = app;
@@ -2522,6 +2696,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
+		};
+		819EAC951E46608700DF8B27 /* Build configuration list for PBXNativeTarget "GLESQuake" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				819EAC961E46608700DF8B27 /* Debug */,
+				819EAC971E46608700DF8B27 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		D246F597149B07FE003433EB /* Build configuration list for PBXProject "Mark_V" */ = {
 			isa = XCConfigurationList;

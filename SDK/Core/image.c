@@ -83,7 +83,7 @@ image_format_e File_URL_Image_Format (const char *path_to_file)
 	return image_format_invalid_0;
 }
 
-//#define is_in2(x, y1, y2) (((x) == (y1)) || ((x) == (y2)))
+
 image_format_e Image_Format_From_Data (const void *data, size_t data_length)
 {
 	const byte *charz = data;
@@ -128,7 +128,7 @@ unsigned *Image_Load_TGA_Memory_Alloc (const byte *tga_data, size_t tga_data_len
 	cbool			upside_down; //johnfitz -- fix for upside-down targas
 
 	if (!m) // This is nigh impossible.
-		return log_debug (SPRINTSFUNC "%s couldn't open data pointer", __func__, description), NULL; // Tricksie returns NULL because , NULL!
+		return log_debug (SPRINTSFUNC_ "%s couldn't open data pointer", __func__, description), NULL; // Tricksie returns NULL because , NULL!
 
 	targa_header.id_length 			= mgetc(m);
 	targa_header.colormap_type 		= mgetc(m);
@@ -145,10 +145,10 @@ unsigned *Image_Load_TGA_Memory_Alloc (const byte *tga_data, size_t tga_data_len
 	targa_header.attributes 		= mgetc(m);
 
 	if (targa_header.image_type != TGA_UNCOMPRESSED_2 && targa_header.image_type != TGA_RLE_10)
-		return log_debug (SPRINTSFUNC "%s is not a type 2 or type 10 targa", __func__, description), NULL; // Tricksie returns NULL because , NULL!
+		return log_debug (SPRINTSFUNC_ "%s is not a type 2 or type 10 targa", __func__, description), NULL; // Tricksie returns NULL because , NULL!
 
 	if (targa_header.colormap_type != 0 || (targa_header.pixel_size != BPP_32 && targa_header.pixel_size != BPP_24))
-		return log_debug (SPRINTSFUNC "%s is not a 24bit or 32bit targa", __func__, description), NULL; // Tricksie returns NULL because , NULL!
+		return log_debug (SPRINTSFUNC_ "%s is not a 24bit or 32bit targa", __func__, description), NULL; // Tricksie returns NULL because , NULL!
 
 	columns 						= targa_header.width;
 	rows 							= targa_header.height;
@@ -491,7 +491,6 @@ unsigned *Image_Load_File_Offset_Alloc (const char *path_to_file, image_format_e
 	return NULL;
 }
 
-#if 0
 unsigned *Bundle_Image_Load_Auto_Alloc (const char *path_to_file, int *width, int *height)
 {
 	image_format_e image_format = File_URL_Image_Format (path_to_file);
@@ -502,7 +501,7 @@ unsigned *Bundle_Image_Load_Auto_Alloc (const char *path_to_file, int *width, in
 	log_debug ("Bundle file not found: '%s'", path_to_file);
 	return NULL;
 }
-#endif
+
 
 
 unsigned *Image_Load_File_Alloc (const char *path_to_file, required int *width, required int *height)
@@ -1132,7 +1131,7 @@ void Image_Quick_Palette_RGBA_Alloc (void)
 		targa_header.pixel_size = fgetc(fin);
 		targa_header.attributes = fgetc(fin);
 
-		if (targa_header.image_type!= TGA_UNCOMPRESSED_2 && targa_header.image_type!= TGA_RLE_10)
+		if (targa_header.image_type != TGA_UNCOMPRESSED_2 && targa_header.image_type != TGA_RLE_10)
 			log_fatal ("Image_LoadTGA: %s is not a type 2 or type 10 targa", description);
 
 		if (targa_header.colormap_type !=0 || (targa_header.pixel_size!= BPP_32 && targa_header.pixel_size!= BPP_24))

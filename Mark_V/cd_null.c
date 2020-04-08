@@ -1,3 +1,5 @@
+#if 0 // UNUSED
+
 #include "quakedef.h"
 
 void CDAudio_Play (byte track, cbool looping)
@@ -40,3 +42,5 @@ void Set_Music_f (lparse_t *unused)
 	
 	
 }
+
+#endif // 0 // UNUSED

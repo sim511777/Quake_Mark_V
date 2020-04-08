@@ -25,5 +25,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 const char *LOC_LoadLocations (void); // Returns NULL on success, otherwise pointer to string of locs file qpath (for possible download).
 char *LOC_GetLocation (vec3_t worldposition);
 
-
 #endif // ! __LOCATION_H__

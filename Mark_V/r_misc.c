@@ -582,6 +582,24 @@ void R_SetupFrame (void)
 // start off with just the four screen edge clip planes
 	R_TransformFrustum ();
 
+	if (!r_dowarp) {
+		// Let's calculalte the modelview matrix here
+
+		Mat4_Identity_Set	(&focus0.game_modelview);
+
+		Mat4_Rotate			(&focus0.game_modelview, -90, 1, 0, 0);	    // put Z going up
+		Mat4_Rotate			(&focus0.game_modelview, 90,  0, 0, 1);	    // put Z going up
+		Mat4_Rotate			(&focus0.game_modelview, -r_refdef.viewangles[2],  1, 0, 0);
+		Mat4_Rotate			(&focus0.game_modelview, -r_refdef.viewangles[0],  0, 1, 0);
+		Mat4_Rotate			(&focus0.game_modelview, -r_refdef.viewangles[1],  0, 0, 1);
+		Mat4_Translate		(&focus0.game_modelview, -r_refdef.vieworg[0], -r_refdef.vieworg[1], -r_refdef.vieworg[2]);
+
+		VectorCopy (r_refdef.vieworg /*src*/, focus0.game_org);						// Rendering origin
+		VectorCopy (r_refdef.viewangles /*src*/, focus0.game_angles);				// Rendering angles (ok for click look)
+		VectorCopy (cl_entities[cl.viewentity_player].origin, focus0.player_org);	// 
+		VectorCopy (cl.viewangles /*src*/, focus0.player_angles);					// 
+	}
+
 // save base values
 	VectorCopy (vpn, base_vpn);
 	VectorCopy (vright, base_vright);

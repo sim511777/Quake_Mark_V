@@ -156,7 +156,7 @@ void MediaPlayer_Shutdown (void)
 	Initialized = Playing = Paused = false;
 
 #if 0 //def _DEBUG
-	VID_Local_Set_Window_Caption (NULL);
+	VID_Set_Window_Title (NULL);
 #endif
 }
 
@@ -283,7 +283,7 @@ cbool MediaPlayer_Play (int tracknum, cbool looping)
 
 	do
 	{
-		#define FAILED_SETUP(x) { Con_Printf (x); return false; }
+		#define FAILED_SETUP(x) { Con_PrintLinef (x); return false; }
 		HRESULT hr = S_OK;
 
 		// Create the filter graph manager and query for interfaces.
@@ -339,7 +339,7 @@ void MediaPlayer_Update (void)
 		LONGLONG pos1, pos2;
 		k++;
 		IMediaSeeking_GetPositions (pSeek, &pos1, &pos2);
-		VID_Local_Set_Window_Caption (   va("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1/10000000, (int)(pos2/10000000) ) );
+		VID_Set_Window_Title ("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1/10000000, (int)(pos2/10000000));
 	}
 #endif
 }
@@ -409,7 +409,7 @@ void MediaPlayer_Message (int looping)
 		LONGLONG pos1, pos2;
 		k++;
 		IMediaSeeking_GetPositions (pSeek, &pos1, &pos2);
-		VID_Local_Set_Window_Caption (   va("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1, (int)pos2 ) );
+		VID_Set_Window_Title ("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1, (int)pos2);
 	}
 
 

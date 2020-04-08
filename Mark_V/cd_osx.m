@@ -1,3 +1,6 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_OSX // Has to be here, set by a header
 
 //
 // "cd_osx.m" - MacOS X audio CD driver.
@@ -312,6 +315,7 @@ void CD_f (lparse_t* line)
         if (CDAudio_ScanForMedia ([[NSApp delegate] mediaFolder], nil))
         {
             NSUInteger  numTracks = 0;
+            char buf[80];
             
             if (sCDAudioTrackList != nil)
             {
@@ -320,13 +324,13 @@ void CD_f (lparse_t* line)
             
             if ([[NSApp delegate] mediaFolder] == nil)
             {
-                Con_Printf ("%s", "CD");
+                c_snprintf1 (buf, "%s", "CD");
             }
             else
             {
-                Con_Printf ("%s", "Audio files");
+                c_snprintf1 (buf, "%s", "Audio files");
             }
-            Con_PrintLinef (" found. %d tracks.", (int)numTracks);
+            Con_PrintLinef ("%s found. %d tracks.", buf, (int)numTracks);
         }
         
         return;
@@ -542,3 +546,8 @@ void CDAudio_Shutdown (void)
     sCDAudioMountPath   = nil;
     sCDAudioTrackList   = nil;
 }
+
+
+#endif // PLATFORM_OSX
+
+#endif // ! CORE_SDL

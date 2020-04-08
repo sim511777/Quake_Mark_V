@@ -33,7 +33,7 @@ void Input_Move (usercmd_t *cmd);
 void Input_Mouse_Move (usercmd_t *cmd);
 void Input_Joystick_Move (usercmd_t *cmd);
 void Input_Mouse_Accumulate (void); // Accumulates and re-centers only (for slow frames)
-void Input_Mouse_Button_Event (int mstate);
+void Input_Mouse_Button_Event (int mstate, cbool is_mousemove, int rawx, int rawy);
 
 void Input_System_Enhanced_Keys_Changed (cvar_t *var);
 
@@ -46,15 +46,14 @@ int Input_Local_Capture_Mouse (cbool bDoCapture); // Returns 0 if capture reject
 //void Input_Local_Keyboard_Disable_Sticky_Keys (cbool bDoDisable);   Shell_Input_KeyBoard_Capture
 //void Input_Local_Keyboard_Disable_Windows_Key (cbool bDoDisable);
 void Input_Local_Mouse_Cursor_SetPos (int x, int y);
-void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py);
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py, cbool towindow);
 cbool Input_Local_Update_Mouse_Clip_Region_Think (mrect_t *mouseregion);
 
 void Input_Local_Deactivate (void); // Stops drag flag
 
 #define INPUT_NUM_MOUSE_BUTTONS 5
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (in_axismap)
     eAxisNone,
     eAxisForward,
     eAxisSide,

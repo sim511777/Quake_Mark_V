@@ -1,3 +1,8 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_OSX // Has to be here, set by a header
+
+
 /*
 Copyright (C) 2001-2012 Axel 'awe' Wefers (Fruitz Of Dojo)
 Copyright (C) 2009-2014 Baker
@@ -42,7 +47,7 @@ vmode_t VID_Local_GetDesktopProperties (void)
 {
     vmode_t desktop = {0};
 
-    desktop.type        =   MODE_FULLSCREEN;
+    desktop.type        =   MODESTATE_FULLSCREEN;
     desktop.width       =   (int)NSWidth    ([[NSScreen mainScreen] frame]);
     desktop.height      =   (int)NSHeight   ([[NSScreen mainScreen] frame]);
     desktop.bpp         =   (int)NSBitsPerPixelFromDepth( [[NSScreen mainScreen] depth] );
@@ -71,7 +76,7 @@ void VID_Local_AddFullscreenModes (void)
         if ([displayMode bitsPerPixel] != BPP_32)
          continue;
 
-        vmode_t test = { MODE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], BPP_32};
+        vmode_t test = { MODESTATE_FULLSCREEN, NULL, (int)[displayMode width], (int)[displayMode height], BPP_32};
     
         cbool bpp_ok     = true;
         cbool width_ok   = in_range (MIN_MODE_WIDTH_640, (int)[displayMode width], MAX_MODE_WIDTH_10000);
@@ -258,7 +263,7 @@ void VID_FlushBuffers (void)
 // On the Mac.  For now ...
 void VID_Local_Suspend (cbool doSuspend)
 {
-    if (vid.wassuspended == doSuspend || vid.screen.type == MODE_WINDOWED)
+    if (vid.wassuspended == doSuspend || vid.screen.type == MODESTATE_WINDOWED)
         return;
     
     if (doSuspend)
@@ -339,7 +344,7 @@ cbool VID_Local_SetMode (int modenum)
     // free all buffers:
     VID_FlushBuffers ();
     
-    if (vid.modelist[modenum].type == MODE_FULLSCREEN)
+    if (vid.modelist[modenum].type == MODESTATE_FULLSCREEN)
     {
         static int first_time = 1;
         
@@ -451,7 +456,7 @@ cbool VID_Local_SetMode (int modenum)
 #endif // WINQUAKE_RENDERER_SUPPORT
 	
 	
-	VID_Local_Set_Window_Caption (ENGINE_NAME);
+	VID_Local_Set_Window_Title (ENGINE_NAME);
 	
     vid.ActiveApp = 1;
     vid.canalttab = 1;
@@ -537,7 +542,7 @@ void VID_Local_SetPalette (byte *palette)
 }
 #endif // WINQUAKE_RENDERER_SUPPORT
 
-void VID_Local_Set_Window_Caption (const char *text)
+void _VID_Local_Set_Window_Title (const char *text)
 {
     if (sysplat.gVidWindow != nil)
     {
@@ -568,3 +573,7 @@ void VID_Local_Shutdown (void)
 {
 	VID_Local_Window_Renderer_Teardown (TEARDOWN_FULL_1, true /*reset video mode*/);
 }
+
+#endif // PLATFORM_OSX
+
+#endif // ! CORE_SDL

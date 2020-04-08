@@ -313,8 +313,7 @@ typedef struct
 	mspriteframe_t		*frameptr;
 } mspriteframedesc_t;
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (sprite_rend_type)
 	sprite_render_normal,
 	sprite_render_additive,
 	sprite_render_filter,
@@ -462,11 +461,9 @@ extern	trivertx_t	*poseverts[MAXALIASFRAMES_256];
 // Whole model
 //
 
-typedef enum {mod_brush, mod_sprite, mod_alias} modtype_t;
+typedef enum { ENUM_FORCE_INT_GCC_ (modtype) mod_brush, mod_sprite, mod_alias} modtype_t;
 
-typedef	enum
-{
-    ___mi_gcc_sux_make_signed = -1,
+typedef	enum { ENUM_FORCE_INT_GCC_(mi)
 	mi_player,
 	mi_eyes,
 	mi_rocket,
@@ -529,7 +526,7 @@ void GameHacks_InitModelnames (void);
 #define NEHAHRA_SPECIAL_MSGCOUNT_MAYBE_255	255		// Originally 20 in regular Quake.
 
 // some models are special
-typedef enum {
+typedef enum { ENUM_FORCE_INT_GCC_ (modhint)
 	MOD_NORMAL_0,			// 0
 	MOD_PLAYER_1,			// 1
 	MOD_EYES_2,				// 2
@@ -546,7 +543,7 @@ typedef enum {
 
 
 
-typedef enum {
+typedef enum { ENUM_FORCE_INT_GCC_ (model_flags)
 	EF_ROCKET			= 1,			// leave a trail
 	EF_GRENADE			= 2,			// leave a trail
 	EF_GIB				= 4,			// leave a trail
@@ -569,8 +566,6 @@ typedef enum {
 //johnfitz
 
 	EF_ALPHA_MASKED_MDL = 16384,	// Alpha masked model texture, only for .mdl models.
-
-
 
 } model_flags_e;
 

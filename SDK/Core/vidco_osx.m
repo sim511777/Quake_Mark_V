@@ -150,7 +150,7 @@ void Vid_Handle_MaxSize (sys_handle_t cw, int width, int height)
 }
 
 
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
 {
 	crect_t border;
 	Vid_Handle_Borders_Get (style, true /* menu is irrelevant on Mac */, RECT_REPLY (border), NULL, NULL);
@@ -177,7 +177,7 @@ sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t win
 	// Don't need because This happens in VidWindowView or whatever it is //	WIN_SetupPixelFormat (*draw_context, 24, 32, 8); // color bits, depthbits, stencil bits
 	// Considering we aren't recreating a window at the moment, this is irrelevant
 
-	Vid_Handle_Caption (thing, "%s", caption);
+	Vid_Handle_Title (thing, "%s", title);
 
 	NOT_MISSING_ASSIGN (draw_context_out, drawcontext);
 	NOT_MISSING_ASSIGN (gl_context_out, glcontext);
@@ -260,7 +260,7 @@ void Vid_Handle_ZOrder (sys_handle_t cw)
 }
 
 
-void _Vid_Handle_Caption (sys_handle_t cw, const char *text)
+void _Vid_Handle_Title (sys_handle_t cw, const char *text)
 {
 	CoreVidWindow * myWindow = (__bridge CoreVidWindow *)cw;
 	[[myWindow window] setTitle:CSTRING(text)];
@@ -544,10 +544,10 @@ int keymap [KEYMAP_COUNT_512][5] = {
 	{ 120, kVK_F2                  , K_F2                , 0        }, /* vk hex = 0x78 */
 	{ 121, kVK_PageDown            , K_PAGEDOWN          , 0        }, /* vk hex = 0x79 */
 	{ 122, kVK_F1                  , K_F1                , 0        }, /* vk hex = 0x7A */
-	{ 123, kVK_LeftArrow           , K_LEFT              , 0        }, /* vk hex = 0x7B */
-	{ 124, kVK_RightArrow          , K_RIGHT             , 0        }, /* vk hex = 0x7C */
-	{ 125, kVK_DownArrow           , K_DOWN              , 0        }, /* vk hex = 0x7D */
-	{ 126, kVK_UpArrow             , K_UP                , 0        }, /* vk hex = 0x7E */
+	{ 123, kVK_LeftArrow           , K_LEFTARROW         , 0        }, /* vk hex = 0x7B */
+	{ 124, kVK_RightArrow          , K_RIGHTARROW        , 0        }, /* vk hex = 0x7C */
+	{ 125, kVK_DownArrow           , K_DOWNARROW         , 0        }, /* vk hex = 0x7D */
+	{ 126, kVK_UpArrow             , K_UPARROW           , 0        }, /* vk hex = 0x7E */
 	{ 127, -1                      , 0                   , 0        }, /* vk hex = 0x7F */
 };
 

@@ -24,7 +24,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sys.c -- system
+// sys_win.c -- system
 
 #include <limits.h>
 #include <errno.h>
@@ -181,7 +181,7 @@ int System_Error (const char *fmt, ...)
 
 #ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Temp maybe for Direct3D 9.  Possibly.  Relates to TOPMOST.  Must determine if we can detect scenario
 		// Baker: Direct3D hides popups, although this assumes window is setup which might be bad assumption
-		if (vid.initialized && vid.screen.type == MODE_FULLSCREEN)
+		if (vid.initialized && vid.screen.type == MODESTATE_FULLSCREEN)
 		{
 			VID_Shutdown ();
 			Input_Shutdown ();
@@ -645,7 +645,7 @@ LRESULT CALLBACK Session_Windows_Dispatch (
 
 	case WM_KILLFOCUS:
 		// Baker: Plus this makes it survive a Windows firewall warning "better"
-		if (vid.screen.type == MODE_FULLSCREEN)
+		if (vid.screen.type == MODESTATE_FULLSCREEN)
 			ShowWindow(sysplat.mainwindow, SW_SHOWMINNOACTIVE);
 		break;
 
@@ -814,7 +814,7 @@ vmode_t WIN_Vid_GetDesktopProperties (void)
 		return desktop;
 	}
 
-	desktop.type		=	MODE_FULLSCREEN;
+	desktop.type		=	MODESTATE_FULLSCREEN;
 	desktop.width		=	devmode.dmPelsWidth;
 	desktop.height		=	devmode.dmPelsHeight;
 	desktop.bpp			=	devmode.dmBitsPerPel;

@@ -104,11 +104,10 @@ typedef struct
 #define	MAX_DEMOS_32		32				// JoeQuake
 #define	MAX_DEMONAME_64		MAX_QPATH_64	// JoeQuake
 
-typedef enum
-{
-ca_dedicated, 		// a dedicated server with no ability to start a client
-ca_disconnected, 	// full screen console with no connection
-ca_connected		// valid netcon, talking to a server
+typedef enum { ENUM_FORCE_INT_GCC_ (cactive)
+	ca_dedicated, 		// a dedicated server with no ability to start a client
+	ca_disconnected, 	// full screen console with no connection
+	ca_connected		// valid netcon, talking to a server
 } cactive_t;
 
 #ifdef SUPPORTS_HTTP_DOWNLOAD

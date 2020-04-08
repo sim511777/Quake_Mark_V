@@ -147,18 +147,18 @@ CMD_DEF (CL_Init     , DEP_CLIENT  , "viewpos"                   , CL_Viewpos_f	
 CMD_DEF (CL_Init     , DEP_CLIENT  , "r_pos"                     , CL_RPos_Legacy_f			, "Use scr_showpos instead."			) //johnfitz
 CMD_DEF (CL_Init     , DEP_CLIENT  , "hdfolder"                  , HD_Folder_f				, "High definition content replacement folder.  Example: \"hdfolder hires\" would look for content replacement in c:\\quake\\hires\\ on Windows, if Quake were installed at c:\\Quake\\."			) //johnfitz
 
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_keys"                 , M_Menu_Keys_f			, "Display the key configuration menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_load"                 , M_Menu_Load_f			, "Display the load menu for saved games."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_main"                 , M_Menu_Main_f			, "Display the main game menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_multiplayer"          , M_Menu_MultiPlayer_f		, "Display the multiplayer menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_options"              , M_Menu_Options_f			, "Display the options menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_quit"                 , M_Menu_Quit_f			, "Display the exit game menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_save"                 , M_Menu_Save_f			, "Display the save game menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_setup"                , M_Menu_Setup_f			, "Display the menu for player settings."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_singleplayer"         , M_Menu_SinglePlayer_f	, "Display the single-player menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "menu_video"                , M_Menu_Video_f			, "Display the video options menu."			)
-CMD_DEF (M_Init      , DEP_CLIENT  , "togglemenu"                , M_ToggleMenu_f			, "Display or close the main menu."			)
-CMD_DEF (M_Init      , DEP_NONE    , "help"                      , _Help_f					, "Display the help screen."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_keys"                 , Mnu_CustomizeControls_Enter_f, "Display the key configuration menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_load"                 , Mnu_Load_Enter_f				, "Display the load menu for saved games."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_main"                 , Mnu_Main_Enter_f				, "Display the main game menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_multiplayer"          , Mnu_MultiPlayer_Enter_f		, "Display the multiplayer menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_options"              , Mnu_Options_Enter_f			, "Display the options menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_quit"                 , Mnu_Quit_Enter_f				, "Display the exit game menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_save"                 , Mnu_Save_Enter_f				, "Display the save game menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_setup"                , Mnu_PlayerSetup_Enter_f		, "Display the menu for player settings."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_singleplayer"         , Mnu_SinglePlayer_Enter_f		, "Display the single-player menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "menu_video"                , Mnu_Video_Enter_f			, "Display the video options menu."			)
+CMD_DEF (M_Init      , DEP_CLIENT  , "togglemenu"                , M_ToggleMenu_f				, "Display or close the main menu."			)
+CMD_DEF (M_Init      , DEP_NONE    , "help"                      , _Help_f						, "Display the help screen."			)
 
 CMD_DEF (SV_Init     , DEP_HOST__  , "sv_hints"                  , SV_Hints_List_f			, "List server hints."			) //johnfitz
 CMD_DEF (SV_Init     , DEP_HOST__  , "sv_protocol"               , SV_Protocol_f			, "Sets the network protocol used by the server. Default is 666 (FitzQuake). Possible values are 15 (Quake) and 666 (FitzQuake)."			) //johnfitz
@@ -198,6 +198,8 @@ CMD_DEF (NET_Init    , DEP_HOST__  , "mute"                      , Admin_Mute_f	
 CMD_DEF (NET_Init    , DEP_HOST__  , "lockserver"			     , Admin_Lock_f				, "Prevent new connections")
 CMD_DEF (NET_Init    , DEP_HOST__  , "unlockserver"			     , Admin_UnLock_f				, "Re-enable new connections")
 #endif // CORE_PTHREADS
+
+
 
 CMD_DEF (NET_Init    , DEP_HOST__  , "test"                      , Test_f					, "Display information about the players connected to the server."			)
 CMD_DEF (NET_Init    , DEP_HOST__  , "test2"                     , Test2_f					, "Display information about the current server settings."			)
@@ -323,5 +325,6 @@ CMD_DEF (Utilities_Init, DEP_HOST__  , "getfile"                , GetFile_Comman
 
 
 
-#undef CMD_DEF
+#undef CMD_DEF // Mandatory for any sheet
+#undef ALT_DEF // We are using it for this sheet.
 

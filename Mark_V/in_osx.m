@@ -1,3 +1,6 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_OSX // Has to be here, set by a header
 
 //
 // "in_osx.m" - MacOS X mouse driver
@@ -197,7 +200,7 @@ void Input_Mouse_Move (usercmd_t *cmd)
     if ([sysplat.gVidWindow isMiniaturized])
         return;
 
-//  if (vid.screen.type == MODE_WINDOWED)
+//  if (vid.screen.type == MODESTATE_WINDOWED)
 //      return;
 
     mouse_x = sInMouseNewPosition.X;
@@ -248,7 +251,7 @@ void Input_Local_SendKeyEvents (void)
     const FDHIDEvent*   pEvent      = nil;
 #pragma message ("Baker: This needs to be more picky about when/how to accept joystick events i.e. must be active, etc.")
     const BOOL allowJoy    = /* joy_avail &&*/ in_joystick.value;
-    const BOOL allowMouse  = vid.ActiveApp && !vid.Hidden && !vid.Minimized && (vid.screen.type == MODE_FULLSCREEN || m_keys_bind_grab || (key_dest == key_game && !console1.forcedup));
+    const BOOL allowMouse  = vid.ActiveApp && !vid.Hidden && !vid.Minimized && (vid.screen.type == MODESTATE_FULLSCREEN || sMenu.keys_bind_grab || (key_dest == key_game && !console1.forcedup));
     BOOL gotmouse = allowMouse;
       if (!Input_Local_Capture_Mouse (allowMouse))
           gotmouse = NO;
@@ -327,3 +330,8 @@ void Input_Local_SendKeyEvents (void)
     
 //    Input_UpdateActuators ();
 }
+
+
+#endif // PLATFORM_OSX
+
+#endif // ! CORE_SDL

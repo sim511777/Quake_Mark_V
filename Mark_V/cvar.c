@@ -46,7 +46,7 @@ void _Help_f (lparse_t *line)
 	switch (line->count) {
 	case 1:
 		// Quake help menu
-		M_Menu_Help_f ();
+		Mnu_Help_Enter_f (NULL);
 		return;
 
 	case 2:
@@ -650,7 +650,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 	//johnfitz -- save initial value for "reset" command
 #if 0 // Baker ... ???  We were setting the default constantly.  Good job.
 	if (!var->default_string) {
-		// if ( !Flag_Check (var->flags, CVAR_REGISTERED) )
+		// if ( !Flag_Check_Bool (var->flags, CVAR_REGISTERED) )
 		var->default_string = Z_Strdup (var->string);
 	}
 
@@ -676,6 +676,23 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 			rcon_message.cursize--;
 			MSG_WriteStringf (&rcon_message, QUOTED_S " set to " QUOTED_S NEWLINE, var->name, var->string); // Should be good.
 		}
+	}
+}
+
+
+void Cvar_ListResetQuick (cvar_t **list)
+{
+	int n; for (n = 0; list[n] ; n ++) {
+		cvar_t *var = list[n];
+		Cvar_ResetQuick (var);
+	}
+}
+
+void Cvar_ListSetValueQuick (cvar_t **list, const float value)
+{
+	int n; for (n = 0; list[n] ; n ++) {
+		cvar_t *var = list[n];
+		Cvar_SetValueQuick (var, value);
 	}
 }
 

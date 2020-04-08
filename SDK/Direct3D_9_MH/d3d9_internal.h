@@ -425,8 +425,7 @@ public:
 
 #define D3DX_DEFAULT				((UINT) -1)
 
-typedef enum _D3DXIMAGE_FILEFORMAT
-{
+typedef enum _D3DXIMAGE_FILEFORMAT {
 	D3DXIFF_BMP = 0,
 	D3DXIFF_JPG = 1,
 	D3DXIFF_TGA = 2,

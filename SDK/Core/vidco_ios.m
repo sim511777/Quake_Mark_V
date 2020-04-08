@@ -128,7 +128,7 @@ void Vid_Handle_MaxSize (sys_handle_t cw, int width, int height)
 }
 
 
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
 {
 	crect_t border;
 	Vid_Handle_Borders_Get (style, true /* menu is irrelevant on Mac */, RECT_REPLY (border), NULL, NULL);
@@ -206,7 +206,7 @@ void Vid_Handle_ZOrder (sys_handle_t cw)
 }
 
 
-void _Vid_Handle_Caption (sys_handle_t cw, const char *text)
+void _Vid_Handle_Title (sys_handle_t cw, const char *text)
 {
 	return; // WE DON'T HAVE THOSE!
 // Could we?
@@ -287,6 +287,7 @@ char *_Platform_Text_Dialog_Popup_Alloc (sys_handle_t parent_window, const char 
 	return Clipboard_Get_Text_Alloc ();
 }
 
+#if 0
 
 ///////////////////////////////////////////////////////////////////////////////
 //  PLATFORM: EVENTS
@@ -372,6 +373,8 @@ cbool Sound_Item_Play (sound_item_t *t)
 
 
 // Please see VidUIWindow.h
+// iOS doesn't have a workable keymapping system.
+
 
 int keymap [KEYMAP_COUNT_512][5]; // Need this.  Probably should match Mac?
 // They have a way to get keys on IOS, but I'm don't want to waste time at moment.
@@ -381,6 +384,7 @@ int keymap [KEYMAP_COUNT_512][5]; // Need this.  Probably should match Mac?
 //  END DISPATCH
 ///////////////////////////////////////////////////////////////////////////////
 
+#endif // 0
 
 
 

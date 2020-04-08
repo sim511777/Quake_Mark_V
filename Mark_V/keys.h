@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 enum keyname_s {key_local_name, key_export_name};
-typedef enum {key_game = 1, key_console = 2, key_message = 3, key_menu = 4} keydest_e;
-typedef enum {cursor_reset, cursor_reset_abs, select_clear, cursor_select, cursor_select_all} cursor_t;
+typedef enum { ENUM_FORCE_INT_GCC_ (keydest) key_game = 1, key_console = 2, key_message = 3, key_menu = 4} keydest_e;
+typedef enum { ENUM_FORCE_INT_GCC_ (cursor) cursor_reset, cursor_reset_abs, select_clear, cursor_select, cursor_select_all} cursor_t;
 void Key_Console_Cursor_Move(int netchange, cursor_t action);
 
 
@@ -90,10 +90,95 @@ void Key_Release_Mouse_Buttons (void);
 #define SCANCODE_0	0
 #define NO_WINDOW_NULL NULL
 	
+// Feb 22 2018
+// Most of these are not used and are duplicates/similar to core.h defines
+// Should the core.h defines be moved here?  What should live/die?
 //#define K_SHIFT_MASK_1	1
 //#define K_CTRL_MASK_2		2
 //#define K_ALT_MASK_4		4
 //#define K_COMMAND_MASK_8	8
+//typedef enum { ENUM_FORCE_INT_GCC_(shiftbits)
+//	shiftbits_shift_1	= 1,
+//	shiftbits_control_2	= 2,
+//	shiftbits_alt_4		= 4,
+//	shiftbits_command_8	= 8,
+////	SHIFTHIGH			= 65536,
+////	SHIFTHIGH_SHIFT		= 65536 * 1,
+////	SHIFTHIGH_CONTROL	= 65536 * 2,
+//} shiftbits_e;
+//
+////typedef enum { ENUM_FORCE_INT_GCC_(mousebuttonbits)
+////	mousebuttonbits_mouse1_bit_1	= 1,
+////	mousebuttonbits_mouse2_bit_2	= 2,
+////	mousebuttonbits_mouse3_bit_4	= 4,
+////	mousebuttonbits_mouse4_bit_8	= 8,
+////	mousebuttonbits_mouse5_bit_16	= 16,
+////} mousebuttonbits_e;
+
+// Not fond of the name.
+typedef enum { ENUM_FORCE_INT_GCC_(dir)
+    dir_none_0,
+    dir_home,
+    
+    dir_west,			// Presumably -1 or 1
+    dir_north,
+    dir_east,
+    dir_south,
+
+    dir_west_page,		// Presumably increment a page
+    dir_north_page,
+    dir_east_page,
+    dir_south_page,
+
+    dir_west_max,		// To max or min
+    dir_north_max,
+    dir_east_max,
+    dir_south_max,
+    
+    dir_end,
+
+	dir_escape,
+	dir_enter,
+	dir_MAXNUM,
+} dir_e; // Not fond of the name.
+
+
+typedef enum { ENUM_FORCE_INT_GCC_(textaction)
+	__textaction_begin = dir_MAXNUM + 1,
+	textaction_emit = __textaction_begin,
+
+	textaction_copy,
+	textaction_cut,
+	textaction_delete_backwards,
+	textaction_delete_forwards,
+	textaction_east_word,
+	textaction_extend_east,
+	textaction_extend_east_max,
+	textaction_extend_east_word,
+	textaction_extend_west,
+	textaction_extend_west_max,
+	textaction_extend_west_word,
+	textaction_insert,
+	textaction_paste,
+	textaction_redo,
+	textaction_select_all,
+	textaction_undo,
+	textaction_west_word,
+
+// Extend left?  Extend right?
+	textaction_MAXNUM,
+	textaction_none_0 = 0,
+	textaction_ignore_0 = 0,
+} textaction_e;
+
+typedef enum { ENUM_FORCE_INT_GCC_ (mouseaction)
+	mouseaction_down	= -1,
+	mouseaction_move	=  0,
+	mouseaction_up		=  1,
+} mouseaction_e;
+//#pragma message ("mouseaction_e defined")
+
+//void Key_Mouse_Button (void *ptr, key_scancode_e scancode, mouseaction_e mouseaction, int ascii, int unicode, int shift, cbool havemouse, int rawx, int rawy);
 
 #ifdef PLATFORM_OSX // Crusty Mac
 	int Key_Event (int key, cbool down, int special);
@@ -117,6 +202,7 @@ extern cbool chat_team;
 extern cbool Key_Shift_Down (void);
 extern cbool Key_Alt_Down (void);
 extern cbool Key_Ctrl_Down (void);
+shiftbits_e Key_ShiftBits (void);
 
 const char *Key_ListExport (void); // Baker
 

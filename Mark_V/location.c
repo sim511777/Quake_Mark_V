@@ -136,7 +136,3 @@ char *LOC_GetLocation (vec3_t worldposition)
 		return bestloc->name;
 	return "somewhere";
 }
-
-
-
-

@@ -100,10 +100,25 @@ NULL, 0 };  // NULL termination
 //void Bits_Print (byte *, size_t len, keyvalue_t table[]); // Never written as far as I can tell
 //void Bits_Print32 (byte *, size_t len, keyvalue_t table[]);
 
-#define Flag_Add(_x, _flag) ((_x) | ((_flag) )) // 
-#define Flag_Remove(_x, _flag) ((_x) & (~ (_flag) )) // 
-#define Flag_Check(_x, _flag)  (!!((_x) & (_flag))) // 
-#define Flag_Check_Strict(_x, _flag)  (((_x) & (_flag)) == _flag) // 
+// Assignment
+#define Flag_Add_To(_x, _flag)				(_x) = (_x) | /*OR*/ (_flag) // 
+#define Flag_Remove_From(_x, _flag)			(_x) = ((_x) & (~ (_flag) )) // 
+
+// Calculation
+#define Flag_Add_Calc(_flag1, _flag2)			(	(_flag1) | (_flag2)						) //
+#define Flag_Add_Calc2(_flag1, _flag2, _flag3)	(	(_flag1) | (_flag2)  | (_flag3) 		) // 
+
+
+#define Flag_Remove_Calc(_x, _flag)		((_x) & (~ (_flag) )) // 
+
+// Most of our Flag_Check_Bool really should be Flag_Check_Strict_Bool because they aren't mask checks
+// but would the extra operation be a speed penalty.
+// Perhaps make a third one like Flag_Check_Bool_Fast that indicates intent but uses the faster method because it doesn't matter.
+
+#define Flag_Check_Bool(_x, _flag)				(!!((_x) & (_flag)))			// Matches ANY non-zero and, operand could be mask.
+#define Flag_Check_Strict_Bool(_x, _flag)		(((_x) & (_flag)) == _flag)		// Matches EXACT operand and, operand should not be mask
+//#define Flag_Check(_x, _flag)			(!!((_x) & (_flag))) // Formerly
+//#define Flag_Check_Strict(_x, _flag)	(((_x) & (_flag)) == _flag) // Formerly
 
 
 #endif	// ! __ENUMBITS_H__

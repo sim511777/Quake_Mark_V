@@ -246,7 +246,15 @@ int File_Edit_String_Replace_Token_Array (const char *path_to_file, const char *
 	return total_replaces;
 }
 
-cbool File_Memory_To_File (const char *path_to_file, void *data, size_t numbytes)
+// Does not write trailing null.
+cbool File_String_To_File (const char *path_to_file, const char *s)
+{
+	size_t numbytes = strlen(s);
+	return File_Memory_To_File (path_to_file, s, numbytes);
+}
+
+
+cbool File_Memory_To_File (const char *path_to_file, const void *data, size_t numbytes)
 {
 	FILE* fout = core_fopen_write (path_to_file, "wb");
 
@@ -815,8 +823,54 @@ const char * File_Dialog_Save_Type (const char *title, const char * starting_fil
 	return _Shell_Dialog_Save_Type (title, starting_file_url, extensions_comma_delimited);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  BUNDLE STUFF
+///////////////////////////////////////////////////////////////////////////////
+
+// Create a list of
+clist_t *Bundle_List_Alloc (const char *wild_patterns, reply int *num_matches)
+{
+	return Pack_Files_List_Alloc (gCore_Pack, wild_patterns, num_matches);
+}
+
+// Returns NULL on failure, on success returns an externally useless file row pointer.
+void *dBundle_Find_File_Caseless (const char *path_to_file)
+{
+	return dPack_Find_File_Caseless (gCore_Pack, path_to_file);
+}
+
+void Bundle_Alert_Items (void)
+{
+	clist_t *files_list = Bundle_List_Alloc (NULL /* no wild*/, NULL /* no ask for count*/);
+
+	int n; clist_t *cur; List_Walk_For_Macro (files_list, cur, n) {
+		alert ("list # %d: %s", n, cur->name);
+	}
+
+	List_Free (&files_list);
+}
+
+/*
+cbool Bundle_File_Size (const char *path_to_file)
+{
 
 
+
+}
+*/
+
+void *Bundle_File_To_Memory_Alloc (const char *path_to_file, reply size_t *mem_length)
+{
+	// // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1 in Pack_File_Entry_To_Memory_Alloc so we have it
+	return Pack_File_Entry_To_Memory_Alloc (gCore_Pack, gCore_pak_blob, path_to_file, mem_length);
+}
+
+
+const void *Bundle_File_Memory_Pointer (const char *path_to_file, reply size_t *mem_length)
+{
+	// // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1 in Pack_File_Entry_To_Memory_Alloc so we have it
+	return Pack_File_Memory_Pointer (gCore_Pack, gCore_pak_blob, path_to_file, mem_length);
+}
 
 
 // Misc.  What about write versions?

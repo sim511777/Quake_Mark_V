@@ -68,6 +68,11 @@ printline_fn_t		log_level_5;		//
 char gCore_Appname[SYSTEM_STRING_SIZE_1024];
 sys_handle_t gCore_hInst;
 sys_handle_t gCore_Window; // Focus window really.  I DO NOT LIKE THIS.  Works ok for single instance of Window.
+struct pak_s	*gCore_Pack;				// Bundle pack.
+const byte		*gCore_pak_blob;			// On a Mac we need to allocate this
+size_t			gCore_pak_blob_length;
+cbool			gCore_pak_blob_must_free;
+
 
 #ifdef PLATFORM_WINDOWS
 #include "core_windows.h" // GetModuleHandle
@@ -159,6 +164,13 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t pmainwindow )
 	core_fopen_write = fnset->ffopenwrite_fn;
 	core_fclose	= fnset->ffclose_fn;
 
+#ifndef CORE_NO_BUNDLE
+	if (!gCore_Pack) // Protect against multiple Core_Inits since this is hardcoded file.
+		gCore_Pack = (pak_t *)Bundle_Load_Alloc (); // Executable unique
+		// alert ("Core_Init Bundle: numfiles is %d, last file %s", mainus.pack->numfiles, mainus.pack->files[mainus.pack->numfiles - 1].name);
+#endif // CORE_NO_BUNDLE
+
+//	alert ("%d", mainus.pack->numfiles);
 #pragma message ("gCache folder -- Determine cache folder and get a session id.  Lock the session file in there fcntl.flock(fd, fcntl.LOCK_EX) or ")
 //  logd ("Cache folder")
 	/*
@@ -406,15 +418,5 @@ void *core_realloc_zero (const void *ptr /*liar*/, size_t new_size, size_t old_s
 #pragma message ("Update the cache marker")
 //void Core_Heartbeat (
 
-// Why are we including headers this deep into a c file?  Was this a test?
 
-//#ifdef CORE_SDL
-//    #ifdef _MSC_VER // Somewhat stupidly, there are different libraries for Visual Studio vs. MinGW
-                    // And ... the include is different, haha :(
-//#pragma message ("MSC_VER")
-//        #include <SDL.h>	    // Visual Studio SDL2 is SDL.h
-//    #else
-//        #include <SDL2/SDL.h>	// MinGW + Linux SDL2 is SDL2/SDL.h
-//    #endif
-//#endif
 

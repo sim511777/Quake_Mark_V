@@ -106,6 +106,67 @@ const char *_Shell_Folder_Caches_By_AppName (const char *appname)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//  SHELL: Bundle
+///////////////////////////////////////////////////////////////////////////////
+
+
+// http://www.linuxjournal.com/content/embedding-file-executable-aka-hello-world-version-5967 For linux?
+// http://www.angusj.com/resourcehacker/ --- Good Windows resource editor.
+// c:\program files\ResourceHacker.exe -modify MyProg.exe, MyProgNew.exe, Images.res , , ,
+// ResourceHacker.exe -extract MyProg.exe, MyProgIcons.rc, icongroup,,
+// resourcehacker -extract project.vc6.debug.exe,bundle.rc,RCDATA,2, // Final comment is for language 1033 which we can omit
+// creates a bundle.rc (list I think) and RCData_1.bin  (Or later if already exists)
+// resourceHacker.exe -addoverwrite MyProg.exe, MyProgNew.exe, NewImage.bmp , bitmap,128,
+// resourceHacker.exe -addoverwrite my.exe, mynew.exe, bundle.pak, RCDATA,2, // I think!  WORKS!
+
+#if defined(_MSC_VER) || !defined(CORE_SDL)
+const void *Shell_Data_From_Resource (size_t *mem_length, cbool *must_free)
+{
+// Resourcing it up!
+// For Windows we will load from resource data.
+// Hardcoded constants for essentially Win32_Data_From_Resource
+
+	const int resource_num = 2;
+	const char *text_type_field_in_rc = RT_RCDATA;
+
+	// http://stackoverflow.com/questions/2933295/embed-text-file-in-a-resource-in-a-native-windows-application
+	// It is not necessary to free the resource as it is memory as part of the .exe
+	HMODULE handle	= GetModuleHandle(NULL);
+	HRSRC rc		= FindResource(handle, MAKEINTRESOURCE(resource_num), TEXT(text_type_field_in_rc));// MAKEINTRESOURCE(type));
+	HGLOBAL rc_data	= LoadResource(handle, rc);
+
+	size_t num_bytes 	= SizeofResource(handle, rc);
+	void *mem			= LockResource(rc_data); // MSDN: It doesn't actually lock anything and you don't need to unlock, has a legacy name from Win 9x
+
+	NOT_MISSING_ASSIGN (mem_length, num_bytes);
+	NOT_MISSING_ASSIGN (must_free, false); // No for Windows, it's resource part of executable memory.
+
+	return num_bytes ? mem : NULL;
+}
+#else
+const void *Shell_Data_From_Resource (size_t *mem_length, cbool *must_free)
+{
+// ELFing it up!
+// For Linux we will load from linked object data from a bundle.o made from bundle.pak.
+// Generated via
+// ld -r -b binary -o bundle.o bundle.pak --no-leading-underscore
+
+    extern char binary_bundle_pak_start[];  // Ashame that ld produces underscore on Linux but not Windows
+	extern char binary_bundle_pak_end[];	// Makes pointless code difference
+    //extern const char binary_bundle_pak_size[];
+
+	size_t num_bytes 	= (size_t)binary_bundle_pak_end - (size_t)binary_bundle_pak_start;
+	const void *mem 	= &binary_bundle_pak_start[0];
+
+	NOT_MISSING_ASSIGN (mem_length, num_bytes);
+#pragma message ("We need to stop the triple duplication of the bundle.   Although Windows only has double duplication.  I have made much progress on this.")
+	NOT_MISSING_ASSIGN (must_free, false); // No for bin2h data its in memory.
+    return num_bytes ? mem : NULL;
+}
+
+#endif // CORE_SDL
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,11 +288,11 @@ cbool Vid_Desktop_Properties_Get (reply int *left, reply int *top, reply int *wi
 int _Shell_Window_Style (wdostyle_e style)
 {
 	int dw_bordered		= (WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX /* resize */);
-	int dw_borderless 	= (WS_POPUP); // Window covers entire screen; no caption, borders etc
-	int ret = Flag_Check (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
+	int dw_borderless 	= (WS_POPUP); // Window covers entire screen; no title, borders etc
+	int ret = Flag_Check_Bool (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
 
-	if (!Flag_Check (style, wdostyle_resizable))
-		ret = Flag_Remove (style, WS_MAXIMIZEBOX | WS_SIZEBOX);
+	if (!Flag_Check_Bool (style, wdostyle_resizable))
+		ret = Flag_Remove_Calc (style, WS_MAXIMIZEBOX | WS_SIZEBOX);
 
 	return ret;
 }
@@ -281,7 +342,7 @@ static void WIN_Fill_Extensions_Request (char *s, const char *extension_comma_li
 	for (cur = extensions, count = 0; cur; cur = cur->next)
 	{
 		const char *_description0 = (cur->name[0] && cur->name[1] ) ? &cur->name[1] : "";
-		const char *_description1 = va ("%s", _description0);
+		const char *_description1 = _vas (_description0);
 		const char *description;
 
 		String_Edit_To_Upper_Case ((char *)_description1); // Evile ...
@@ -427,6 +488,7 @@ char *windows_style_url_alloc (const char *path_to_file)
 	File_URL_Edit_SlashesBack_Like_Windows (windows_style_url_o);
 	return windows_style_url_o;
 }
+
 #include "Shellapi.h" // Never needed this before?
 // Folder must exist.  It must be a folder.
 cbool _Shell_Folder_Open_Folder_Must_Exist (const char *path_to_file)
@@ -460,7 +522,7 @@ cbool _Shell_Folder_Open_Highlight_URL_Must_Exist (const char *path_to_file)
 #if 1 // DPI Awareness.
 
 // Baker: From Quakespasm
-typedef enum { dpi_unaware = 0, dpi_system_aware = 1, dpi_monitor_aware = 2 } dpi_awareness;
+typedef enum { ENUM_FORCE_INT_GCC_ (dpi_awareness) dpi_unaware = 0, dpi_system_aware = 1, dpi_monitor_aware = 2 } dpi_awareness;
 typedef BOOL (WINAPI *SetProcessDPIAwareFunc)();
 typedef HRESULT (WINAPI *SetProcessDPIAwarenessFunc)(dpi_awareness value);
 
@@ -653,7 +715,7 @@ static void sWin_Keyboard_Disable_Windows_Key (cbool bDisAllowKeys)
 		// Disable if not already disabled
 		if (!WinKeyHook_isActive)
 		{
-			if (!(WinKeyHook = SetWindowsHookEx(13, LLWinKeyHook, GetModuleHandle(NULL), 0))) // GetModuleHandle(NULL) gets hinstance instead of sysplat.hInstance
+			if (!(WinKeyHook = SetWindowsHookEx(WH_KEYBOARD_LL /*13*/, LLWinKeyHook, GetModuleHandle(NULL), 0))) // GetModuleHandle(NULL) gets hinstance instead of sysplat.hInstance
 			//if (!(WinKeyHook = SetWindowsHookEx(13, LLWinKeyHook, sysplat.hInstance, 0)))
 			{
 				log_debug ("Failed to install winkey hook.");
@@ -700,6 +762,7 @@ cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cb
 	///////////////////////////////////////////////////////////////////////////////
 
 	// Double self-initializes now
+
 	double Platform_MachineTime (void) // no set metric except result is in seconds
 	{
 		static	__int64	startcount;
@@ -735,7 +798,7 @@ cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cb
 	//  PLATFORM: CLIPBOARD HELPER FUNCTIONS FOR INTERFACE.C
 	///////////////////////////////////////////////////////////////////////////////
 
-
+	// Jan 27 2018 - Looks to return NULL if nothing on the clipboard.
 	char *_Platform_Clipboard_Get_Text_Alloc (void)
 	{
 		char *text_out = NULL;
@@ -818,7 +881,7 @@ cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cb
 			return false;
 
 		if (SDL_GetWindowWMInfo((SDL_Window*) cw, &wminfo) != SDL_TRUE) {
-			logd (SPRINTSFUNC "Couldn't get hwnd", __func__);
+			logd (SPRINTSFUNC_ "Couldn't get hwnd", __func__);
 			return false;
 		}
 		else {

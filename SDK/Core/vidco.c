@@ -3,9 +3,6 @@ Copyright (C) 2013-2016 Baker
 
 */
 // vidco.c -- common
-#include "environment.h"
-
-
 
 #include "core.h"
 #include "vidco.h" // Courtesy
@@ -18,7 +15,7 @@ Copyright (C) 2013-2016 Baker
 
 // We might end up being a rather lonely file ?  Oct 17 2015 - didn't happen though.
 
-sys_handle_t *Vid_Handle_Create_Solo_Client (const char *caption, int client_width, int client_height, required sys_handle_t *dc, required sys_handle_t *rc)
+sys_handle_t *Vid_Handle_Create_Solo_Client (const char *title, int client_width, int client_height, required sys_handle_t *dc, required sys_handle_t *rc)
 {
 	sys_handle_t cw = NULL;
 	sys_handle_t drawcontext;
@@ -31,9 +28,9 @@ sys_handle_t *Vid_Handle_Create_Solo_Client (const char *caption, int client_wid
 	Vid_Desktop_Properties_Get (RECT_REPLY(desktop_rect));
 	Vid_Handle_Borders_Get (request_style, false /* no have menu*/, RECTRB_REPLY(border) );
 
-	window_rect = crect_t_centered(client_width + border.width, client_height + border.height, desktop_rect);
+	window_rect = crect_t_centered(client_width + border.width, client_height + border.height, &desktop_rect);
 
-	cw = Vid_Handle_Create (NULL, caption, window_rect, request_style, false /*no menu for solo*/, &drawcontext, &glcontext);
+	cw = Vid_Handle_Create (NULL, title, window_rect, request_style, false /*no menu for solo*/, &drawcontext, &glcontext);
 
 	REQUIRED_ASSIGN (dc, drawcontext);
 	REQUIRED_ASSIGN (rc, glcontext);
@@ -43,12 +40,12 @@ sys_handle_t *Vid_Handle_Create_Solo_Client (const char *caption, int client_wid
 
 
 
-void Vid_Handle_Caption (sys_handle_t cw, const char *fmt, ...)
+void Vid_Handle_Title (sys_handle_t cw, const char *fmt, ...)
 {
-	void _Vid_Handle_Caption (sys_handle_t cw, const char *text);
+	void _Vid_Handle_Title (sys_handle_t cw, const char *text); // Non-varadic version.
 	if (cw) {
 		VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
-		_Vid_Handle_Caption (cw, text);
+		_Vid_Handle_Title (cw, text);
 		free (text); // VA_EXPAND_ALLOC free
 	}
 }
@@ -77,11 +74,11 @@ void Window_Borders_Get (vid_t *vid, reply int *left, reply int *top, reply int 
 }
 
 
-void Window_Caption (vid_t *vid, const char *fmt, ...) //__core_attribute__((__format__(__printf__,2,3)))
+void Window_Title (vid_t *vid, const char *fmt, ...) //__core_attribute__((__format__(__printf__,2,3)))
 {
-	void _Vid_Handle_Caption (sys_handle_t cw, const char *text);
+	void _Vid_Handle_Title (sys_handle_t cw, const char *text);   // Non-varadic version.
 	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
-	_Vid_Handle_Caption (vid->wdo, text);
+	_Vid_Handle_Title (vid->wdo, text);
 	free (text); // VA_EXPAND_ALLOC free
 }
 
@@ -113,6 +110,14 @@ void Window_Hide (vid_t *vid)
 	Vid_Handle_Hide (vid->wdo);
 }
 
+
+#ifdef CORE_GL
+	void Window_MakeCurrent (vid_t *vid)
+	{
+		if (Vid_Handle_Context_Get() != vid->glrc)
+			Vid_Handle_Context_Set (vid->wdo, vid->dc, vid->glrc);
+	}
+#endif // CORE_GL
 
 
 void Window_MousePointer (vid_t *vid, mousepointer_e mousepointer)
@@ -157,13 +162,6 @@ void Window_ZOrder (vid_t *vid)
 }
 
 
-#ifdef CORE_GL
-	void Window_MakeCurrent (vid_t *vid)
-	{
-		if (Vid_Handle_Context_Get() != vid->glrc)
-			Vid_Handle_Context_Set (vid->wdo, vid->dc, vid->glrc);
-	}
-#endif // CORE_GL
 
 
 #endif // #ifndef PLATFORM_OSX  not ready yet

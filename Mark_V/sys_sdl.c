@@ -165,7 +165,7 @@ int System_Error (const char *fmt, ...)
 
 	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
 
-	Con_DebugLogLine (NEWLINE /*<-- for log legibility*/ SPRINTSFUNC "%s", __func__, text); // Get it in the damned log.
+	Con_DebugLogLine (NEWLINE /*<-- for log legibility*/ SPRINTSFUNC_ "%s", __func__, text); // Get it in the damned log.
 
 	in_sys_error = 1;
 

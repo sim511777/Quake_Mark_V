@@ -89,7 +89,7 @@ void Vidco_Local_InitOnce_Windows (void)
 //}
 
 
-static PIXELFORMATDESCRIPTOR *WIN_PFD_Fill (int colorbits, int depthbits, int stencilbits)
+static PIXELFORMATDESCRIPTOR *WIN_PFD_Fill (int colorbits, int alphabits, int depthbits, int stencilbits)
 {
 	static PIXELFORMATDESCRIPTOR pfd;
 	memset (&pfd, 0, sizeof(pfd));
@@ -99,23 +99,31 @@ static PIXELFORMATDESCRIPTOR *WIN_PFD_Fill (int colorbits, int depthbits, int st
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 	pfd.iPixelType = PFD_TYPE_RGBA;
 	pfd.cColorBits = colorbits;  // 24-bit color depth
+	pfd.cAlphaBits		= alphabits;		// 8-bit alpha channel
 	pfd.cDepthBits = depthbits;  // 32-bit z-buffer
 	pfd.cStencilBits = stencilbits; // 8-bit stencil buffer
 	return &pfd;
 }
 
-void Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int depthbits, int stencilbits)
+cbool Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int alphabits, int depthbits, int stencilbits, int multisample_bits, int forced_pixelformat)
 {
-	PIXELFORMATDESCRIPTOR *ppfd = WIN_PFD_Fill (colorbits, depthbits, stencilbits), testpfd;
-	int pixelformat = eChoosePixelFormat(hDC, ppfd);
+	PIXELFORMATDESCRIPTOR testpfd;
+	PIXELFORMATDESCRIPTOR *ppfd = WIN_PFD_Fill (colorbits, alphabits, depthbits, stencilbits);
+	int pixelformat = multisample_bits ? forced_pixelformat : 0 /* find one */;
 
-	if (!pixelformat)
-		log_fatal ("ChoosePixelFormat failed");
+	if (pixelformat == 0) {
+		pixelformat = eChoosePixelFormat(hDC, ppfd);
+
+		if (!pixelformat)
+			log_fatal ("ChoosePixelFormat failed");
+	}
 
 	eDescribePixelFormat(hDC, pixelformat, sizeof(testpfd), &testpfd);
 
     if (!eSetPixelFormat(hDC, pixelformat, ppfd))
         log_fatal ("SetPixelFormat failed");
+
+	return true;
 }
 
 
@@ -137,7 +145,7 @@ cbool Vid_Display_Properties_Get (reply int *left, reply int *top, reply int *wi
 	DEVMODE	devmode;
 
 	if (!eEnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &devmode))
-		log_fatal (SPRINTSFUNC "eEnumDisplaySettings failed", __func__);
+		log_fatal (SPRINTSFUNC_ "eEnumDisplaySettings failed", __func__);
 
 	NOT_MISSING_ASSIGN(left, 0); // Better be zero!
 	NOT_MISSING_ASSIGN(top, 0); // Better be zero!
@@ -267,7 +275,7 @@ void Vid_Handle_MaxSize (sys_handle_t cw, int width, int height)
 }
 
 
-sys_handle_t *Vid_Handle_Restore (void *obj_ptr, const char *caption, wdostyle_e style, required sys_handle_t *cw, required sys_handle_t *draw_context, required sys_handle_t *gl_context)
+sys_handle_t *Vid_Handle_Restore (void *obj_ptr, const char *title, wdostyle_e style, required sys_handle_t *cw, required sys_handle_t *draw_context, required sys_handle_t *gl_context)
 {
 	//int plat_style		= _Plat_Window_Style   (style);
 	//int plat_style_ex	= _Plat_Window_StyleEx (style);
@@ -275,7 +283,7 @@ sys_handle_t *Vid_Handle_Restore (void *obj_ptr, const char *caption, wdostyle_e
 	//sys_handle_t cw = CreateWindowEx (
 	//	plat_style_ex,
 	//	WIN_CLASSNAME_CLASS1,
-	//	caption, plat_style,
+	//	title, plat_style,
 	//	window_rect.left,
 	//	window_rect.top,
 	//	window_rect.width,
@@ -319,7 +327,7 @@ sys_handle_t *Vid_Handle_Restore (void *obj_ptr, const char *caption, wdostyle_e
 }
 
 
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool havemenu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
 {
 	int plat_style		= _Plat_Window_Style   (style);
 	int plat_style_ex	= _Plat_Window_StyleEx (style);
@@ -327,7 +335,7 @@ sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t win
 	sys_handle_t cw = CreateWindowEx (
 		plat_style_ex,
 		WIN_CLASSNAME_CLASS1,
-		caption, plat_style,
+		title, plat_style,
 		window_rect.left,
 		window_rect.top,
 		window_rect.width,
@@ -341,8 +349,10 @@ sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t win
 	void * old = (void *)SetWindowLongPtr (cw, GWLP_USERDATA, (LONG_PTR)obj_ptr);  // Points to us.
 	sys_handle_t drawcontext = GetDC (cw); // Get handle
 	sys_handle_t glcontext = gl_context_out ? *gl_context_out : NULL;
+	int forced_pixel_format = -1;
+	int samplebits = 0;
 
-	Vidco_WIN_SetupPixelFormat (drawcontext, BPP_24, /*depth ->*/ 24, /*stencil*/ 8); // color bits, depthbits, stencil bits
+	Vidco_WIN_SetupPixelFormat (drawcontext, BPP_24, /*alpha ->*/ 8, /*depth ->*/ 24, /*stencil*/ 8, samplebits, forced_pixel_format); // color bits, depthbits, stencil bits
 
 #ifdef CORE_GL
 	// Re-Use context if possible
@@ -405,7 +415,7 @@ void Vid_Handle_ZOrder (sys_handle_t cw)
 }
 
 
-void _Vid_Handle_Caption (sys_handle_t cw, const char *text)
+void _Vid_Handle_Title (sys_handle_t cw, const char *text)
 {
 	SetWindowText (cw, text);
 }
@@ -453,6 +463,7 @@ void Vid_Handle_MousePointer (sys_handle_t cw, sys_handle_t *hmousepointer, mous
 ///////////////////////////////////////////////////////////////////////////////
 //  PLATFORM: MSGBOX HELPER
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // Title cannot be NULL, System_MessageBox checks for that.
 int _Platform_MessageBox (const char *title, const char *text)
@@ -768,9 +779,9 @@ int keymap [KEYMAP_COUNT_512][5] = {
 // getshiftbits
 int Platform_Windows_Input_GetShiftBits (void)
 {
-	int shifted = Flag_Check (GetKeyState(VK_LSHIFT),    0x8000) || Flag_Check (GetKeyState(VK_RSHIFT),   0x8000);
-	int ctrled	= Flag_Check (GetKeyState(VK_LCONTROL),  0x8000) || Flag_Check (GetKeyState(VK_RCONTROL), 0x8000);
-	int alted	= Flag_Check (GetKeyState(VK_LMENU),     0x8000) || Flag_Check (GetKeyState(VK_RMENU),    0x8000);
+	int shifted = Flag_Check_Bool (GetKeyState(VK_LSHIFT),    0x8000) || Flag_Check_Bool (GetKeyState(VK_RSHIFT),   0x8000);
+	int ctrled	= Flag_Check_Bool (GetKeyState(VK_LCONTROL),  0x8000) || Flag_Check_Bool (GetKeyState(VK_RCONTROL), 0x8000);
+	int alted	= Flag_Check_Bool (GetKeyState(VK_LMENU),     0x8000) || Flag_Check_Bool (GetKeyState(VK_RMENU),    0x8000);
 
 	return shifted + ctrled * 2 + alted * 4;
 }
@@ -779,13 +790,14 @@ int Platform_Windows_Input_GetShiftBits (void)
 // getmousebits
 void Platform_Windows_Input_GetMouseBits (WPARAM wparam, LPARAM lparam, required int *button_bits, required int *shift_bits, required int *x, required int *y)
 {
-	int m1 = Flag_Check (wparam, MK_LBUTTON);
-	int m2 = Flag_Check (wparam, MK_RBUTTON);
-	int m3 = Flag_Check (wparam, MK_MBUTTON);
-	int m4 = Flag_Check (wparam, MK_XBUTTON1);
-	int m5 = Flag_Check (wparam, MK_XBUTTON2);
+	int m1 = Flag_Check_Bool (wparam, MK_LBUTTON);
+	int m2 = Flag_Check_Bool (wparam, MK_RBUTTON);
+	int m3 = Flag_Check_Bool (wparam, MK_MBUTTON);
+	int m4 = Flag_Check_Bool (wparam, MK_XBUTTON1);
+	int m5 = Flag_Check_Bool (wparam, MK_XBUTTON2);
 	*shift_bits = Platform_Windows_Input_GetShiftBits();
 	*button_bits =	m1 * 1 + m2 * 2 + m3 * 4 + m4 * 8 + m5 * 16;
+
 	*x = GET_X_LPARAM(lparam);
 	*y = GET_Y_LPARAM(lparam);
 }

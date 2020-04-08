@@ -921,10 +921,8 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 			float completed_amount = (cls.demo_offset_current - cls.demo_offset_start)/(float)cls.demo_file_length;
 			float remaining_time = 0;
 			int minutes, seconds;
-			char tempstring[256];
 
-
-			if (vid.screen.type == MODE_FULLSCREEN)
+			if (vid.screen.type == MODESTATE_FULLSCREEN)
 				break; // Don't bother, we are in fullscreen mode.
 
 			if (timeslice = 0)
@@ -936,9 +934,7 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 			minutes = Time_Minutes((int)remaining_time);
 			seconds = Time_Seconds((int)remaining_time);
 
-			c_snprintf6 (tempstring, "Demo: %s (%3.1f%% elapsed: %4.1f secs) - Estimated Remaining %d:%02d (Capturing: %s)", cls.demo_url, completed_amount * 100, cls.demo_hosttime_elapsed, (int)minutes, (int)seconds, movie_codec);
-
-			VID_Local_Set_Window_Caption (tempstring);
+			VID_Set_Window_Title ("Demo: %s (%3.1f%% elapsed: %4.1f secs) - Estimated Remaining %d:%02d (Capturing: %s)", cls.demo_url, completed_amount * 100, cls.demo_hosttime_elapsed, (int)minutes, (int)seconds, movie_codec);
 			break;
 		}
 
@@ -951,6 +947,7 @@ void CL_UpdateClient (double frametime, cbool readfromserver)
 CL_SendCmd
 =================
 */
+
 void CL_SendCmd (void)
 {
 	usercmd_t		cmd;

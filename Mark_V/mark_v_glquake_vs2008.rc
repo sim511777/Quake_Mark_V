@@ -1,6 +1,7 @@
 #include <windows.h> // include for version info constants
 
-1 ICON DISCARDABLE "mark_v_glquake2.ico"
+1 ICON 		DISCARDABLE 	"mark_v_glquake2.ico"
+2 RCDATA 	DISCARDABLE 	"bundle.pak"
 
 1 VERSIONINFO
 FILEVERSION 1,0,0,0
@@ -11,7 +12,7 @@ FILETYPE VFT_APP
 	 {
 		 BLOCK "040904E4"
 		 {
-			 VALUE "CompanyName", "Quake"			 
+			 VALUE "CompanyName", "Quake"
 			VALUE "FileVersion", "1.09"
 			 VALUE "FileDescription", "Quake"
 			 VALUE "InternalName", "Quake"

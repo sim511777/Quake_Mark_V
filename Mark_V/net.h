@@ -101,12 +101,14 @@ void NET_Poll(void);
 // Server list related globals:
 extern	cbool	slistInProgress;
 extern	cbool	slistSilent;
-extern	enum slistScope_e
-{
+
+typedef enum { ENUM_FORCE_INT_GCC_ (slistScope)
 	SLIST_LOOP,
 	SLIST_LAN,
 	SLIST_INTERNET
-} slistScope;
+} slistScope_e;
+
+extern slistScope_e slistScope;
 
 extern	int		hostCacheCount; // 1.4 // dupped in net_defs.h needed for menu.c here
 

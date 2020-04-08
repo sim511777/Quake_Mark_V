@@ -40,6 +40,7 @@ typedef struct
 	HICON		hIcon;
 	HWND		mainwindow;
 	HDC			draw_context;
+	HGLRC		gl_context;
 
 	DEVMODE		gdevmode;
 
@@ -177,7 +178,8 @@ void WIN_Vid_Init_Once_CreateClass (void);
 vmode_t WIN_Vid_GetDesktopProperties (void);
 void WIN_AdjustRectToCenterScreen (RECT *in_windowrect);
 
-void Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int depthbits, int stencilbits);
+// No one calls us?  Or no one calls us yet?
+void Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int alphabits, int depthbits, int stencilbits);
 
 
 #endif // __WINQUAKE_H__

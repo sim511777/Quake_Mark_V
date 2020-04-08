@@ -91,10 +91,13 @@ void Input_Local_Mouse_Cursor_SetPos (int x, int y)
 	SetCursorPos (x, y);
 }
 
-void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py)
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py, cbool towindow)
 {
 	POINT current_pos;
 	GetCursorPos (&current_pos);
+
+	if (towindow)
+		ScreenToClient(sysplat.mainwindow, &current_pos);
 
 	REQUIRED_ASSIGN (px, current_pos.x);
 	REQUIRED_ASSIGN (py, current_pos.y);
@@ -126,7 +129,7 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 			int unicode = wparam;
 			int ascii 	= in_range (32, unicode, 126) ? unicode : 0;
 			// We do not do control characters here.
-			Key_Event_Ex (NO_WINDOW_NULL, SCANCODE_0, true, ascii, unicode, shiftbits() );  // ascii, unicode, shift
+			Key_Event_Ex (NO_WINDOW_NULL, SCANCODE_0, true, ascii, unicode, shiftbits());  // ascii, unicode, shift
 		}
 		return true;
 
@@ -215,6 +218,13 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 		}
 		return true; // handled
 
+	case WM_MOUSEMOVE:
+		if (focus0.phave_mouse && *(focus0.phave_mouse))
+			return true; // If we have the mouse captured we are not interested in mouse moves.  HANDLED, BUT IGNORED.
+	
+		//Con_SafePrintLinef ("in_win x, y mousemove = %d, %d", LOWORD(lparam) /*x*/, HIWORD(lparam) /*y*/);
+		// We don't have the mouse ... fall through.
+
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -224,13 +234,14 @@ cbool WIN_IN_ReadInputMessages (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 	case WM_XBUTTONDOWN:
 	case WM_XBUTTONUP:
-//	case WM_MOUSEMOVE: // Yes mouse move is in here.
+
 
 		if (1) {
 			int buttons, shift, x, y;
 			
 			getmousebits (wparam, lparam, &buttons, &shift, &x, &y);
-			Input_Mouse_Button_Event (buttons);
+			
+			Input_Mouse_Button_Event (buttons, (msg == WM_MOUSEMOVE), LOWORD(lparam) /*x*/, HIWORD(lparam) /*y*/);
 		}
 		return true; // handled
 

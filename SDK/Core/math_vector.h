@@ -28,12 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#include "environment.h"
 //#include <math.h>
 
-
+// OpenGL is pitch, roll, yaw.  And possibly not quite in the same direction.
 enum q_pitch_e
 {
-	Q_PITCH = 0, // up / down
-	Q_YAW   = 1, // left / right
-	Q_ROLL  = 2, // fall over
+	Q_PITCH_0 = 0, // up / down
+	Q_YAW_1   = 1, // left / right
+	Q_ROLL_2  = 2, // fall over
 };
 
 typedef float vec_t;
@@ -44,8 +44,8 @@ typedef vec_t vec4_t[4];
 
 
 #define M_PI_DIV_180 (M_PI / 180.0)
-#define Degree_To_Radians(a) ((a) * M_PI) / 180.0F
-#define Degree_To_RadiansEx(a) ( (a) * M_PI_DIV_180 )
+#define Degrees_To_Radians(a) ((a) * M_PI) / 180.0F		// We also have DEGREES_TO_RADIANS :(
+#define Degrees_To_RadiansEx(a) ( (a) * M_PI_DIV_180 )// And RADIANS_TO_DEGREES
 
 
 
@@ -75,7 +75,7 @@ void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
 }
 
 void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angle); //johnfitz (MISSING)
-void VectorAngles (const vec3_t forward, vec3_t angles); //johnfitz
+void VectorAngles (const vec3_t forward, reply vec3_t angles); //johnfitz
 
 void VectorMA (const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc);
 
@@ -92,7 +92,7 @@ float VectorNormalize (vec3_t v); // returns vector length, changes v
 void VectorInverse (vec3_t v);
 void VectorScale (const vec3_t in, const vec_t scale, vec3_t out);
 void AngleVectors (const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up); // writes out forward, right, up
-void VectorToAngles (const vec3_t vec, vec3_t ang);
+void VectorToAngles (const vec3_t vec, vec3_t ang); // Take a vector (normalized?) and convert it to degrees (Euler angles)
 
 #define VectorSet(v, x, y, z) ((v)[0] = (x), (v)[1] = (y), (v)[2] = (z))
 #define VectorAddFloat(a, b, c)				((c)[0] = (a)[0] + (b), (c)[1] = (a)[1] + (b), (c)[2] = (a)[2] + (b))
@@ -130,6 +130,19 @@ typedef struct
 		vec3_t vec3;
 	};
 } orientation3d;
+
+typedef struct
+{
+	union
+	{
+		struct
+		{
+			int x;
+			int y;
+		};
+		int vec[2];
+	};
+} positioni2d;
 
 typedef struct
 {
@@ -204,7 +217,10 @@ void cossinf (float angle, float *mycos, float *mysin);
 char *_angles4(const vec3_t angles, const vec3_t forward, const vec3_t right, const vec3_t up);
 char *_angles (const vec3_t a);
 
-void vectoangles (const vec3_t vec, vec3_t ang);
+// 77 Functions To Go
+void Vector_To_Angles_Rollless (const vec3_t forward, reply vec3_t angles);
+
+void QVector_To_Angles_Rollless (const vec3_t forward, reply vec3_t angles);
 
 #endif	// ! __MATH_VECTOR_H__
 

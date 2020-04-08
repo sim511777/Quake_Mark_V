@@ -25,13 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // protocol.h -- communications protocols
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (PROTOCOL)
 	PROTOCOL_NETQUAKE 		= 15,
 	PROTOCOL_FITZQUAKE 		= 666, 		// fitz
 	PROTOCOL_FITZQUAKE_PLUS = 668, 		// Baker: smooth rotation, sends entity angles as shorts not bytes.
 	PROTOCOL_BJP3 			= 10002,	// Baker: Warpspasm uses this.  Supporting for playback only to play Warpspasm demos.
-} protocolnum_t;
+} PROTOCOL_E;
 
 #define SUPPORTS_ROTATION(_protocol) (_protocol == PROTOCOL_FITZQUAKE_PLUS)
 
@@ -222,8 +221,7 @@ typedef enum
 //
 // temp entity events
 //
-typedef enum {
-	__te_invalid		= -1, // Fuck you mingw and your unsigned enums
+typedef enum { ENUM_FORCE_INT_GCC_ (TE)
 	TE_SPIKE			= 0,
 	TE_SUPERSPIKE		= 1,
 	TE_GUNSHOT			= 2,
@@ -246,8 +244,7 @@ typedef enum {
 } te_effect_e;
 
 // Net effect
-typedef enum {
-	___te_ef_invalid	= -1, 
+typedef enum {  ENUM_FORCE_INT_GCC_ (TE_EF)
 	TE_EF_NONE			=  0,
 	TE_EF_PARSED		=  1,  // Something from QuakeC
 	TE_EF_GUNSHOT,
@@ -289,8 +286,7 @@ typedef struct
 #define HINT_MESSAGE_PREIX "//hint "
 #define MAX_HINT_BUF_64 64
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (hint_type)
     hint_invalid = -1,
 	hint_game = 0,
 	hint_skill,

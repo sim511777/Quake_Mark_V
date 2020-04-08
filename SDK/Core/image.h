@@ -93,14 +93,14 @@ unsigned *Image_Base64Decode_Alloc (const char *s, required int *width, required
 cbool Image_Best_Format (unsigned *rgba, int width, int height, reply double *pct_jpg, reply double *pct_png);
 
 void *Image_Save_Memory_Alloc (image_format_e image_format, const unsigned *rgba, int width, int height, required size_t *out_length, const char *description, reply image_format_e *image_format_used);
-
 char *Image_Base64Encode_Alloc (image_format_e image_format, const unsigned *rgba, int width, int height);
+
 
 // Loads from a blob and will be a type of image (not rgba at this point)
 unsigned *Image_Load_File_Offset_Alloc (const char *path_to_file, image_format_e blob_type, size_t offset_into_file, size_t len, int *width, int *height);
-#if 0
+
 unsigned *Bundle_Image_Load_Auto_Alloc (const char *path_to_file, int *width, int *height);
-#endif // at this time
+
 
 
 
@@ -156,7 +156,7 @@ unsigned *Image_Bilinear_Resize_Alloc (const unsigned *rgba, int w, int h, int n
 //  DRAW
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef enum {
+typedef enum { ENUM_FORCE_INT_GCC_ (paste_type)
 	paste_type_invalid,
 	paste_type_fill,
 	paste_type_fill_xor,
@@ -254,14 +254,6 @@ unsigned *Image_MipMapH (unsigned *rgba, int width, int height);
 unsigned *Image_MipMapW (unsigned *rgba, int width, int height);
 void *Image_Copy_Alloc (void *pels, int width, int height, int pixelbytes);
 image_format_e Image_Format_From_Data (const void *data, size_t data_length);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  IMAGE: Color Functions
-///////////////////////////////////////////////////////////////////////////////
-
-//unsigned HTML_Color_RGBA (const char *s); // AliceBlue or #ff0000 to rgba
-//const char* HTML_Color_From_RGBA (unsigned rgba); // rgba to color string (loses alpha)
 
 
 ///////////////////////////////////////////////////////////////////////////////

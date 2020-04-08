@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 // By design List_Add does not allow duplicates!
-cbool List_Addf (clist_t** headnode, const char *fmt, ...) // __core_attribute__((__format__(__printf__,2,3)))
+cbool List_Addf (clist_t **headnode, const char *fmt, ...) // __core_attribute__((__format__(__printf__,2,3)))
 {
 	cbool result;
 	VA_EXPAND_ALLOC (text, length, bufsiz, fmt);
@@ -35,7 +35,8 @@ cbool List_Addf (clist_t** headnode, const char *fmt, ...) // __core_attribute__
 	return result;
 }
 
-cbool List_Add (clist_t** headnode, const char *name)
+
+cbool List_Add (clist_t **headnode, const char *name)
 {
 	clist_t	*listent,*cursor,*prev;
 
@@ -238,7 +239,8 @@ void List_Concat_Unsorted (clist_t** headnode, clist_t *list2)
 }
 
 
-void List_Free (clist_t** headnode)
+// We cannot handle NULL pointer being passed to us.
+void List_Free (required clist_t **headnode)
 {
 	while (*headnode)
 	{
@@ -377,6 +379,8 @@ clist_t *List_String_Split_NewLines_Scrub_CarriageReturns_Alloc (const char *s, 
 
 		item = ZeroAlloc(item);
 		item->name = strndup (linestart, line_length);
+		// #pragma message ("Consider String_Edit_Trim").  NO.  Main function user of this handles that.
+		
 		item->next = NULL;
 
 		//logd ("Wrote line: '%s'", item->name);

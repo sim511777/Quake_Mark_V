@@ -88,7 +88,7 @@ void VID_Local_AddFullscreenModes (void)
 
 	while ( (stat = EnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
-		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
+		vmode_t test		= { MODESTATE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
 		cbool width_ok	= in_range (MIN_MODE_WIDTH_640, devmode.dmPelsWidth, MAX_MODE_WIDTH_10000);
 		cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, devmode.dmPelsHeight, MAX_MODE_HEIGHT_10000);
@@ -184,7 +184,7 @@ cbool VID_Local_SetMode (int modenum)
 	vmode_t *p 			= &vid.modelist[modenum];	// vid.c sets vid.screen, so do not use that here.
 	RECT client_rect	= {0, 0, p->width, p->height};
 	RECT window_rect	= client_rect;
-	cbool bordered		= p->type == MODE_WINDOWED;/* &&
+	cbool bordered		= p->type == MODESTATE_WINDOWED;/* &&
 						  (p->width  != vid.desktop.width ||
 						  p->height != vid.desktop.height); */
 
@@ -200,7 +200,7 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart)
 		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
 
-	if (p->type == MODE_FULLSCREEN)
+	if (p->type == MODESTATE_FULLSCREEN)
 		WIN_Change_DisplaySettings (modenum);
 
 	AdjustWindowRectEx (&window_rect, WindowStyle, FALSE, ExWindowStyle);
@@ -220,7 +220,7 @@ cbool VID_Local_SetMode (int modenum)
 
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
-	if (p->type == MODE_WINDOWED)
+	if (p->type == MODESTATE_WINDOWED)
 		ChangeDisplaySettings (NULL, 0);
 
 	// Get focus if we can, get foreground, finish setup, pump messages.
@@ -571,15 +571,13 @@ void VID_Local_SetPalette (byte *palette)
 //
 
 
-void VID_Local_Set_Window_Caption (const char *text)
+void _VID_Local_Set_Window_Title (const char *text)
 {
-	const char *new_caption = text ? text : ENGINE_NAME;
-
 	if (!sysplat.mainwindow)
-		return;
+			return;
 
 	#pragma message ("Let's slam this into vid.c and call vidco set window caption or something.  Please!")
-	SetWindowText (sysplat.mainwindow, new_caption);
+	SetWindowText (sysplat.mainwindow, text);
 
 }
 

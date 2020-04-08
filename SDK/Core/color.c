@@ -8,15 +8,15 @@ Copyright (C) 2011-2014 Baker
 #include "core.h"
 #include "color.h" // courtesy
 
-
-const color4 color4_gray = { 0.25, 0.25, 0.25, 0 };
-const color4 color4_black = { 0,0,0, 0 };
-const color4 color4_white = { 1,1,1,0};
-const color4 color4_red = { 1,0,0, 0 };
-const color4 color4_green = { 0,1,0,0};
-const color4 color4_blue = { 0,0,1,0};
-const color4 color4_yellow = { 1,1,0,0};
-const color4 color4_purple = { 1,0,1,0};
+// Note the lack of an alpha channel
+const color4 color4_gray	= { 0.25, 0.25, 0.25,  0 };
+const color4 color4_black	= {    0,    0,    0,  0 };
+const color4 color4_white	= {    1,    1,    1,  0 };
+const color4 color4_red		= {    1,    0,    0,  0 };
+const color4 color4_green	= {    0,    1,    0,  0 };
+const color4 color4_blue	= {    0,    0,    1,  0 };
+const color4 color4_yellow	= {    1,    1,    0,  0 };
+const color4 color4_purple	= {    1,    0,    1,  0 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ unsigned Color_Blend (unsigned dst, unsigned src)
 	Color_Blend_In_Place (&dst, &dst, &src);
 	return dst; // modified by the above
 }
-#endif
+#endif // 0 
 
 const char *Color4_To_String (const float *mycolor)
 {

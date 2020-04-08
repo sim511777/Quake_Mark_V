@@ -57,7 +57,7 @@ END
 // remains consistent on all systems.
 
 IDI_ICON1               ICON    DISCARDABLE     "mark_v_winquake.ico"
-
+IDI_BUNDLE2 			RCDATA 	DISCARDABLE 	"bundle.pak"
 
 /////////////////////////////////////////////////////////////////////////////
 //

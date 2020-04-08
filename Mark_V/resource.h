@@ -7,6 +7,7 @@
 //
 #define IDS_STRING1                     1
 #define IDI_ICON1                       1
+#define IDI_BUNDLE2						2
 #define IDD_DIALOG1                     108
 #define IDD_PROGRESS                    109
 #define IDC_PROGRESS                    1000

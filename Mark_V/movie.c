@@ -149,7 +149,7 @@ void Movie_Stop (void)
 	if (cls.demo_hosttime_elapsed /*cls.capturedemo*/) // Because cls.capturedemo already was cleared :(
 		Con_PrintLinef ("Video completed: %s in %d:%02d (codec: %s)", movie_capturing_name, Time_Minutes((int)cls.demo_hosttime_elapsed), Time_Seconds((int)cls.demo_hosttime_elapsed), movie_codec);
 	else
-	VID_Local_Set_Window_Caption (NULL); // Restores it to default
+	VID_Set_Window_Title (NULL); // Restores it to default
 	Con_PrintLinef ("Video completed: %s (codec: %s)", movie_capturing_name, movie_codec);
 
 }

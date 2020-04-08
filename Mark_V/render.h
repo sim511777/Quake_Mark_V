@@ -165,7 +165,8 @@ typedef struct
 //
 
 
-
+extern const byte *demos_lmp;
+extern const byte *levels_lmp;
 
 void R_Init (void);
 void R_InitEfrags (void);
@@ -184,8 +185,7 @@ void R_Level_Key_Alpha_SkyFog_Changed (cvar_t *var);
 
 // particles
 
-typedef enum trail_type_s
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (trail_type)
 	ROCKET_TRAIL_0,
 	GRENADE_TRAIL_1,
 	BLOOD_TRAIL_2,
@@ -231,9 +231,7 @@ void R_TeleportSplash (vec3_t org);
 
 
 // by joe: the last 2 are own creations, they handle color mapped explosions
-typedef enum 
-{
-	lt_invalid = -1, // In case GCC gets stupid and tries to make unsigned
+typedef enum { ENUM_FORCE_INT_GCC_ (lt)
 	lt_default = 0,
 	lt_muzzleflash,
 	lt_explosion,
@@ -314,8 +312,7 @@ extern cbool	r_cache_thrash;	// set if thrashing the surface cache
 #endif // WINQUAKE_RENDERER_SUPPORT
 
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (pt)
 	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
 } ptype_t;
 

@@ -220,7 +220,7 @@ cbool File_Mkdir (const char *path_url)
 			return false;
 		}
 
-        logd (SPRINTSFUNC "Folder %s already exists", __func__, path_url);
+        logd (SPRINTSFUNC_ "Folder %s already exists", __func__, path_url);
 		return true; // Already exists.
 	}
 
@@ -403,6 +403,41 @@ void *_Platform_GetProcAddress (const char *pfunction_name)
 #endif // !PLATFORM_WINDOWS
 
 
+pak_t *Bundle_Load_Alloc (void)
+{
+	pak_t *pack = NULL;
+
+	// Depending on platform, we might really be allocating this or not.
+	// Windows/Linux = no, Mac = yes.  Mac console app is screwed.
+	// Android probably is more complex.  iOS is like Mac.
+	size_t mem_length;
+	const void *mem = Shell_Data_From_Resource (&mem_length, &gCore_pak_blob_must_free);
+	if (!mem) {
+#ifdef CORE_NO_BUNDLE
+		return NULL;
+#else
+		log_fatal ("Couldn't load resources");
+#endif
+	}
+	gCore_pak_blob = mem;
+	gCore_pak_blob_length = mem_length;
+
+	pack = Pack_Open_Memory_Alloc (mem, mem_length);
+//	alert ("Bundle_Load_Alloc Bundle: numfiles is %d, last file %s", pack->numfiles, pack->files[pack->numfiles - 1].name);
+	//alert ("%d %p", pack->numfiles, pack);
+	return pack;
+}
+
+pak_t *Bundle_Free (pak_t *pack)
+{
+	if (gCore_pak_blob_must_free) {
+		// For the Mac, we have to free.  For Windows/Linux no.
+		gCore_pak_blob = core_free (gCore_pak_blob);
+		gCore_pak_blob_must_free = false;
+	}
+
+	return Pack_Open_Memory_Free (pack);
+}
 
 
 

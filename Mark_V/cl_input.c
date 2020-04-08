@@ -58,11 +58,11 @@ kbutton_t	in_up, in_down;
 int			in_impulse;
 
 
-void KeyDown (lparse_t* line, kbutton_t *b)
+void KeyDown (lparse_t *line, kbutton_t *b)
 {
 	int		k;
 
-	if (line->count >=2)
+	if (line && line->count >= 2)
 		k = atoi (line->args[1]);
 	else
 		k = -1;		// typed manually at the console for continuous down
@@ -92,7 +92,7 @@ void KeyDown (lparse_t* line, kbutton_t *b)
 	b->state |= 1 + 2;	// down + impulse down
 }
 
-void KeyUp (lparse_t* line, kbutton_t *b)
+void KeyUp (lparse_t * line, kbutton_t *b)
 {
 	int		k = 0; // ?
 
@@ -103,7 +103,7 @@ void KeyUp (lparse_t* line, kbutton_t *b)
 	if (c[0])
 		k = atoi(c);
 #else
-	if (line->count >=2)
+	if (line && line->count >= 2)
 		k = atoi (line->args[1]);
 #endif
 	else
@@ -388,6 +388,7 @@ void CL_BaseMove (usercmd_t *cmd)
 CL_SendMove
 ==============
 */
+// CL_SendCmd calls me
 void CL_SendMove (const usercmd_t *cmd)
 {
 	int		i;
@@ -407,16 +408,17 @@ void CL_SendMove (const usercmd_t *cmd)
 	MSG_WriteFloat (&buf, cl.mtime[0]);	// so server can get ping times
 
 	//johnfitz -- 16-bit angles for PROTOCOL_FITZQUAKE
-	for (i=0 ; i<3 ; i++)
+
+	for (i = 0 ; i < 3 ; i++)
 	{
 #if 1
 		if (cl.protocol == PROTOCOL_NETQUAKE  && (cls.demoplayback || !NET_QSocketIsProQuakeServer(cls.netcon)) )
 #else
 		if (cl.protocol == PROTOCOL_NETQUAKE)
 #endif
-			MSG_WriteAngle (&buf, cl.viewangles[i]);
+			MSG_WriteAngle (&buf, focus0.is_attack_firing ? focus0.attack_angles[i] :  cl.viewangles[i]);
 		else
-			MSG_WriteAngle16 (&buf, cl.viewangles[i]);
+			MSG_WriteAngle16 (&buf, focus0.is_attack_firing ? focus0.attack_angles[i] :  cl.viewangles[i]); // MOUSECLICK FIRE
 	}
 		//johnfitz
 
@@ -447,6 +449,11 @@ void CL_SendMove (const usercmd_t *cmd)
 //
 	if (cls.demoplayback)
 		return;
+
+#if 1 // Endangered?
+	if (focus0.is_attack_firing && !focus0.is_attack_click) // MOUSECLICK FIRE
+		focus0.is_attack_firing  = false; // Cease firing!
+#endif
 
 //
 // always dump the first two message, because it may contain leftover inputs

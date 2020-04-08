@@ -32,17 +32,22 @@ int printlinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,
 int perrorlinef (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2), __noreturn__));
 int fprintlinef (FILE *stream, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
 
-
+	#define DQUOTE				"\""	// Used in table
 	#define	 NEWLINE "\n"
+	#define SQUOTE				"'"		// Used in table
+	#define	TABBER				"\t"
+	#define	TILDE_CHAR_CODE_126	'`'		
+								
+	#define SPACE_STRING		" "
 
-	//#define  QUOTED(s) "\"" s "\""
-	#define QUOTEDSTR(s) "\"" s "\""  //QUOTEDSTR("maxplayers")
+	#define QUOTEDSTR(s)				"\"" s "\""  // QUOTEDSTR("maxplayers") -- LITERAL STRING
 
 	#define  QUOTED_F	"\"%f\""	//       quoted
 	#define  QUOTED_G	"\"%g\""	//       quoted
 	#define  QUOTED_D	"\"%d\""	//       quoted
 
-	#define  QUOTED_S	"\"%s\""	//       quoted
+	#define  QUOTED_S					"\"%s\""	 // quoted - NOT SAME AS QUOTEDSTR
+	#define  SINGLE_QUOTED_S			"'%s'"		 // single quoted
 
 // My gut instinct is to carefully limit the use of these ...
 	//#define _QUOTED_ 	" \"%s\" "
@@ -64,7 +69,12 @@ int fprintlinef (FILE *stream, const char *fmt, ...) __core_attribute__((__forma
 #define CORE_STRINGS_VA_ROTATING_BUFFERS_COUNT_32 32
 
 char *va (const char *format, ...) __core_attribute__((__format__(__printf__,1,2)));
+
+//char *c_snprintf_alloc (const char *fmt, ...);
 char *c_strdupf (const char *fmt, ...)__core_attribute__((__format__(__printf__,1,2))) ; // Same except first param returns length
+
+#define vai(NUM) va("%d", (int)NUM) // Be wary of using this over String_Thousands_Static (va00), which is easier to read.  print is for humans.
+//#define vad(NUM) String_Float_Static ((double)NUM)  Retired.  No references.
 
 // c_len_strdupf returns length allocated, that's all
 char *c_len_strdupf (reply int *len, const char *fmt, ...)__core_attribute__((__format__(__printf__,2,3))) ; // Same except first param returns length
@@ -103,19 +113,21 @@ char *String_Replace_Alloc (const char *s, const char *s_find, const char *s_rep
 #endif // _DEBUG
 
 
-#if 0
-#ifdef _DEBUG
-	#define COMPILE_TIME_ASSERT_SIZE(pred) switch(0){case 0:case pred:;}
+// Ensure our helping functions don't have pointers.
+// By definition this requires no string buffer to be size 4 on 32 but or size 8 on 64.
+
+#if 0	// Clashes with if statements and such very rarely occasionally.  Too bad.
+	#define c_strlcpy(_dest, _source) COMPILE_TIME_ASSERT_SIMPLE((sizeof(_dest) != sizeof(char *))) \
+			strlcpy (_dest, _source, sizeof(_dest))
+
+	#define c_strlcat(_dest, _source) COMPILE_TIME_ASSERT_SIMPLE((sizeof(_dest) != sizeof(char *))) \
+		strlcat (_dest, _source, sizeof(_dest))
 #else
-	#define COMPILE_TIME_ASSERT_SIZE(pred)
-#endif
-
-#define c_strlcpy(_dest, _source) COMPILE_TIME_ASSERT_SIZE((sizeof(_dest) != sizeof(void *))) \
+	#define c_strlcpy(_dest, _source) \
 		strlcpy (_dest, _source, sizeof(_dest))
+	#define c_strlcat(_dest, _source) \
+		strlcat (_dest, _source, sizeof(_dest))
 #endif
-
-#define c_strlcpy(_dest, _source) strlcpy (_dest, _source, sizeof(_dest))
-#define c_strlcat(_dest, _source) strlcat (_dest, _source, sizeof(_dest))
 
 void String_Command_Argv_To_String (char *cmdline, int numargc, char **argvz, size_t siz);
 // Note, the tokenizer counts on the string being available as long as the tokenizer is in use
@@ -155,6 +167,7 @@ int String_Does_Have_Uppercase (const char *s);
 
 // Broke the naming convention, haha!  Does it a bit verbose anyway.
 cbool String_Is_Only_Alpha_Numeric_Plus_Charcode (const char *s, int charcode);
+cbool String_Is_Only_Alpha_Numeric_Plus_Space (const char *s);
 
 #ifdef _DEBUG // Not for release version, we use a macro
 
@@ -177,10 +190,10 @@ void String_Edit_To_Single_Line (char *s_edit); // Slightly different than Strin
 
 
 int String_Edit_Insert_At (char* s_edit, size_t s_size, const char* s_insert, size_t offset);
-char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit);
-char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit);
-char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit);
-char *String_Edit_RTrim_Whitespace_Including_Spaces (char *s_edit);
+char *String_Edit_LTrim_Whitespace_Excluding_Spaces (char *s_edit); // whitespace = 0-31 < SPACE_32)
+char *String_Edit_LTrim_Whitespace_Including_Spaces (char *s_edit); // whitespace <= SPACE_32)
+char *String_Edit_RTrim_Whitespace_Excluding_Spaces (char *s_edit); // whitespace = 0-31 < SPACE_32)
+char *String_Edit_RTrim_Whitespace_Including_Spaces (char *s_edit); // whitespace <= SPACE_32)
 char *String_Edit_Range_Delete (char *s_edit, size_t s_size, const char *s_start, const char *s_end);
 char *String_Edit_Remove_End (char *s_edit);
 char *String_Edit_RemoveTrailingSpaces (char *s_edit);
@@ -198,7 +211,7 @@ char *String_Edit_To_Lower_Case (char *s_edit);
 char *String_Edit_To_Proper_Case (char *s_edit);
 char *String_Edit_To_Upper_Case (char *s_edit);
 char *String_Edit_Reverse (char *s_edit);
-char *String_Edit_Trim (char *s_edit); // memmoves
+char *String_Edit_Trim (char *s_edit); // memmoves (whitespace_Including_Spaces <= SPACE_32)
 char *String_Edit_UnQuote (char *s_edit); // memmoves
 char *String_Edit_Whitespace_To_Space (char *s_edit);
 char *String_Find (const char *s, const char *s_find);
@@ -206,7 +219,7 @@ char *String_Find_Caseless (const char *s, const char *s_find);
 char *String_Find_Skip_Past (const char *s, const char *s_find);
 char *String_Find_Reverse (const char *s, const char *s_find);
 char *String_Find_Char (const char *s, int ch_findchar);
-char *String_Find_Char_Nth_Instance (const char *s, int ch_findchar, int n_instance);
+char *String_Find_Char_Nth_Instance (const char *s, int ch_findchar, int nth_instance);
 char *String_Find_Char_Reverse (const char *s, int ch_findchar);
 char *String_Find_End (const char *s);
 char *String_Length_Copy (char *s_dest, size_t siz, const char *src_start, size_t length);
@@ -219,6 +232,9 @@ char *String_Range_Find_Char (const char *s_start, const char *s_end, int ch_fin
 char *String_Range_Find_Char_Reverse (const char *s_start, const char *s_end, int ch_findchar);
 char *String_Repeat_Alloc (char ch, int count);
 
+char *String_Instance (const char *s, int ch_delim, int nth_instance, reply int *len);
+char *String_Instance_Alloc (const char *s, int ch_delim, int nth_instance, reply int *len);
+
 // Duplicates a substring String_Range_Dup_Alloc("john", 1, 2) = "oh" // 0 based like any proper C string function would be.
 char *String_Range_Dup_Alloc(const char *s_start, const char *s_end);
 
@@ -229,10 +245,23 @@ char *String_Skip_WhiteSpace_Including_Space (const char *s);
 char *String_Skip_NonWhiteSpace (const char *s);
 
 char *String_Write_NiceFloatString (char *s_dest, size_t siz, double floatvalue);
+//char *String_Float_Static (double floatvalue);
+char *String_Nice_Float_Vas (double floatvalue);
 
 int String_To_Array_Index (const char *s, const char *s_array[]);
 int String_To_Array_Index_Caseless (const char *s, const char *s_array[]);
+
+char *String_Bit_String_Vas (int num);
+char *String_Bit_String_Reverse_Vas (int num);
+
+//const char *String_Flag_String_Static (int num);
+
+
+// Don't call it a whole word match because this only delimits on, say, a space or a comma or such.
+// Returns boolean, but I am convinced the correct return type is integer.
+// So we can do additive math.
 int String_List_Match (const char *s, const char *s_find, int ch_delim);
+//cbool String_List_Match_Caseless (const char *s, const char *s_find, int ch_delim); // Case sensitive.  strcasestr would be case-insensitive.
 
 #ifdef CORE_NEEDS_STRLCPY_STRLCAT
 size_t strlcpy(char *dst, const char *src, size_t siz);
@@ -286,6 +315,8 @@ cbool wildcompare (const char *s, const char *wild_patterns);
 //String_Test_Reject (test, "<valid:alpha,numeric,space>");
 // <validchars:alpha,numeric,space>
 // <notempty>, <notrim>
+
+const char *String_Test_Reject (const char *s_test, const char *textflags);
 
 // Do not like enough for them to be widely available
 //#define isnotvisibleascii(c) ((c) <= 32 || 127 <=(c)) // This actually already includes 127 delete char, good job
@@ -348,10 +379,18 @@ typedef struct
 	int			count;
 	const char	*args[MAX_ARGS_80]; // pointers to chopped
 
+//	int			tap_slot; // NOV.
 } lparse_t;
+
+// Line @ 2 is the chopped-1 + strlen(chopped_1) + 1 /*skip potential delimiter*/ - chopped, which gets the offset.
+#define LINE_UNCHOPPED(LINE, ARGNUM) (LINE)->original + \
+	(( (LINE)->args[(ARGNUM) - 1] + \
+		strlen( (LINE)->args[(ARGNUM)-1] ) + 1\
+		) - (LINE)->chopped)
 
 lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args); // allow_empty_args can allow a blank final parameter
 void *Line_Parse_Free (lparse_t *ptr);
+#define Line_Parse_Destroy_SafeMacro(LINE) if (LINE) LINE = Line_Parse_Free (LINE);
 // Parse.  Returns NULL when no more words.  Trims each word.
 //char word[256];
 //const char *cursor, *mystring = cursor = "  dpmaster.deathmask.net:27950 , dpmaster.tchr.no:27950  ";
@@ -362,6 +401,7 @@ void *Line_Parse_Free (lparse_t *ptr);
 
 const char *String_Get_Word (const char *text, const char *s_find, char *buffer, size_t buffer_size);
 
+// Used in events - Feb 16 2018
 typedef struct split_s
 {
 	int count;
@@ -420,7 +460,7 @@ const char *text2 =
 
 // Will add a trailing empty line after a newline.
 
-#define text_a char // It wants to be const char, but char is more flexible
+#define /*const*/ text_a char // It wants to be const char, but char is more flexible
 
 // The idea of these having a standard return value is shrinking.
 text_a *txtnew (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))) ;
@@ -478,6 +518,32 @@ int qsort_strcasecmp (const void *a, const void *b);
 int qsort_strcmp (const void *a, const void *b);
 int qsort_strcasecmp_rev (const void *a, const void *b);
 int qsort_strcmp_rev (const void *a, const void *b);
+
+// Nullable.
+
+// If you don't like that these are memory/len instead of len/memory you can make a macro.  Find something productive to do.
+// I'm not even 100% sure why we do length then memory, I'm also not sure that is correct.
+int mem_find_count (int src_len, const char *src, int find_len, const char *find, cbool do_caseless);
+int mem_find_nth (int src_len, const char *src, int find_len, const char *find, cbool do_caseless, int nth);
+#define mem_find_first(src_len, src, find_len, find, do_caseless) mem_find_nth(src,src_len,find,find_len,do_caseless,1)
+
+int slen_strcmp (int length1, const char *s1, int length2, const char *s2);
+int slen_strcasecmp (int length1, const char *s1, int length2, const char *s2);
+int slen_atoi (int length, const char *s);
+int64_t slen_atoi64 (int length, const char *s);
+double slen_atof (int length, const char *s);
+
+char *String_Hex_Vas (int num); // (SBUF warning.  Uses own buffer unlike va)
+
+char *va00 (int num); // String_Thousands_Static but uses va()
+char *va_repeat (int ch, int num_chars);
+
+#define _vas(STRING) va("%s", STRING) // String direct to va.
+
+#define va_spaces(NUMCHARS) va_repeat (SPACE_CHAR_32, NUMCHARS) // was char *va_spaces (int num_spaces);
+// va_spaces_s (4, "Bob") ---> "    Bob"
+// LEADING SPACES RETURN function
+char *va_spaces_s (int num_spaces, const char *s); // va_spaces_s(3, "frog") --> "  frog" 
 
 #endif	// ! __STRING_LIB_H__
 

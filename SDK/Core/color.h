@@ -17,7 +17,14 @@ typedef union {
 	float c4[4];
 } color4;
 
-#define COLOR4_SEND(c) (c).red, (c).green, (c).blue, (c).alpha
+#define COLOR3_SEND(c) (c).red, (c).green, (c).blue
+#define COLOR4_SEND_ALPHA_1(c) (c).red, (c).green, (c).blue, ALPHA_SOLID_1
+#define COLOR4_SEND(c) (c).red, (c).green, (c).blue, (c).alpha // Unused?  Click tiles uses.
+#define COLOR4DEF(R, G, B) { R, G, B, ALPHA_TRANS_0 }
+
+#define ALPHA_SOLID_1 1.0
+#define ALPHA_TRANS_0 0.0
+
 
 typedef unsigned color4byte;
 //void Color4_From_UnsignedColor (float v4[], color4byte rgba);

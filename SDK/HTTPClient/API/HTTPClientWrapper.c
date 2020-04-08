@@ -288,12 +288,15 @@ int HTTPWrapperGetRandomeNumber()
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "environment.h"
 
 
-#ifdef __MACH__ // PLATFORM_OSX // __MACH__
+//#ifdef __MACH__ // PLATFORM_OSX // __MACH__
+#ifdef PLATFORM_OSX
 // Dec 2016 or Nov 2016 adjustment.
 #include <sys/time.h>
 //clock_gettime is not implemented on OSX
+
 	int clock_gettime(int clk_id /* not implemented*/, struct timespec* t) {
 		struct timeval now;
 		int rv = gettimeofday(&now, NULL);
@@ -305,8 +308,7 @@ int HTTPWrapperGetRandomeNumber()
 #define CLOCK_MONOTONIC 0 // Baker: Whatever man.  This is not technically "correct"
 #endif // PLATFORM_OSX
 
-
-
+// Looks like this returns seconds
 long HTTPWrapperGetUpTime()
 {
 #ifdef _WIN32
@@ -315,6 +317,10 @@ long HTTPWrapperGetUpTime()
 
     lTime = (GetTickCount() / CLOCKS_PER_SEC);
     return lTime;
+
+#elif defined(PLATFORM_IOS)
+int ourclock (void);
+	return ourclock ();
 
 #else
 

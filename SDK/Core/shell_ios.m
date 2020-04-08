@@ -43,8 +43,53 @@ const char *File_Binary_URL (void)
 	return binary_url;
 }
 
+const char *File_Binary_URL (void);
+const char *File_iPhone_Documents_URL (void);
+const char *File_iPhone_BundlePath_URL (void);
+const char *File_iPhone_AppFolder_URL (void);
 
+// The bundle path.  Is it different than the binary path?  Is the binary path right?
+const char *File_iPhone_BundlePath_URL (void)
+{
+	return File_Binary_URL (); // Same deal
+//    static char bundlepath_url[MAX_OSPATH];
+//	if (!bundlepath_url[0]) {
+//		NSString *_bundle_path = [[NSBundle mainBundle] resourcePath];
+//		c_strlcpy (bundlepath_url, TO_CSTRING(_bundle_path));
+//	}
+//	return bundlepath_url;
+}
 
+// One above the documents path
+const char *File_iPhone_AppFolder_URL (void)
+{
+    static char appfolder_url[MAX_OSPATH];
+	if (!appfolder_url[0]) {
+		NSString *_bundle_path = [[NSBundle mainBundle] resourcePath];
+		NSString *_applfolder = [_bundle_path stringByDeletingLastPathComponent];
+	   c_strlcpy (appfolder_url, TO_CSTRING(_applfolder));
+	}
+	return appfolder_url;
+}
+
+const char *File_iPhone_Documents_URL (void)
+{
+    static char documents_url[MAX_OSPATH];
+	if (!documents_url[0]) {
+//		NSLog(@"%@",[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory  inDomains:NSUserDomainMask] lastObject]);
+//
+//	    NSURL *myURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+//		NSString *myString = myURL.absoluteString;
+	    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	    NSString* mydir = [paths objectAtIndex:0];
+//	    NSString *myAppID = [[NSBundle mainBundle] bundleIdentifier];
+//	    NSString *documentsDirectory = [NSString stringWithFormat:@"%@/%@", mydir, myAppID];
+		NSLog (@"Docs dir?  %@", mydir);
+		c_strlcpy (documents_url, TO_CSTRING(mydir));
+	}
+
+	return documents_url;
+}
 
 
 const char *_Shell_Folder_Caches_By_AppName (const char *appname)
@@ -225,6 +270,17 @@ cbool _Shell_Folder_Open_Folder_Must_Exist (const char *path_to_file)
 cbool _Shell_Folder_Open_Highlight_URL_Must_Exist (const char *path_to_file)
 {
     return false; // unimplemented
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  SYSTEM OS: STARTUP/ICON
+///////////////////////////////////////////////////////////////////////////////
+
+// Considerations: Windows sticky keys, Windows key (full-screen only), Mac mouse acceleration (mouse, not keyboard though)
+cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cbool bSuppressWindowskey)
+{
+// Nothing?  For now, I guess.
+	return bDoCapture;
 }
 
 

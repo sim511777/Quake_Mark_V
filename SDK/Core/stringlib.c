@@ -323,24 +323,6 @@ int String_Does_Have_Uppercase (const char *s)
 }
 
 
-cbool String_Is_Only_Alpha_Numeric_Plus_Charcode (const char *s, int charcode)
-{
-	const char *cursor;
-	int ch;
-
-	for (cursor = s; *cursor; cursor ++) {
-		ch = *cursor;
-
-		if (isdigit (ch) || isalpha (ch) || ch == charcode)
-			continue;
-
-		return false;
-	}
-
-	return true; // It's only alpha numeric plus specified character.
-}
-
-
 #undef String_Does_Match
 // Short: Returns 1 if string is identical --- considering case, otherwise returns 0
 // Notes: Offers no advantage over using !strcmp(s1,s2).
@@ -827,7 +809,6 @@ char *String_Edit_Replace_Char (char *s_edit, int ch_find, int ch_replace, reply
 }
 
 
-
 // Short: Converts all upper case characters to lower case
 // Notes: None.
 char *String_Edit_To_Lower_Case (char *s_edit)
@@ -919,6 +900,29 @@ char *String_Edit_For_Stdout_Ascii (char *s_edit)
 }
 
 
+cbool String_Is_Only_Alpha_Numeric_Plus_Space (const char *s)
+{
+	return String_Is_Only_Alpha_Numeric_Plus_Charcode (s, SPACE_CHAR_32);
+}
+
+
+cbool String_Is_Only_Alpha_Numeric_Plus_Charcode (const char *s, int charcode)
+{
+	const char *cursor;
+	int ch;
+
+	for (cursor = s; *cursor; cursor ++) {
+		ch = *cursor;
+
+		if (isdigit (ch) || isalpha (ch) || ch == charcode)
+			continue;
+
+		return false;
+	}
+
+	return true; // It's only alpha numeric plus specified character.
+}
+
 
 // Short: Replaces all white-space characters (char < SPACE_CHAR_32) with spaces (char SPACE_CHAR_32)
 // Notes: None.
@@ -993,19 +997,67 @@ char *String_Find_Char (const char *s, int ch_findchar)
 
 
 // Short: Returns pointer to Nth occurrence of character, NULL if no such instance
-// Notes: None.
-char *String_Find_Char_Nth_Instance (const char *s, int ch_findchar, int n_instance)
+// Notes: // Human friendly.  First instance = 1
+char *String_Find_Char_Nth_Instance (const char *s, int ch_findchar, int nth_instance)
 {
 	const char *search;
 	int count;
 
 	for (search = s, count = 0; *search; search ++)
 	{
-		if (*search == ch_findchar && ++count == n_instance)
-			return (char *)search;
+		if (*search == ch_findchar) {
+			count ++;
+			if (count == nth_instance)
+				return (char *)search;
+		}
 	}
 
 	return NULL;
+}
+
+// Human friendly.  First instance = 1
+char *String_Instance (const char *s, int ch_delim, int nth_instance, reply int *len)
+{
+	// If we want the nth instance, we want the nth - 1 delimiter or the string itself.
+	char *found = nth_instance > 1 ? String_Find_Char_Nth_Instance (s, ch_delim, nth_instance - 1) : s;
+	char *s_start = NULL;
+	int slen = 0;
+
+	// If it wasn't found, there wasn't a delimiter at all.
+	if (!found) { 
+		if (nth_instance == 1) {
+			NOT_MISSING_ASSIGN (len, strlen(s));  
+			return (char *)s; 
+		}
+		return NULL; // Invalid.
+	}
+
+	// If the found is the search string beginning don't skip a character.
+	s_start = found == s ? found : found + 1;
+	found = strchr (s_start, ch_delim);
+	if (!found) {
+		// Last instance?  Must be
+		NOT_MISSING_ASSIGN (len, strlen(s_start));
+		return s_start;
+	}
+	
+	// frog,
+	// 01234   4 - 0 = 4
+	slen = found - s_start;
+	NOT_MISSING_ASSIGN (len, slen);
+	return s_start;
+}
+
+// Returns length of the match, not length of the copy
+char *String_Instance_Alloc (const char *s, int ch_delim, int nth_instance, reply int *len)
+{
+	int slen = -1; char *found = String_Instance (s, ch_delim, nth_instance, &slen);
+	if (!found) return NULL;
+	else {
+		NOT_MISSING_ASSIGN (len, slen);
+		return strndup (found, slen);
+	}
+
 }
 
 
@@ -1202,7 +1254,8 @@ char *String_Skip_WhiteSpace_Excluding_Space (const char *s)
 }
 
 
-// Short: Returns a pointer beyond any leading white-space (char <= SPACE_CHAR_32) in a string including for spaces (char SPACE_CHAR_32)
+// Short: Returns a pointer beyond any leading white-space (char <= SPACE_CHAR_32) in a string including for spaces
+// (char SPACE_CHAR_32).  Does not return NULL but rather would point to the end of a CString.
 // Notes: None.
 char *String_Skip_WhiteSpace_Including_Space (const char *s)
 {
@@ -1278,8 +1331,6 @@ int String_List_Match (const char *s, const char *s_find, int ch_delim)
 
 	return 0; // No matches
 }
-
-
 
 
 
@@ -2073,7 +2124,7 @@ char *String_Replace_Len_Count_Alloc (const char *s, const char *s_find, const c
 
 
 	if (!find_len) {
-//		log_warn ("Passed empty replacement string");
+//		logd ("Passed empty replacement string");
 
 		NOT_MISSING_ASSIGN(replace_count, count);
 		NOT_MISSING_ASSIGN(created_length, strlen (s));
@@ -2382,6 +2433,29 @@ char *String_Write_NiceFloatString (char *s_dest, size_t siz, double floatvalue)
 	return String_Edit_RemoveTrailingZeros (s_dest); // Also removes period
 }
 
+char *String_Nice_Float_Vas (double floatvalue)
+{
+	static char s_double_buf[60];
+	String_Write_NiceFloatString (s_double_buf, sizeof(s_double_buf), floatvalue);
+	return _vas (s_double_buf);
+}
+
+char *va_repeat (int ch, int num_chars)
+{
+	char buf[SYSTEM_STRING_SIZE_1024] = {0};
+	num_chars = CLAMP (0, num_chars, SYSTEM_STRING_SIZE_1024 - 1); // -1 space for null
+	memset (buf, ch, num_chars);
+	return _vas (buf) ; // Why was this va ("%s" ..) and not vas?  Oversight?  va("%s", buf);
+	
+}
+
+
+// va_spaces_s (4, "Bob") ---> "    Bob"
+char *va_spaces_s (int num_spaces, const char *s)
+{
+	return va ("%s%s", va_repeat(SPACE_CHAR_32, num_spaces), s);
+}
+
 
 // Short: Command line to argv
 // Notes: None.
@@ -2460,6 +2534,9 @@ lparse_t *Line_Parse_Alloc (const char *s, cbool allow_empty_args)
 
 			// Advance until reach space, white space, delete or non-ascii
 
+#pragma message ("There is some improved parsing with quotes here in Projects/Core")
+#pragma message ("But would need to know behavioral differences to")
+#pragma message ("Because the one here has been heavily used.")
 			while (*cmdline && (*cmdline > SPACE_CHAR_32) )
 				cmdline++;
 		} // End of switch
@@ -3372,3 +3449,186 @@ int perrorf (const char *fmt, ...)
 }
 #endif // Discouraged
 
+// Remember, we compile with char = unsigned so ... (11:46 am)
+int mem_find_count (int src_len, const char *src, int find_len, const char *find, cbool do_caseless)
+{
+	const char *cursor;
+	int remaining_len, advanced_len;
+	int count;
+
+	for (cursor = src, remaining_len = src_len, count = 0; /*nada*/;  count ++) {
+		const char *old_cursor	= cursor;
+		cursor					= do_caseless ? 
+										  memimem(cursor, remaining_len, find, find_len) 
+										: memmem (cursor, remaining_len, find, find_len);
+		
+		if (!cursor) break;
+
+		// Adjust remaining length
+		advanced_len = cursor - old_cursor;	remaining_len -= advanced_len;
+		cursor += (ssize_t) find_len, remaining_len = remaining_len - (ssize_t) find_len; // Advance cursor
+	}
+	return count;
+}
+
+// Remember, we compile with char = unsigned so ...
+int mem_find_nth (int src_len, const char *src, int find_len, const char *find, cbool do_caseless, int nth)
+{
+	const char *cursor;
+	int remaining_len, advanced_len;
+	int count;
+
+	for (cursor = src, remaining_len = src_len, count = 0; /*nada*/;  count ++) {
+		const char *old_cursor	= cursor;
+		cursor					= do_caseless ? 
+										  memimem(cursor, remaining_len, find, find_len) 
+										: memmem (cursor, remaining_len, find, find_len);
+		
+		if (!cursor) break;
+		if (count + 1 == nth)
+			return cursor - src; // Right
+
+		// Adjust remaining length
+		advanced_len = cursor - old_cursor;	remaining_len -= advanced_len;
+		cursor += (ssize_t) find_len, remaining_len = remaining_len - (ssize_t) find_len; // Advance cursor
+	}
+	return -1;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Manual labor versions.  Not very friendly to C strings, but if you know the length is ok then is probably ok.
+
+// Raw.  If you use this on a C string and the length is bad, tough luck.  This is anti-strlen.
+int slen_atoi (int length, const char *s)
+{ if (!length) return 0; else {
+	// HAS TO BE LIKE THIS IF WE ARE IN A SUBSTRING WE DON'T HAVE NULL TERMINATION
+	size_t bufsize; const char *s_a = core_memdup_z (s, length, &bufsize);
+	int out_val = atoi(s_a);
+	freenull (s_a);
+	return out_val;	
+}}
+
+
+int64_t slen_atoi64 (int length, const char *s)
+{ if (!length) return 0; else {
+	// HAS TO BE LIKE THIS IF WE ARE IN A SUBSTRING WE DON'T HAVE NULL TERMINATION
+	size_t bufsize; const char *s_a = core_memdup_z (s, length, &bufsize);
+	int64_t out_val = c_atoi64(s_a);
+	freenull (s_a);
+	return out_val;
+}}
+
+double slen_atof (int length, const char *s)
+{ if (!length) return 0; else {
+	// HAS TO BE LIKE THIS IF WE ARE IN A SUBSTRING WE DON'T HAVE NULL TERMINATION
+	size_t bufsize; const char *s_a = core_memdup_z (s, length, &bufsize);
+	double out_val = atof(s_a);
+	freenull (s_a);
+	return out_val;
+}}
+
+int slen_strcmp (int length1, const char *s1, int length2, const char *s2)
+{
+	int out;  // Not enough ... f is shorter but higher than "aardvark", take equal length and if tie return -1
+	if (length1 < length2)		return (out = memcmp(s1, s2, length1)) == 0 ? -1 : out;
+	else if (length2 < length1) return (out = memcmp(s1, s2, length2)) == 0 ?  1 : out;
+	else						return (out = memcmp(s1, s2, length2));
+}
+
+int slen_strcasecmp (int length1, const char *s1, int length2, const char *s2)
+{
+	int out;  // Not enough ... f is shorter but higher than "aardvark", take equal length and if tie return -1
+	if (length1 < length2)		return (out = memicmp(s1, s2, length1)) == 0 ? -1 : out;
+	else if (length2 < length1) return (out = memicmp(s1, s2, length2)) == 0 ?  1 : out;
+	else						return (out = memicmp(s1, s2, length2));
+}
+
+size_t str_format_int_grouped(char dst[16], int num);
+char *va00 (int num)
+{	
+	char sbuf[64];
+	size_t result = str_format_int_grouped(sbuf, num);
+
+	return _vas (sbuf);
+}
+
+//const char *String_Thousands_Static(int num)
+//{
+//	static char out[32];
+//	size_t result = str_format_int_grouped(out, num);
+//	return out;
+//}
+
+
+char *String_Hex_Vas (int num)
+{
+	return va ("%x", num);
+}
+
+
+char *String_Bit_String_Reverse_Vas (int num)
+{
+	char out[40]; // 33 = 32 + 1
+	int count = 0;
+	int n; 
+	
+	out[0] = 0;
+	for (n = 0; n < 32; n ++) {
+		int bit = 1 << n; // bit = bit << 1; 
+		int hit = num & bit;
+		if (hit) count = n;
+		
+		c_strlcat (out, hit ? "1" : "0");
+	}
+	// Trun.  If count = 0;
+	out[count ? count + 1 : 1] = 0; // truncate at count or 1.
+	return _vas (out);
+}
+
+
+
+
+char *String_Bit_String_Vas (int num)
+{
+	char *out = (unconstanting char *) String_Bit_String_Reverse_Vas (num);
+
+	return String_Edit_Reverse (out);
+}
+
+
+// Weaknesses?  Buf size.  Can't handle double.  Can't handle atoi64.  15 digit limit
+// 2 000 000 000 (10) 2,000,000,000 13  minus sign 14.  
+// Strengths?  Think it can handle negative ok.
+// Returns strlen
+// Stack overflow says needs something like 1077 digits for super small fractional double.
+// http://stackoverflow.com/questions/1701055/what-is-the-maximum-length-in-chars-needed-to-represent-any-double-value
+// But we are mostly talking 
+
+size_t str_format_int_grouped(char dst[16], int num)
+{
+    char src[16];
+    char *p_src = src;
+    char *p_dst = dst;
+
+    const char separator = ',';
+    int num_len, commas;
+
+    num_len = sprintf(src, "%d", num);
+
+    if (*p_src == '-') {
+        *p_dst++ = *p_src++;
+        num_len--;
+    }
+
+#define DIGIT_GROUP_3 3// Thousands
+    for (commas = 2 - num_len % DIGIT_GROUP_3; *p_src; commas = (commas + 1) % DIGIT_GROUP_3) {
+        *p_dst++ = *p_src++;
+        if (commas == 1) {
+            *p_dst++ = separator;
+        }
+    }
+    *--p_dst = '\0';
+
+    return (size_t)(p_dst - dst);
+}

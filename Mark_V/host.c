@@ -205,12 +205,12 @@ void Host_FindMaxClients (void)
 		// Is dedicated server supposed to read config.cfg?  Hmmmm.
 		void Cmd_No_Command (lparse_t *line);
 
-		Cmd_AddCommand ("viewsize", Cmd_No_Command, "");
-		Cmd_AddCommand ("gamma", Cmd_No_Command, "");
-		Cmd_AddCommand ("sensitivity", Cmd_No_Command, "");
-		Cmd_AddCommand ("bind", Cmd_No_Command, "");
-		Cmd_AddCommand ("unbindall", Cmd_No_Command, "");
-		Cmd_AddCommand ("volume", Cmd_No_Command, "");
+		Cmd_AddCommand ("viewsize", 	NULL, Cmd_No_Command, "");
+		Cmd_AddCommand ("gamma", 		NULL, Cmd_No_Command, "");
+		Cmd_AddCommand ("sensitivity", 	NULL, Cmd_No_Command, "");
+		Cmd_AddCommand ("bind", 		NULL, Cmd_No_Command, "");
+		Cmd_AddCommand ("unbindall", 	NULL, Cmd_No_Command, "");
+		Cmd_AddCommand ("volume",  		NULL, Cmd_No_Command, "");
 
 		cls.state = ca_dedicated;
 		if (cmdline_dedicated != (com_argc - 1))
@@ -687,7 +687,7 @@ void _Host_Frame (double time)
 	static double		time2 = 0;
 	static double		time3 = 0;
 	int			pass1, pass2, pass3;
-
+	
 	// something bad happened, or the server disconnected
 	if (setjmp (host_abortserver) ) return;
 
@@ -1020,13 +1020,13 @@ cbool Read_Early_Cvars_For_File (const char *config_file_name, const cvar_t* lis
 			continue;
 
 		found_any_cvars = true;
-		if (Flag_Check (var->flags, CVAR_STRINGISH)) {
+		if (Flag_Check_Bool (var->flags, CVAR_STRINGISH)) {
 			// This one is primarily a string
-			Cvar_SetQuick (/*unconst*/(cvar_t *)var, sbuf);
+			Cvar_SetQuick ((unconstanting cvar_t *)var, sbuf);
 			continue;
 		}
 
-		Cvar_SetValueQuick (/*unconst*/(cvar_t *)var, value);
+		Cvar_SetValueQuick ((unconstanting cvar_t *)var, value);
 
 	}
 

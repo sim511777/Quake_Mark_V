@@ -52,7 +52,7 @@ void Undo_Clear (struct undo_s *u)
 #endif
 }
 
-static void Undo_Remove_From_Top_ (struct undo_s *u, int num_deletes)
+static void sUndo_Set_Point_Remove_From_Top (struct undo_s *u, int num_deletes)
 {
 	int new_top = num_deletes;
 	int new_size = u->count - num_deletes;
@@ -122,7 +122,7 @@ void Undo_Set_Point (struct undo_s *u, const char *text, int cursor, int cursor_
 	// If into undo buffer ( level 1 is redo) then remove everything above.
 	if (u->level > 0) // Size must be at least 2 if this is true (courtesy redo takes 1 space)
 	{
-		Undo_Remove_From_Top_ (u, u->level - 1);
+		sUndo_Set_Point_Remove_From_Top (u, u->level - 1);
 		u->level = 0;
 	}
 
@@ -160,7 +160,7 @@ void Undo_Set_Point (struct undo_s *u, const char *text, int cursor, int cursor_
 	// fill in the new guy
 	{
 		struct undo_entry_s *e = &u->undo_entries[0];
-		memset (e, 0, sizeof(e));
+		memset (e, 0, sizeof(*e)); // Baker Feb 7 2017
 		c_strlcpy (e->text, text);
 
 		e->cursor = cursor;

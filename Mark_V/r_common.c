@@ -56,16 +56,26 @@ level_info_t level; // Baker: Likewise, doesn't really belong here.
 
 
 
+const byte *demos_lmp;
+const byte *levels_lmp;
+
 void R_Init (void)
 {
 	Cmd_AddCommands (R_Init);
-
 
 	Sky_Init (); //johnfitz
 
 	R_InitParticles (); // After R_InitTextures ?
 
 	R_Init_Local (); // Runs either the rest of software or GL initialization
+
+	// Loads fixed menus
+
+	{
+		const char *sname; const void *mem;
+		demos_lmp  = mem = Bundle_File_Memory_Pointer ( (sname = "demos.lmp"),  NULL); if (!mem) System_Error ("Couldn't load %s", sname);
+		levels_lmp = mem = Bundle_File_Memory_Pointer ( (sname = "levels.lmp"), NULL); if (!mem) System_Error ("Couldn't load %s", sname);
+	}
 }
 
 

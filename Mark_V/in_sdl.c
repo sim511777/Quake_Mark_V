@@ -104,7 +104,7 @@ void Input_Local_Mouse_Cursor_SetPos (int x, int y)
 		log_debug ("Unable to set mouse position");
 }
 
-void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py)
+void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py, cbool towindow)
 {
 	int x, y;
 	if (SDL_GetGlobalMouseState (&x, &y) != 0) // Returns 0 on success
@@ -136,7 +136,7 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 				int unicode = *ch;
 				int ascii 	= in_range (32, unicode, 126) ? unicode : 0;
 				// We do not do control characters here.
-				Key_Event_Ex (NO_WINDOW_NULL, SCANCODE_0,  /*down*/ true, ascii, unicode, shiftbits (e) ); // Future, convert this to utf-32
+				Key_Event_Ex (NO_WINDOW_NULL, SCANCODE_0,  /*down*/ true, ascii, unicode, shiftbits (e)); // Future, convert this to utf-32
 			}
 		}
 		return true;
@@ -163,7 +163,7 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 			int ascii				= should_emit ? scancode : 0;
 			if (scancode)
 				//Key_Event_Ex (NO_WINDOW_NULL, scancode, down, ascii, /*unicode*/ 0, shiftbits (e) ); // Future, convert this to utf-32
-				Key_Event_Ex (NO_WINDOW_NULL, scancode, down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits (e) ); // Future, convert this to utf-32
+				Key_Event_Ex (NO_WINDOW_NULL, scancode, down, /*should_emit*/  ASCII_0, /*unicode*/ UNICODE_0, shiftbits (e)); // Future, convert this to utf-32
 
 		}
 
@@ -186,7 +186,7 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 			int buttons, shift, x, y;
 
 			getmousebits (e, &buttons, &shift, &x, &y);
-			Input_Mouse_Button_Event (buttons);
+			Input_Mouse_Button_Event (buttons, x, y);
 		}
 		return true; // handled
 

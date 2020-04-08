@@ -1,3 +1,7 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_OSX // Has to be here, set by a header
+
 /*
 Copyright (C) 2001-2012 Axel 'awe' Wefers (Fruitz Of Dojo)
 Copyright (C) 2011-2014 Baker
@@ -447,4 +451,6 @@ void Dedicated_Local_Print (const char *text)
 @implementation QApplication
 @end
 
+#endif // PLATFORM_OSX
 
+#endif // ! CORE_SDL

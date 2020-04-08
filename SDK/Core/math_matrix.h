@@ -44,6 +44,12 @@ typedef struct _glmatrix
 } glmatrix;
 
 
+typedef struct _frustum_plane_t_s
+{
+	float m17[17];
+} frustum_plane_t; // But do we use this???
+
+
 glmatrix *Mat4_Multiply (glmatrix *m, const glmatrix *a, const glmatrix *b);
 glmatrix *Mat4_Translate (glmatrix *m, float x, float y, float z);
 glmatrix *Mat4_Scale (glmatrix *m, float x, float y, float z);
@@ -61,6 +67,7 @@ glmatrix *Mat4_OrthoZero (glmatrix *m, float width, float height);
 glmatrix *Mat4_Ortho3D (glmatrix *m, double width, double height);
 
 glmatrix *Mat4_Frustum (glmatrix *m, double left, double right, double bottom, double top, double znear, double zfar);
+glmatrix *Mat4_Frustum_By_Fov (glmatrix *m, float fovx, float fovy, double znear, double zfar);
 // glFrustum (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 // glOrtho   (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 
@@ -70,21 +77,21 @@ glmatrix *Mat4_LookAt (glmatrix *m, float eyex, float eyey, float eyez, float ce
 
 
 cbool _Mat4_Project_Classic_Normal (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
-									float *winx, float *winy, float *winz);
+									reply float *winx, reply float *winy, reply float *winz);
 
 cbool Mat4_Project_Smart (float objx, float objy, float objz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
-									float *winx, float *winy, float *winz);
+									reply float *winx, reply float *winy, reply float *winz);
 
 
 
 // Direct gluUnproject equivalent except it takes floats instead of doubles
 cbool _Mat4_UnProject_Classic_Normal (float winx, float winy, float winz, const glmatrix *modelview, const glmatrix *projection, const int *viewport /*[4]*/,
-			   float *objx, float *objy, float *objz);
+			   reply float *objx, reply float *objy, reply float *objz);
 
 
 // This converts the screen coordinates as if they were Windows-like where y = 0 is top of screen.  Mac y = 0 is bottom, just like OpenGL.
 cbool Mat4_UnProject_Smart (float winx, float winy, float winz, const glmatrix *model, const glmatrix *projection, const int *viewport /*[4]*/, int screenheight,
-			   float *objx, float *objy, float *objz);
+			   reply float *objx, reply float *objy, reply float *objz);
 
 
 glmatrix *Mat4_Pick (glmatrix *m, float x, float y, float deltax, float deltay, const int *viewport /*[4]*/);
@@ -92,6 +99,12 @@ glmatrix *Mat4_Pick (glmatrix *m, float x, float y, float deltax, float deltay, 
 
 cbool Mat4_Compare (glmatrix *a, glmatrix *b);
 char *Mat4_String (glmatrix *m);
+
+glmatrix *Mat4_Pick (glmatrix *m, float x, float y, float deltax, float deltay, const int *viewport /*[4]*/);
+
+frustum_plane_t *Frustum_ViewPlane_Set (frustum_plane_t *m, double width, double height, double fov_x, double fov_y);
+
+
 
 #endif // ! __MATH_MATRIX_H__
 

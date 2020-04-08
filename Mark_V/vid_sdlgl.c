@@ -52,7 +52,7 @@ vmode_t VID_Local_GetDesktopProperties (void)
     if (SDL_GetDesktopDisplayMode(0, &mode) != 0)
         System_Error("Could not get desktop display mode");
 
-	desktop.type		=	MODE_FULLSCREEN;
+	desktop.type		=	MODESTATE_FULLSCREEN;
 	desktop.width		=	mode.w;
 	desktop.height		=	mode.h;
 	desktop.bpp			=	SDL_BITSPERPIXEL(mode.format);
@@ -167,7 +167,7 @@ void VID_Local_AddFullscreenModes (void)
 
 		if (SDL_GetDisplayMode(0, i, &mode) == 0)
 		{
-            vmode_t test	= { MODE_FULLSCREEN, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format)};
+            vmode_t test	= { MODESTATE_FULLSCREEN, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format)};
             cbool width_ok	= in_range (MIN_MODE_WIDTH_640,  test.width, MAX_MODE_WIDTH_10000 );
             cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, test.height, MAX_MODE_HEIGHT_10000);
             cbool bpp_ok	= (test.bpp == vid.desktop.bpp);
@@ -255,7 +255,7 @@ cbool VID_Local_SetMode (int modenum)
 {
 // Ok, my platform neutral way does not appear to be optimal for SDL so am going to try it more like the "Quakespasm" way, which is more compatible with the SDL philosophy.
 	vmode_t *p 			= &vid.modelist[modenum];
-	cbool do_bordered	= p->type == MODE_WINDOWED; // && (p->width != vid.desktop.width || p->height != vid.desktop.height);
+	cbool do_bordered	= p->type == MODESTATE_WINDOWED; // && (p->width != vid.desktop.width || p->height != vid.desktop.height);
 	cbool first			= !sysplat.mainwindow;
 
 #if 1
@@ -270,9 +270,9 @@ cbool VID_Local_SetMode (int modenum)
 	// Create or resize?
 	if (!sysplat.mainwindow) {
 		// Create
-		int vid_extra_flags	= (p->type == MODE_FULLSCREEN) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE; // Window resize on fly
+		int vid_extra_flags	= (p->type == MODESTATE_FULLSCREEN) ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE; // Window resize on fly
 		int vid_sdl_flags 	= SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE; // If I am understanding this right, fullscreen won't get the border.
-		if (p->type == MODE_FULLSCREEN) vid_sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		if (p->type == MODESTATE_FULLSCREEN) vid_sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
 		// Let's go with hidden window.
 
@@ -299,7 +299,7 @@ cbool VID_Local_SetMode (int modenum)
 	SDL_SetWindowDisplayMode (sysplat.mainwindow, /*seriously?? */ VID_SDL2_GetDisplayMode(p->width, p->height, vid.desktop.bpp));
 	SDL_SetWindowBordered (sysplat.mainwindow, do_bordered ? SDL_TRUE : SDL_FALSE); // SDL docs says fullscreen will ignore.
 
-	if (p->type == MODE_FULLSCREEN) {
+	if (p->type == MODESTATE_FULLSCREEN) {
 		if (SDL_SetWindowFullscreen (sysplat.mainwindow, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
 			System_Error ("Couldn't set fullscreen state mode");
 	}
@@ -334,7 +334,7 @@ cbool VID_Local_SetMode (int modenum)
 
 
 	cbool reuseok = false;
-//	cbool bordered	= p->type   == MODE_WINDOWED &&
+//	cbool bordered	= p->type   == MODESTATE_WINDOWED &&
 	//					  (p->width  != vid.desktop.width ||
 		//				  p->height != vid.desktop.height);
 	cbool restart	= (sysplat.mainwindow != NULL);
@@ -345,11 +345,11 @@ cbool VID_Local_SetMode (int modenum)
 
 	vmode_t *p = &vid.modelist[modenum];
 	int vid_sdl_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
-	if (p->type == MODE_FULLSCREEN) vid_sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (p->type == MODESTATE_FULLSCREEN) vid_sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
 
 // Baker: begin resize window on the fly
-	if (p->type == MODE_WINDOWED)   vid_sdl_flags |= SDL_WINDOW_RESIZABLE;
+	if (p->type == MODESTATE_WINDOWED)   vid_sdl_flags |= SDL_WINDOW_RESIZABLE;
 
 // End resize window on the fly
 
@@ -358,7 +358,7 @@ cbool VID_Local_SetMode (int modenum)
 #pragma message ("^^ that is egregious ... TEARDOWN_FULL_1 ... OOF!  But yeah, if no delete context isn't working .. :(")
 
 	// This is intended to set the fullscreen display but SDL should do that for us.
-//	if (p->type == MODE_FULLSCREEN)
+//	if (p->type == MODESTATE_FULLSCREEN)
 //		WIN_Change_DisplaySettings (modenum);
 // SDL_SetWindowDisplayMode (window, p) // If we do need to set it?
 
@@ -397,7 +397,7 @@ cbool VID_Local_SetMode (int modenum)
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
 	// I think we do not need this?
-	if (p->type == MODE_WINDOWED)
+	if (p->type == MODESTATE_WINDOWED)
 		SDL_SetWindowDisplayMode (NULL, 0) ; //sysplat.mainwindow,  (NULL, 0);
 
 */
@@ -771,14 +771,12 @@ void VID_Local_Startup_Dialog (void)
 //
 
 
-void VID_Local_Set_Window_Caption (const char *text)
+void _VID_Local_Set_Window_Title (const char *text)
 {
-    const char *new_caption = text ? text : ENGINE_NAME;
-
     if (!sysplat.mainwindow)
         return;
 
-    SDL_SetWindowTitle (sysplat.mainwindow, new_caption);
+    SDL_SetWindowTitle (sysplat.mainwindow, text);
 }
 
 

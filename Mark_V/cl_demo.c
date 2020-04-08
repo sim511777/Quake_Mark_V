@@ -94,7 +94,7 @@ void CL_StopPlayback (void)
 
 #ifdef SUPPORTS_AVI_CAPTURE
 	if (cls.capturedemo)
-		VID_Local_Set_Window_Caption (NULL); // Restores it to default of "engine name"
+		VID_Set_Window_Title (NULL); // Restores it to default of "engine name"
 
 	Movie_StopPlayback ();
 #endif
@@ -599,7 +599,7 @@ void CL_PlayDemo_Opened (const char *in_demo_name_url)
 }
 
 
-#ifndef SERVER_ONLY
+#if 0 // RIP DZDEMOS  ... #ifndef SERVER_ONLY
 void CL_PlayDZDemo (const char *dz_quake_folder_url)
 {
 	extern int dzip_runner(int argc, char **argv);
@@ -652,7 +652,7 @@ void CL_PlayDZDemo (const char *dz_quake_folder_url)
 	CL_PlayDemo_Opened (safedir_dem_url);
 	c_strlcpy (cls.dz_temp_url, safedir_dem_url); // old-->new  ... Rename is a move
 }
-#endif // !SERVER_ONLY
+#endif // #if 0 // RIP DZDEMOS !SERVER_ONLY
 
 
 void CL_PlayDemo_f (lparse_t *line)
@@ -675,14 +675,14 @@ void CL_PlayDemo_f (lparse_t *line)
 // open the demo file
 	FS_FullPath_From_QPath (playdemo_name_url, line->args[1]);
 
-#ifndef SERVER_ONLY
+#if 0 // RIP DZDEMOS #ifndef SERVER_ONLY
 	// If a dzipped demo ending in .dz handling playing differently
 	if (String_Does_End_With (playdemo_name_url, ".dz"))
 	{
 		CL_PlayDZDemo (playdemo_name_url);
 		return;
 	}
-#endif // SERVER_ONLY
+#endif // #if 0 // RIP DZDEMOS SERVER_ONLY
 	
 	c_strlcpy (playdemo_name_qpath, line->args[1]);
 	File_URL_Edit_Force_Extension (playdemo_name_qpath, ".dem", sizeof(playdemo_name_qpath));

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // net_main.c
 
-#include <core.h>
+#include "core.h"
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
@@ -47,7 +47,7 @@ char		my_ipv6_address[NET_NAMELEN_64];
 
 cbool	slistInProgress = false;
 cbool	slistSilent = false;
-enum slistScope_e	slistScope = SLIST_LOOP;
+slistScope_e	slistScope = SLIST_LOOP;
 static double	slistStartTime;
 static double	slistActiveTime;
 static int		slistLastShown;

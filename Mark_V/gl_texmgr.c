@@ -566,7 +566,7 @@ void TexMgr_Gamma_Execute (float newvalue) // Don't give us a 0
 	if (whitetexture == NULL)
 		Host_Error ("TexMgr_Gamma_Execute before TexMgr_Init");
 
-	if (newvalue != CLAMP(VID_MIN_POSSIBLE_GAMMA, newvalue, VID_MAX_POSSIBLE_GAMMA))
+	if (newvalue != CLAMP(VID_MIN_POSSIBLE_GAMMA_0_5, newvalue, VID_MAX_POSSIBLE_GAMMA_4_0))
 		Host_Error ("Texture gamma value must be pre-clamped.");
 
 	if (texmgr_texturegamma_current == newvalue) {
@@ -612,7 +612,7 @@ void TexMgr_Regamma (float gamma_level)
 		gamma_level = texmgr_texturegamma_current;
 		if (gamma_level == -1) {
 			// Must be initialization
-			gamma_level = vid_hardwaregamma.value ? 1 : CLAMP(VID_MIN_POSSIBLE_GAMMA, vid_gamma.value, VID_MAX_POSSIBLE_GAMMA);
+			gamma_level = vid_hardwaregamma.value ? 1 : CLAMP(VID_MIN_POSSIBLE_GAMMA_0_5, vid_gamma.value, VID_MAX_POSSIBLE_GAMMA_4_0);
 		}
 	}
 
@@ -1628,14 +1628,14 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 	{
 		TexMgr_MipMapW (data, glt->width, glt->height);
 		glt->width >>= 1;
-		if (Flag_Check (glt->flags, TEXPREF_ALPHA) )
+		if (Flag_Check_Bool (glt->flags, TEXPREF_ALPHA) )
 			TexMgr_AlphaEdgeFix ((byte *)data, glt->width, glt->height);
 	}
 	while ((int) glt->height > mipheight)
 	{
 		TexMgr_MipMapH (data, glt->width, glt->height);
 		glt->height >>= 1;
-		if (Flag_Check (glt->flags, TEXPREF_ALPHA) )
+		if (Flag_Check_Bool (glt->flags, TEXPREF_ALPHA) )
 			TexMgr_AlphaEdgeFix ((byte *)data, glt->width, glt->height);
 	}
 
@@ -1648,7 +1648,7 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 	// What if lightmap?  Well, we are in the 32 bits zone here.
 		//if (glt->flags & TEXPREF_WARPIMAGE) // Wrong place to do this, as this is not a real image.  And it's WAY too late at this point.
 		// Remember a warp image supplies data we shall not write to.  Sigh.			
-		if (texmgr_texturegamma_current && !Flag_Check(glt->flags, TEXPREF_WARPIMAGE) && !Flag_Check(glt->flags, TEXPREF_BLENDED) && isin2(glt->source_format, SRC_RGBA, SRC_INDEXED_WITH_PALETTE)) {
+		if (texmgr_texturegamma_current && !Flag_Check_Bool(glt->flags, TEXPREF_WARPIMAGE) && !Flag_Check_Bool(glt->flags, TEXPREF_BLENDED) && isin2(glt->source_format, SRC_RGBA, SRC_INDEXED_WITH_PALETTE)) {
 			for (i = 0; i < pixelcount; i++) {
 				// Baker: Not that we care but this isn't Big Endian friendly.
 				byte *pixel = (byte*)&myData[i];
@@ -1695,7 +1695,7 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 		eglTexImage2D (GL_TEXTURE_2D, 0, internalformat, glt->width, glt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, myData);
 
 		// upload mipmaps
-		if (Flag_Check(glt->flags, TEXPREF_MIPMAP) && vid.direct3d != 9) // MH says DX9 NO MIPMAP doesn't need to mipmap.
+		if (Flag_Check_Bool(glt->flags, TEXPREF_MIPMAP) && vid.direct3d != 9) // MH says DX9 NO MIPMAP doesn't need to mipmap.
 		{
 			mipwidth = glt->width;
 			mipheight = glt->height;

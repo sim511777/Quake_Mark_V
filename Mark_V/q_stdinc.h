@@ -127,29 +127,30 @@ typedef unsigned char byte;
 #endif // ! __CORE_INCLUDED__
 
 #if defined(__cplusplus)
-/* some structures have qboolean members and the x86 asm code expect
- * those members to be 4 bytes long. therefore, qboolean must be 32
- * bits and it can NOT be binary compatible with the 8 bit C++ bool.  */
-typedef int	qasmbool;
-COMPILE_TIME_ASSERT(falsehood, (0 == false));
-COMPILE_TIME_ASSERT(truth, (1  == true));
+	/* some structures have qboolean members and the x86 asm code expect
+	 * those members to be 4 bytes long. therefore, qboolean must be 32
+	 * bits and it can NOT be binary compatible with the 8 bit C++ bool.  */
+	typedef int	qasmbool_e;
+	COMPILE_TIME_ASSERT(falsehood, (0 == false));
+	COMPILE_TIME_ASSERT(truth, (1  == true));
 #else
-#ifndef __CORE_INCLUDED__
+	#ifndef __CORE_INCLUDED__
 
-#undef true
-#undef false
+		#undef true
+		#undef false
 
-typedef enum {
-	false = 0,
-	true  = 1
-} qasmbool;
-#else
-typedef cbool qasmbool;
-#endif // __CORE_INCLUDED__
-COMPILE_TIME_ASSERT(falsehood, ((1 != 1) == false));
-COMPILE_TIME_ASSERT(truth, ((1 == 1) == true));
+		typedef enum { ENUM_FORCE_INT_GCC_ (qasmbool)
+			false = 0,
+			true  = 1
+		} qasmbool_e;
+	#else
+		typedef cbool qasmbool_e;
+	#endif // __CORE_INCLUDED__
+
+	COMPILE_TIME_ASSERT (falsehood, ((1 != 1) == false ));
+	COMPILE_TIME_ASSERT (truth,		((1 == 1) == true  ));
 #endif
-COMPILE_TIME_ASSERT(qasmbool, sizeof(qasmbool) == 4);
+COMPILE_TIME_ASSERT (qasmbool_e, sizeof(qasmbool_e) == 4);
 
 /*==========================================================================*/
 

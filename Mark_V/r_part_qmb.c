@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include <assert.h>
 
-#include "mark_v_qmb.h"
-
 // mi_player and friends moved to client.h
 modelindex_e	cl_modelindex[modelindex_max];
 char			*cl_modelnames[modelindex_max];
@@ -53,9 +51,7 @@ float	_mathlib_temp_float1, _mathlib_temp_float2;
 
 
 
-typedef	enum
-{
-__part_type_invalid_gcc_sucks = -1, // Force int enum
+typedef	enum { ENUM_FORCE_INT_GCC_(part_type)
 	p_spark,
 	p_smoke,
 	p_fire,
@@ -89,8 +85,7 @@ __part_type_invalid_gcc_sucks = -1, // Force int enum
 	num_particletypes, //part_type_max, // PART_TYPE_LIMIT,
 } part_type_e;
 
-typedef	enum
-{
+typedef	enum { ENUM_FORCE_INT_GCC_ (part_move)
 	pm_static,
 	pm_normal,
 	pm_bounce,
@@ -101,8 +96,7 @@ typedef	enum
 	pm_streakwave
 } part_move_e;
 
-typedef	enum
-{
+typedef	enum { ENUM_FORCE_INT_GCC_ (part_tex)
 	ptex_none,
 	ptex_smoke,
 	ptex_bubble,
@@ -121,8 +115,7 @@ typedef	enum
 	num_particletextures, // part_tex_max,
 } part_tex_e;
 
-typedef	enum
-{
+typedef	enum { ENUM_FORCE_INT_GCC_ (part_draw)
 	pd_spark,
 	pd_sparkray,
 	pd_billboard,
@@ -315,11 +308,12 @@ do {																\
 gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, const char *description, cbool require_size_256)
 {
 	int width = 0, height = 0;  unsigned *rgba_data = NULL; size_t rgba_data_length;
+
 	switch (ordinal) {
-	case 0:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_particlefont_png, sizeof(qmb_particlefont_png), &width, &height, qmb_particlefont_png); break;
-	case 1:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_zing_png, sizeof(qmb_zing_png), &width, &height, qmb_zing_png); break;
-	case 2:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_laser_png, sizeof(qmb_laser_png), &width, &height, qmb_laser_png); break;
-	case 3:	rgba_data  = Image_Load_PNG_Memory_Alloc (qmb_explosion_png, sizeof(qmb_explosion_png), &width, &height, qmb_explosion_png); break;
+	case 0:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_particlefont.png", &width, &height); break;
+	case 1:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_zing.png", &width, &height); break;
+	case 2:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_laser.png", &width, &height); break;
+	case 3:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_explosion.png", &width, &height); break;
 	default: break;
 	}
 	if (!rgba_data)
@@ -354,11 +348,13 @@ static unsigned *pt_persist_tex[ARRAY_COUNT(particle_textures)];
 //////// SYNC
 //////// SYNC
 
+
 const char *QMB_InitParticles_Error (void)
 {
 	int	i, count = 0;
 //	qmodel_t *flame0_test = NULL;
 	gltexture_t *load_texture = NULL;
+	const char *file_fp = NULL;
 
 	if (particles) particles = core_free(particles);
 
@@ -373,9 +369,9 @@ const char *QMB_InitParticles_Error (void)
 		if (particle_textures[n].glt) System_Error ("Unfreed particle texture #%d", n);	// Make sure the texture has been freed already.
 	}}
 
-	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[0], 0, "gfx/particles/particlefont", "qmb:particlefont", true /*force 256 */);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[0], 0, (file_fp = "qmb_particlefont.png"), "qmb:particlefont", true /*force 256 */);
 	if (!load_texture)
-		return "gfx/particles/particlefont not loaded (256 x 256 required size)";
+		return va("%s not loaded (256 x 256 required size)", file_fp);
 
 	ADD_PARTICLE_TEXTURE(ptex_none,			0,			  0, 1,   0,   0,   0,   0);		// Chops up the particle font.
 	ADD_PARTICLE_TEXTURE(ptex_blood1,		load_texture, 0, 1,   0,   0,  64,  64);
@@ -399,21 +395,21 @@ const char *QMB_InitParticles_Error (void)
 	ADD_PARTICLE_TEXTURE(ptex_q3smoke,		particletexture, 0, 1,   0,   0, 256, 256);
 #endif
 
-	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[1], 1, "gfx/particles/zing1", "qmb:lightning", false /*force 256 */);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[1], 1, (file_fp = "qmb_zing.png"), "qmb:lightning", false /*force 256 */);
 	if (!load_texture)
-		return "gfx/particles/zing1 not loaded";
+		return va("%s  not loaded", file_fp);
 
 	ADD_PARTICLE_TEXTURE(ptex_lightning, load_texture, 0, 1,   0,   0, 256, 256);
 
-	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[2], 2, "gfx/particles/laserfire", "qmb:laserfire", false /*force 256 */);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[2], 2, (file_fp = "qmb_laser.png"), "qmb:laserfire", false /*force 256 */);
 	if (!load_texture)
-		return "gfx/particles/laserfire not loaded";
+		return va("%s  not loaded", file_fp);
 
 	ADD_PARTICLE_TEXTURE(ptex_laserfire, load_texture, 0, 1,   0,   0, 256, 256);
 
-	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[3], 3, "gfx/particles/explosion", "qmb:explosion", false /*force 256 */);
+	load_texture = LoadATex ( /*rgba store*/ &pt_persist_tex[3], 3, (file_fp = "qmb_explosion.png"), "qmb:explosion", false /*force 256 */);
 	if (!load_texture)
-		return "gfx/particles/explosion not loaded";
+		return va("%s  not loaded", file_fp);
 	ADD_PARTICLE_TEXTURE(ptex_explosion, load_texture, 0, 1,   0,   0, 256, 256);
 
 

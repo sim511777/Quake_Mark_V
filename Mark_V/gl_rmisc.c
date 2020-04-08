@@ -205,10 +205,15 @@ Point3D R_SurfCenter (msurface_t *surf)
 cbool GL_Mirrors_Is_TextureName_Mirror (const char *txname)
 {
 	// In order to hit here, we are not Direct3D
+	
 	cbool Is_Texture_Prefix (const char *texturename, const char *prefixstring);
 	
 	if (Is_Texture_Prefix (txname, gl_texprefix_mirror.string) && String_Does_Match_Caseless (gamedir_shortname(), GAMENAME_ID1)) {
-		return true; // id1 gamedir
+		extern	qmodel_t *loadmodel;
+		//const char *s = File_URL_SkipPath(loadmodel->name);
+		if (loadmodel->isworldmodel /*guaranteed? right*/ && String_Does_Match_Caseless ("start.bsp", File_URL_SkipPath(loadmodel->name))) {
+			return true; // id1 gamedir + start map
+		}
 	}
 	
 	if (Is_Texture_Prefix (txname, "mirror_")) {
@@ -231,7 +236,7 @@ void GL_Mirrors_Build_Vis (void)
 	for (i = 0, node = cl.worldmodel->nodes; i < cl.worldmodel->numnodes ; i++, node++) {
 		msurface_t	*surf; int j;
 		for (j = 0, surf = &cl.worldmodel->surfaces[node->firstsurface] ; (unsigned int)j < node->numsurfaces ; j++, surf++) {
-			if (Flag_Check (surf->flags, SURF_DRAWMIRROR)) {
+			if (Flag_Check_Bool (surf->flags, SURF_DRAWMIRROR)) {
 				GL_Mirrors_Scan_Surface (surf, j);
 			} // end surf->draw mirror
 		} // j
@@ -456,7 +461,7 @@ gltexture_t *R_TranslateNewModelSkinColormap (entity_t *cur_ent)
 			if (playertextures[matchingslot] == NULL)
 				break; // Not found, but use this slot
 
-			//Con_Printf ("Slot %d: Shirt %d, pants %d, skin %d, model %x %x ... ", matchingslot, curtex->shirt, curtex->pants, curtex->skinnum, curtex->owner, curtex);
+			//Con_PrintLinef ("Slot %d: Shirt %d, pants %d, skin %d, model %x %x ... ", matchingslot, curtex->shirt, curtex->pants, curtex->skinnum, curtex->owner, curtex);
 
 			if (curtex->shirt != shirt_color) {
 				//Con_PrintLinef ("Slot %d: Failed on shirt", matchingslot);

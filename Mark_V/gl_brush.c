@@ -177,7 +177,7 @@ R_DrawSequentialPoly -- johnfitz -- rewritten
 ================
 */
 // Ony R_DrawBrushModel calls me.
-#define ACTIVE_MIRROR(_s) (frame.has_mirror && (Flag_Check ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
+#define ACTIVE_MIRROR(_s) (frame.has_mirror && (Flag_Check_Bool ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
 #define DRAW_ACTIVE_MIRROR (active_mirror && frame.in_mirror_overlay)
 
 static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
@@ -187,7 +187,7 @@ static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
 	float		*v;
 	float		entalpha;
 	int			i;
-	cbool		active_mirror = ACTIVE_MIRROR(s); //frame.has_mirror ? false : (Flag_Check (s->flags, SURF_DRAWMIRROR) && !memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])));
+	cbool		active_mirror = ACTIVE_MIRROR(s); //frame.has_mirror ? false : (Flag_Check_Bool (s->flags, SURF_DRAWMIRROR) && !memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])));
 
 	if (active_mirror) // && !DRAW_ACTIVE_MIRROR)
 		return;  // We are an active mirror, we never get drawn in this manner when active.                        // We are an active mirror, but we are not in mirror overlay draw.

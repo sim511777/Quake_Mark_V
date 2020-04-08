@@ -22,8 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __Q_LISTS_H__
 #define __Q_LISTS_H__
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (list_type)
 	list_type_none= 0,
 	list_type_config,
 	list_type_demo,
@@ -43,7 +42,7 @@ typedef enum
 #ifdef GLQUAKE_TEXTUREMODES
 	list_type_texmode,
 #endif	// GLQUAKE_TEXTUREMODES
-	MAX_LIST_TYPES,
+	list_type_COUNT,
 } list_type_t;
 
 enum list_directives_e

@@ -171,8 +171,8 @@ void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angl
 {
 	float scale_forward, scale_side;
 
-	scale_forward = cos (Degree_To_Radians (angle) );
-	scale_side = sin (Degree_To_Radians (angle) );
+	scale_forward = cos (Degrees_To_Radians (angle) );
+	scale_side = sin (Degrees_To_Radians (angle) );
 
 	out[0] = scale_forward*forward[0] + scale_side*side[0];
 	out[1] = scale_forward*forward[1] + scale_side*side[1];
@@ -303,11 +303,9 @@ void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect)
 // the polygon rasterization will never render in the first row or column
 // but will definately render in the [range] row and column, so adjust the
 // buffer origin to get an exact edge to edge fill
-	xcenter = ((float)r_refdef.vrect.width * XCENTERING) +
-		r_refdef.vrect.x - 0.5;
+	xcenter = ((float)r_refdef.vrect.width * XCENTERING)  + r_refdef.vrect.x - 0.5;
 	aliasxcenter = xcenter * r_aliasuvscale;
-	ycenter = ((float)r_refdef.vrect.height * YCENTERING) +
-		r_refdef.vrect.y - 0.5;
+	ycenter = ((float)r_refdef.vrect.height * YCENTERING) + r_refdef.vrect.y - 0.5;
 	aliasycenter = ycenter * r_aliasuvscale;
 
 	xscale = r_refdef.vrect.width / r_refdef.horizontalFieldOfView;
@@ -362,6 +360,26 @@ void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect)
 	colormap = vid.colormap;
 	R_Surf8Patch ();
 #endif	// id386
+
+	if (!r_dowarp) {
+		// As good a place as any to calculate the projection matrix and viewport.
+		Mat4_Identity_Set (&focus0.game_projection);
+		
+		// Viewport?
+		// Stretch?
+		{
+			#define NEARCLIP_1		1
+			#define FARCLIP_16384	16384
+			float xmax = NEARCLIP_1 * tan (r_refdef.fov_x * M_PI / 360.0);
+			float ymax = NEARCLIP_1 * tan (r_refdef.fov_y * M_PI / 360.0);
+			Mat4_Frustum (&focus0.game_projection, -xmax, xmax, -ymax, ymax, (focus0.znear = NEARCLIP_1), (focus0.zfar = FARCLIP_16384));
+		}
+
+		focus0.game_viewport[0] = clx + r_refdef.vrect.x;
+		focus0.game_viewport[1] = cly + clheight - r_refdef.vrect.y - r_refdef.vrect.height,
+		focus0.game_viewport[2] = r_refdef.vrect.width;
+		focus0.game_viewport[3] = r_refdef.vrect.height;
+	}
 
 	D_ViewChanged ();
 }

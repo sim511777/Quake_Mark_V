@@ -59,10 +59,10 @@ int _Plat_Window_Style (wdostyle_e style)
 // We have SDL_WINDOW_OPENGL hard-coded in create window, since our hard code requires it.
     SDL_WindowFlags dw_bordered   = SDL_WINDOW_RESIZABLE;
 	SDL_WindowFlags dw_borderless = SDL_WINDOW_BORDERLESS;
-	int ret = Flag_Check (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
+	int ret = Flag_Check_Bool (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
 
-	if (!Flag_Check (style, wdostyle_resizable))
-		ret = Flag_Remove (style, SDL_WINDOW_RESIZABLE);
+	if (!Flag_Check_Bool (style, wdostyle_resizable))
+		ret = Flag_Remove_Calc (style, SDL_WINDOW_RESIZABLE);
 
 	return ret;
 }
@@ -81,7 +81,7 @@ cbool Vid_Display_Properties_Get (reply int *left, reply int *top, reply int *wi
 	float diag, vert, horz;
 
     if (SDL_GetDesktopDisplayMode(0, &mode) != 0)
-        log_fatal (SPRINTSFUNC "Failed", __func__);
+        log_fatal (SPRINTSFUNC_ "Failed", __func__);
 
 	// Evolving.
 	//SDL_GetDisplayDPI (0, &diag, &horz, &vert);
@@ -184,7 +184,7 @@ void Vid_Handle_MaxSize (sys_handle_t cw, int width, int height)
 }
 
 
-sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t window_rect, wdostyle_e style, cbool have_menu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
+sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *title, crect_t window_rect, wdostyle_e style, cbool have_menu, required sys_handle_t *draw_context_out, required sys_handle_t *gl_context_out)
 {
 	SDL_WindowFlags plat_style		= _Plat_Window_Style   (style);
 	SDL_WindowFlags plat_style_ex	= _Plat_Window_StyleEx (style);
@@ -196,7 +196,7 @@ sys_handle_t *Vid_Handle_Create (void *obj_ptr, const char *caption, crect_t win
 	{
 		// In order to do this perfect, I guess SDL places client x and y too so we'd need grandular left vs. right border for each dimension.
 		sys_handle_t cw = SDL_CreateWindow(
-			caption,
+			title,
 			window_rect.left + border.left, window_rect.top + border.top,			// x, y SDL_WINDOWPOS_CENTERED
 			window_rect.width - border.width, window_rect.height - border.height,					// width, height
 			plat_style | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN /*SDL_WINDOW_HIDDEN  SDL_WINDOW_SHOWN */
@@ -246,7 +246,7 @@ void Vid_Handle_ZOrder (sys_handle_t cw)
 }
 
 
-void _Vid_Handle_Caption (sys_handle_t cw, const char *text)
+void _Vid_Handle_Title (sys_handle_t cw, const char *text)
 {
 	SDL_SetWindowTitle (cw, text);
 }
@@ -302,8 +302,8 @@ void Vid_Handle_MousePointer (sys_handle_t cw, sys_handle_t *hmousepointer, mous
 // windows equivalent: MessageBox (NULL, text, title , MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 int _Platform_MessageBox (const char *title, const char *text)
 {
-	//SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_INFORMATION, title, text, NULL); // Not urgent enough
-	// SDL_MESSAGEBOX_ERROR does nothing differently :(
+	// We don't have different levels of notification, brw.
+	// SDL_MESSAGEBOX_ERROR does nothing differently :(  SDL_MESSAGEBOX_INFORMATION
 	SDL_ShowSimpleMessageBox (SDL_MESSAGEBOX_ERROR, title, text, NULL /*no parent window*/);
 
 	return 0;
@@ -327,6 +327,12 @@ void Platform_Events_SleepForInput (required sys_handle_t *phandle_tevent, doubl
 	SDL_WaitEventTimeout (NULL, (int)(max_wait_seconds * 1000) /* converting up to milliseconds */);
 }
 
+// Hmmm.  This doesn't seem to be enough.
+// Shouldn't all windows get a think, if we have more than 1 loaded.
+// Of course SDL doesn't support that.
+// Plus which windows should and shouldn't get a think?
+// Many small but important questions.
+// And then the question if this is only for 1 window.
 
 cbool Platform_Events_Do (plat_dispatch_fn_t dispatcher_function)
 {
@@ -646,11 +652,11 @@ int Platform_SDL_Input_GetShiftBits (SDL_Event *e)
 void Platform_SDL_Input_GetMouseBits (SDL_Event *e, required int *button_bits, required int *shift_bits, required int *x, required int *y)
 {
 	const unsigned state = SDL_GetMouseState (NULL, NULL);
-	int m1 = Flag_Check (state, SDL_BUTTON(1));
-	int m2 = Flag_Check (state, SDL_BUTTON(3)); // SDL flips middle and right
-	int m3 = Flag_Check (state, SDL_BUTTON(2)); // SDL must use middle button as #2.  Confirmed
-	int m4 = Flag_Check (state, SDL_BUTTON(4));
-	int m5 = Flag_Check (state, SDL_BUTTON(5));
+	int m1 = Flag_Check_Bool (state, SDL_BUTTON(1));
+	int m2 = Flag_Check_Bool (state, SDL_BUTTON(3)); // SDL flips middle and right
+	int m3 = Flag_Check_Bool (state, SDL_BUTTON(2)); // SDL must use middle button as #2.  Confirmed
+	int m4 = Flag_Check_Bool (state, SDL_BUTTON(4));
+	int m5 = Flag_Check_Bool (state, SDL_BUTTON(5));
 	*shift_bits = Platform_SDL_Input_GetShiftBits(e);
 	*button_bits =	m1 * 1 + m2 * 2 + m3*4 + m4*8 + m5 *16;
 	*x = e->button.x;

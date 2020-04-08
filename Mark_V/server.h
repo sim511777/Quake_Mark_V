@@ -51,7 +51,7 @@ typedef struct
 
 //=============================================================================
 
-typedef enum {ss_loading, ss_active} server_state_t;
+typedef enum { ENUM_FORCE_INT_GCC_ (ss) ss_loading, ss_active} server_state_t;
 
 typedef struct
 {

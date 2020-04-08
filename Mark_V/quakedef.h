@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 // quakedef.h -- primary header for client
-#include <core.h>
+#include "core.h"
 
 #if !defined(GLQUAKE) && defined(CORE_GL)
 	#define WINQUAKE_GL
@@ -42,9 +42,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define	QUAKE_GAME			// as opposed to utilities .. Baker: Moved to project level define
 
 #define	QUAKE_VERSION			1.09
-#define ENGINE_FAMILY_NAME		"Mark V"				// Config.cfg stamp
-#define ENGINE_VERSION			1.36
-#define	ENGINE_BUILD			1036			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define ENGINE_FAMILY_NAME		"Mark V"		// Config.cfg stamp
+#define ENGINE_VERSION			1.50
+#define	ENGINE_BUILD			1050			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
@@ -65,7 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	SETMUSIC_CFG_FULL		"music/" SETMUSIC_CFG	// setmusic.cfg name, executed on any gamedir change and startup.
 #define ENGINE_URL				"http://quakeone.com/markv/"
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_IOS)
 	#define MEM_DEFAULT_MEMORY		(256 * 1024 * 1024)		//  256 MB
 	#define MEM_DEFAULT_DEDICATED	( 64 * 1024 * 1024)		//   64 MB  ... No textures, so shouldn't require a whole ton.  But better to be safe at 64 than risky at 32.
 	#define	MEM_DYNAMIC_SIZE		(  4 * 1024 * 1024)		//    4 MB
@@ -326,8 +326,7 @@ extern cbool in_load_game;
 extern int host_protocol_datagram_maxsize;
 #endif // SUPPORTS_SERVER_PROTOCOL_15
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (MAX_MARK_V)
 //	Mark V limits ... Baker: I prefer not to do these ...
 
 	MAX_MARK_V_MSGLEN				= 65536,
@@ -678,6 +677,10 @@ extern build_t build;
 #define DEP_FREQ			(1U << 6) //
 #define DEP_D3D9			(1U << 7)
 
+// Make sure no alerts in release build.
+#ifndef _DEBUG
+	#define alert FIXME_NO_ALERTS_ALLOWED_IN_RELEASE
+#endif // _DEBUG
 
 #endif // ! __QUAKEDEF_H__
 

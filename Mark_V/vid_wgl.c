@@ -172,9 +172,9 @@ void VID_Local_AddFullscreenModes (void)
 	while ( (stat = eEnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
 #ifdef SUPPORTS_REFRESHRATE
-		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel, devmode.dmDisplayFrequency };
+		vmode_t test		= { MODESTATE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel, devmode.dmDisplayFrequency };
 #else
-		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
+		vmode_t test		= { MODESTATE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 #endif // ! SUPPORTS_REFRESHRATE
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
 		cbool width_ok	= in_range (MIN_MODE_WIDTH_640, devmode.dmPelsWidth, MAX_MODE_WIDTH_10000);
@@ -268,6 +268,10 @@ void WIN_Construct_Or_Resize_Window (DWORD style, DWORD exstyle, RECT window_rec
 	}
 
 	sysplat.mainwindow = CreateWindowEx (exstyle, nm, nm, style, x, y, w, h, NULL, NULL, sysplat.hInstance, NULL);
+#if 1 // Modal gCoreWindow
+	gCore_Window = sysplat.mainwindow; // Keep it in sync, please!
+#endif
+
 
 	if (!sysplat.mainwindow) System_Error ("Couldn't create DIB window");
 }
@@ -296,7 +300,7 @@ cbool VID_Local_SetMode (int modenum)
 	cbool reuseok 		= false;
 	RECT client_rect	= {0, 0, p->width, p->height};
 	RECT window_rect	= client_rect;
-	cbool bordered		= p->type   == MODE_WINDOWED &&
+	cbool bordered		= p->type   == MODESTATE_WINDOWED &&
 						  (p->width  != vid.desktop.width ||
 						  p->height != vid.desktop.height);
 
@@ -321,11 +325,11 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
 		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.
-//		if (p->type == MODE_WINDOWED)
+//		if (p->type == MODESTATE_WINDOWED)
 //			eChangeDisplaySettings (NULL, 0);
 
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
-		Direct3D9_ResetMode (p->width, p->height, /* kild vid.desktop.bpp,*/ (p->type == MODE_WINDOWED), -1, -1, vid.desktop.width, vid.desktop.height, false, &vid.border_width, &vid.border_height); //, WindowStyle, ExWindowStyle);
+		Direct3D9_ResetMode (p->width, p->height, /* kild vid.desktop.bpp,*/ (p->type == MODESTATE_WINDOWED), -1, -1, vid.desktop.width, vid.desktop.height, false, &vid.border_width, &vid.border_height); //, WindowStyle, ExWindowStyle);
 
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
 		return true; // Reuseok!
@@ -337,7 +341,7 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart)
 		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
 
-	if (p->type == MODE_FULLSCREEN)
+	if (p->type == MODESTATE_FULLSCREEN)
 		WIN_Change_DisplaySettings (modenum);
 
 // Baker: begin resize window on the fly
@@ -360,13 +364,13 @@ cbool VID_Local_SetMode (int modenum)
 
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
-	if (p->type == MODE_WINDOWED)
+	if (p->type == MODESTATE_WINDOWED)
 		eChangeDisplaySettings (NULL, 0);
 
 	// clear to black so it isn't empty
 	sysplat.draw_context = GetDC(sysplat.mainwindow);
 	#pragma message ("Baker: Oddly PaintBlackness does not seem to be doing anything now that I have multisample")
-	PatBlt (sysplat.draw_context, 0, 0, p->width,p->height, BLACKNESS);
+	PatBlt (sysplat.draw_context, 0, 0, p->width, p->height, BLACKNESS);
 
 // Get focus if we can, get foreground, finish setup, pump messages.
 // then sleep a little.
@@ -382,7 +386,7 @@ cbool VID_Local_SetMode (int modenum)
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 	Direct3D8_SetVsync (vid_vsync.value); // Baker
-	Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+	Direct3D8_SetFullscreen (p->type == MODESTATE_FULLSCREEN); // Baker
 	Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3D8_WRAPPER - extra information on restart
 
@@ -402,7 +406,7 @@ cbool VID_Local_SetMode (int modenum)
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 		Direct3D8_SetVsync (vid_vsync.value); // Baker
-		Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+		Direct3D8_SetFullscreen (p->type == MODESTATE_FULLSCREEN); // Baker
 		Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3DX_WRAPPER
 
@@ -411,6 +415,8 @@ cbool VID_Local_SetMode (int modenum)
 		if (!ewglMakeCurrent( sysplat.draw_context, wglHRC ))
 			System_Error ("VID_Init: wglMakeCurrent failed");
 	}
+
+	sysplat.gl_context = wglHRC;
 
 #if 1
 	if (!restart)
@@ -736,15 +742,13 @@ void VID_Local_Startup_Dialog (void)
 //
 
 
-void VID_Local_Set_Window_Caption (const char *text)
+void _VID_Local_Set_Window_Title (const char *text)
 {
-	const char *new_caption = text ? text : ENGINE_NAME;
-
 	if (!sysplat.mainwindow)
-		return;
+			return;
 
 #pragma message ("Let's slam this into vid.c and call vidco set window caption or something.  Please!")
-	SetWindowText (sysplat.mainwindow, new_caption);
+	SetWindowText (sysplat.mainwindow, text);
 
 }
 

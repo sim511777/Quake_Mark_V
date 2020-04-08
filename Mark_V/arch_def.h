@@ -44,9 +44,13 @@
 
 #elif defined(__APPLE__) && defined(__MACH__)		/* Mac OS X */
 
+#ifndef PLATFORM_IOS  // Baker addition Feb 2017
+
 #   if !defined(PLATFORM_OSX)
 #	define	PLATFORM_OSX		1
 #   endif
+
+#endif // Baker addition Feb 2017
 
 #elif defined(macintosh)			/* Mac OS classic */
 
@@ -94,6 +98,11 @@
 #   endif
 #endif	/* OS X -> PLATFORM_UNIX */
 
+#if defined (PLATFORM_IOS)		/* Let's call iphone Unix too */
+	#if !defined(PLATFORM_UNIX)
+		#define	PLATFORM_UNIX		3
+	#endif
+#endif	/* OS X -> PLATFORM_UNIX */
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)		|| \
     defined(__FreeBSD_kernel__) /* Debian GNU/kFreeBSD */	|| \

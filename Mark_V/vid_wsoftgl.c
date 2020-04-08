@@ -132,7 +132,7 @@ void VID_Local_AddFullscreenModes (void)
 
 	while ( (stat = eEnumDisplaySettings (NULL, hmodenum++, &devmode)) && vid.nummodes < MAX_MODE_LIST )
 	{
-		vmode_t test		= { MODE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
+		vmode_t test		= { MODESTATE_FULLSCREEN, devmode.dmPelsWidth, devmode.dmPelsHeight, devmode.dmBitsPerPel };
 		cbool bpp_ok		= (int)devmode.dmBitsPerPel == vid.desktop.bpp;
 		cbool width_ok	= in_range (MIN_MODE_WIDTH_640, devmode.dmPelsWidth, MAX_MODE_WIDTH_10000);
 		cbool height_ok	= in_range (MIN_MODE_HEIGHT_400, devmode.dmPelsHeight, MAX_MODE_HEIGHT_10000);
@@ -228,7 +228,7 @@ cbool VID_Local_SetMode (int modenum)
 	cbool reuseok 		= false;
 	RECT client_rect	= {0, 0, p->width, p->height};
 	RECT window_rect	= client_rect;
-	cbool bordered		= p->type   == MODE_WINDOWED &&
+	cbool bordered		= p->type   == MODESTATE_WINDOWED &&
 						  (p->width  != vid.desktop.width ||
 						  p->height != vid.desktop.height);
 
@@ -253,11 +253,11 @@ cbool VID_Local_SetMode (int modenum)
 	if (restart) {
 		// &window_rect ?  We still need this set right?  Yes.  Mouse cursor.  I think.  No.  It's declared here.
 		vid.canalttab = false; // Necessary?  Are we handling any messages between now and then?  Does not look like it.
-		if (p->type == MODE_WINDOWED)
+		if (p->type == MODESTATE_WINDOWED)
 			eChangeDisplaySettings (NULL, 0);
 
 #pragma message ("TODO: Give it the style and the EX style.  We may or may have different ideas in mind for borderstyle via cvar or other settings.")
-		Direct3D9_ResetMode (p->width, p->height, vid.desktop.bpp, (p->type == MODE_WINDOWED), WindowStyle, ExWindowStyle);
+		Direct3D9_ResetMode (p->width, p->height, vid.desktop.bpp, (p->type == MODESTATE_WINDOWED), WindowStyle, ExWindowStyle);
 		vid.canalttab = true; // Necessary?  Are we handling any messages between now and then?
 		return true; // Reuseok!
 	}
@@ -270,7 +270,7 @@ cbool VID_Local_SetMode (int modenum)
 		VID_Local_Window_Renderer_Teardown (TEARDOWN_NO_DELETE_GL_CONTEXT_0, true /*reset video mode*/);
 #endif
 
-	if (p->type == MODE_FULLSCREEN)
+	if (p->type == MODESTATE_FULLSCREEN)
 		WIN_Change_DisplaySettings (modenum);
 
 // Baker: begin resize window on the fly
@@ -286,7 +286,7 @@ cbool VID_Local_SetMode (int modenum)
 
 	WIN_Construct_Or_Resize_Window (WindowStyle, ExWindowStyle, window_rect);
 
-	if (p->type == MODE_WINDOWED)
+	if (p->type == MODESTATE_WINDOWED)
 		eChangeDisplaySettings (NULL, 0);
 
 	// clear to black so it isn't empty
@@ -311,7 +311,7 @@ cbool VID_Local_SetMode (int modenum)
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 	Direct3D8_SetVsync (vid_vsync.value); // Baker
-	Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+	Direct3D8_SetFullscreen (p->type == MODESTATE_FULLSCREEN); // Baker
 	Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3D8_WRAPPER - dx8 extra restart information
 
@@ -331,7 +331,7 @@ cbool VID_Local_SetMode (int modenum)
 
 #ifdef DIRECT3D8_WRAPPER // dx8 - vid_vsync work around that does not apply to dx9
 		Direct3D8_SetVsync (vid_vsync.value); // Baker
-		Direct3D8_SetFullscreen (p->type == MODE_FULLSCREEN); // Baker
+		Direct3D8_SetFullscreen (p->type == MODESTATE_FULLSCREEN); // Baker
 		Direct3D8_SetBPP (vid.desktop.bpp);
 #endif // DIRECT3DX_WRAPPER
 
@@ -724,15 +724,13 @@ void VID_Local_SetPalette (byte *palette)
 //
 
 
-void VID_Local_Set_Window_Caption (const char *text)
+void _VID_Local_Set_Window_Title (const char *text)
 {
-	const char *new_caption = text ? text : ENGINE_NAME;
-
 	if (!sysplat.mainwindow)
-		return;
+			return;
 
 	#pragma message ("Let's slam this into vid.c and call vidco set window caption or something.  Please!")
-	SetWindowText (sysplat.mainwindow, new_caption);
+	SetWindowText (sysplat.mainwindow, text);
 
 }
 

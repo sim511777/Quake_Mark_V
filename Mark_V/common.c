@@ -790,7 +790,16 @@ static void COM_CheckRegistered (void)
 	unsigned short  check[128];
 	int                     i;
 
-	static_registered = 0;
+	// Feb 21 2018 retro note --- This was at bottom of function before ...
+	// We moved it to the top of function in Feb/March 2017
+	// Not sure why, but I bet it is related to iPhone/iPad.
+	for (i = 0; com_cmdline[i]; i++)
+	{
+		if (com_cmdline[i]!= ' ')
+			break;
+	}
+
+	Cvar_SetQuick (&host_cmdline, &com_cmdline[i]);
 
 	COM_OpenFile("gfx/pop.lmp", &h);
 	static_registered = 0;
@@ -812,13 +821,6 @@ static void COM_CheckRegistered (void)
 	        System_Error ("Corrupted data file.");
 	}
 
-	for (i = 0; com_cmdline[i]; i++)
-	{
-		if (com_cmdline[i]!= ' ')
-			break;
-	}
-
-	Cvar_SetQuick (&cmdline, &com_cmdline[i]);
 	Cvar_SetValueQuick (&registered, 1);
 	static_registered = 1;
 	Con_SafePrintLinef ("Playing registered version.");
@@ -1753,8 +1755,18 @@ void COM_AddGameDirectory (const char *relative_dir, cbool hd_only)
 	{
 		c_snprintf2 (pakfile, "%s/pak%d.pak", dir, i);
 		pak = COM_LoadPackFile (pakfile);
+		
+#ifdef PLATFORM_IOS
+		// Anti-cruelty measure since iphone has case sensitive file system
+		if (!pak) {
+			c_snprintf2 (pakfile, "%s/PAK%d.PAK", dir, i);
+			pak = COM_LoadPackFile (pakfile);
+		}
+		
+#endif // PLATFORM_IOS
 		if (!pak)
 			break;
+		
 		search = (searchpath_t *) Z_Malloc(sizeof(searchpath_t));
 		search->pack = pak;
 		search->next = com_searchpaths;

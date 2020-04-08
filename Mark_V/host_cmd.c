@@ -61,8 +61,7 @@ const char *Gamedir_TypeName (void)
 	return gamedir_type_names[com_gametype];
 }
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (gamedir_fail)
 	game_fail_none = 0,
 	game_fail_rogue = 1,
 	game_fail_hipnotic = 2,
@@ -100,8 +99,7 @@ gametype_t gametype_eval (const char *hudstring)
 	return gametype_standard;
 }
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (game_result)
 	game_change_fail = -1,
 	game_no_change = 0,
 	game_change_success = 1
@@ -1590,8 +1588,9 @@ void Host_Loadgame_f (lparse_t *line)
 	if (!multiplayer_load)
 	{
 		//// This is the method for loading a single player game.
-		//for (i = 0 ; i < NUM_SPAWN_PARMS ; i++)
-		//	svs.clients->spawn_parms[i] = spawn_parms[i];
+#if 1
+		for (i = 0 ; i < NUM_SPAWN_PARMS ; i++)
+			svs.clients->spawn_parms[i] = spawn_parms[i];
 
 		if (!isDedicated)
 		{
@@ -1601,6 +1600,7 @@ void Host_Loadgame_f (lparse_t *line)
 			in_load_game = false;
 		}
 	}
+#endif
 	// End of function
 }
 

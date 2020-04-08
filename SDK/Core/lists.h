@@ -34,7 +34,7 @@ typedef struct clist_s
 } clist_t;
 
 
-void List_Free (clist_t** headnode);
+void List_Free (required clist_t **headnode); // We cannot handle NULL pointer being passed to us.
 cbool List_Add (clist_t** headnode, const char *name); // Returns false on duplicate, by design list add does not permit duplicates (case sensitive, "frog" and "Frog" do not collide)
 cbool List_Addf (clist_t** headnode, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
 clist_t *List_Add_No_Case_To_Lower (clist_t **headnode, const char *name);

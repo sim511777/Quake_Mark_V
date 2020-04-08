@@ -33,7 +33,7 @@
 #include <stddef.h>
 #include <limits.h>
 
-#if defined(PLATFORM_BSD) || defined(PLATFORM_OSX)
+#if defined(PLATFORM_BSD) || defined(PLATFORM_OSX) || defined(PLATFORM_IOS)
 	/* struct sockaddr has unsigned char sa_len as the first member in BSD
 	 * variants and the family member is also an unsigned char instead of an
 	 * unsigned short. This should matter only when PLATFORM_UNIX is defined,
@@ -49,7 +49,7 @@
 
 /* unix includes and compatibility macros */
 #if defined(PLATFORM_UNIX)
-
+	#pragma message ("IS UNIX")
 	#include <sys/param.h>
 	#include <sys/ioctl.h>
 	#include <unistd.h>
@@ -86,6 +86,8 @@
 		unsigned char s6_addrx[16];             /* IPv6 address */
 	};// foobarz1;
 	typedef struct in_addr6 in_addr6_t; // IP v6 Mac.  Linux too
+#else 
+	//#pragma message ("NOT UNIX")
 #endif	/* end of unix stuff */
 
 

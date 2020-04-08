@@ -54,6 +54,23 @@ void GL_VID_SetMode_GL_SetupState (void);
 	#include "dx9_mh_wrapper.h"
 #endif // DIRECT3D9_WRAPPER
 
+// OpenGLES:   extern void GL_APIENTRY glDepthRangef (GLclampf zNear, GLclampf zFar);	// Float
+// OpenGL 1.2: extern void (APIENTRY *eglDepthRange) (GLclampd zNear, GLclampd zFar);	// Double
+// OpenGLES :   extern void GL_APIENTRY glFrustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+// OpenGL 1,2:  extern void (APIENTRY *eglFrustum) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+// GL_API void GL_APIENTRY glOrthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+// extern void (APIENTRY *eglOrtho) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+
+// Fun guys:  glDepthRangef, glOrthof, glFrustumf
+#ifdef PLATFORM_OPENGLES
+	extern void (APIENTRY *eglDepthRange) (GLclampf zNear, GLclampf zFar);	// Float
+	extern void (APIENTRY *eglFrustum) (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+	extern void (APIENTRY *eglOrtho) (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+#else
+	extern void (APIENTRY *eglDepthRange) (GLclampd zNear, GLclampd zFar);	// Double
+	extern void (APIENTRY *eglFrustum) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+	extern void (APIENTRY *eglOrtho) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+#endif
 
 extern void (APIENTRY *eglAlphaFunc) (GLenum func, GLclampf ref);
 extern void (APIENTRY *eglBegin) (GLenum mode);
@@ -75,7 +92,6 @@ extern void (APIENTRY *eglCullFace) (GLenum mode);
 extern void (APIENTRY *eglDeleteTextures) (GLsizei n, const GLuint *textures);
 extern void (APIENTRY *eglDepthFunc) (GLenum func);
 extern void (APIENTRY *eglDepthMask) (GLboolean flag);
-extern void (APIENTRY *eglDepthRange) (GLclampd zNear, GLclampd zFar);
 extern void (APIENTRY *eglDisable) (GLenum cap);
 extern void (APIENTRY *eglDrawBuffer) (GLenum mode);
 extern void (APIENTRY *eglEnable) (GLenum cap);
@@ -86,20 +102,20 @@ extern void (APIENTRY *eglFogfv) (GLenum pname, const GLfloat *params);
 extern void (APIENTRY *eglFogi) (GLenum pname, GLint param);
 extern void (APIENTRY *eglFogiv) (GLenum pname, const GLint *params);
 extern void (APIENTRY *eglFrontFace) (GLenum mode);
-extern void (APIENTRY *eglFrustum) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+// For reference OPENGLES:
 extern void (APIENTRY *eglGenTextures) (GLsizei n, GLuint *textures);
 extern void (APIENTRY *eglGetFloatv) (GLenum pname, GLfloat *params);
 extern void (APIENTRY *eglGetIntegerv) (GLenum pname, GLint *params);
 const GLubyte *(APIENTRY *eglGetString) (GLenum name);
 extern void (APIENTRY *eglGetTexImage) (GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
-extern void (APIENTRY *eglGetTexParameterfv) (GLenum target, GLenum pname, GLfloat *params);extern void (APIENTRY *eglHint) (GLenum target, GLenum mode);
+extern void (APIENTRY *eglGetTexParameterfv) (GLenum target, GLenum pname, GLfloat *params);
+extern void (APIENTRY *eglHint) (GLenum target, GLenum mode);
 extern void (APIENTRY *eglLineWidth) (GLfloat width);
 extern void (APIENTRY *eglLoadIdentity) (void);
 extern void (APIENTRY *eglLoadMatrixf) (const GLfloat *m);
 extern void (APIENTRY *eglMatrixMode) (GLenum mode);
 extern void (APIENTRY *eglMultMatrixf) (const GLfloat *m);
 extern void (APIENTRY *eglNormal3f) (GLfloat nx, GLfloat ny, GLfloat nz);
-extern void (APIENTRY *eglOrtho) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 extern void (APIENTRY *eglPixelStorei) (GLenum pname, GLint param);
 extern void (APIENTRY *eglPolygonMode) (GLenum face, GLenum mode);
 extern void (APIENTRY *eglPolygonOffset) (GLfloat factor, GLfloat units);

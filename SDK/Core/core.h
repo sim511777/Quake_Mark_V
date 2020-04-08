@@ -160,34 +160,60 @@ zlib1.dll
 #endif // PLATFORM_ANDROID
 
 // DON'T DEFINE THIS UNTIL AFTER SYSTEM LIBRARIES!!!
-#ifndef reply
-	#define reply // We use this as a hint keyword in conjunction with NOT_MISSING_ASSIGN  (optional is vague, a reply is always optional)
-#endif // We can't include core.h
+#ifndef reply // Should probably be guantaneed if a successful return, but lots of 
+	#define reply // ALWAYS OPTIONAL. We use this as a hint keyword in conjunction with NOT_MISSING_ASSIGN  (optional is vague, a reply is always optional)
+#endif // We can't include core.h. <---- well, we have to be careful where particularly on Apple.
 
-//#ifndef advised // Better name?  Can always search and replace
-//	#define advised // We use this as a hint keyword, meaning optional (KILL THIS)
-//#endif // We can't include core.h
+// OUR TYPES:  LESS OF THEM IS BETTER.
+//
+// Use const to indicate lack of OUT behavior.  i.e. input only.
+//
+// IN OUT ...
 
-// REPLY is generally write only
-// OPTIONAL is generally read only ?   USE OF OPTIONAL IS A FAILURE EXCEPT WHEN PROVIDING AN OPTIONAL START POINT OR SOMETHING.
-// REQUIRED notes it is not optional just for clarity.
-// What about a guaranteed reply?  So caller knows a variable need not be reset?
+// MODIFY			- Somewhat rarely used, implies IN AND OUT behavior.  It is required.		Not guaranteed to write.
+
+// OUT ...
+
+// REPLY			- Reply is generally write only, implies OUT behavior.						Not guaranteed to write.
+// required			- Generally implies IN/OUT behavior.  A non-optional reply.					Not guaranteed to write.
+
+// IN ...
+
+// required const 	- Implies IN only behavior.
+// optional const	- Usually a NULLABLE input, often a string or kstring?						ALWAYS const this!
 
 // "Optional" conveys no information other than it can be omitted.  Not very precise.
 // Doesn't say communicate any expections of read or write or if changes or stays the same.
 
-//#ifndef optional // Better name?  Can always search and replace
-//	#define optional // We use this as a hint keyword, meaning optional (KILL THIS)
-//#endif // We can't include core.h
+#ifndef optional // optional is used when a NULL can be provided for special input. 
+	#define optional // Extra information that may be provided ... optional between_text - might be ", " or NULL.
+#endif // We can't include core.h
 
-#ifndef required // A pointer sent that is not optional
+#ifndef required // A pointer sent that is not optional (can/do we evolve this to set 100% of time when it doesn't error?)
 	#define required
 #endif // We can't include core.h
 
-#ifndef modify // A pointer sent that is not optional
-	#define modify
+#ifndef modify // A required pointer that is modified.  IN AND OUT behavior.  REQUIRED
+	#define modify // Note we hardly ever use this.
 #endif // We can't include core.h
 
+#ifndef writeonly// A write only pointer that is required
+	#define writeonly // Note we hardly ever use this.
+#endif // We can't include core.h
+
+#ifndef readonly// A read only pointer that is required
+	#define readonly const // Note we hardly ever use this.
+#endif // We can't include core.h
+
+
+#ifndef unconstanting // Note unconst
+	#define unconstanting
+#endif // We can't include core.h
+
+// In the future I would prefer to remove the star in *printline_fn_t because it hides the fact this is a pointer.
+// However, the counter argument is that function pointers can never NOT be a pointer it doesn't matter.
+// So make every function pointer have a star in the typedef?  Yes because OpenGL does it.\
+// Think no more about this.
 typedef int (*errorline_fn_t) (const char *error, ...) __core_attribute__((__format__(__printf__,1,2), __noreturn__));
 typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
 
@@ -222,22 +248,30 @@ typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__forma
 #define KEYMAP_COUNT_512 512
 #define NUM_MOUSE_BUTTONS_5 5
 extern int keymap [KEYMAP_COUNT_512][5]; // Decimal representation, Platform constant, Our constant, Special instruction, Special instruction value
-extern keyvalue_t key_scancodes_table [108];
+extern keyvalue_t key_scancodes_table [108]; // Why 108?  Yes this is a thing.  Feb 16 2018
 
 #define CORE_KEYMAP_EMISSION_2 2 		// The key event came from local interpretation (character emission), not scancode.
 #define CORE_SHIFTBITS_UNREAD_NEG1 -1 	// We did not read the shiftbits, this value must be ignored by receiver.
 
+typedef enum { ENUM_FORCE_INT_GCC_(shiftbits)
+	shiftbits_shift_1	= 1,
+	shiftbits_control_2	= 2,
+	shiftbits_alt_4		= 4,
+	shiftbits_command_8	= 8,
+//	SHIFTHIGH			= 65536,
+//	SHIFTHIGH_SHIFT		= 65536 * 1,
+//	SHIFTHIGH_CONTROL	= 65536 * 2,
+} shiftbits_e;
 
-#define K_SHIFT_MASK_1		1
-#define K_CTRL_MASK_2		2
-#define K_ALT_MASK_4		4
-#define K_COMMAND_MASK_8	8
+typedef enum { ENUM_FORCE_INT_GCC_(mousebuttonbits)
+	mousebuttonbits_none_0			= 0,
+	mousebuttonbits_mouse1_bit_1	= 1,
+	mousebuttonbits_mouse2_bit_2	= 2,
+	mousebuttonbits_mouse3_bit_4	= 4,
+	mousebuttonbits_mouse4_bit_8	= 8,
+	mousebuttonbits_mouse5_bit_16	= 16,
+} mousebuttonbits_e;
 
-#define K_MOUSE_1_MASK_1	1
-#define K_MOUSE_2_MASK_2	2
-#define K_MOUSE_3_MASK_4	4
-#define K_MOUSE_4_MASK_8	8
-#define K_MOUSE_5_MASK_16	16
 
 // Make a 2 value table.
 // Quake name	Core Name	 //
@@ -252,8 +286,7 @@ extern keyvalue_t key_scancodes_table [108];
 #ifdef PLATFORM_OSX // Crusty Mac
 	typedef int key_scancode_e;
 #else
-	typedef enum {
-		__UNUSED_K			= -1,   // Ensure MinGW makes us an int type and not an unsigned type
+	typedef enum { ENUM_FORCE_INT_GCC_(K)				// Ensure GCC makes us an int type and not an unsigned type
 		K_INVALID_0			= 0,
 		K_BACKSPACE         = 8,
 		K_TAB               = 9,
@@ -386,11 +419,17 @@ extern keyvalue_t key_scancodes_table [108];
 	} key_scancode_e;
 #endif  // ! Crusty Mac
 
+// Variable name dependent macro
+#define IS_SHIFT_ShiftBits	Flag_Check_Bool (shiftbits, shiftbits_shift_1)
+#define IS_CTRL_ShiftBits	Flag_Check_Bool (shiftbits, shiftbits_control_2)
+#define IS_ALT_ShiftBits	Flag_Check_Bool (shiftbits, shiftbits_alt_4)
+
+
 //
 // Mighty fucking Apple specific here aren't we?  Is a problem?
 //
-typedef enum {
-	device_type_unknown,
+typedef enum { ENUM_FORCE_INT_GCC_ (device_type)
+	device_type_unknown_0 = 0,
 	device_type_iphone,
 	device_type_ipodtouch,
 	device_type_ipad,
@@ -398,7 +437,7 @@ typedef enum {
 
 typedef double ticktime_t; // Better than having a fucking double that doesn't convey how the time is stored.
 
-typedef enum {
+typedef enum { ENUM_FORCE_INT_GCC_ (os_enum)
 	_os_enum_fake		= - 1,
 	os_enum_invalid_0	= 0,
 	os_enum_windows,
@@ -406,11 +445,13 @@ typedef enum {
 	os_enum_linux,
 	os_enum_iphone,
 	os_enum_android,
-} os_enum_e;
+} os_enum_e; // See PLATFORM_ENUM in environment.h
 
 ///////////////////////////////////////////////////////////////////////////////
 //  CORE: ...
 ///////////////////////////////////////////////////////////////////////////////
+
+
 #include "memstick.h"
 ///////////////////////////////////////////////////////////////////////////////
 //  CORE: Basic function setup
@@ -490,8 +531,9 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t handle );
 ///////////////////////////////////////////////////////////////////////////////
 
 #define alert1(s) alert("%s", s)
+#define alertnum(ANY_NUMERIC_TYPE) alert("%f", (double)ANY_NUMERIC_TYPE)
 int alert (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2))) ;
-int alerti (double d);
+//int alerti (double d);
 
 // I had this as unlimited.
 #define MAX_MSGBOX_TEXT_SIZE_BECAUSE_UNLIMITED_IS_SLOW_2048 2048
@@ -504,6 +546,7 @@ char *prompt_alloc (const char *prompt, const char *default_text, const char *qu
 //  SYSTEM OS: PROCESSES
 ///////////////////////////////////////////////////////////////////////////////
 
+// Implementation is not completed on all platforms.  May not be possible on all of them either, like iOS.
 sys_handle_t System_Process_Create (const char *path_to_file, const char *args, const char *working_directory_url);
 int System_Process_Still_Running (sys_handle_t pid);
 int System_Process_Terminate_Console_App (sys_handle_t pid);
@@ -514,7 +557,7 @@ int System_Process_Close (sys_handle_t pid);
 //  SYSTEM OS: EVENTS
 ///////////////////////////////////////////////////////////////////////////////
 
-void System_Sleep_Milliseconds (int milliseconds);
+void System_Sleep_Milliseconds (int milliseconds); //Calls Platform_Sleep_Milliseconds
 void Platform_Sleep_Milliseconds (int milliseconds);
 double Platform_MachineTime (void); // // no set metric
 
@@ -525,15 +568,26 @@ cbool Platform_Events_Do (plat_dispatch_fn_t dispatcher_function);
 // #define FSOUND_GETFUNC(f, g) (qFSOUND_##f = (void *)GetProcAddress(fmod_handle, "_FSOUND_" #f #g))
 // #define FSOUND_GETFUNC(f, g) (qFSOUND_##f = (void *)dlsym(fmod_handle, "FSOUND_" #f))
 
-#define ZeroFormat(_p) memset (_p, 0, sizeof(*(_p))) // Assert size isn't sizeof (void *)
-#define ZeroAlloc(_p) calloc (sizeof(*(_p)), 1)
+#define member_offsetof(PSTRUCT, MEMBER) ((const byte *)&((PSTRUCT)[0].MEMBER ) - (const byte *)&(PSTRUCT)[0])
 
-#define ZeroCreate(_p) (_p) = calloc (sizeof(*(_p)), 1) // I am opposite of freenull, pretty much
-#define ZeroDestroy freenull
+#define PStructSizeof(PSTRUCT)	sizeof(*(PSTRUCT))
+#define PStructSizeof(PSTRUCT)	sizeof(*(PSTRUCT))
+#define PStructCalloc(PSTRUCT)	calloc(1, sizeof(*(PSTRUCT)))	// Assert size isn't sizeof (void *) See: ZeroAlloc
+#define PStructZeroCompare(PSTRUCT) ZeroCompare (PSTRUCT, sizeof(*(PSTRUCT))) //; COMPILE_TIME_ASSERT(StructSizeIsPointerSize, sizeof(*(PSTRUCT)) != sizeof(void *))
+#define PStructZeroMemory(PSTRUCT)	memset (PSTRUCT, 0, sizeof(*(PSTRUCT)))		// Assert size isn't sizeof (void *)
 
-#define MemDup(_p) core_memdup(_p, sizeof(*(_p)))
-#define MemCmp(_a,_b) memcmp(_a, _b, sizeof(*(_b)))
-#define MemCpy(px,py) memcpy ((px), (py), sizeof(*(py)))
+#define ZeroCompare memcmp0 // Apparently we can't find memcmp0 when we need it.
+#define ZeroAlloc(_p) calloc (sizeof(*(_p)), 1)	// USED for lists a few times // See: PStructCalloc
+
+//#define ZeroFormat(_p) memset (_p, 0, sizeof(*(_p))) // Assert size isn't sizeof (void *)
+//#define ZeroCreate(_p) (_p) = calloc (sizeof(*(_p)), 1) // I am opposite of freenull, pretty much		// NOTUSED
+//#define ZeroDestroy freenull
+//int ZeroCompare (const void *ptr, size_t length);  // Returns 0 if everything is zero else returns the index. PStructZeroCompare instead
+
+
+#define MemDup(_p) core_memdup(_p, sizeof(*(_p)))		// used rarely.
+//#define MemCmp(_a,_b) memcmp(_a, _b, sizeof(*(_b)))			// Not used.
+//#define MemCpy(px,py) memcpy ((px), (py), sizeof(*(py)))	// Not used.
 
 
 void *memimem (const void *buf, size_t buf_len, const void *byte_sequence, size_t byte_sequence_len);
@@ -564,9 +618,13 @@ FILE *core_fopen_write_create_path (const char *path_to_file, const char *mode);
 	//  CORE: Private Local Shared
 	///////////////////////////////////////////////////////////////////////////////
 	
-		char gCore_Appname[SYSTEM_STRING_SIZE_1024];
-	sys_handle_t gCore_hInst; // Why is this a pointer?  Undid that.
-	sys_handle_t gCore_Window; // DO NOT LIKE
+	extern char				gCore_Appname[SYSTEM_STRING_SIZE_1024]; // Endangered.
+	extern sys_handle_t		gCore_hInst; // Why is this a pointer?  Undid that.
+	extern sys_handle_t		gCore_Window; // DO NOT LIKE
+	extern struct pak_s		*gCore_Pack;				// Bundle pack.
+	extern const byte		*gCore_pak_blob;			// On a Mac we need to allocate this
+	extern size_t			gCore_pak_blob_length;
+	extern cbool			gCore_pak_blob_must_free;
 	
 	extern fopenread_fn_t	core_fopen_read;
 	extern fopenwrite_fn_t	core_fopen_write;
@@ -634,10 +692,8 @@ FILE *core_fopen_write_create_path (const char *path_to_file, const char *mode);
 	
 	/*
 	const char * System_Dialog_Open_Directory (const char *title, const char *starting_folder_url);
-	
 	const char * System_Dialog_Open_Type (const char *title, const char * starting_folder_url, const char *extensions_comma_delimited);
-	
-	
+
 	// starting_file_url is default save name, add a "/" merely to suggest starting folder
 	const char * System_Dialog_Save_Type (const char *title, const char * starting_file_url, const char *extensions_comma_delimited);
 	*/

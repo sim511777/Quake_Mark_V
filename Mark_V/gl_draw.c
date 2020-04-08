@@ -236,12 +236,12 @@ void Scrap_Upload (void)
 
 
 #ifdef SUPPORTS_LEVELS_MENU_HACK
-#include "mark_v_lmp.h" // gfx/levels.lmp (levels_lmp) and gfx/demos.lmp (demos_lmp)
+//#include "mark_v_lmp.h" // gfx/levels.lmp (levels_lmp) and gfx/demos.lmp (demos_lmp)
 
-int levels_pic_size = sizeof(levels_lmp);
-int demos_pic_size = sizeof(demos_lmp);
+//int levels_pic_size = sizeof(levels_lmp);
+//int demos_pic_size = sizeof(demos_lmp);
 
-extern int normal_menu;
+//extern int normal_singleplayer_menu; now menu.h
 extern int normal_help;
 extern int normal_backtile;
 #endif // SUPPORTS_LEVELS_MENU_HACK
@@ -370,7 +370,13 @@ qpic_t *Draw_PicFromWad (const char *name)
 Draw_CachePic
 ================
 */
-qpic_t	*Draw_CachePic (const char *path)
+qpic_t *Draw_CachePic_Sfmt (const char *fmt, ...)
+{
+	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt); // Really maxqpath but whatever
+	return Draw_CachePic (text);
+}
+
+qpic_t *Draw_CachePic (const char *path)
 {
 	cachepic_t	*pic;
 	int			i;
@@ -424,9 +430,9 @@ qpic_t	*Draw_CachePic (const char *path)
 	if (!strcmp (path, "gfx/sp_menu.lmp"))
 	{
 		if (!strstr(com_filepath, "/id1/"))
-			normal_menu = 0; // No!
+			normal_singleplayer_menu = 0; // No!
 		else
-			normal_menu = -1; // Undetermined
+			normal_singleplayer_menu = -1; // Undetermined
 	}
 	else if (!strcmp (path, "gfx/help0.lmp"))
 	{
@@ -461,10 +467,10 @@ qpic_t	*Draw_CachePic (const char *path)
 				Hunk_FreeToLowMark (mark); // Should be no files to close, LoadImage closes them.
 
 #ifdef SUPPORTS_LEVELS_MENU_HACK
-				if (normal_menu == -1)
-					normal_menu = 0;
+				if (normal_singleplayer_menu == -1)
+					normal_singleplayer_menu = 0;
 				if (normal_help == -1)
-					normal_menu = 0;
+					normal_singleplayer_menu = 0;
 #endif // SUPPORTS_LEVELS_MENU_HACK
 
 				break; // Done!  Get out and return the data!
@@ -473,13 +479,15 @@ qpic_t	*Draw_CachePic (const char *path)
 		}
 
 #ifdef SUPPORTS_LEVELS_MENU_HACK
-		if (!strcmp ("gfx/levels.lmp", path))
-
-		gl.gltexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, path, dat->width, dat->height, SRC_INDEXED, dat->data, "",
-									  (src_offset_t)levels_lmp + sizeof(int)*2, TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_PAD | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
+		if (!strcmp ("gfx/levels.lmp", path)) {
+			gl.gltexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, path, dat->width, dat->height, SRC_INDEXED, dat->data, "",
+										  (src_offset_t)levels_lmp + sizeof(int) * 2, TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_PAD | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
+		}
 		else if (!strcmp ("gfx/demos.lmp", path))
-		gl.gltexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, path, dat->width, dat->height, SRC_INDEXED, dat->data, "",
-									  (src_offset_t)demos_lmp + sizeof(int)*2, TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_PAD | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
+		{
+			gl.gltexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, path, dat->width, dat->height, SRC_INDEXED, dat->data, "",
+										  (src_offset_t)demos_lmp + sizeof(int) * 2, TEXPREF_ALPHA | /* Baker: Crisp -> */ TEXPREF_NEAREST | TEXPREF_PAD | TEXPREF_NOPICMIP); //johnfitz -- TexMgr
+		}
 		else
 #endif // SUPPORTS_LEVELS_MENU_HACK
 		gl.gltexture = TexMgr_LoadImage (NULL, -1 /*not bsp texture*/, path, dat->width, dat->height, SRC_INDEXED, dat->data, path,
@@ -492,8 +500,8 @@ qpic_t	*Draw_CachePic (const char *path)
 		gl.th = (float)dat->height/(float)TexMgr_PadConditional(dat->height); //johnfitz
 
 #ifdef SUPPORTS_LEVELS_MENU_HACK
-		if (normal_menu == -1)
-			normal_menu = 1;
+		if (normal_singleplayer_menu == -1)
+			normal_singleplayer_menu = 1;
 		if (normal_help == -1)
 			normal_help = 1;
 #endif // SUPPORTS_LEVELS_MENU_HACK
@@ -1053,6 +1061,14 @@ void Draw_SetCanvas (canvastype newcanvas)
 		ybot = (newcanvas ==  CANVAS_SCOREBOARD2) ? cly + (clheight - 200*s) : cly + (clheight - 200*s) / 2;
 		//eglViewport (clx + (clwidth - 320*s) / 2, ybot, 320*s, 200*s);
 		eglViewport (clx + (clwidth - 320*s) / 2, ybot, 320*s, 200*s);
+
+#if 1 // MENU MOUSE
+		eglGetIntegerv	(GL_VIEWPORT, focus0.menu_viewport);
+		eglGetFloatv	(GL_MODELVIEW_MATRIX, focus0.menu_projection.m16); // Store off the model view matrix.  (r_world_matrix)
+		eglGetFloatv	(GL_PROJECTION_MATRIX, focus0.menu_modelview.m16); // Store off the model view matrix.  (r_world_matrix)
+#endif
+
+
 		break;
 	case CANVAS_MENU_INTERMISSION_TEXT: // Increased size a bit.
 		// HERE AUTO

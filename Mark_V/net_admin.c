@@ -25,7 +25,7 @@
 
 // Baker: I'm not fond of the network includes being in here, but I'll live with it for now.
 
-#include <core.h>
+#include "core.h"
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
@@ -203,7 +203,9 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 				break;
 
 			default:
+#ifdef _DEBUG
 				alert ("Invalid code for download event");
+#endif // _DEBUG
 				break;
 			}
 
@@ -212,7 +214,11 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 		break;
 
 	default:
+#ifdef _DEBUG
 		alert1 ("Unknown event number");
+#else
+		(0); // Null statement
+#endif // _DEBUG
 	}
 	// End of function after event switch
 }
@@ -259,7 +265,9 @@ void Admin_Remote_Update (void)
 					if (changed)
 					{
 						// This is where we set the list.
+#ifdef _DEBUG
 						if (cur->list) alert ("A banlist/whitelist changed and wasn't the first startup");
+#endif // _DEBUG
 						// If banlist changed, check everyone.
 						// If whitelist changed, ??  Do we still do it?  I think no.
 						List_Free (&cur->list); // Discard old list

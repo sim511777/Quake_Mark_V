@@ -1,3 +1,6 @@
+#ifndef CORE_SDL
+#include "environment.h"
+#ifdef PLATFORM_OSX // Has to be here, set by a header
 
 //
 // "snd_osx.m" - MacOS X Sound driver.
@@ -128,4 +131,9 @@ int SNDDMA_GetDMAPos (void)
 
     return pos;
 }
+
+
+#endif // PLATFORM_OSX
+
+#endif // ! CORE_SDL
 

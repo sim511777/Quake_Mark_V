@@ -36,9 +36,9 @@ void VectorAngles (const vec3_t forward, vec3_t angles)
 	temp[0] = forward[0];
 	temp[1] = forward[1];
 	temp[2] = 0;
-	angles[Q_PITCH] = -atan2(forward[2], VectorLength(temp)) / M_PI_DIV_180;
-	angles[Q_YAW] = atan2(forward[1], forward[0]) / M_PI_DIV_180;
-	angles[Q_ROLL] = 0;
+	angles[Q_PITCH_0] = -atan2(forward[2], VectorLength(temp)) / M_PI_DIV_180;
+	angles[Q_YAW_1] = atan2(forward[1], forward[0]) / M_PI_DIV_180;
+	angles[Q_ROLL_2] = 0;
 }
 
 
@@ -47,13 +47,13 @@ void AngleVectors (const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 	float		angle;
 	float		sr, sp, sy, cr, cp, cy;
 
-	angle = angles[Q_YAW] * (M_PI * 2.0 / 360);
+	angle = angles[Q_YAW_1] * (M_PI * 2.0 / 360);
 	sy = sin(angle);
 	cy = cos(angle);
-	angle = angles[Q_PITCH] * (M_PI * 2.0 / 360);
+	angle = angles[Q_PITCH_0] * (M_PI * 2.0 / 360);
 	sp = sin(angle);
 	cp = cos(angle);
-	angle = angles[Q_ROLL] * (M_PI * 2.0 / 360);
+	angle = angles[Q_ROLL_2] * (M_PI * 2.0 / 360);
 	sr = sin(angle);
 	cr = cos(angle);
 
@@ -75,7 +75,8 @@ void AngleVectors (const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 	}
 }
 
-
+// How well does this work with a GL matrix?
+// Do we have a vector to angles function?  We should right?
 void VectorToAngles (const vec3_t vec, vec3_t ang)
 {
 	float	forward, yaw, pitch;
@@ -517,3 +518,84 @@ void ZAngleVectorsGL (const vec3_t angles, vec3_t forward, vec3_t right, vec3_t 
 
 		
 }
+void Vector_To_Angles_Rollless (const vec3_t forward, reply vec3_t angles)
+{ // What's the secret sauce here?  We are eliminating Z from the calculation length, but keeping it for the pitch?
+	// A reply is optional.  But if we aren't doing the reply, this is pointless
+	if (angles) {
+		vec3_t temp = {forward[0], forward[1], 0}; // This is pitch roll yaw?
+		angles[Q_PITCH_0] = atan2(forward[2], VectorLength(temp)) / M_PI_DIV_180;
+		angles[2]   = +90 - atan2(forward[1], forward[0]) / M_PI_DIV_180;
+		angles[1]  = 0;
+
+		angles[2] = angle_maybe_wrap (angles[2], NULL);
+	}
+}
+
+// How well does this work with a GL matrix?
+// Do we have a vector to angles function?  We should right?
+void QVector_To_Angles_Rollless (const vec3_t forward, reply vec3_t angles)
+{
+	float	yaw, pitch; 
+	float forwardx;
+// We want the pitch pure
+	// A reply is optional.  But if we aren't doing the reply, this is pointless
+	//if (!forward[1] && !forward[0])
+	//{
+	//	yaw = 0;
+	//	pitch = (forward[2] > 0) ? 90 : 270;
+	//}
+	//else
+	{
+		vec3_t temp = {0, forward[1], forward[2]};
+		yaw = atan2 (forward[1], forward[0]) * M_PI_DIV_180;
+//		if (yaw < 0)
+//			yaw += 360;
+
+#if 1
+		forwardx = sqrt (/*forward[0] * forward[0] +*/ forward[1] * forward[1] + forward[2] * forward[2]); // Removing 0 seems to work.  What about 2?
+		//forwardx = VectorLength (temp);
+		pitch = atan2 (forward[2], forwardx) * 180 / M_PI;
+#else
+//		pitch = atan2 (forward[2], VectorLength (temp)) * M_PI_DIV_180;
+		
+//		if (pitch < 0)
+//			pitch += 360;
+#endif
+	}
+
+
+	if (angles) {
+		angles[0] = angle_maybe_wrap(pitch, NULL);
+		angles[1] = angle_maybe_wrap(yaw, NULL);
+		angles[2] = 0;
+	}
+}
+
+//// How well does this work with a GL matrix?
+//// Do we have a vector to angles function?  We should right?
+//void VectorToAngles (const vec3_t vec, vec3_t ang)
+//{
+//	float	forward, yaw, pitch;
+//
+//	if (!vec[1] && !vec[0])
+//	{
+//		yaw = 0;
+//		pitch = (vec[2] > 0) ? 90 : 270;
+//	}
+//	else
+//	{
+//		yaw = atan2 (vec[1], vec[0]) * 180 / M_PI;
+//		if (yaw < 0)
+//			yaw += 360;
+//
+//		forward = sqrt (vec[0]*vec[0] + vec[1]*vec[1]);
+//		pitch = atan2 (vec[2], forward) * 180 / M_PI;
+//		if (pitch < 0)
+//			pitch += 360;
+//	}
+//
+//	ang[0] = pitch;
+//	ang[1] = yaw;
+//	ang[2] = 0;
+//}
+//

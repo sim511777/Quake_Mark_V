@@ -23,7 +23,7 @@
 
 // net_udp.c
 
-#include <core.h>
+#include "core.h"
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
@@ -600,9 +600,12 @@ int UDP_Write (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr
 			return 0;
 //		if (err == ENETUNREACH) //  Spike does use this.
 //			Con_SafePrintLinef ("UDP_Write: %s (%s)", socketerror(err), UDP_AddrToString(addr));
-		else
-		Con_SafePrintLinef ("UDP_Write, sendto: %s", socketerror(err));
+		else {
+			Con_DPrintLinef ("UDP_Write, sendto: %d %s (addr:%s)", err, socketerror(err), UDP_AddrToString (addr, false));
+		}
 	}
+//	else 
+//		Con_SafePrintLinef ("UDP_Write ok, sendto: %d %s (addr:%s)", ret, socketerror(ret), UDP_AddrToString (addr, false));
 	return ret;
 }
 

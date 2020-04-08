@@ -43,6 +43,7 @@ void Draw_NewGame (void);
 
 qpic_t *Draw_PicFromWad (const char *name);
 qpic_t *Draw_CachePic (const char *path);
+qpic_t *Draw_CachePic_Sfmt (const char *fmt, ...); __core_attribute__((__format__(__printf__,1,2)));
 
 void Draw_ConsoleBackground (void); //johnfitz -- removed parameter int lines
 
@@ -56,8 +57,7 @@ void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation);
 #endif // WINQUAKE_RENDERER_SUPPORT
 
 //johnfitz -- stuff for 2d drawing control
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (canvastype)
 	CANVAS_NONE,
 	CANVAS_DEFAULT,
 	CANVAS_DEFAULT_CONSCALE,	// Baker: For centerprint except intermission

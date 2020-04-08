@@ -73,6 +73,32 @@ const char *_Shell_Folder_Caches_By_AppName (const char* appname)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//  SHELL: Bundle
+///////////////////////////////////////////////////////////////////////////////
+
+
+const void *Shell_Data_From_Resource (size_t *mem_length, cbool *must_free)
+{
+// ELFing it up!
+// For Linux we will load from linked object data from a bundle.o made from bundle.pak.
+// Generated via
+// ld -r -b binary -o bundle.o bundle.pak --no-leading-underscore
+
+    extern char _binary_bundle_pak_start[];
+	extern char _binary_bundle_pak_end[];
+    //extern const char binary_bundle_pak_size[];
+	size_t num_bytes 	= (size_t)_binary_bundle_pak_end - (size_t)_binary_bundle_pak_start;
+   #if 1
+//    alert ("%lu %lu %d '%s'", (size_t)_binary_bundle_pak_start, (size_t) _binary_bundle_pak_end, (int) num_bytes, strndup(_binary_bundle_pak_start, num_bytes));
+    #endif
+	const void *mem 			= &_binary_bundle_pak_start[0];
+
+
+	NOT_MISSING_ASSIGN (mem_length, num_bytes);
+	NOT_MISSING_ASSIGN (must_free, false); 		// Constant object pointer in memory.
+    return num_bytes ? mem : NULL;
+}
 
 
 
@@ -136,7 +162,7 @@ void Vid_Handle_Borders_Get (wdostyle_e style, cbool have_menu, reply int *left,
 	const int width_320 = 320, height_240 = 240;
 	crectrb_t bordered = {0, 22, 0, 22, 0, 0 }; // NFI for Linux how to get this
 	crectrb_t borderless = {0};
-	crectrb_t border = Flag_Check(style, wdostyle_borderless) ? bordered : borderless;
+	crectrb_t border = Flag_Check_Bool(style, wdostyle_borderless) ? bordered : borderless;
 
 	NOT_MISSING_ASSIGN (left, border.left);
 	NOT_MISSING_ASSIGN (top, border.top);

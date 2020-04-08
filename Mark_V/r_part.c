@@ -1143,7 +1143,7 @@ cbool QMB_Effects_Evaluate (int i, entity_t *ent, vec3_t oldorg)
 	else VectorCopy (ent->trail_origin, oldorg);
 
 	// If it isn't a rocket ...
-	if ( ! Flag_Check(ent->model->modelflags, EF_ROCKET) )
+	if ( ! Flag_Check_Bool(ent->model->modelflags, EF_ROCKET) )
 		return false;	// Classic will emit it just fine.
 
 	if (ent->model->modhint == MOD_LAVABALL_6) {

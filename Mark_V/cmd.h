@@ -55,7 +55,7 @@ void Cbuf_InsertText (const char *text);
 // inserted at the beginning of the buffer, before any remaining unexecuted
 // commands.
 
-void Cbuf_Execute (void);
+VRESULT Cbuf_Execute (void);
 // Pulls off \n terminated lines of text from the command buffer and sends
 // them through Cmd_ExecuteString.  Stops when the buffer is empty.
 // Normally called once per frame, but may be explicitly invoked.
@@ -86,12 +86,14 @@ typedef struct cmdalias_s
 
 cmd_alias_t *Alias_Find (const char *s);
 typedef void (*xcmd_t) (lparse_t *line);
+typedef VRESULT (*vxcmd_t) (lparse_t *line);
 
 typedef struct cmd_function_s
 {
 	struct cmd_function_s	*next;
 	const char				*name;
-	xcmd_t					function;
+	vxcmd_t					altfunction;
+	xcmd_t					stdfunction;
 	const char				*description;
 } cmd_function_t;
 
@@ -101,15 +103,15 @@ typedef struct mass_cmds_s
 {
 	voidfunc_t		init_func;
 	const char* 	cmdname;
-	xcmd_t			cmdfunc;
+	vxcmd_t			altfunc;
+	xcmd_t			stdfunc;
 	const char		*description;
 } mass_cmds_t;
 
 void Cmd_AddCommands (voidfunc_t initializer);
 void Cmd_RemoveCommands (voidfunc_t initializer);
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (cmd_source)
 	src_client,		// came in over a net connection as a clc_stringcmd
 					// host_client will be valid during this state.
 	src_command		// from the command buffer
@@ -123,7 +125,7 @@ extern	cmd_source_t	cmd_source;
 
 void Cmd_Init (void);
 
-void Cmd_AddCommand (const char *cmd_name, xcmd_t function, const char *description);
+void Cmd_AddCommand (const char *cmd_name, vxcmd_t altfunction, xcmd_t stdfunction, const char *description);
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
@@ -154,7 +156,7 @@ const char	*Cmd_Args (void);
 // Takes a null terminated string.  Does not need to be /n terminated.
 // breaks the string up into arg tokens.
 
-void	Cmd_ExecuteString (const char *text, cmd_source_t src);
+VRESULT	Cmd_ExecuteString (const char *text, cmd_source_t src);
 // Parses a single line of text into arguments and tries to execute it.
 // The text can come from the command buffer, a remote client, or stdin.
 

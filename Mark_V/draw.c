@@ -79,12 +79,12 @@ int			menu_numcachepics;
 
 
 #ifdef SUPPORTS_LEVELS_MENU_HACK
-#include "mark_v_lmp.h" // gfx/levels.lmp (levels_lmp) and gfx/demos.lmp (demos_lmp)
+//#include "mark_v_lmp.h" // gfx/levels.lmp (levels_lmp) and gfx/demos.lmp (demos_lmp)
 
 int levels_pic_size = sizeof(levels_lmp);
 int demos_pic_size = sizeof(demos_lmp);
 
-extern int normal_menu;
+//extern int normal_singleplayer_menu; // now menu.h
 extern int normal_help;
 extern int normal_backtile;
 #endif // SUPPORTS_LEVELS_MENU_HACK
@@ -160,9 +160,9 @@ qpic_t	*Draw_CachePic (const char *path)
 	if (!strcmp (path, "gfx/sp_menu.lmp"))
 	{
 		if (!strstr(com_filepath, "/id1/"))
-			normal_menu = 0; // No!
+			normal_singleplayer_menu = 0; // No!
 		else
-			normal_menu = 1; // No external textures in WinQuake so determined!
+			normal_singleplayer_menu = 1; // No external textures in WinQuake so determined!
 	}
 	else if (!strcmp (path, "gfx/help0.lmp"))
 	{
@@ -230,6 +230,7 @@ Draw_Init -- johnfitz -- rewritten
 void Draw_Init (void)
 {
 	// load game pics
+
 	Draw_LoadPics ();
 }
 

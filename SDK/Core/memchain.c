@@ -65,15 +65,19 @@ static void sLink (memlist_t *memlist, mitem_t *item)
 
 	memlist->count ++;
 	memlist->bytes += item->bytes;
+	logd ("Mem:alloc %p %s ...", item, item->tag);
+	logd ("Total %d", memlist->bytes); 
 }
 
 
 static void sUnlink (memlist_t *memlist, mitem_t *item)
 {
+	logd ("Mem:free  %p %s... ", item, item->tag);
 	List_Unsorted_Remove (memlist, item);
 
 	memlist->count --;
 	memlist->bytes -= item->bytes;
+	logd ("Total %d", memlist->bytes);
 }
 
 
@@ -102,7 +106,7 @@ static void *Malloc (mobj_t *me, size_t len, const char *tag)
 	item->bytes = len;
 	item->data = core_malloc (len);
 
-
+	log_debug ("malloc %s ...", tag);
 	sLink (&m->memlist, item);
 	return item->data;
 }
@@ -117,6 +121,7 @@ static void *Memdup (mobj_t *me, const void *src, size_t len, const char *tag)
 	item->data = core_malloc (len);
 
 	memcpy (item->data, src, len);
+	log_debug ("memdup %s ...", tag);
 	sLink (&m->memlist, item);
 	return item->data;
 }
@@ -131,6 +136,7 @@ static void *Calloc (mobj_t *me, size_t len, size_t n, const char *tag)
 	item->bytes = len * n;
 	item->data = core_calloc (len, n);
 
+	log_debug ("calloc %s ...", tag);
 	sLink (&m->memlist, item);
 	return item->data;
 }
@@ -144,6 +150,7 @@ static char *Strdup (mobj_t *me, const char *s, const char *tag)
 	item->bytes = strlen (s) + 1;
 	item->data = core_strdup (s);
 
+	log_debug ("strdup %s ...", tag);
 	sLink (&m->memlist, item);
 	return (char *)item->data;
 }
@@ -161,7 +168,6 @@ static void *Free (mobj_t *me, const void *ptr, const char *hint)
 			log_fatal ("Missing Link");
 			return NULL;
 		}
-
 
 		sUnlink (&m->memlist, item);
 
@@ -199,6 +205,7 @@ static void Flush (mobj_t *me)
 
 	for (cur = m->memlist.first; cur && TRUISM(nextcur = cur->next); cur = nextcur)
 	{
+		logd ("Flush %p %s", cur->data, cur->tag);
 		sUnlink (&m->memlist, cur);
 		cur->data = core_free (cur->data);
 		cur = core_free (cur);
@@ -230,7 +237,6 @@ static void *Shutdown (mobj_t *me)
 	for (cur = m->memlist.first; cur; cur = cur->next)
 		alert ("Mem remained %s", cur->tag);
 #endif
-
 
 	Flush (me);
 

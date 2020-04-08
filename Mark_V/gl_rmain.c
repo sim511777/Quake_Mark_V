@@ -210,8 +210,8 @@ void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angl
 {
 	float scale_forward, scale_side;
 
-	scale_forward = cos (Degree_To_Radians( angle ));
-	scale_side = sin (Degree_To_Radians( angle ));
+	scale_forward = cos (Degrees_To_Radians( angle ));
+	scale_side = sin (Degrees_To_Radians( angle ));
 
 	out[0] = scale_forward*forward[0] + scale_side*side[0];
 	out[1] = scale_forward*forward[1] + scale_side*side[1];
@@ -252,14 +252,15 @@ GL_SetFrustum -- johnfitz -- written to replace MYgluPerspective
 =============
 */
 
-#define NEARCLIP 1
-float frustum_skew = 0.0; //used by r_stereo
-void GL_SetFrustum(float fovx, float fovy)
+#define NEARCLIP_1 1
+float frustum_skew = 0.0; // used by r_stereo
+static void R_RenderScene_SetupScene_SetupGL_SetFrustum(float fovx, float fovy)
 {
 	float xmax, ymax;
-	xmax = NEARCLIP * tan( fovx * M_PI / 360.0 );
-	ymax = NEARCLIP * tan( fovy * M_PI / 360.0 );
-	eglFrustum(-xmax + frustum_skew, xmax + frustum_skew, -ymax, ymax, NEARCLIP, gl_farclip.value);
+	xmax = NEARCLIP_1 * tan( fovx * M_PI / 360.0 );
+	ymax = NEARCLIP_1 * tan( fovy * M_PI / 360.0 );
+	eglFrustum(-xmax + frustum_skew, xmax + frustum_skew, -ymax, ymax, (focus0.znear = NEARCLIP_1), (focus0.zfar = gl_farclip.value));
+	
 }
 
 /*
@@ -267,7 +268,7 @@ void GL_SetFrustum(float fovx, float fovy)
 R_SetupGL
 =============
 */
-// We are never called by mirror drawing
+// We are never called by mirror drawing.  Single call.
 static void R_RenderScene_SetupScene_SetupGL (void)
 {
 #if 0 // Baker:  For testing
@@ -284,16 +285,24 @@ static void R_RenderScene_SetupScene_SetupGL (void)
 			eglViewport (0, 0, vid.maxwarpwidth, vid.maxwarpheight);
 			Sbar_Changed ();
 		}
-		else
+		else {
 			eglViewport (clx + r_refdef.vrect.x,
 					cly + clheight - r_refdef.vrect.y - r_refdef.vrect.height,
 					r_refdef.vrect.width,
 					r_refdef.vrect.height);
+			eglGetIntegerv (GL_VIEWPORT, focus0.game_viewport);
+		}
 		//johnfitz
 
-		GL_SetFrustum (r_fovx, r_fovy); //johnfitz -- use r_fov* vars
+		R_RenderScene_SetupScene_SetupGL_SetFrustum (r_fovx, r_fovy); //johnfitz -- use r_fov* vars
+		
 
 	eglGetFloatv (GL_PROJECTION_MATRIX, r_projection_matrix); // Store off the model view matrix.  (r_world_matrix)
+	if (!frame.do_glwarp) {
+		memcpy (focus0.game_projection.m16, r_projection_matrix, sizeof(r_projection_matrix)); // Fill game projection matrix.
+		focus0.r_fovx = r_fovx;
+		focus0.r_fovy =	r_fovy;
+	}
 
 	eglMatrixMode(GL_MODELVIEW);
 		eglLoadIdentity ();
@@ -306,6 +315,22 @@ static void R_RenderScene_SetupScene_SetupGL (void)
 		eglTranslatef (-r_refdef.vieworg[0],  -r_refdef.vieworg[1],  -r_refdef.vieworg[2]);
 
 	eglGetFloatv (GL_MODELVIEW_MATRIX, r_modelview_matrix); // Store off the model view matrix.  (r_world_matrix)
+
+	//if (1) {
+	//	// We can't easily do chase because we'd need to reverse out the angles, chase back, chase mode
+	//	// Plus no guarantee of even being able to shoot what we see
+	//	Mat4_Identity_Set (focus0.player_angles
+	//}
+
+	if (!frame.do_glwarp) {
+		eglGetFloatv (GL_MODELVIEW_MATRIX, r_modelview_matrix); // Store off the model view matrix.  (r_world_matrix)
+		memcpy (focus0.game_modelview.m16, r_modelview_matrix, sizeof(r_modelview_matrix)); // Fill game projection matrix.
+		VectorCopy (r_refdef.vieworg /*src*/, focus0.game_org);						// Rendering origin
+		VectorCopy (r_refdef.viewangles /*src*/, focus0.game_angles);				// Rendering angles (ok for click look)
+		VectorCopy (cl_entities[cl.viewentity_player].origin, focus0.player_org);	// 
+		VectorCopy (cl.viewangles /*src*/, focus0.player_angles);					// 
+	}
+
 
 	//
 	// set drawing parms
@@ -370,7 +395,7 @@ R_SetupView -- johnfitz -- this is the stuff that needs to be done once per fram
 ===============
 */
 // Is not called by mirrors
-void R_SetupView (void)
+static void R_RenderScene_RenderView_SetupView (void)
 {
 
 	Fog_SetupFrame (); //johnfitz
@@ -415,8 +440,8 @@ void R_SetupView (void)
 				frame.do_glwarp = true;
 			else {	
 				//variance is a percentage of width, where width = 2 * tan(fov / 2) otherwise the effect is too dramatic at high FOV and too subtle at low FOV.  what a mess!
-				r_fovx = atan(tan(Degree_To_Radians(r_refdef.fov_x) / 2) * (0.97 + sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
-				r_fovy = atan(tan(Degree_To_Radians(r_refdef.fov_y) / 2) * (1.03 - sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
+				r_fovx = atan(tan(Degrees_To_Radians(r_refdef.fov_x) / 2) * (0.97 + sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
+				r_fovy = atan(tan(Degrees_To_Radians(r_refdef.fov_y) / 2) * (1.03 - sin(cl.ctime * 1.5) * 0.03)) * 2 / M_PI_DIV_180;
 			}
 		}
 	}
@@ -1261,7 +1286,7 @@ cbool R_MirrorScan_SetMirrorAlpha (void)
 		if (!t || !t->texturechain || t->texturechain->flags & (SURF_DRAWTILED | SURF_NOTEXTURE)) // Make a draw mirror pass using flags.
 			continue;
 		
-		if (!Flag_Check (t->texturechain->flags, SURF_DRAWMIRROR) )
+		if (!Flag_Check_Bool (t->texturechain->flags, SURF_DRAWMIRROR) )
 			continue;
 
 		// Scan for mirrors.
@@ -1442,8 +1467,8 @@ static void R_Mirror_Entity_Surfaces (void)
 					if (surf == clmodel->mirror_only_surface) {
 						// Normally
 						float dot = DotProduct (modelorg, clmodel->mirror_plane->normal  /*pplane->normal*/) - clmodel->mirror_plane->dist /*pplane->dist*/;
-						if (       (  Flag_Check(surf->flags, SURF_PLANEBACK) &&  dot < -BACKFACE_EPSILON )
-								|| ( !Flag_Check(surf->flags, SURF_PLANEBACK) &&  dot >  BACKFACE_EPSILON )      ) {
+						if (       (  Flag_Check_Bool(surf->flags, SURF_PLANEBACK) &&  dot < -BACKFACE_EPSILON )
+								|| ( !Flag_Check_Bool(surf->flags, SURF_PLANEBACK) &&  dot >  BACKFACE_EPSILON )      ) {
 							//glpoly_t	*polys = surf->polys;
 							texture_t	*texture = surf->texinfo->texture; // R_TextureAnimation (, ent->frame);  // We don't animate
 							
@@ -1486,7 +1511,7 @@ float DotProductEx (const vec3_t vorg, const mplane_t *pplane)
 #if 0 // Security camera mock test
 void PlayNoise_f (void)
 {
-	Cbuf_AddText ("play misc/menu2.wav");
+	S_LocalSound ("misc/menu2.wav");
 
 }
 #endif
@@ -1567,7 +1592,7 @@ void R_Mirror (void)
 		//dot = DotProductEx (vpn, frame.mirror_plane);
 		VectorMA (/*frame.mirror_view.*/ vpn, -2 * dot, frame.mirror_plane->normal, /*frame.mirror_view.*/ vpn);
 
-//Con_Printf ("Current angles: %3.2f %3.2f %3.2f", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
+		//Con_PrintLinef ("Current angles: %3.2f %3.2f %3.2f", r_refdef.viewangles[0], r_refdef.viewangles[1], r_refdef.viewangles[2] );
 		/// r_refdef.viewangles[0] = -asin (/*frame.mirror_view.*/ vpn[2])/M_PI*180;  orig
 
 // This is pretty much all fuct.
@@ -1798,7 +1823,7 @@ void R_RenderView (void)
 	// Baker: Reset frame information
 	memset (&frame, 0, sizeof(frame));  frame.qmb = qmb_is_available && qmb_active.value;  // Mirror-in-scene will join this.
 
-	R_SetupView (); //johnfitz -- this does everything that should be done once per frame
+	R_RenderScene_RenderView_SetupView (); //johnfitz -- this does everything that should be done once per frame
 
 	//johnfitz -- stereo rendering -- full of hacky goodness
 	if (gl_stereo.value)
@@ -1811,7 +1836,7 @@ void R_RenderView (void)
 		//render left eye (red)
 		eglColorMask(1, 0, 0, 1);
 		VectorMA (r_refdef.vieworg, -0.5f * eyesep, vright, r_refdef.vieworg);
-		frustum_skew = 0.5 * eyesep * NEARCLIP / fdepth;
+		frustum_skew = 0.5 * eyesep * NEARCLIP_1 / fdepth;
 		srand((int) (cl.ctime * 1000)); //sync random stuff between eyes
 
 		R_RenderScene ();

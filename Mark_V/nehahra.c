@@ -27,8 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef DIRECT_SOUND_QUAKE
 #include "winquake.h"
 #endif
-#include <fmod/fmod.h>
-#include <fmod/fmod_errors.h>
+#include "fmod/fmod.h"
+#include "fmod/fmod_errors.h"
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif

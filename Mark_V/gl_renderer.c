@@ -24,7 +24,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-
+#ifdef PLATFORM_OPENGLES
+	void (APIENTRY *eglDepthRange) (GLclampf zNear, GLclampf zFar);	// Float
+	void (APIENTRY *eglFrustum) (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+	void (APIENTRY *eglOrtho) (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+#else
+	void (APIENTRY *eglDepthRange) (GLclampd zNear, GLclampd zFar);
+	void (APIENTRY *eglFrustum) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+	void (APIENTRY *eglOrtho) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
+#endif
 
 // The function set provided by the wrapper
 void (APIENTRY *eglAlphaFunc) (GLenum func, GLclampf ref);
@@ -53,7 +61,7 @@ void (APIENTRY *eglCullFace) (GLenum mode);
 void (APIENTRY *eglDeleteTextures) (GLsizei n, const GLuint *textures);
 void (APIENTRY *eglDepthFunc) (GLenum func);
 void (APIENTRY *eglDepthMask) (GLboolean flag);
-void (APIENTRY *eglDepthRange) (GLclampd zNear, GLclampd zFar);
+
 void (APIENTRY *eglDisable) (GLenum cap);
 void (APIENTRY *eglDrawBuffer) (GLenum mode);
 void (APIENTRY *eglEnable) (GLenum cap);
@@ -64,7 +72,6 @@ void (APIENTRY *eglFogfv) (GLenum pname, const GLfloat *params);
 void (APIENTRY *eglFogi) (GLenum pname, GLint param);
 void (APIENTRY *eglFogiv) (GLenum pname, const GLint *params);
 void (APIENTRY *eglFrontFace) (GLenum mode);
-void (APIENTRY *eglFrustum) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 void (APIENTRY *eglGenTextures) (GLsizei n, GLuint *textures);
 void (APIENTRY *eglGetFloatv) (GLenum pname, GLfloat *params);
 void (APIENTRY *eglGetIntegerv) (GLenum pname, GLint *params);
@@ -77,7 +84,6 @@ void (APIENTRY *eglLoadMatrixf) (const GLfloat *m);
 void (APIENTRY *eglMatrixMode) (GLenum mode);
 void (APIENTRY *eglMultMatrixf) (const GLfloat *m);
 void (APIENTRY *eglNormal3f) (GLfloat nx, GLfloat ny, GLfloat nz);
-void (APIENTRY *eglOrtho) (GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar);
 void (APIENTRY *eglPixelStorei) (GLenum pname, GLint param);
 void (APIENTRY *eglPolygonMode) (GLenum face, GLenum mode);
 void (APIENTRY *eglPolygonOffset) (GLfloat factor, GLfloat units);
@@ -307,6 +313,87 @@ void VID_Renderer_Set_Direct3D9 (void)
 
 }
 
+#elif defined(PLATFORM_OPENGLES)
+
+void VID_Renderer_Set_OpenGLES (void)
+{
+	eglAlphaFunc            = glAlphaFunc;
+	eglBegin                = NULL;					// ARRAY
+	eglBindTexture          = glBindTexture;
+	eglBlendFunc            = glBlendFunc;
+	eglClear                = glClear;
+	eglClearColor           = glClearColor;
+	eglClearStencil         = glClearStencil;
+	eglColor3f              = NULL;					// COLOR
+	eglColor3fv             = NULL;					// COLOR
+	eglColor3ubv            = NULL;					// COLOR
+	eglColor4f              = glColor4f;			// COLOR
+	eglColor4fv             = NULL;					// COLOR
+	eglColor4ub             = NULL;					// COLOR
+	eglColor4ubv            = NULL;					// COLOR
+	eglColorMask            = glColorMask;
+
+	eglCopyTexSubImage2D	= glCopyTexSubImage2D;
+
+	eglCullFace             = glCullFace;
+	eglDeleteTextures       = glDeleteTextures;
+	eglDepthFunc            = glDepthFunc;
+	eglDepthMask            = glDepthMask;
+	eglDepthRange           = glDepthRangef;		// OpenGLES slight variant
+	eglDisable              = glDisable;
+	eglDrawBuffer           = NULL;					// Not supported.  We do not use it.
+	eglEnable               = glEnable;
+	eglEnd                  = NULL;					// ARRAY
+	eglFinish               = glFinish;
+	eglFogf                 = glFogf;
+	eglFogfv                = glFogfv;
+	eglFogi                 = NULL;					// I think we can use the float version of the functions.
+	eglFogiv                = NULL;					// I think we can use the float version of the functions.
+	eglFrontFace            = glFrontFace;
+	eglFrustum              = glFrustumf;			// OpenGLES
+	eglGenTextures          = glGenTextures;
+	eglGetFloatv            = glGetFloatv;
+	eglGetIntegerv          = glGetIntegerv;
+	eglGetString            = glGetString;
+	eglGetTexImage          = NULL;					// Not supported.  We use it for image dump only.
+	eglGetTexParameterfv    = glGetTexParameterfv;
+	eglHint                 = glHint;
+	eglLineWidth            = glLineWidth;
+	eglLoadIdentity         = glLoadIdentity;
+	eglLoadMatrixf          = glLoadMatrixf;
+	eglMatrixMode           = glMatrixMode;
+	eglMultMatrixf          = glMultMatrixf;
+	eglNormal3f             = glNormal3f;
+	eglOrtho                = glOrthof;				// OpenGLES slight variant
+	eglPixelStorei			= glPixelStorei;
+	eglPolygonMode          = NULL;					// ARRAY
+	eglPolygonOffset        = glPolygonOffset;
+	eglPopMatrix            = glPopMatrix;
+	eglPushMatrix           = glPushMatrix;
+	eglReadBuffer           = NULL;					// Extension?  glReadBufferNV.  I see no evidence we use this.
+	eglReadPixels           = glReadPixels;
+	eglRotatef              = glRotatef;
+	eglScalef               = glScalef;
+	eglScissor              = glScissor;
+	eglShadeModel           = glShadeModel;
+	eglStencilFunc          = glStencilFunc;
+	eglStencilOp            = glStencilOp;
+	eglTexCoord2f           = NULL;					// ARRAY
+	eglTexCoord2fv          = NULL;					// ARRAY
+	eglTexEnvf              = glTexEnvf;
+	eglTexEnvi              = glTexEnvi;
+	eglTexImage2D           = glTexImage2D;
+	eglTexParameterf        = glTexParameterf;
+	eglTexParameteri        = glTexParameteri;
+	eglTexSubImage2D        = glTexSubImage2D;
+	eglTranslatef           = glTranslatef;
+	eglVertex2f             = NULL;					// ARRAY
+	eglVertex2fv            = NULL;					// ARRAY
+	eglVertex3f             = NULL;					// ARRAY
+	eglVertex3fv            = NULL;					// ARRAY
+	eglViewport             = glViewport;
+}
+
 #else // OpenGL
 
 void VID_Renderer_Set_OpenGL (void)
@@ -463,6 +550,9 @@ void VID_Renderer_Set_OpenGL (void)
 	}
 #endif // PLATFORM_WINDOWS // Even SDL needs this
 
+
+
+
 	eglAlphaFunc            = glAlphaFunc;
 	eglBegin                = glBegin;
 	eglBindTexture          = glBindTexture;
@@ -485,7 +575,7 @@ void VID_Renderer_Set_OpenGL (void)
 	eglDeleteTextures       = glDeleteTextures;
 	eglDepthFunc            = glDepthFunc;
 	eglDepthMask            = glDepthMask;
-	eglDepthRange           = glDepthRange;
+	eglDepthRange           = glDepthRange;			// OpenGLES
 	eglDisable              = glDisable;
 	eglDrawBuffer           = glDrawBuffer;
 	eglEnable               = glEnable;
@@ -496,7 +586,7 @@ void VID_Renderer_Set_OpenGL (void)
 	eglFogi                 = glFogi;
 	eglFogiv                = glFogiv;
 	eglFrontFace            = glFrontFace;
-	eglFrustum              = glFrustum;
+	eglFrustum              = glFrustum;			// OpenGLES
 	eglGenTextures          = glGenTextures;
 	eglGetFloatv            = glGetFloatv;
 	eglGetIntegerv          = glGetIntegerv;
@@ -510,7 +600,7 @@ void VID_Renderer_Set_OpenGL (void)
 	eglMatrixMode           = glMatrixMode;
 	eglMultMatrixf          = glMultMatrixf;
 	eglNormal3f             = glNormal3f;
-	eglOrtho                = glOrtho;
+	eglOrtho                = glOrtho;				// OpenGLES
 	eglPixelStorei			= glPixelStorei;
 	eglPolygonMode          = glPolygonMode;
 	eglPolygonOffset        = glPolygonOffset;
@@ -566,11 +656,46 @@ void VID_Renderer_Setup (void)
 	VID_Renderer_Set_Direct3D8 ();
 #elif defined(DIRECT3D9_WRAPPER)  // DX9 Wrapper build
 	VID_Renderer_Set_Direct3D9 ();
+#elif defined(PLATFORM_OPENGLES)
+	VID_Renderer_Set_OpenGLES ();
 #else
 	VID_Renderer_Set_OpenGL ();
 #endif // DIRECT3D_WRAPPER
 
 	vid.direct3d = DIRECT3D_WRAPPER_VERSION;
 }
+
+
+
+void GL_ErrorPrintFn (const char *funcname, int linenum)
+{
+#if defined(CORE_GL) && !defined(DIRECT3DX_WRAPPER)
+	int errcode = glGetError ();
+
+	if (errcode) {
+		char errstr[SYSTEM_STRING_SIZE_1024] = {0};
+		c_snprintf2 (errstr, "GL Error: %d at linenum %d", errcode, linenum);
+		
+#ifndef PLATFORM_OPENGLES // Because OpenGLES doesn't have glu available.
+		c_strlcat (errstr, " ");
+		c_strlcat (errstr, "'");
+		c_strlcat (errstr, gluErrorString(errcode));
+		c_strlcat (errstr, "'");
+#endif // PLATFORM_OPENGL_DESKTOP
+
+		if (funcname) {
+			c_strlcat (errstr, " ");
+			
+			c_strlcat (errstr, "in");
+			c_strlcat (errstr, " ");
+			c_strlcat (errstr, String_Skip_Char_Reverse (funcname, '\\') );
+		}
+
+		logd ("%s", errstr);
+	}
+#endif // Not pure software, not Direct3D
+}
+
+
 
 #endif // CORE_GL

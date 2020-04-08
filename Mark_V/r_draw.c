@@ -45,9 +45,9 @@ clipplane_t	world_clipplanes[16];
 
 medge_t			*r_pedge /* qasm */;
 
-qasmbool		r_leftclipped /* qasm */, r_rightclipped /* qasm */;
+qasmbool_e		r_leftclipped /* qasm */, r_rightclipped /* qasm */;
 static cbool	makeleftedge, makerightedge;
-qasmbool		r_nearzionly /* qasm */;
+qasmbool_e		r_nearzionly /* qasm */;
 
 int		sintable[SIN_BUFFER_SIZE];
 int		intsintable[SIN_BUFFER_SIZE];
@@ -66,7 +66,7 @@ float			r_nearzi /* qasm */;
 float			r_u1 /* qasm */, r_v1 /* qasm */, r_lzi1 /* qasm */;
 int				r_ceilv1 /* qasm */;
 
-qasmbool	r_lastvertvalid /* qasm */;
+qasmbool_e		r_lastvertvalid /* qasm */;
 
 #ifdef WINQUAKE_SOFTWARE_SKYBOX
 // Manoel Kasimier - skyboxes - begin

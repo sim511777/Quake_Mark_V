@@ -93,7 +93,7 @@ void Con_ToggleConsole_f (lparse_t *unused)
 		Con_Exit ();
 		if (cls.state == ca_connected)
 			Key_SetDest (key_game);
-		else M_Menu_Main_f (NULL);
+		else Mnu_Main_Enter_f (NULL);
 	}
 	else Key_SetDest (key_console);
 
@@ -398,6 +398,11 @@ static int Con_DebugLog (const char *fmt, ...)
 		f = FS_fopen_write (con_debuglog_url, "a"); // FS_fopen_write_create_path
 		if (f) {
 			fprintf (f, "%s", text);
+#ifdef PLATFORM_IOS
+	#ifdef _DEBUG
+			fprintf (stderr, "%s", text); // To IDE debug console
+	#endif // DEBUG
+#endif // PLATFORM_IOS
 			FS_fclose(f);
 		}
 		return 0;
@@ -653,7 +658,7 @@ int Con_Printf (const char *fmt, ...)
 	if (cls.signon != SIGNONS && !scr_disabled_for_loading )
 	{
 	// protect against infinite loop if something in SCR_UpdateScreen calls
-	// Con_Printf
+	// Con_PrintLinef
 		if (!inupdate)
 		{
 			inupdate = true;
@@ -694,7 +699,7 @@ int Con_WarningLinef (const char *fmt, ...)
 ================
 Con_DPrintf
 
-A Con_Printf that only shows up if the "developer" cvar is set
+A Con_PrintLinef that only shows up if the "developer" cvar is set
 ================
 */
 int Con_VerbosePrintLinef (const char *fmt, ...)
@@ -1119,7 +1124,7 @@ ssize_t Con_AutoComplete (char *text, size_t s_size, ssize_t cursor, cbool force
 		else if (argnum != 1)									*complete_type = list_type_none;
 		else
 		{
-			for (i = 1, *complete_type = 0; i < MAX_LIST_TYPES && !*complete_type; i++)
+			for (i = 1, *complete_type = 0; i < list_type_COUNT && !*complete_type; i++)
 				if (list_info[i].associated_commands && COM_ListMatch (list_info[i].associated_commands, cmdname))
 					*complete_type = i;
 		}
@@ -1376,7 +1381,7 @@ void Con_DrawConsole (float pct, cbool drawinput)
 
 
 	// Baker: Don't draw the console text if menu is being drawn.
-	if (key_dest == key_menu && m_state)
+	if (key_dest == key_menu && sMenu.menu_state)
 		return;
 
 // draw the text

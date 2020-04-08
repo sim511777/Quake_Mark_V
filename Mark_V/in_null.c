@@ -1,3 +1,5 @@
+#if 0 // UNUSED
+
 // in_null.c -- for systems without a mouse
 
 #include "quakedef.h"
@@ -45,3 +47,5 @@ void Input_Local_SendKeyEvents (void ) {}
 float sInJoyValues[JOY_MAX_AXES];
 
 void Utilities_Init (void) {}
+
+#endif // 0 // UNUSED

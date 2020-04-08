@@ -1,3 +1,5 @@
+#if 0 // UNUSED
+
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 
@@ -134,3 +136,4 @@ void external_music_toggle_f (cvar_t *var)
 
 
 
+#endif // 0 // UNUSED

@@ -134,7 +134,7 @@ int VID_SetMode (int modenum)
 // MH knocked this out!
 //#ifdef DIRECT3D9_WRAPPER
 //    // ensure swap settings right
-//    if (vid.screen.type == MODE_WINDOWED && vid_vsync.value)
+//    if (vid.screen.type == MODESTATE_WINDOWED && vid_vsync.value)
 //    {
 //        Cbuf_AddTextLine ("vid_vsync 0; wait; vid_vsync 1 \\ Shouldn't need, but running vsync right now doesn't keep"); // Works!
 //    }
@@ -166,12 +166,12 @@ cbool VID_Restart (int flags /* favorite vs. temp*/)
     // Fullscreen must check existing modes, window must set it instead.
     switch (newmode.type)
     {
-    case MODE_WINDOWED:
-        memcpy (&vid.modelist[MODE_WINDOWED], &newmode, sizeof (vmode_t) );
+    case MODESTATE_WINDOWED:
+        memcpy (&vid.modelist[MODESTATE_WINDOWED], &newmode, sizeof (vmode_t) );
         newmodenum = 0;
         break;
 
-    case MODE_FULLSCREEN:
+    case MODESTATE_FULLSCREEN:
 //#if /*defined(PLATFORM_LINUX) &&*/ defined(CORE_SDL) && !defined(GLQUAKE) && defined (CORE_GL) // WinQuake GL
 #ifdef CORE_SDL
         newmode = vid.desktop;
@@ -203,11 +203,13 @@ cbool VID_Restart (int flags /* favorite vs. temp*/)
 VID_Test -- johnfitz -- like vid_restart, but asks for confirmation after switching modes
 ================
 */
+vmode_t		oldmode;
 void VID_Test (lparse_t *unused)
 {
     vmode_t		newmode = VID_Cvars_To_Mode ();
-    vmode_t		oldmode = vid.screen;
     cbool	mode_changed = memcmp (&newmode, &vid.screen, sizeof(vmode_t) );
+
+	oldmode = vid.screen;
 
     if (!mode_changed)
         return;
@@ -217,13 +219,22 @@ void VID_Test (lparse_t *unused)
     VID_Restart (USER_SETTING_FAVORITE_MODE);
 
     //pop up confirmation dialog
-    if (!SCR_ModalMessage("Would you like to keep this" NEWLINE "video mode? (y/n)", 5, false))
-    {
-        // User rejected new mode: revert cvars and mode
-        VID_Cvars_Sync_To_Mode (&oldmode);
-        VID_Restart (USER_SETTING_FAVORITE_MODE);
-    }
+	{
+		void Vid_Test_Do_ModeReject (void);
+		#pragma message ("Baker: We discarded the timeout of 5 seconds.  Is that ok?")
+		#pragma message ("Downside is if the message can't be seen, it would never go away")
+		Mnu_Dialog_Modal_YesNo (NULL /* if yes, just status quo*/, Vid_Test_Do_ModeReject, "Would you like to keep this" NEWLINE "video mode? (y/n)");
+	}
+    
 }
+
+void Vid_Test_Do_ModeReject (void)
+{ 
+    // User rejected new mode: revert cvars and mode
+    VID_Cvars_Sync_To_Mode (&oldmode);
+    VID_Restart (USER_SETTING_FAVORITE_MODE);
+}
+
 
 void VID_Alt_Enter_f (void)
 {
@@ -248,7 +259,7 @@ void VID_Alt_Enter_f (void)
     }
 
 // ALT-ENTER to a temp mode
-    if (vid.screen.type == MODE_WINDOWED)
+    if (vid.screen.type == MODESTATE_WINDOWED)
     {
 #if defined(CORE_SDL) && defined(GLQUAKE) && defined(PLATFORM_LINUX)
         int old_sel = vid.modenum_user_selected;
@@ -364,7 +375,7 @@ void VID_AppActivate(cbool fActive, cbool minimize, cbool hide)
     {
         VID_Activate (1); // Baker: This activates sound, gives input a think
 
-        if (vid.screen.type == MODE_FULLSCREEN && vid.canalttab && vid.wassuspended)
+        if (vid.screen.type == MODESTATE_FULLSCREEN && vid.canalttab && vid.wassuspended)
         {
             VID_Local_Suspend (false);
             vid.wassuspended = false;
@@ -376,7 +387,7 @@ void VID_AppActivate(cbool fActive, cbool minimize, cbool hide)
 
     if (!vid.ActiveApp)
     {
-        if (vid.screen.type == MODE_FULLSCREEN && vid.canalttab)
+        if (vid.screen.type == MODESTATE_FULLSCREEN && vid.canalttab)
         {
             VID_Local_Suspend (true);
             vid.wassuspended = true;
@@ -447,19 +458,19 @@ void VID_Cvars_Sync_To_Mode (vmode_t* mymode)
     // Don't allow anything exiting to call this.  I think we are "ok"
     Cvar_SetValueQuick (&vid_width, (float)mymode->width);
     Cvar_SetValueQuick (&vid_height, (float)mymode->height);
-    Cvar_SetValueQuick (&vid_fullscreen, mymode->type == MODE_FULLSCREEN ? 1 : 0);
+    Cvar_SetValueQuick (&vid_fullscreen, mymode->type == MODESTATE_FULLSCREEN ? 1 : 0);
 }
 
 vmode_t VID_Cvars_To_Mode (void)
 {
     vmode_t retmode;
 
-    retmode.type	= vid_fullscreen.value ? MODE_FULLSCREEN : MODE_WINDOWED;
+    retmode.type	= vid_fullscreen.value ? MODESTATE_FULLSCREEN : MODESTATE_WINDOWED;
     retmode.width	= (int)vid_width.value;
     retmode.height	= (int)vid_height.value;
     retmode.bpp		= vid.desktop.bpp;
 
-    if (retmode.type == MODE_WINDOWED)
+    if (retmode.type == MODESTATE_WINDOWED)
     {
         retmode.width	= CLAMP (MIN_WINDOWED_MODE_WIDTH, retmode.width, vid.desktop.width);
         retmode.height	= CLAMP (MIN_WINDOWED_MODE_HEIGHT, retmode.height, vid.desktop.height);
@@ -561,7 +572,7 @@ cbool VID_Mode_Exists (vmode_t* test, int *outmodenum)
     return false;
 }
 
-void VID_MakeMode (modestate_t mode_type, vmode_t *new_mode)
+void VID_MakeMode (MODESTATE_e mode_type, vmode_t *new_mode)
 {
     new_mode->type	= mode_type;
     new_mode->width	= 640;
@@ -581,7 +592,7 @@ void VID_MakeMode (modestate_t mode_type, vmode_t *new_mode)
 void VID_Cvars_Set_Autoselect_Temp_Windowed_Mode (int favoritemode)
 {
     // Pencil in last windowed mode, but set the bpp to the desktop bpp
-    VID_Cvars_Sync_To_Mode (&vid.modelist[MODE_WINDOWED]);
+    VID_Cvars_Sync_To_Mode (&vid.modelist[MODESTATE_WINDOWED]);
 }
 
 int VID_Find_Best_Fullscreen_Modenum (int request_width, int request_height)
@@ -752,7 +763,7 @@ void	VID_Init (void)
     VID_Local_Window_PreSetup (); // Window: Registers frame class, Mac: Gets display
 
 // Add the windowed mode
-    VID_MakeMode (MODE_WINDOWED, &vid.modelist[MODE_WINDOWED]);
+    VID_MakeMode (MODESTATE_WINDOWED, &vid.modelist[MODESTATE_WINDOWED]);
 
 // Add the fullscreen modes
 
@@ -770,11 +781,11 @@ void	VID_Init (void)
         // Fucking crazy.
         Cvar_SetValueQuick (&vid_width, vid.desktop.width);
         Cvar_SetValueQuick (&vid_height, vid.desktop.height);
-        //VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODE_WINDOWED);
+        //VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODESTATE_WINDOWED);
     }
 #endif // #CORE_SDL
 
-    VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODE_WINDOWED);
+    VID_SetMode (vid_fullscreen.value ? VID_Cvars_To_Best_Fullscreen_Modenum() : MODESTATE_WINDOWED);
 
     clwidth = vid.screen.width; // vid_width.value // Err?  Why vid.screen.width and vid.screen.height?
     clheight = vid.screen.height;
@@ -886,10 +897,10 @@ void VID_Gamma_Clock_Set (void)
 void VID_Gamma_Contrast_Clamp_Cvars (void)
 {
     // bound cvars to menu range
-    if (vid_contrast.value < VID_MIN_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST);
-    if (vid_contrast.value > VID_MAX_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST);
-    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA);
-    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
+    if (vid_contrast.value < VID_MIN_CONTRAST_1_0) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST_1_0);
+    if (vid_contrast.value > VID_MAX_CONTRAST_2_0) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST_2_0);
+    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA_0_5) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA_0_5);
+    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA_4_0) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA_4_0);
 
 
 }
@@ -906,10 +917,10 @@ void VID_Gamma_Think (void)
     VID_Gamma_Contrast_Clamp_Cvars ();
 #else
     // bound cvars to menu range
-    if (vid_contrast.value < VID_MIN_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST);
-    if (vid_contrast.value > VID_MAX_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST);
-    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA);
-    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
+    if (vid_contrast.value < VID_MIN_CONTRAST_1_0) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST_1_0);
+    if (vid_contrast.value > VID_MAX_CONTRAST_2_0) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST_2_0);
+    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA_0_5) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA_0_5);
+    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA_4_0) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA_4_0);
 #endif
 
     {
@@ -1044,7 +1055,7 @@ void VID_Gamma_Think (void)
 void VID_BrightenScreen (void)
 {
     float f;
-    float current_contrast = CLAMP (VID_MIN_CONTRAST, vid_contrast.value, VID_MAX_CONTRAST);
+    float current_contrast = CLAMP (VID_MIN_CONTRAST_1_0, vid_contrast.value, VID_MAX_CONTRAST_2_0);
 
     if (vid.direct3d == 9)
         return;
@@ -1125,10 +1136,10 @@ cbool VID_CheckGamma (void)
         return false;
 
     // bound cvars to menu range
-    if (vid_contrast.value < VID_MIN_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST);
-    if (vid_contrast.value > VID_MAX_CONTRAST) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST);
-    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA);
-    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA);
+    if (vid_contrast.value < VID_MIN_CONTRAST_1_0) Cvar_SetValueQuick (&vid_contrast, VID_MIN_CONTRAST_1_0);
+    if (vid_contrast.value > VID_MAX_CONTRAST_2_0) Cvar_SetValueQuick (&vid_contrast, VID_MAX_CONTRAST_2_0);
+    if (vid_gamma.value < VID_MIN_POSSIBLE_GAMMA_0_5) Cvar_SetValueQuick (&vid_gamma, VID_MIN_POSSIBLE_GAMMA_0_5);
+    if (vid_gamma.value > VID_MAX_POSSIBLE_GAMMA_4_0) Cvar_SetValueQuick (&vid_gamma, VID_MAX_POSSIBLE_GAMMA_4_0);
 
     previous_gamma = vid_gamma.value;
     previous_contrast = vid_contrast.value;
@@ -1145,7 +1156,7 @@ cbool VID_CheckGamma (void)
 void Vid_Gamma_TextureGamma_f (lparse_t *line)
 {
 #ifdef GLQUAKE_TEXTUREGAMMA_SUPPORT
-    float val = atof(line->args[1]), clamped_value = CLAMP(VID_MIN_POSSIBLE_GAMMA, val, VID_MAX_POSSIBLE_GAMMA);
+    float val = atof(line->args[1]), clamped_value = CLAMP(VID_MIN_POSSIBLE_GAMMA_0_5, val, VID_MAX_POSSIBLE_GAMMA_4_0);
     extern float texmgr_texturegamma_current;
 
 #ifdef GLQUAKE_HARDWARE_GAMMA
@@ -1160,7 +1171,7 @@ void Vid_Gamma_TextureGamma_f (lparse_t *line)
     {
     default:
         Con_PrintLinef ("Usage: %s <gamma %0.2f to %0.2f> - set gamma level when vid_hardwaregamma is off by baking gamma into textures." NEWLINE
-                        "Current texture gamma is %g", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, texmgr_texturegamma_current);
+                        "Current texture gamma is %g", line->args[0], (float)VID_MIN_POSSIBLE_GAMMA_0_5, (float)VID_MAX_POSSIBLE_GAMMA_4_0, texmgr_texturegamma_current);
         return;
 
     case 2:
@@ -1173,7 +1184,7 @@ void Vid_Gamma_TextureGamma_f (lparse_t *line)
         if (val != clamped_value)
         {
             Con_PrintLinef ("gamma %g is out of range (%0.2f to %0.2f), clamping to range = %g",
-                            val, (float)VID_MIN_POSSIBLE_GAMMA, (float)VID_MAX_POSSIBLE_GAMMA, clamped_value);
+                            val, (float)VID_MIN_POSSIBLE_GAMMA_0_5, (float)VID_MAX_POSSIBLE_GAMMA_4_0, clamped_value);
             val = clamped_value;
         }
 
@@ -1198,7 +1209,7 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
 
 #pragma message ("Make sure VID_Resize_Think does NOT do anything essential ever")
 #ifdef SUPPORTS_RESIZABLE_WINDOW
-    if (!vid.Minimized && vid.ActiveApp && vid.screen.type == MODE_WINDOWED /* <--- that */) // Fixes D3D fullscreenstart
+    if (!vid.Minimized && vid.ActiveApp && vid.screen.type == MODESTATE_WINDOWED /* <--- that */) // Fixes D3D fullscreenstart
         VID_BeginRendering_Resize_Think (); // Optional resize window on-the-fly
 #endif // ! SUPPORTS_RESIZABLE_WINDOW
 
@@ -1218,7 +1229,7 @@ void VID_BeginRendering (int *x, int *y, int *width, int *height)
     //	*height = vid.screen.height;
     *x = *y = 0;
 #ifdef SUPPORTS_RESIZABLE_WINDOW
-    if (vid.screen.type == MODE_FULLSCREEN)
+    if (vid.screen.type == MODESTATE_FULLSCREEN)
     {
         *width = vid.screen.width;
         *height = vid.screen.height;
@@ -1439,3 +1450,15 @@ void VID_Palette_NewGame (void)
     View_Blend_Stale ();
 }
 #endif // WINQUAKE_RENDERER_SUPPORT
+
+void VID_Set_Window_Title (const char *fmt, ...) // __core_attribute__((__format__(__printf__,1,2)))
+{
+	void _VID_Local_Set_Window_Title (const char *text);
+
+	if (!fmt)
+		_VID_Local_Set_Window_Title (ENGINE_NAME); // NULL?  Set engine name.	
+	else {	
+		VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt);
+		_VID_Local_Set_Window_Title (text);
+	}
+}

@@ -271,6 +271,9 @@ void Entity_Inspector_Think (void)
 	if (!inspector_on)
 		return;
 
+	if (frame.in_shadow_volume_draw)
+		return; // Feb 23 2018 - this messes us up.
+
 	Entity_Inspector_Draw ();
 }
 

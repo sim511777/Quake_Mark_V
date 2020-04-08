@@ -58,8 +58,12 @@ cbool File_Delete (const char *path_to_file);
 
 clist_t *File_To_Lines_Alloc (const char *path_to_file);
 
-cbool File_Memory_To_File (const char *path_to_file, void *data, size_t numbytes);
+cbool File_String_To_File (const char *path_to_file, const char *s);
+cbool File_Memory_To_File (const char *path_to_file, const void *data, size_t numbytes);
 void *File_To_Memory_Alloc (const char *path_to_file, reply size_t *numbytes); // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1 means can be treated as NULL terminated string, extra null is not part of returned length
+#define File_To_String(FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) File_To_Memory_Alloc (FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) // Reply is a blob.
+// File_To_Memory_Alloc may as well be File to String 
+
 
 // Zero means read everything possible
 void *File_To_Memory_Offset_Alloc (const char *path_to_file, reply size_t *numbytes, size_t offset_into_file, size_t len); // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1 means can be treated as NULL terminated string, extra null is not part of returned length
@@ -110,8 +114,7 @@ char *File_URL_Edit_SlashesBack_Like_Windows (char *unix_path_to_file);
 char* File_URL_Strdup_SlashesBack_Like_Windows (const char *unix_path_to_file);
 char* File_URL_Strdup_SlashesForward_Like_Unix (const char *windows_path_to_file);
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (image_format)
 	image_format_invalid_0 = 0,
 	image_format_best = 1, // Reserved.  Do not use
 	image_format_rgba = 2, // Reserved.  Do not use
@@ -123,15 +126,14 @@ typedef enum
 } image_format_e;
 
 
-typedef enum
-{
-	source_none			= 0,
-	source_file			= 'F',		// E?  Why not F?
-	source_bundle		= 'B',		// Bundle
-	source_memory		= 'M',		// Memory
-	source_memory_rgba	= 'R',		// RAW MEMORY.  RGBA already.  No let's handle type RGB
-	source_string		= 'S',		// Stupid method like base 64 string?
-} source_e;
+typedef enum { ENUM_FORCE_INT_GCC_ (data_source)
+	data_source_none_0		= 0,
+	data_source_file		= 'F',		// E?  Why not F?
+	data_source_bundle		= 'B',		// Bundle
+	data_source_memory		= 'M',		// Memory
+	data_source_memory_rgba	= 'R',		// RAW MEMORY.  RGBA already.  No let's handle type RGB
+	data_source_string		= 'S',		// Stupid method like base 64 string?
+} data_source_e;
 
 image_format_e File_URL_Image_Format (const char *path_to_file);
 
@@ -174,7 +176,21 @@ const char * File_Dialog_Save_Type (const char *title, const char * starting_fil
 //  Misc
 ///////////////////////////////////////////////////////////////////////////////
 
+// Baker: What's an example? I think "project.mine", 2 = "mine".  Is used by makeproj
 const char *DOM_Return_Sequence_Alloc (const char *dom, int num);
+
+///////////////////////////////////////////////////////////////////////////////
+//  BUNDLE STUFF
+///////////////////////////////////////////////////////////////////////////////
+
+struct pak_s *Bundle_Free (struct pak_s *pack);
+struct pak_s *Bundle_Load_Alloc (void); // Returns pak_t
+
+void Bundle_Alert_Items (void); // Debug mostly
+clist_t *Bundle_List_Alloc (const char *wild_patterns, reply int *num_matches);
+void *dBundle_Find_File_Caseless (const char *path_to_file);
+void *Bundle_File_To_Memory_Alloc (const char *path_to_file, reply size_t *mem_length); // // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1
+const void *Bundle_File_Memory_Pointer (const char *path_to_file, reply size_t *mem_length); // Relys on bundle being in memory.  Not string friendly!
 
 #ifdef PLATFORM_WINDOWS
 	// http://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface (#include <stdio.h>)

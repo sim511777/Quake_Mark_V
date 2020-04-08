@@ -126,10 +126,16 @@ static void GL_Evaluate_Renderer_CheckExtensions (void)
 	//
 	if (COM_CheckParm("-nomtex"))
 		warnline_fn ("Multitexture disabled at command line");
-	else if (GL_ParseExtensionList(renderer.gl_extensions, "GL_ARB_multitexture"))
+	else if (vid.is_mobile || GL_ParseExtensionList(renderer.gl_extensions, "GL_ARB_multitexture"))
 	{
+#ifdef PLATFORM_OPENGLES
+		renderer.GL_MTexCoord2fFunc = NULL; // ?
+		renderer.GL_SelectTextureFunc = glActiveTexture;
+#else
 		renderer.GL_MTexCoord2fFunc = (PFNGLMULTITEXCOORD2FARBPROC) Vid_GL_GetProcAddress("glMultiTexCoord2fARB");
 		renderer.GL_SelectTextureFunc = (PFNGLACTIVETEXTUREARBPROC) Vid_GL_GetProcAddress("glActiveTextureARB");
+#endif
+		
 		if (renderer.GL_MTexCoord2fFunc && renderer.GL_SelectTextureFunc)
 		{
 			printline_fn ("FOUND: ARB_multitexture");
@@ -180,6 +186,12 @@ static void GL_Evaluate_Renderer_CheckExtensions (void)
 	//
 	if (COM_CheckParm("-nonpot"))
 		warnline_fn ("texture_non_power_of_two disabled at command line");
+	else if (vid.is_mobile && GL_ParseExtensionList(renderer.gl_extensions, "GL_APPLE_texture_2D_limited_npot"))
+	{
+		// What's the limited NPOT.  Can't remember the specifics.
+		printline_fn ("FOUND: GL_APPLE_texture_2D_limited_npot");
+		renderer.gl_texture_non_power_of_two = true;
+	}
 	else if (GL_ParseExtensionList(renderer.gl_extensions, "GL_ARB_texture_non_power_of_two"))
 	{
 		printline_fn ("FOUND: GL_ARB_texture_non_power_of_two");
@@ -187,25 +199,6 @@ static void GL_Evaluate_Renderer_CheckExtensions (void)
 	}
 	else warnline_fn ("texture_non_power_of_two not supported");
 
-#if 0 // Nice try
-	// 8-Bit Palette WinQuake GL
-	if (COM_CheckParm("-no8bit"))
-		warnline_fn ("8-Bit Palette Disabled via command line");
-	else //if (GL_ParseExtensionList(renderer.gl_extensions, "GL_ARB_multitexture"))
-	{
-		renderer.GLColorTableEXT = (qGLColorTableEXT) Vid_GL_GetProcAddress("GLColorTableEXT");
-		if (renderer.GLColorTableEXT) {
-			printline_fn ("FOUND: GLColorTableEXT");
-		}
-		else warnline_fn ("GLColorTableEXT not available");
-
-		renderer.GLSetPaletteEXT = (qgl3DfxSetPaletteEXT) Vid_GL_GetProcAddress("GLSetPaletteEXT");
-		if (renderer.GLSetPaletteEXT) {
-			printline_fn ("FOUND: GLSetPaletteEXT");
-		}
-		else warnline_fn ("GLSetPaletteEXT not available");
-	}
-#endif	
 
 	//
 	// anisotropic filtering
@@ -270,7 +263,9 @@ void GL_VID_SetMode_GL_SetupState (void)
 	eglEnable(GL_TEXTURE_2D);
 	eglEnable(GL_ALPHA_TEST);
 	eglAlphaFunc(GL_GREATER, 0.666);
+#ifndef PLATFORM_OPENGLES // Not available for OpenGLES
 	eglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+#endif
 	eglShadeModel (GL_FLAT);
 	eglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //johnfitz
 	eglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

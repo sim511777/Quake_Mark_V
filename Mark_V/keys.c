@@ -634,7 +634,7 @@ void Key_Console (int key)
 		{
 			// Paste
 			const char	*clip_text = Clipboard_Get_Text_Line (); // chars < ' ' removed
-			Partial_Reset ();  Con_Undo_Point (0,0);
+			Partial_Reset ();  Con_Undo_Point (1, false); // 2017 Sept - was 0,0 which must be a typo
 			key_linepos += String_Edit_Insert_At (workline, CONSOLE_MAX_CMDLINE_256, clip_text, key_linepos);
 			return;
 
@@ -1136,7 +1136,7 @@ static
 #endif // Not Crusty Mac
 	int Key_Event (int key, cbool down, int special);
 
-#ifdef PLATFORM_OSX
+#if defined(PLATFORM_OSX) || defined(PLATFORM_IOS)
 
 double last_key_down_next_time;
 int last_key_down;
@@ -1150,7 +1150,7 @@ void Key_Console_Repeats (void)
 		last_key_down_next_time = realtime + REPEAT_INTERVAL;
 	}
 }
-#endif // PLATFORM_OSX
+#endif // PLATFORM_OSX || PLATFORM_IOS
 
 /*
 ===================
@@ -1256,6 +1256,12 @@ cbool Key_Alt_Down (void) { return keydown[K_ALT]; }
 cbool Key_Ctrl_Down (void) { return keydown[K_CTRL]; }
 cbool Key_Shift_Down (void) { return keydown[K_SHIFT]; }
 
+shiftbits_e Key_ShiftBits (void) { 
+	return (CONVBOOL keydown[K_SHIFT] * shiftbits_shift_1 + 
+			CONVBOOL keydown[K_CTRL]  * shiftbits_control_2 +
+			CONVBOOL keydown[K_ALT]  * shiftbits_alt_4); 
+}
+
 
 
 cbool ignore_enter_up = false;
@@ -1264,11 +1270,17 @@ cbool ignore_c_up = false;
 cbool ignore_m_up = false;
 cbool ignore_v_up = false;
 
+
 #ifndef PLATFORM_OSX // Not Crusty Mac
 void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, int unicode, int shift)
 {
 	keydest_e desto;
 	int sendkey;
+
+//#ifdef PLATFORM_IOS
+//	if (in_keymap.value)
+//		Cvar_SetValueQuick (&in_keymap, 0);
+//#endif
 
 	if (scancode) {
 		// Override certain keys.
@@ -1283,7 +1295,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 		scancode = tolower(scancode);
 	}
 
-	if (!in_keymap.value) {
+	if (!in_keymap.value || vid.is_mobile_ios_keyboard) {
 		// Keymap off does not accept ascii emission
 		if (!scancode)
 			return;
@@ -1302,7 +1314,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 //	Con_PrintLinef ("Scancode: %c %d  ascii %c %d", CLAMP(32, scancode, 127), scancode, CLAMP(32, ascii, 127), ascii);
 	if (scancode) {
 		// Run Key_Event but tell it to screen out menu/mm/console if in_keymap set.
-		desto = Key_Event (scancode, down, (int) in_keymap.value);
+		desto = Key_Event (scancode, down, !(!in_keymap.value || vid.is_mobile));
 		if (!desto) return; 	// Console processed everything, so get out.
 		if (!down)  return;		// Keyups only go to game.
 
@@ -1338,7 +1350,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 			return;
 
 		// Unacceptable destination.  We only send scancodes to key grab.
-		if (key_dest == key_menu && m_keys_bind_grab)
+		if (key_dest == key_menu && sMenu.keys_bind_grab)
 			return;
 
 		// We do not do control keys.
@@ -1352,7 +1364,7 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 	// Route it.
 	switch (desto) {
 	case key_message:	Key_Message (sendkey);  break;
-	case key_menu:		M_Keydown (sendkey);	break;
+	case key_menu:		M_Keydown (sendkey, NO_HOTSPOT_HIT_NEG1);	break;
 	case key_game:		// Fall through ... may happen in rude disconnect/Host_Error scenarios.
 	case key_console:	Key_Console (sendkey);  break;
 	}
@@ -1390,7 +1402,7 @@ int Key_Event (int key, cbool down, int special)
 
 	case K_TAB:
 #ifdef PLATFORM_OSX
-		if (keydown[K_CTRL] && down && vid.screen.type == MODE_WINDOWED)
+		if (keydown[K_CTRL] && down && vid.screen.type == MODESTATE_WINDOWED)
 #else
 		if (keydown[K_ALT] && down)
 #endif // PLATFORM_OSX
@@ -1457,7 +1469,7 @@ int Key_Event (int key, cbool down, int special)
 
 	keydown[key] = down;
 
-#ifdef PLATFORM_OSX
+#if defined(PLATFORM_OSX) || defined(PLATFORM_IOS)
 	if (down && (key_dest != key_game || console1.forcedup) && repeatkeys[key])
 	{
 		last_key_down = key;
@@ -1534,7 +1546,7 @@ int Key_Event (int key, cbool down, int special)
 			Key_Message (key);
 			break;
 		case key_menu:
-			M_Keydown (key);
+			M_Keydown (key, NO_HOTSPOT_HIT_NEG1);
 			break;
 		case key_game:
 		case key_console:
@@ -1620,7 +1632,7 @@ int Key_Event (int key, cbool down, int special)
 #ifdef PLATFORM_OSX // Crusty Mac
 			if (keyshift[key] != key)
 #else
-			if (!in_keymap.value && keyshift[key] != key) // International keyboard. Are we still doing this?  I didn't know we were?
+			if ((!in_keymap.value || vid.is_mobile) && keyshift[key] != key) // International keyboard. Are we still doing this?  I didn't know we were?
 #endif
 			{
 #ifdef SUPPORTS_KEYBIND_FLUSH
@@ -1706,7 +1718,7 @@ int Key_Event (int key, cbool down, int special)
 #ifdef PLATFORM_OSX // Crusty Mac
 	if (keydown[K_SHIFT])
 #else
-	if (!special && !in_keymap.value && keydown[K_SHIFT]) // in_keymap 0 only, right?
+	if (!special && (!in_keymap.value || vid.is_mobile) && keydown[K_SHIFT]) // in_keymap 0 only, right?
 #endif // ! PLATFORM_OSX Crusty Mac
 		key = keyshift[key];
 
@@ -1724,8 +1736,8 @@ int Key_Event (int key, cbool down, int special)
 	case key_menu:
 		// If we are binding a key, we should send the scancode.
 
-		if (special && !m_keys_bind_grab) return key_menu;
-		M_Keydown (key);
+		if (special && !sMenu.keys_bind_grab) return key_menu;
+		M_Keydown (key, NO_HOTSPOT_HIT_NEG1);
 		break;
 
 	case key_game:
@@ -1799,7 +1811,7 @@ void Key_SetDest (keydest_e newdest)
 #ifndef CORE_SDL
 	if (key_dest == key_game || newdest == key_game) {
 		// A switch to or away from using scancodes
-		if (in_keymap.value) // 1005
+		if (!(!in_keymap.value || vid.is_mobile)) // 1005
 			Shell_Input_ResetDeadKeys ();
 
 	}
@@ -1815,7 +1827,9 @@ void Key_SetDest (keydest_e newdest)
 	else if (key_dest == key_menu)
 	{
 		// Changed away from menu
-		M_Exit (); // Sets m_state = m_none, but Menu has right to do other things and be notified.
+		
+		if (!sMenu.menu_state_reenter)
+			M_Exit (); // Sets sMenu.menu_state = menu_state_None_0, but Menu has right to do other things and be notified.
 	}
 	key_dest = newdest;
 }

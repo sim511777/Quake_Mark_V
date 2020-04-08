@@ -634,7 +634,7 @@ void SV_Host_Frame_RunClients (double frametime) // MH had this as a float, not 
 			continue;
 		}
 
-		//Con_Printf ("Ran a frame");
+		//Con_PrintLinef ("Ran a frame");
 
 		if (!host_client->netconnection)
 		{

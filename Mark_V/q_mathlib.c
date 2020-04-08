@@ -355,7 +355,7 @@ int ParseFloats (const char *s, float *f, int *f_size) // Used by view.c->View_C
 		for( ; i < f_size[0]; i++)
 			f[i] = 0; // zeroing unused elements
 	
-		free (line);
+		Line_Parse_Free (line);
 		return (f_size[0] = argc);
 	}
 }

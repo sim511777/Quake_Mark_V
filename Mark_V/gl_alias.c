@@ -555,6 +555,9 @@ void RB_ShadowVolumeBegin (void)
 
 void RB_ShadowVolumeFinish (void)
 {
+	if (!frame.in_shadow_volume_draw) // This is cleared at start of frame, correct?
+		return;
+
 	// SHADOW_VOLUME
 	eglEnable (GL_STENCIL_TEST);
 	eglStencilFunc (GL_NOTEQUAL, 0, 255);
@@ -701,7 +704,7 @@ void R_DrawAliasModel (entity_t *e)
 	// Special handling of view model to keep FOV from altering look.  Pretty good.  Not perfect but rather close.
 	if (e == &cl.viewent_gun && r_viewmodel_fov.value)
 	{
-		float scale = 1.0f / tan (Degree_To_Radians (scr_fov.value / 2.0f) ) * r_viewmodel_fov.value / 90.0f; // Reverse out fov and do fov we want
+		float scale = 1.0f / tan (Degrees_To_Radians (scr_fov.value / 2.0f) ) * r_viewmodel_fov.value / 90.0f; // Reverse out fov and do fov we want
 
 		if (r_viewmodel_size.value)
 			scale *= CLAMP (0.5, r_viewmodel_size.value, 2);
@@ -875,8 +878,11 @@ void R_DrawAliasModel (entity_t *e)
 	}
 	else if (overbright)
 	{
-		if  (renderer.gl_texture_env_combine && renderer.gl_mtexable && renderer.gl_texture_env_add && fb) //case 1: everything in one pass
-		{
+		// Baker: Transparent models with a full bright overlay are not working right in Direct3D.  Feb 23 2018
+		cbool trans_gun_direct3d9_feb232018_workaround = (vid.direct3d == 9 && e == &cl.viewent_gun && entalpha != 1);
+
+		if  (!trans_gun_direct3d9_feb232018_workaround && renderer.gl_texture_env_combine && renderer.gl_mtexable && renderer.gl_texture_env_add && fb) //case 1: everything in one pass
+		{ // Feb 23 2018 - alpha gun comes here
 			GL_Bind (tx);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 			eglTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);

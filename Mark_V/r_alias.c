@@ -422,7 +422,7 @@ void R_AliasSetUpTransform (int trivial_accept)
 		if (r_viewmodel_fov.value)
 		{
 	//		float scale = 1.0f / tan( DEG2RAD ((double)scr_fov.value / 2.0f) ) * (double)r_viewmodelfov.value / 90.0f; // Reverse out fov and do fov we want
-			float scale = 1.0f / tan (Degree_To_Radians (scr_fov.value / 2.0f) ) * r_viewmodel_fov.value / 90.0f; // Reverse out fov and do fov we want
+			float scale = 1.0f / tan (Degrees_To_Radians (scr_fov.value / 2.0f) ) * r_viewmodel_fov.value / 90.0f; // Reverse out fov and do fov we want
 
 			if (r_viewmodel_size.value)
 				scale *= CLAMP (0.5, r_viewmodel_size.value, 2);

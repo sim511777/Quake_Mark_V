@@ -84,8 +84,8 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 	{
 		if (!isDedicated)
 		{
-			msgbox ("Quake Not Detected", "Your Quake folder should contain a "
-							"folder named id1 with pak0.pak and pak1.pak." NEWLINE NEWLINE "Opening folder ...");
+			msgbox ("Quake Not Detected", "Your Quake folder (%s) should contain a "
+							"folder named id1 with pak0.pak and pak1.pak." NEWLINE NEWLINE "Opening folder ...", host_parms.basedir );
 
 			Folder_Open_Highlight_Binary ();
 		}

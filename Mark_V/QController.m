@@ -149,7 +149,7 @@
             [NSApp activateIgnoringOtherApps: YES];
         }
         
-        if (vid.screen.type == MODE_WINDOWED && sysplat.gVidWindow != NULL)
+        if (vid.screen.type == MODESTATE_WINDOWED && sysplat.gVidWindow != NULL)
         {
             if ([sysplat.gVidWindow isMiniaturized] == YES)
             {
@@ -405,7 +405,7 @@
 }
 
 - (IBAction)cmdHideWinow:(id)sender {
-    if (mQuakeRunning && vid.screen.type == MODE_FULLSCREEN)
+    if (mQuakeRunning && vid.screen.type == MODESTATE_FULLSCREEN)
         return;
 
     [NSApp hide:nil];
@@ -461,7 +461,7 @@
 			double 		oldtime;
 			
             // prepare host init:
-            [[FDDebug sharedDebug] setLogHandler: &Con_Printf];
+            [[FDDebug sharedDebug] setLogHandler: &Con_PrintLinef];
             [[FDDebug sharedDebug] setErrorHandler: &System_Error];
             signal (SIGFPE, SIG_IGN); // Baker: Ignore floating point exceptions
 			

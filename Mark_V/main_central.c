@@ -78,6 +78,10 @@ int Main_Central_Loop ()
     return 0; // Baker: unreachable
 }
 
+void Main_Central_LT (char *cmdline, void *main_window_holder_addr, cbool do_loop)
+{
+	Core_Init (ENGINE_FAMILY_NAME, &qfunction_set, main_window_holder_addr);
+}
 
 int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 {
@@ -90,11 +94,26 @@ int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop)
 	// Set Up Parameters
 	//
 
+#ifdef PLATFORM_IOS
+	{
+		const char *File_iPhone_Documents_URL (void);
+		c_strlcpy (host_parms._basedir, File_iPhone_Documents_URL() ); // Uses current working directory.
+	}
+#else
 	c_strlcpy (host_parms._basedir, File_Getcwd()); // Uses current working directory.
+#endif
 
 	// Baker: On Windows if a user makes a shortcut and doesn't set the "Start In" directory, it won't find the pak files
 	// we will help by silently checking for situation and correcting the directory
 	//	alert ("Current basedir is " QUOTED_S ".", host_parms._basedir);
+	if (0) {
+		const char *sfp;
+		sfp = _vas (File_Getcwd());
+		msgbox ("Curpath", "%s", sfp);
+		sfp = va ("%s/id1", host_parms._basedir);
+		msgbox (NULL, "id1 exists? %s %d", sfp, File_Exists(sfp));
+	}
+	
 	
 	if (!File_Exists (va ("%s/id1/pak0.pak", host_parms._basedir)) && File_Exists (va ("%s/id1/pak0.pak", executable_directory)) ) {
 		// Copy exe_dir to cwd}

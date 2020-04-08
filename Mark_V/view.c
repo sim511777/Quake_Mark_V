@@ -155,7 +155,7 @@ void View_DriftPitch (void)
 {
 	float		delta, move;
 
-	if (cl.noclip_anglehack || !cl.onground || cls.demoplayback )
+	if (cl.noclip_anglehack || !cl.onground || cls.demoplayback)
 	//FIXME: noclip_anglehack is set on the server, so in a nonlocal game this won't work.
 	{
 		cl.driftmove = 0;

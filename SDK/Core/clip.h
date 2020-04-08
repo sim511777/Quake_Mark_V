@@ -20,7 +20,7 @@ typedef struct
 } crectrb_t;
 
 crect_t crect_t_make (int x, int y, int w, int h);
-crect_t crect_t_centered (int w, int h, crect_t area);
+crect_t crect_t_centered (int w, int h, const crect_t *area);
 #define crect_hit(rect, x, y) (rect).left <= (x) && (x) < (rect).left + (rect).width && (rect).top <= (y) && (y) < (rect).top + (rect).height
 
 typedef struct
@@ -30,10 +30,10 @@ typedef struct
 
 const char *vp_str_crect (void *v, int n);
 //extern vt_struct_def crect_t_def;
-int crect_t_print (void *v, printline_fn_t my_printline);
+int crect_t_printline (void *v, printline_fn_t my_printline);
 
 #define CRECT_PRINTSTR(prect) va("%d, %d @ %d x %d (%d, %d) - (%d, %d)", (prect)->left, (prect)->top, (prect)->width, (prect)->height, (prect)->left, (prect)->top, (prect)->left + (prect)->width - 1, (prect)->top + (prect)->height - 1 )
-//Example: my_print ("%-20.20s %c", CRECT_PRINTSTR(&b->hitbox[n].rect), caption[hb->n] );
+//Example: my_printline ("%-20.20s %c", CRECT_PRINTSTR(&b->hitbox[n].rect), caption[hb->n] );
 
 
 ///////////////////////////////////////////////////////////////////////////////

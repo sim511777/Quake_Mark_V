@@ -37,8 +37,7 @@
 	//#pragma warning( disable : 4142 ) // SDL likes to define int8_t, uintptr_t, etc.
 	#pragma comment (lib, "sdl2.lib")
 	#pragma comment (lib, "sdl2main.lib")
-	#include <SDL2/SDL.h>
-	
+	#include <SDL2/SDL.h> // Formerly #include <SDL.h>
 
 	//#include <core_windows.h> // LLWinKeyHook
 #else
@@ -47,7 +46,7 @@
 		#include <SDL.h>
 	#else
 		#include <SDL2/SDL.h>
-	#include <SDL2/SDL_syswm.h>
+		#include <SDL2/SDL_syswm.h> // To expose things like HWND to us.
 	#endif
 #endif
 

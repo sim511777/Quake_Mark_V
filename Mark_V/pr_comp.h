@@ -28,8 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef int	func_t;
 typedef int	string_t;
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (etype)
 	ev_bad = -1,
 	ev_void = 0,
 	ev_string,

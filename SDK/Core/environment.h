@@ -148,6 +148,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DEBUG
 #endif // DEBUG Consistency
 
+#ifdef DEBUG
+	#define IS_DEBUG_BUILD 1
+#else
+	#define IS_DEBUG_BUILD 0
+#endif
+
 #ifdef DIRECT3D8_WRAPPER // dx8 - Define DIRECT3D_WRAPPER_VERSION 8
 	#define DIRECT3D_WRAPPER_VERSION 8
 #endif
@@ -187,40 +193,64 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #ifdef __GNUC__
-#ifndef PLATFORM_LINUX
-	#define CORE_NEEDS_STRNDUP // Mingw is pissing me off ..
-#endif // !PLATFORM_LINUX
+	#ifndef PLATFORM_LINUX
+		#define CORE_NEEDS_STRNDUP // Mingw is pissing me off ..
+	#endif // !PLATFORM_LINUX
 	#define CORE_NEEDS_STRNLEN // Mingw is pissing me off ..
 #endif // __GNUC__
+
+#ifdef __GNUC__
+	#define ENUM_FORCE_INT_GCC_(_shortname) __ ## _shortname ## _invalid = -1, // look like __borderstyle_invalid = -1,
+#else
+	#define ENUM_FORCE_INT_GCC_(_shortname) // Nada
+#endif __GNUC__
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Microsoft Visual Studio
 ///////////////////////////////////////////////////////////////////////////////
 
+
+#ifdef PLATFORM_WINDOWS
+    #define CORE_NEEDS_MEMMEM // Everyone?   mingw/gcc seems to need on Windows too.
+#endif
+
 #ifndef _MSC_VER
 	#define CORE_NEEDS_MEMICMP	// Non-Microsoft compilers don't have this function
+	#define c_atoi64 atoll // string to long long (int64_t).  Microsoft uses a different name, for our purposes we will use this name
+	#include <stdint.h>
 #endif // ! _MSC_VER
 
-#define SPRINTSFUNC "%s: "
+#define SPRINTSFUNC_ "%s: " // TODO: should be in assertions.h
 
 #ifdef _MSC_VER
 	typedef __int64 int64_t;
 	#define va_copy(dest, src) (dest = src) // Visual Studio doesn't need/use va_copy
-	#define PRINTF_INT64 "%I64d" // This is stupid
+
+	#define PRINTF_INT64 "%I64d" // This is stupid int64_t print .. how to do on non-Microsoft?
+
+
+	#define c_atoi64 _atoi64
 
 	#if defined(_WIN64)
 		#define ssize_t	SSIZE_T
+		#define PRINTF_INTPTR "%I64d" // This is stupid int64_t print .. how to do on non-Microsoft?
+		#define PRINTF_UINTPTR "%I64u" // This is stupid int64_t print .. how to do on non-Microsoft?
 	#else
 		typedef int	ssize_t;
+		#define PRINTF_INTPTR "%d" // This is stupid int64_t print .. how to do on non-Microsoft?
+		#define PRINTF_UINTPTR "%u" // This is stupid int64_t print .. how to do on non-Microsoft?
 	#endif // _WIN64
 
 	#ifdef _WIN64 //
 	   typedef signed __int64    intptr_t;
 	   typedef unsigned __int64  uintptr_t;
+		//#define CORE_64_BIT 1
+		#define CORE_64_BIT
 	#else // _WIN64
 	   typedef signed int   intptr_t;
 	   typedef unsigned int uintptr_t;
+	   //#define CORE_64_BIT 0
 	#endif // _WIN64
 
 
@@ -261,7 +291,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		#define strcasecmp stricmp
 		#define strncasecmp strnicmp
 	#else
-		#define __func__ __FUNCTION__
+		#define __func__ __FUNCTION__  // Pretty function support
 
 		#ifndef strcasecmp
 			#define strcasecmp _stricmp		// Largely for HTTPClientWrapper.h
@@ -283,17 +313,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	#pragma warning(disable:4761) // Baker: vc6 integral size mismatch in argument; conversion supplied
 //	#pragma warning(disable:4267) // conversion from 'size_t' to 'type', possible loss of data (/Wp64 warning)
 
+#else
+	// Detect 64-bit on other platforms here.
+	// https://stackoverflow.com/questions/5272825/detecting-64bit-compile-in-c
+	// Commented out until I can verify.
+
+	//#include <stdint.h>
+	//#if UINTPTR_MAX == 0xffffffff
+	///* 32-bit */
+	//#elif UINTPTR_MAX == 0xffffffffffffffff
+	///* 64-bit */
+	//#else
+	///* wtf */
+	//#endif
+
 #endif // _MSC_VER
 
 // -save-temps option in gcc is pre-processed file.  Didn't work as far as I could tell -E is what worked.
-//#define __FUNC_COLON_SPACE__ __core_function__  // You have to treat it as a variable for gcc :(  Doesn't behave like string literal.
+//#define __FUNC_COLON_SPACE__ __core_function__ ": " // You have to treat it as a variable for gcc :(  Doesn't behave like string literal.
 
 
 #ifdef __clang__
 	#pragma clang diagnostic ignored "-Wshorten-64-to-32" // size_t 64 bits to a 32 bit int (because we don't use these for offsets and we aren't handling giga-files or giga-memory)
 //	#pragma clang diagnostic ignored "-Wincompatible-pointer-types" // This is generally not advised!!
 
-	#pragma clang diagnostic ignored "-Wsign-conversion" // unsigned char vs. char  Not needed, I use compiler option now.
+//	#pragma clang diagnostic ignored "-Wsign-conversion" // unsigned char vs. char  Not needed, I use compiler option now.
 	#pragma clang diagnostic ignored "-Wmissing-prototypes" // Yes, this is killing me.
 	#pragma clang diagnostic ignored "-Winvalid-noreturn" // Core_printf.c returns with attribute noreturn
 	//	#pragma clang diagnostic ignored "-Wambiguous-macro" // M_PI  No I had it defined twice
@@ -339,11 +383,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #undef false
 
 
-typedef enum
-{
-#ifdef __GNUC__
-    ___cbool_gcc_sucks_signed = -1, // To throw into enums to force fucking int like the C standards say enumerations are supposed to be :(
-#endif // __GNUC__
+typedef enum { ENUM_FORCE_INT_GCC_ (cbool)
+	//#ifdef __GNUC__
+	//	___cbool_gcc_sucks_signed = -1, // To throw into enums to force fucking int like the C standards say enumerations are supposed to be :(
+	//#endif // __GNUC__
 	false = 0,
 	true = 1,
 } cbool;
@@ -430,7 +473,7 @@ extern const char * const empty_string;  // Why?  A decent compiler would combin
 //  Command Support
 ///////////////////////////////////////////////////////////////////////////////
 
-// lineparse_t - Line_Parse_Alloc and Line_Parse_Free
+// lparse_t - Line_Parse_Alloc and Line_Parse_Free
 // MAX_CMD_256 is max string.  We could dynamically allocate but
 // then we run into the harder limit of 80 args and how to handle that.
 // And nothing needs 80 args.  For a general splitter, we should make a new
@@ -448,10 +491,8 @@ typedef int cmdret_t; // 0 = successful, non-zero = error
 // example:  int frogs[32]; ARRAY_SIZE(frogs);
 // output:   static int _num_frogs = 32
 #define ARRAY_COUNT(_array)			(sizeof(_array) / sizeof(_array[0]))
-#define ARRAY_STRLEN(s) (ARRAY_COUNT(s) - sizeof(s[0]))  // Tags: STRING_LENGTH STRING_LEN STRLEN
+#define ARRAY_STRLEN(s) (ARRAY_COUNT(s) - sizeof(s[0]))  // Tags: STRING_LENGTH STRING_LEN STRLEN  (size - 1)
 #define ARRAY_BOUNDS_FAIL(_n, _count) ((_n) < 0 || (_count) <= (_n))
-
-#define YES_OR_NULL(_blah) _blah : NULL
 
 //#define ARRAY_COUNT_STATIC(_array)	static const int _array ## _count = sizeof(_array) / sizeof(_array[0])
 
@@ -492,6 +533,13 @@ typedef void  (*MShutdown)			(void *);
 #define	COMPILE_TIME_ASSERT(name, x)	\
 	typedef int dummy_ ## name[(x) * 2 - 1]
 
+#ifdef _DEBUG // This is debug only ...
+	#define	DEBUG_COMPILE_TIME_ASSERT(HINT_ERROR_WORD, CONDITION_THAT_MUST_BE_TRUE)	\
+		typedef int dummy_ ## HINT_ERROR_WORD[(CONDITION_THAT_MUST_BE_TRUE) * 2 - 1]
+#else
+	#define DEBUG_COMPILE_TIME_ASSERT(HINT_ERROR_WORD, CONDITION_THAT_MUST_BE_TRUE)	// Nothing!
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //  Vile Hacks
 ///////////////////////////////////////////////////////////////////////////////
@@ -500,6 +548,8 @@ typedef void  (*MShutdown)			(void *);
 
 #define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :    // EVIL!  And so awesome.
 #define SWITCH_DEFAULT(_val) (_val)
+
+#define IDX_NOT_FOUND_NEG1 -1
 
 #define block_start__ {
 #define __block_end }
@@ -549,6 +599,17 @@ typedef void *sys_handle_t;
 #define INT64_MAX     9223372036854775807i64       /* maximum signed long long int value */
 #define INT64_MIN   (-9223372036854775807i64 - 1)  /* minimum signed long long int value */
 #endif
+
+typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
+	VR_RT_CANT_RUN_EMPTY_BYTECODE_NEG4 = -4,		// Differs from uncompiled as we are trying to run it.  We shouldn't, would be VB6 coding mistake.
+	VR_RT_STOPPED_BY_USER_NEG3 = -3,				// Possibly ... I may change my mind
+	VR_RT_BREAK_NEG2 = -2,							// Possibly ... I may change my mind
+	VR_CT_UNCOMPILED_NEG1 = -1,						// FOR EXTERN USE ONLY
+	VR_OK_0 = 0,
+	VR_ERROR_ANY_1 = 1,
+	VR_VARTYPE_OVERFLOW = 2,							// Divide by zero?
+	_VRESULT_MAXNUM
+} VRESULT;
 
 #endif // ! __ENVIRONMENT_H__
 

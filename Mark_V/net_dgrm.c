@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // This is enables a simple IP banning mechanism
 #define BAN_TEST
 
-#include <core.h>
+#include "core.h"
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
@@ -57,8 +57,8 @@ static struct
 
 static int myDriverLevel;
 
-extern cbool m_return_onerror;
-extern char m_return_reason[32];
+//extern cbool sMenu.return_onError;
+//extern char sMenu.return_reason[32];
 static double heartbeat_time;	//when this is reached, send a heartbeat to all masters.
 
 static cbool testInProgress = false;
@@ -2367,7 +2367,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	{
 		reason = "No Response";
 		Con_SafePrintLinef ("%s", reason);
-		c_strlcpy (m_return_reason, reason);
+		c_strlcpy (sMenu.return_reason, reason);
 		goto ErrorReturn;
 	}
 
@@ -2375,7 +2375,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	{
 		reason = "Network Error";
 		Con_SafePrintLinef ("%s", reason);
-		c_strlcpy (m_return_reason, reason);
+		c_strlcpy (sMenu.return_reason, reason);
 		goto ErrorReturn;
 	}
 
@@ -2386,7 +2386,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	{
 		reason = MSG_ReadString();
 		Con_PrintLinef ("%s", reason);
-		c_strlcpy (m_return_reason, reason);
+		c_strlcpy (sMenu.return_reason, reason);
 		goto ErrorReturn;
 	}
 
@@ -2424,7 +2424,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	{
 		reason = "Bad Response";
 		Con_PrintLinef ("%s", reason);
-		c_strlcpy (m_return_reason, reason);
+		c_strlcpy (sMenu.return_reason, reason);
 		goto ErrorReturn;
 	}
 
@@ -2457,7 +2457,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 		// Basically this is unreachable.  UDP_Connect always returns 0.  Loop_Connect probably can't fail.
 		reason = "Connect to Game failed";
 		Con_PrintLinef ("%s", reason);
-		c_strlcpy (m_return_reason, reason);
+		c_strlcpy (sMenu.return_reason, reason);
 
 		goto ErrorReturn;
 	}
@@ -2487,7 +2487,7 @@ static qsocket_t *_Datagram_Connect (struct qsockaddr *serveraddr)
 	(note that this makes the nop redundant, but that's a different can of worms)
 	*/
 
-	m_return_onerror = false;
+	sMenu.return_onError = false;
 	return sock;
 
 ErrorReturn:
@@ -2495,10 +2495,11 @@ ErrorReturn:
 
 ErrorReturn2:
 	dfunc.Close_Socket(newsock);
-	if (m_return_onerror)
+	if (sMenu.return_onError)
 	{
-		Key_SetDest (key_menu); m_state = m_return_state; // Baker: A menu keydest needs to know menu item
-		m_return_onerror = false;
+		Key_SetDest (key_menu); 
+		Menu_SetDest (sMenu.return_state); // Baker: A menu keydest needs to know menu item
+		sMenu.return_onError = false;
 	}
 
 	return NULL;

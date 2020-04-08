@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 static unsigned int sNextPowerOfTwo (unsigned int v) // compute the next highest power of 2 of 32-bit v
 {
+#pragma message ("What does this do to zero?  What does this do to 16?  Does it round up 16 to 32 or does it stay at 16?  What about zero?")
 	v--;
 	v |= v >> 1;
 	v |= v >> 2;
@@ -52,7 +53,18 @@ int random_int (int low, int high)
 }
 
 
-unsigned int roundup_pow2 (unsigned int x)
+unsigned int roundup_batch (unsigned int n, unsigned int batchsize_pow2)
+{
+	unsigned int batchsize_less_1 = batchsize_pow2 - 1;
+	unsigned int out;
+//	DEBUG_ASSERT_MSG (is_pow2(batchsize_pow2), "X is not power of 2")
+		
+	out = (n + batchsize_less_1) &~ batchsize_less_1;
+	return out;
+}
+
+
+unsigned int roundup_pow2_or_next_pow2 (unsigned int x)
 {
 	if (is_pow2(x))
 		return x;
@@ -166,6 +178,17 @@ double angle_maybe_wrap (double angle, reply cbool *did_wrap_out)
 	return angle; // No effect.  Do not set angle wrap flag.
 }
 
+// Angles 0-359.9999 --> -179.9999 to -0.000001  0-180
+double angledelta_maybe_wrap (double angle, reply cbool *did_wrap_out)
+{
+	angle = angle_maybe_wrap(angle, did_wrap_out);
+
+	if (angle > 180) // 180.00001 --> -180
+		angle = angle - 360.0; // 180.05 - 360 = -179.95
+
+	return angle;
+}
+
 cbool range_extend_d (double value, required double *lo, required double *hi)
 {
 	// Special condition where hi is 0 and lo is greater than hi means uninitialized lo and hi
@@ -210,4 +233,99 @@ int math_sign (int x)
 	if (!x) return 0;
 	if (x > 0) return 1;
 	return -1;
+}
+
+
+#define ASPECT4_3 (4/3) // 1.3333333
+double Math_Degrees_Corrected_Adjusted_Fov_X (double fov_x_for_aspect_4_3, double width, double height)
+{
+	double fov_x_for_aspect_4_3_clamped = CLAMP(1, fov_x_for_aspect_4_3, 179);
+	double height_div_width = height / width;
+
+	if (height_div_width == 0.75)
+		return fov_x_for_aspect_4_3_clamped;
+	else {
+		// a = (4/3) / (3/4) /* 1.77778 */  * tan ( 90 degrees * 2 ... converted to radians) ?
+		double a = atan(ASPECT4_3 / height_div_width * tan(fov_x_for_aspect_4_3_clamped / 360 * M_PI));
+		double b = a * 360 / M_PI;
+		return b;
+	}
+}
+
+
+double Math_Degrees_Corrected_Adjusted_Fov_Y (double fov_adjusted_x, double width, double height)
+{
+	double fov_adjusted_x_clamped = CLAMP(1, fov_adjusted_x, 179);
+	double a = width / tan (fov_adjusted_x_clamped / 360 * M_PI);
+    double b = atan (height / a);
+    double c = b * 360 / M_PI;
+    return c;
+}
+
+#define FRAC_FROM_DOUBLE_FRAC(dbl) ( (dbl + 1) / 2)  // diameterFraction * 2 - 1
+
+
+
+
+double Math_Degrees_FromDiameterFrac (double diameter_0_to_2 /* 0 to 2, a double clampf*/)
+{
+//90 - fov_x_div2  ... so maybe 45?
+	if (diameter_0_to_2 == 0.00)		return 0;
+	if (diameter_0_to_2 == 0.25)		return 60;	// Hmmm.  360 is 2.
+	if (diameter_0_to_2 == 0.50)		return 90;
+	if (diameter_0_to_2 == 0.75)		return 120;
+	if (diameter_0_to_2 == 1.00)		return 180;
+	
+	{
+		double frac_neg_one_to_one = diameter_0_to_2 + FRAC_FROM_DOUBLE_FRAC(diameter_0_to_2); // (diameterFraction + 1 / 2)
+		bounds_check_fatal_ (-1, frac_neg_one_to_one, 1) // Don't semi-colon me, bro!
+		
+		{
+			double retval = 180 - RADIANS_TO_DEGREES(acos(frac_neg_one_to_one));
+			return retval;
+		}
+	}
+}
+
+double Math_Degrees_Sin (double degrees) 
+{
+	degrees = angle_maybe_wrap (degrees, NULL);
+    
+    if (degrees == 0)	return 0;
+	// 45:    Sin = 0.707106781186547
+    if (degrees == 90)	return 1;
+	//135:   Sin = 0.707106781186549
+    if (degrees == 180) return 0;
+	//225:   Sin = -0.707106781186545
+    if (degrees == 270)	return -1;
+	//315:   Sin = -0.707106781186551
+    return sin(Degrees_To_RadiansEx(degrees));
+}
+
+double Math_Degrees_Cos (double degrees)
+{
+	degrees = angle_maybe_wrap (degrees, NULL);
+
+	if (degrees == 0)	return 1;
+	// 45:    Cos =  0.707106781186548
+	if (degrees == 90)	return 0;
+	// 135:   Cos = -0.707106781186546
+	if (degrees == 180) return -1;
+	// 225:   Cos = -0.70710678118655
+	if (degrees == 270) return 0;
+	// 315:   Cos = 0.707106781186544
+    return cos(Degrees_To_RadiansEx(degrees));
+}
+
+
+
+double Math_Degrees_DiameterFrac (double degrees)
+{
+//' for n = 0 to 180 step 1/12*180:print spaced("Case",n,":","DiameterFrac =",maths.Angles.DiameterFrac(n)):next
+//    ' // 0 to 1 running along diameter
+//    ' // DiameterFrac(0) = -1---->0 , (90) = 0--->0.5, (180) = 1---->1.0
+//    ' // DiameterFrac(0) = -1 , (90) = 0, (180) = 1
+    double frac_neg_one_to_one = Math_Degrees_Cos(degrees); // cos is -1 to 0 to 1
+	double retval = FRAC_FROM_DOUBLE_FRAC(frac_neg_one_to_one);
+	return retval;
 }

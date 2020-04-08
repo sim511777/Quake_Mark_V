@@ -204,7 +204,7 @@ unsigned *_Shell_Clipboard_Get_Image_RGBA_Alloc (int *outwidth, int *outheight)
 
     if (imgRepData == nil)
     {
-        logd (SPRINTSFUNC QUOTED_S " exists but couldn't load", __func__, "Fix me");
+        logd (SPRINTSFUNC_ QUOTED_S " exists but couldn't load", __func__, "Fix me");
         return NULL;
     }
 
@@ -259,10 +259,10 @@ int _Shell_Window_Style (wdostyle_e style)
 {
     int dw_bordered    =  NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask;
     int dw_borderless  =  NSBorderlessWindowMask;
-    int ret = Flag_Check (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
+    int ret = Flag_Check_Bool (style, wdostyle_borderless) ? dw_borderless : dw_bordered;
 
-    if (!Flag_Check (style, wdostyle_resizable))
-        ret = Flag_Remove (style, NSResizableWindowMask);
+    if (!Flag_Check_Bool (style, wdostyle_resizable))
+        ret = Flag_Remove_Calc (style, NSResizableWindowMask);
 
     return ret;
 }

@@ -190,8 +190,7 @@ extern cbool com_modified;
 extern int com_hdfolder_count;
 
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (gametype)
 	gametype_standard = 0,
 	gametype_rogue = 1,
 	gametype_hipnotic = 2,
@@ -263,8 +262,7 @@ void COM_DeQuake_String (char *s_edit);
 void COM_DeQuake_Name (char *s_edit);
 
 
-typedef enum
-{
+typedef enum { ENUM_FORCE_INT_GCC_ (fs_read_flags)
 	FS_STRIP_CR = 1, // Remove ending carriage returns
 	FS_WHITESPACE_TO_SPACE = 2, //  chars < 32 become 32
 	FS_TRIM = 4, // Trims whitespace

@@ -73,7 +73,7 @@ void Rect_Expand_Point (crect_t *rect, int x, int y, cbool *did_change)
 		if (did_change)
 		{
 	//#define CRECT_PRINTSTR(prect) va("%d, %d (%d x %d)", (prect)->left, (prect)->top, (prect)->width, (prect)->height )
-	//Example: my_print ("%-20.20s %c", CRECT_PRINTSTR(&b->hitbox[n].rect), caption[hb->n] );
+	//Example: my_printline ("%-20.20s %c", CRECT_PRINTSTR(&b->hitbox[n].rect), caption[hb->n] );
 			*did_change = expanded; // Perhaps in future we increment this +1 instead of just setting 1.
 		}
 //		logd ("Rect expanded to: %s x2 y2", CRECT_PRINTSTR(rect));
@@ -303,11 +303,11 @@ crect_t crect_t_make (int x, int y, int w, int h)
 	return rect;
 }
 
-crect_t crect_t_centered (int w, int h, crect_t area)
+crect_t crect_t_centered (int w, int h, const crect_t *area)
 {
-	int offset_x = (area.width  - w) / 2;
-	int offset_y = (area.height - h) / 2;
-	crect_t rect = {area.left + offset_x, area.top + offset_y, w, h};
+	int offset_x = (area->width  - w) / 2;
+	int offset_y = (area->height - h) / 2;
+	crect_t rect = {area->left + offset_x, area->top + offset_y, w, h};
 	return rect;
 }
 

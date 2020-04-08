@@ -27,10 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  OPENGL: Determine platform #includes
 ///////////////////////////////////////////////////////////////////////////////
 
+// Relevant, but not OpenGL specific: 
+//           PLATFORM_SCREEN_FLIPPED_Y    0  Windows/Linux/Android
+//           PLATFORM_SCREEN_FLIPPED_Y 1  Mac/iPhone bottom left is 0,0
+//           PLATFORM_SCREEN_PORTRAIT     1  Mobile, height > width 
 
 
 #ifdef PLATFORM_WINDOWS
-	#include "core_windows.h"
+	#include "core_windows.h" // APIENTRY
 
 	#ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Need "gl_constants.h"
 		#include "gl_constants.h"
@@ -65,7 +69,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#endif // PLATFORM_GUI_WINDOWS
 
 #else
-	#define APIENTRY
+	#define APIENTRY // Non-Windows	
 #endif // PLATFORM_WINDOWS
 
 #ifdef PLATFORM_OSX
@@ -100,9 +104,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	#pragma message ("Not orthoed")
 	#define glOrtho glOrthof
 	#define glFrustum glFrustumf
+	#define glDepthRange glDepthRangef
 #else
 	#define glOrthof "Nope"			// We want consistency.  Use "glOrtho" and "glFrustum".
 	#define glFrustumf "Nope"		// NEVER glOrthof or glFrustumf.  We cannot #define glOrthof to glOrtho and disallow glOrtho
+	#define glDepthRangef "Nope"
 //	#pragma message ("Orthoed")		// Because that would be macro recursion.  So glOrtho and glFrustum it is!
 #endif // PLATFORM_OPENGL_DESKTOP	// Note that in decent and final code, we will never be using either of those anyway.
 
@@ -114,8 +120,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef PLATFORM_OPENGLES // Hmmmm.  I'm not sure this will survive.  I would wire the functions to glActiveTexture and glMultiTexCoord2f or whatever its name is.
 	typedef void (APIENTRY *PFNGLMULTITEXCOORD2FARBPROC) (GLenum, GLfloat, GLfloat);
 	typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
-	typedef void (APIENTRY *qGLColorTableEXT) (int, int, int, int, int, const void*);
-	typedef void (APIENTRY *qgl3DfxSetPaletteEXT) (GLuint *);
 #endif // PLATFORM_OPENGL_DESKTOP
 
 #ifndef GL_CLAMP_TO_EDGE
@@ -196,6 +200,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OUR STUFF
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef DEBUG
+	#define GL_ErrorPrint GL_ErrorPrintFn (__func__, __LINE__)
+#else
+	#define GL_ErrorPrint
+#endif
+
+void GL_ErrorPrintFn (const char *funcname, int linenum);
+
 
 void _GL_CheckError (const char *funcname, int linenum);
 

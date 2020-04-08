@@ -35,7 +35,7 @@ byte *SV_FatPVS (vec3_t org, qmodel_t *worldmodel);
 extern byte mod_novis[MAX_MAP_LEAFS/8];
 int vis_changed; //if true, force pvs to be refreshed
 
-#define ACTIVE_MIRROR(_s) (frame.has_mirror && (Flag_Check ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
+#define ACTIVE_MIRROR(_s) (frame.has_mirror && (Flag_Check_Bool ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
 #define DRAW_ACTIVE_MIRROR (active_mirror && frame.in_mirror_overlay)
 
 
@@ -448,10 +448,10 @@ static void R_DrawTextureChains_Multitexture_Tex (texture_t *t) //is_mirror_pass
 			cbool active_mirror = ACTIVE_MIRROR(s);
 #if 0
 // Debugging
-			cbool surf_mirro = Flag_Check (s->flags, SURF_DRAWMIRROR);
+			cbool surf_mirro = Flag_Check_Bool (s->flags, SURF_DRAWMIRROR);
 			cbool planematch = frame.mirror_plane && s->plane;
 			int mirrorcmp  = frame.mirror_plane && s->plane ? memcmp (frame.mirror_plane, s->plane, sizeof(frame.mirror_plane[0])) : 0;
-//cbool test = (frame.has_mirror && (Flag_Check ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
+//cbool test = (frame.has_mirror && (Flag_Check_Bool ((_s)->flags, SURF_DRAWMIRROR) && frame.mirror_plane && (_s)->plane && !memcmp (frame.mirror_plane, (_s)->plane, sizeof(frame.mirror_plane[0]))))
 //#define DRAW_ACTIVE_MIRROR (active_mirror && frame.in_mirror_overlay)
 			if (frame.in_mirror_draw && surf_mirro)
 				continue;
@@ -566,7 +566,7 @@ void R_DrawTextureChains_Multitexture_Mirrors (void)
 			continue;
 
 // Let Multitexture catch this
-		if ( !Flag_Check (t->texturechain->flags, SURF_DRAWMIRROR) )
+		if ( !Flag_Check_Bool (t->texturechain->flags, SURF_DRAWMIRROR) )
 			continue;
 // Culled by who and when?  I don't want to draw mirrors that can't be seen.
 		

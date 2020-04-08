@@ -238,6 +238,7 @@ pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 
 	if (!curpak.f)
 	{
+		//loghush (S5_PAK "Couldn't open pak %s", curpak.url);
 		logd ("Couldn't open pak %s", curpak.url);
 		return NULL;
 	}
@@ -246,6 +247,7 @@ pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 
 	if (memcmp (curpak.header.id, PAK_HEADER, strlen(PAK_HEADER)) )
 	{
+		//loghush (S5_PAK "%s is not a packfile", curpak.url);
 		log_debug ("%s is not a packfile", curpak.url); // Communicate unusual nature of the problem
 		goto pakopenerr;
 	}
@@ -256,6 +258,7 @@ pak_t* Pak_Open (const char *packfile_url, cbool dont_close)
 
 	if (curpak.numfiles > MAX_FILES_IN_PACK_2048)
 	{
+		//loghush (S5_PAK "%s has %d files > max %d", curpak.url, curpak.numfiles, MAX_FILES_IN_PACK_2048);
 		log_debug ("%s has %d files > max %d", curpak.url, curpak.numfiles, MAX_FILES_IN_PACK_2048); // Communicate unusual nature of the problem
 		goto pakopenerr;
 	}
@@ -361,6 +364,7 @@ int sPak_Extract_File (const char *packfile_url, const char *inside_pak_filename
 
 			if (!FileHandle_Block_To_File (curpak->f, cur->filelen, curfile))
 			{
+				//loghush ("Error trying to write file %s", curfile);
 				logd ("Error trying to write file %s", curfile); // Obvious?
 				return false; // Don't need to print error message?
 			}

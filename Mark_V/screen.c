@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include "quakedef.h"
-
+#include "screen.h" // Courtesy
 
 /*
 
@@ -1212,104 +1212,112 @@ void SCR_EndLoadingPlaque (void)
 
 //=============================================================================
 
-const char	*scr_notifystring;
-cbool	scr_drawdialog;
 
-void SCR_DrawNotifyString (void)
-{
-	const char	*start;
-	int		l;
-	int		j;
-	int		x, y;
+//cbool	scr_drawdialog;
 
-	Draw_SetCanvas (CANVAS_MENU); //johnfitz
+//const char	*scr_notifystring;
+//
+//void SCR_DrawNotifyString (void)
+//{
+//	const char	*start;
+//	int		l;
+//	int		j;
+//	int		x, y;
+//
+//	Draw_SetCanvas (CANVAS_MENU); //johnfitz
+//
+//	start = scr_notifystring;
+//
+//	y = 200 * 0.35; //johnfitz -- stretched overlays
+//
+//	do
+//	{
+//	// scan the width of the line
+//		for (l=0 ; l<40 ; l++)
+//			if (start[l] == '\n' || !start[l])
+//				break;
+//		x = (320 - l*8)/2; //johnfitz -- stretched overlays
+//		for (j=0 ; j<l ; j++, x+=8)
+//			Draw_Character (x, y, start[j]);
+//
+//		y += 8;
+//
+//		while (*start && *start != '\n')
+//			start++;
+//
+//		if (!*start)
+//			break;
+//		start++;		// skip the \n
+//	} while (1);
+//}
 
-	start = scr_notifystring;
-
-	y = 200 * 0.35; //johnfitz -- stretched overlays
-
-	do
-	{
-	// scan the width of the line
-		for (l=0 ; l<40 ; l++)
-			if (start[l] == '\n' || !start[l])
-				break;
-		x = (320 - l*8)/2; //johnfitz -- stretched overlays
-		for (j=0 ; j<l ; j++, x+=8)
-			Draw_Character (x, y, start[j]);
-
-		y += 8;
-
-		while (*start && *start != '\n')
-			start++;
-
-		if (!*start)
-			break;
-		start++;		// skip the \n
-	} while (1);
-}
-
-/*
-==================
-SCR_ModalMessage
-
-Displays a text string in the center of the screen and waits for a Y or N
-keypress.
-==================
-*/
-#pragma message ("Baker: Note that because this loop gets control and doesn't run host frame, a connection to a server or connected clients can die here")
-
-int SCR_ModalMessage (const char *text, float timeout, cbool enter_out) //johnfitz -- timeout
-{
-	double time1, time2; //johnfitz -- timeout
-
-	if (isDedicated)
-		return true;
-
-	scr_notifystring = text;
-
-// draw a fresh screen
-#ifdef WINQUAKE_RENDERER_SUPPORT
-	winquake_scr_fullupdate = 0;
-#endif // WINQUAKE_RENDERER_SUPPORT
-
-	scr_drawdialog = true;
-	SCR_UpdateScreen ();
-	scr_drawdialog = false;
-
-	S_ClearBuffer ();		// so dma doesn't loop current sound
-
-	time1 = System_DoubleTime () + timeout; //johnfitz -- timeout
-	time2 = 0.0f; //johnfitz -- timeout
-
-	do
-	{
-		key_count = -1;		// wait for a key down and up
-		System_SendKeyEvents ();
-		System_Sleep_Milliseconds (16);
-		if (timeout) time2 = System_DoubleTime (); //johnfitz -- zero timeout means wait forever.
-	} while (key_lastpress != 'y' &&
-		key_lastpress != 'n' &&
-		 key_lastpress != K_ESCAPE &&
-			 (!enter_out || key_lastpress != K_ENTER) &&
-		time2 <= time1);
-
-	// make sure we don't ignore the next keypress
-	if (key_count < 0)
-		key_count = 0;
-
-#ifdef WINQUAKE_RENDERER_SUPPORT
-	winquake_scr_fullupdate = 0;
-#endif // WINQUAKE_RENDERER_SUPPORT
-
-	//johnfitz -- timeout
-	if (time2 > time1)
-		return false;
-	//johnfitz
-
-	return key_lastpress == 'y';
-}
-
+///*
+//==================
+//SCR_ModalMessage
+//
+//Displays a text string in the center of the screen and waits for a Y or N
+//keypress.
+//==================
+//*/
+//#pragma message ("Baker: Note that because this loop gets control and doesn't run host frame, a connection to a server or connected clients can die here")
+//
+//// Baker: Feb 2017 - this bastard is dangerous.
+//// Windows messages still happen.
+//// Problems:  Blocks networks traffic
+////            Doesn't refresh if you ALT-TAB out because it draws just once.
+//int SCR_ModalMessage (const char *text, float timeout, cbool enter_out) //johnfitz -- timeout
+//{
+//	double time1, time2; //johnfitz -- timeout
+//
+//	if (isDedicated)
+//		return true;
+//
+//	scr_notifystring = text;
+//
+//// draw a fresh screen
+//#ifdef WINQUAKE_RENDERER_SUPPORT
+//	winquake_scr_fullupdate = 0;
+//#endif // WINQUAKE_RENDERER_SUPPORT
+//
+//	scr_drawdialog = true;
+//	SCR_UpdateScreen ();
+//	scr_drawdialog = false;  // Moved below so we know we are in a modal message.
+//
+//	S_ClearBuffer ();		// so dma doesn't loop current sound
+//
+//	time1 = System_DoubleTime () + timeout; //johnfitz -- timeout
+//	time2 = 0.0f; //johnfitz -- timeout
+//
+//	do
+//	{
+//		key_count = -1;		// wait for a key down and up
+//		System_SendKeyEvents ();
+//		System_Sleep_Milliseconds (16);
+//		if (timeout) time2 = System_DoubleTime (); //johnfitz -- zero timeout means wait forever.
+//	} while (key_lastpress != 'y' &&
+//		key_lastpress != 'n' &&
+//		 key_lastpress != K_ESCAPE &&
+//			 (!enter_out || key_lastpress != K_ENTER) &&
+//		time2 <= time1);
+//
+//	scr_drawdialog = false;
+//
+//	// make sure we don't ignore the next keypress
+//	if (key_count < 0)
+//		key_count = 0;
+//
+//#ifdef WINQUAKE_RENDERER_SUPPORT
+//	winquake_scr_fullupdate = 0;
+//#endif // WINQUAKE_RENDERER_SUPPORT
+//
+//	//johnfitz -- timeout
+//	if (time2 > time1)
+//		return false;
+//	//johnfitz
+//
+//	return key_lastpress == 'y';
+//}
+//
 
 //=============================================================================
 
@@ -1547,13 +1555,14 @@ void SCR_UpdateScreen (void)
 	//FIXME: only call this when needed
 	SCR_TileClear ();
 
-	if (scr_drawdialog) //new game confirm
-	{
-		Sbar_Draw ();
-		Draw_FadeScreen ();
-		SCR_DrawNotifyString ();
-	}
-	else if (scr_drawloading) //loading
+	//if (scr_drawdialog) //new game confirm
+	//{
+	//	Sbar_Draw ();
+	//	Draw_FadeScreen ();
+	//	SCR_DrawNotifyString ();
+	//}
+	//else 
+	if (scr_drawloading) //loading
 	{
 		SCR_DrawLoading ();
 		Sbar_Draw ();

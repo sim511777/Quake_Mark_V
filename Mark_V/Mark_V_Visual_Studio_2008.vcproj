@@ -19,8 +19,8 @@
 	<Configurations>
 		<Configuration
 			Name="DX8 Release|Win32"
-			OutputDirectory=".\Object_Files\Release_MSVC_2008_DX8Quake"
-			IntermediateDirectory=".\Object_Files\Release_MSVC_2008_DX8Quake"
+			OutputDirectory=".\objj\Release_MSVC_2008_DX8Quake"
+			IntermediateDirectory=".\objj\Release_MSVC_2008_DX8Quake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -47,7 +47,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -60,10 +60,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_DX8Quake/"
-				ObjectFile=".\Object_Files\Release_MSVC_2008_DX8Quake/"
-				ProgramDataBaseFileName=".\Object_Files\Release_MSVC_2008_DX8Quake/"
+				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Release_MSVC_2008_DX8Quake/"
+				ObjectFile=".\objj\Release_MSVC_2008_DX8Quake/"
+				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_DX8Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -106,7 +106,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -120,8 +120,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Object_Files\Release_MSVC_2008_WinQuake"
-			IntermediateDirectory=".\Object_Files\Release_MSVC_2008_WinQuake"
+			OutputDirectory=".\objj\Release_MSVC_2008_WinQuake"
+			IntermediateDirectory=".\objj\Release_MSVC_2008_WinQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -148,7 +148,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -163,10 +163,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_WinQuake/"
-				ObjectFile=".\Object_Files\Release_MSVC_2008_WinQuake/"
-				ProgramDataBaseFileName=".\Object_Files\Release_MSVC_2008_WinQuake/"
+				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Release_MSVC_2008_WinQuake/"
+				ObjectFile=".\objj\Release_MSVC_2008_WinQuake/"
+				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_WinQuake/"
 				BrowseInformation="1"
 				SuppressStartupBanner="true"
 			/>
@@ -207,7 +207,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -221,8 +221,8 @@
 		</Configuration>
 		<Configuration
 			Name="GL Release|Win32"
-			OutputDirectory=".\Object_Files\Release_MSVC_2008_GLQuake"
-			IntermediateDirectory=".\Object_Files\Release_MSVC_2008_GLQuake"
+			OutputDirectory=".\objj\Release_MSVC_2008_GLQuake"
+			IntermediateDirectory=".\objj\Release_MSVC_2008_GLQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -249,7 +249,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -262,10 +262,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_GLQuake/"
-				ObjectFile=".\Object_Files\Release_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\Object_Files\Release_MSVC_2008_GLQuake/"
+				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Release_MSVC_2008_GLQuake/"
+				ObjectFile=".\objj\Release_MSVC_2008_GLQuake/"
+				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -307,7 +307,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -321,8 +321,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_WinQuake"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_WinQuake"
+			OutputDirectory=".\objj\Debug_MSVC_2008_WinQuake"
+			IntermediateDirectory=".\objj\Debug_MSVC_2008_WinQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -349,7 +349,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -359,10 +359,10 @@
 				PreprocessorDefinitions="_DEBUG;id386=0;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuake/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuake/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_WinQuake/"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_WinQuake/"
+				ObjectFile=".\objj\Debug_MSVC_2008_WinQuake/"
+				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_WinQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -388,7 +388,7 @@
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_WinQuake/mark_v_winquake_debug.pdb"
+				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_WinQuake/mark_v_winquake_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -406,7 +406,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -420,8 +420,8 @@
 		</Configuration>
 		<Configuration
 			Name="WinQuake GL Debug|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			OutputDirectory=".\objj\Debug_MSVC_2008_WinQuakeGL"
+			IntermediateDirectory=".\objj\Debug_MSVC_2008_WinQuakeGL"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -448,7 +448,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -458,10 +458,10 @@
 				PreprocessorDefinitions="_DEBUG;id386=0;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_GL"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_WinQuakeGL/"
+				ObjectFile=".\objj\Debug_MSVC_2008_WinQuakeGL/"
+				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_WinQuakeGL/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -487,7 +487,7 @@
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/mark_v_winquake_debug.pdb"
+				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_WinQuakeGL/mark_v_winquake_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -505,7 +505,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -519,8 +519,8 @@
 		</Configuration>
 		<Configuration
 			Name="DX8 Debug|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_DX8Quake"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_DX8Quake"
+			OutputDirectory=".\objj\Debug_MSVC_2008_DX8Quake"
+			IntermediateDirectory=".\objj\Debug_MSVC_2008_DX8Quake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -547,7 +547,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -557,10 +557,10 @@
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_DX8Quake/"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_DX8Quake/"
+				ObjectFile=".\objj\Debug_MSVC_2008_DX8Quake/"
+				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_DX8Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -588,7 +588,7 @@
 				IgnoreDefaultLibraryNames="libci.lib"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/dx8_mark_v_debug.pdb"
+				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_DX8Quake/dx8_mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -606,7 +606,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -620,8 +620,8 @@
 		</Configuration>
 		<Configuration
 			Name="GL Debug|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_GLQuake"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_GLQuake"
+			OutputDirectory=".\objj\Debug_MSVC_2008_GLQuake"
+			IntermediateDirectory=".\objj\Debug_MSVC_2008_GLQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -648,7 +648,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -656,12 +656,13 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				GeneratePreprocessedFile="0"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="false"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_GLQuake/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_GLQuake/"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_GLQuake/"
+				ObjectFile=".\objj\Debug_MSVC_2008_GLQuake/"
+				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -687,7 +688,7 @@
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
+				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -705,7 +706,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -719,8 +720,8 @@
 		</Configuration>
 		<Configuration
 			Name="SDL GL Debug|Win32"
-			OutputDirectory=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake"
-			IntermediateDirectory=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake"
+			OutputDirectory=".\objj\SDL_Debug_MSVC_2008_GLQuake"
+			IntermediateDirectory=".\objj\SDL_Debug_MSVC_2008_GLQuake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -747,7 +748,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -757,10 +758,10 @@
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
 				RuntimeLibrary="2"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
-				ObjectFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/"
+				PrecompiledHeaderFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
+				ObjectFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
+				ProgramDataBaseFileName=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -786,7 +787,7 @@
 				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
+				ProgramDatabaseFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -804,7 +805,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -818,8 +819,8 @@
 		</Configuration>
 		<Configuration
 			Name="SDL WinQuake GL Debug|Win32"
-			OutputDirectory=".\Object_Files\SDL_Debug_MSVC_2008_Winquake"
-			IntermediateDirectory=".\Object_Files\SDL_Debug_MSVC_2008_Winquake"
+			OutputDirectory=".\objj\SDL_Debug_MSVC_2008_Winquake"
+			IntermediateDirectory=".\objj\SDL_Debug_MSVC_2008_Winquake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -846,7 +847,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -856,10 +857,10 @@
 				PreprocessorDefinitions="_DEBUG;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
 				RuntimeLibrary="2"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
-				ObjectFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
-				ProgramDataBaseFileName=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/"
+				PrecompiledHeaderFile=".\objj\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\SDL_Debug_MSVC_2008_Winquake/"
+				ObjectFile=".\objj\SDL_Debug_MSVC_2008_Winquake/"
+				ProgramDataBaseFileName=".\objj\SDL_Debug_MSVC_2008_Winquake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -885,7 +886,7 @@
 				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/mark_v_debug.pdb"
+				ProgramDatabaseFile=".\objj\SDL_Debug_MSVC_2008_Winquake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -903,7 +904,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\SDL_Debug_MSVC_2008_Winquake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -917,8 +918,8 @@
 		</Configuration>
 		<Configuration
 			Name="DX9 Debug|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_DX9Quake"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_DX9Quake"
+			OutputDirectory=".\objj\Debug_MSVC_2008_DX9Quake"
+			IntermediateDirectory=".\objj\Debug_MSVC_2008_DX9Quake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -945,7 +946,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -955,10 +956,10 @@
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_DX9Quake/"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_DX9Quake/"
+				ObjectFile=".\objj\Debug_MSVC_2008_DX9Quake/"
+				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_DX9Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -978,7 +979,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\dx9_mark_v_debug_vs2008.exe"
+				OutputFile="c:\quake\mark_v_1050_debug.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
@@ -986,7 +987,7 @@
 				IgnoreDefaultLibraryNames="libci.lib"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/DirectMark5_debug.pdb"
+				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_DX9Quake/DirectMark5_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -1004,7 +1005,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -1018,8 +1019,8 @@
 		</Configuration>
 		<Configuration
 			Name="DX9 Release|Win32"
-			OutputDirectory=".\Object_Files\Release_MSVC_2008_DX9Quake"
-			IntermediateDirectory=".\Object_Files\Release_MSVC_2008_DX9Quake"
+			OutputDirectory=".\objj\Release_MSVC_2008_DX9Quake"
+			IntermediateDirectory=".\objj\Release_MSVC_2008_DX9Quake"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1046,7 +1047,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1055,14 +1056,15 @@
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthread-static-msvc2010/include"
 				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				GeneratePreprocessedFile="0"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Release_MSVC_2008_DX9Quake/"
-				ObjectFile=".\Object_Files\Release_MSVC_2008_DX9Quake/"
-				ProgramDataBaseFileName=".\Object_Files\Release_MSVC_2008_DX9Quake/"
+				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Release_MSVC_2008_DX9Quake/"
+				ObjectFile=".\objj\Release_MSVC_2008_DX9Quake/"
+				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_DX9Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -1081,7 +1083,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\dx9_mark_v.exe"
+				OutputFile="c:\quake\mark_v_1050.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthread-static-msvc2010/lib"
@@ -1105,7 +1107,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -1119,8 +1121,8 @@
 		</Configuration>
 		<Configuration
 			Name="WinQuake GL Release|Win32"
-			OutputDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
-			IntermediateDirectory=".\Object_Files\Debug_MSVC_2008_WinQuakeGL"
+			OutputDirectory=".\objj\Release_MSVC_2008_WinQuakeGL"
+			IntermediateDirectory=".\objj\Release_MSVC_2008_WinQuakeGL"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1147,7 +1149,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
+				TypeLibraryName=".\objj\Release_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -1162,10 +1164,10 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
-				PrecompiledHeaderFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
-				AssemblerListingLocation=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
-				ObjectFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
-				ProgramDataBaseFileName=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/"
+				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Release_MSVC_2008_WinQuakeGL/"
+				ObjectFile=".\objj\Release_MSVC_2008_WinQuakeGL/"
+				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_WinQuakeGL/"
 				BrowseInformation="1"
 				SuppressStartupBanner="true"
 			/>
@@ -1206,7 +1208,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Object_Files\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
+				OutputFile=".\objj\Release_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -1244,14 +1246,6 @@
 			</File>
 			<File
 				RelativePath=".\buffers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\cd_sdl.c"
-				>
-			</File>
-			<File
-				RelativePath=".\cd_win.c"
 				>
 			</File>
 			<File
@@ -2131,234 +2125,8 @@
 				>
 			</File>
 			<File
-				RelativePath="dedicated_win.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="dedicated_win.h"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX9 Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX9 Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="draw.h"
 				>
-			</File>
-			<File
-				RelativePath="dshow_mp3.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="host.c"
@@ -2438,86 +2206,6 @@
 			</File>
 			<File
 				RelativePath="host_cmd.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\in_sdl.c"
-				>
-			</File>
-			<File
-				RelativePath="in_win.c"
 				>
 				<FileConfiguration
 					Name="DX8 Release|Win32"
@@ -2837,94 +2525,6 @@
 				>
 			</File>
 			<File
-				RelativePath="mark_v_lmp.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mark_v_qmb.h"
-				>
-			</File>
-			<File
-				RelativePath="menu.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="menu.h"
-				>
-			</File>
-			<File
 				RelativePath="model.c"
 				>
 				<FileConfiguration
@@ -3087,82 +2687,6 @@
 			<File
 				RelativePath="movie.h"
 				>
-			</File>
-			<File
-				RelativePath="movie_win.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="nehahra.c"
@@ -4597,84 +4121,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sdl_main.c"
-				>
-			</File>
-			<File
-				RelativePath=".\sdlquake.h"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX9 Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX9 Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="server.h"
 				>
 				<FileConfiguration
@@ -4902,86 +4348,6 @@
 			</File>
 			<File
 				RelativePath="snd_mix.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\snd_sdl.c"
-				>
-			</File>
-			<File
-				RelativePath="snd_win.c"
 				>
 				<FileConfiguration
 					Name="DX8 Release|Win32"
@@ -5375,86 +4741,6 @@
 			<File
 				RelativePath="sys.h"
 				>
-			</File>
-			<File
-				RelativePath=".\sys_sdl.c"
-				>
-			</File>
-			<File
-				RelativePath="sys_win.c"
-				>
-				<FileConfiguration
-					Name="DX8 Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DX8 Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="SDL Win Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="talk_macro.c"
@@ -6094,10 +5380,6 @@
 			</File>
 			<File
 				RelativePath="wad.h"
-				>
-			</File>
-			<File
-				RelativePath="winquake.h"
 				>
 			</File>
 			<File
@@ -14135,6 +13417,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\SDK\Core\vidco_osx_keys.h"
+					>
+				</File>
+				<File
 					RelativePath="..\SDK\Core\vidco_sdl.c"
 					>
 				</File>
@@ -14226,6 +13512,10 @@
 					RelativePath="..\SDK\core\zip_win.h"
 					>
 				</File>
+				<Filter
+					Name="noveau"
+					>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="DZip"
@@ -14778,6 +14068,890 @@
 						/>
 					</FileConfiguration>
 				</File>
+			</Filter>
+			<Filter
+				Name="iPhone"
+				>
+				<File
+					RelativePath=".\cd_ios.m"
+					>
+				</File>
+				<File
+					RelativePath=".\in_ios.m"
+					>
+				</File>
+				<File
+					RelativePath=".\Info-iOS.plist"
+					>
+				</File>
+				<File
+					RelativePath=".\snd_ios.m"
+					>
+				</File>
+				<File
+					RelativePath=".\sys_ios.m"
+					>
+				</File>
+				<File
+					RelativePath=".\UIAppDelegate.h"
+					>
+				</File>
+				<File
+					RelativePath=".\UIAppDelegate.m"
+					>
+				</File>
+				<File
+					RelativePath=".\vid_ioswin.m"
+					>
+				</File>
+				<File
+					RelativePath=".\VidUIWindow.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VidUIWindow.m"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Windows"
+				>
+				<File
+					RelativePath=".\cd_win.c"
+					>
+				</File>
+				<File
+					RelativePath="dedicated_win.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="dedicated_win.h"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="dshow_mp3.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="in_win.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="movie_win.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="snd_win.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="sys_win.c"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="winquake.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="SDL"
+				>
+				<File
+					RelativePath=".\cd_sdl.c"
+					>
+				</File>
+				<File
+					RelativePath=".\in_sdl.c"
+					>
+				</File>
+				<File
+					RelativePath=".\sdl_main.c"
+					>
+				</File>
+				<File
+					RelativePath=".\sdlquake.h"
+					>
+					<FileConfiguration
+						Name="DX8 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX8 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DX9 Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="SDL Win Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\snd_sdl.c"
+					>
+				</File>
+				<File
+					RelativePath=".\sys_sdl.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Menu"
+				>
+				<File
+					RelativePath=".\menu_draw_obs.c"
+					>
+					<FileConfiguration
+						Name="GL Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							GeneratePreprocessedFile="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\menu_draw_obs.h"
+					>
+				</File>
+				<Filter
+					Name="menus"
+					>
+					<File
+						RelativePath="menu.c"
+						>
+						<FileConfiguration
+							Name="DX8 Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="GL Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="DX8 Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="GL Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="SDL GL Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="SDL Win Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="menu.h"
+						>
+					</File>
+					<File
+						RelativePath=".\menu_definitions_sheet.h"
+						>
+					</File>
+					<File
+						RelativePath=".\menu_local.c"
+						>
+					</File>
+					<File
+						RelativePath=".\menu_local.h"
+						>
+					</File>
+					<File
+						RelativePath=".\menu_local_2.c"
+						>
+					</File>
+					<File
+						RelativePath=".\menu_parts.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_dialog.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_help.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_main.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_demos.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_hostgame.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_hostgame_gameoptions.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_joingame.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_joingame_serverlist.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_playersetup.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_multiplayer_playersetup_namemaker.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_options.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_options_customizecontrols.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_options_preferences.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_options_video.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_quit.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_singleplayer.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_singleplayer_levels.c"
+						>
+					</File>
+					<File
+						RelativePath=".\mnu_singleplayer_load_and_save.c"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

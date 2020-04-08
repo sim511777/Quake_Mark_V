@@ -79,7 +79,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         int k;
 
         IMediaSeeking_GetPositions (m->pSeek, &pos1, &pos2);
-        VID_Local_Set_Window_Caption (   va("%i - CD track position: pos1 %i pos2 %i", k, (int)pos1, (int)pos2 ) );
+        VID_Local_Set_Window_Caption (   va("%d - CD track position: pos1 %d pos2 %d", k, (int)pos1, (int)pos2 ) );
     #endif
     }
 

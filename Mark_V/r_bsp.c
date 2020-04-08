@@ -60,7 +60,7 @@ vec3_t			r_worldmodelorg;
 
 int				r_currentbkey;
 
-typedef enum {touchessolid, drawnode, nodrawnode} solidstate_t;
+typedef enum { ENUM_FORCE_INT_GCC_ (solidstate) touchessolid, drawnode, nodrawnode } solidstate_t;
 
 #define MAX_BMODEL_VERTS	1000			// 6K
 #define MAX_BMODEL_EDGES	3000		// 12K

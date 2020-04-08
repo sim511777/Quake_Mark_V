@@ -58,7 +58,7 @@ const char *Recent_File_Get (void)
 
 void Recent_File_Show_f (lparse_t *line)
 {
-	if (vid.screen.type != MODE_WINDOWED)
+	if (vid.screen.type != MODESTATE_WINDOWED)
 	{
 		Con_PrintLinef ("'showfile' command only works in windowed mode");
 		Con_PrintLinef ("alt-enter and try again?");

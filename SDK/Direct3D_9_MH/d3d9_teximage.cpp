@@ -378,6 +378,10 @@ void d3d_texture_t::Mipmap (int dstlevel, int srclevel)
 	IDirect3DSurface9 *dst = NULL;
 	IDirect3DSurface9 *src = NULL;
 
+	// prevents "Direct3D9: (ERROR) :Invalid level number passed GetSurfaceLevel of IDirect3DTexture9"
+	if (srclevel >= this->TexImage->GetLevelCount ()) return;
+	if (dstlevel >= this->TexImage->GetLevelCount ()) return;
+
 	if (SUCCEEDED (this->TexImage->GetSurfaceLevel (dstlevel, &dst)))
 	{
 		if (SUCCEEDED (this->TexImage->GetSurfaceLevel (srclevel, &src)))

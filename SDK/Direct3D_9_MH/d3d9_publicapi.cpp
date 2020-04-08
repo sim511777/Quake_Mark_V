@@ -308,8 +308,11 @@ void APIENTRY d3d9mh_glBindTexture (GLenum target, GLuint texture)
 	if (target != GL_TEXTURE_2D) return;
 	if (texture >= MAX_D3D_TEXTURES) System_Error ("glBindTexture: overflow");
 
-	if (!d3d_Context->Textures[texture].TexImage)
-		d3d_Context->Textures[texture].Initialize ();
+	// i thought i'd gotten rid of this....
+	// this was the reason why warpimages are lost following an alt-tab, and also the reason why device resets sometimes fail
+	// this time i'll leave it here but commented out just so i'm not tempted to reinstate it in future...
+	//if (!d3d_Context->Textures[texture].TexImage)
+	//	d3d_Context->Textures[texture].Initialize ();
 
 	d3d_Context->TMU[d3d_Context->State.CurrentTMU].boundtexture = &d3d_Context->Textures[texture];
 	d3d_Context->TMU[d3d_Context->State.CurrentTMU].texparamdirty = TRUE;
@@ -1067,6 +1070,11 @@ void APIENTRY d3d9mh_glViewport (GLint x, GLint y, GLsizei width, GLsizei height
 {
 	// translate from OpenGL bottom-left to D3D top-left
 	y = d3d_Context->DisplayMode.Height - (height + y);
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+	if (width > d3d_Context->DisplayMode.Width) width = d3d_Context->DisplayMode.Width;
+	if (height > d3d_Context->DisplayMode.Height) height = d3d_Context->DisplayMode.Height;
 
 	d3d_Context->State.Viewport.X = x;
 	d3d_Context->State.Viewport.Y = y;

@@ -253,6 +253,27 @@ D3DPRESENT_PARAMETERS *context_t::SetupPresentParams (int width, int height, BOO
 }
 
 
+void context_t::UpdateDisplayMode (void)
+{
+	// adds a bunch of checking for various conditions relating to display mode and backbuffer clamping
+	IDirect3DSwapChain9 *sc = NULL;
+	D3DPRESENT_PARAMETERS scpp;
+
+	if (SUCCEEDED (this->Device->GetSwapChain (0, &sc)))
+	{
+		sc->GetPresentParameters (&scpp);
+
+		this->DisplayMode.Width = scpp.BackBufferWidth;
+		this->DisplayMode.Height = scpp.BackBufferHeight;
+		this->DisplayMode.dsFmt = scpp.AutoDepthStencilFormat;
+		this->DisplayMode.VSync = (scpp.PresentationInterval == D3DPRESENT_INTERVAL_ONE);
+		this->DisplayMode.Windowed = scpp.Windowed;
+
+		sc->Release ();
+	}
+}
+
+
 context_t::context_t (HDC hdc)
 {
 	// Baker didn't like this work being done in wglMakeCurrent so i moved it to wglCreateContext, which i guess it
@@ -355,7 +376,12 @@ context_t::context_t (HDC hdc)
 	{
 		// and reset; there's no need for a full release/recreate because no objects have been created yet
 		this->Device->Reset (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, FALSE, this->DisplayMode.VSync));
+		this->UpdateDisplayMode ();
 	}
+
+	// let's always have a valid initial viewport
+	this->ResetViewport ();
+	this->UpdateViewport ();
 
 	// build extensions string
 	this->GLExtensions[0] = 0;
@@ -474,10 +500,10 @@ void context_t::ResetMode (int width, int height, BOOL windowed, int client_left
 		SetWindowPos (this->Window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 	}
 
-	// set up the new mode
-	this->DisplayMode.Width = width;
-	this->DisplayMode.Height = height;
-	this->DisplayMode.Windowed = windowed;
+//	// set up the new mode
+//	this->DisplayMode.Width = width;
+//	this->DisplayMode.Height = height;
+//	this->DisplayMode.Windowed = windowed;
 
 	// reset present params and reset the device
 	this->ResetDevice (this->SetupPresentParams (width, height, windowed, this->DisplayMode.VSync));
@@ -600,6 +626,7 @@ void context_t::EndScene (void)
 		case D3D_OK:
 			// device is recovered
 			this->DeviceLost = FALSE;
+			this->UpdateDisplayMode ();
 			this->PostReset ();
 			break;
 
@@ -681,6 +708,7 @@ void context_t::ResetDevice (D3DPRESENT_PARAMETERS *PresentParams)
 		Sleep (1);
 
 	// clean up states/etc
+	this->UpdateDisplayMode ();
 	this->PostReset ();
 }
 
@@ -719,6 +747,7 @@ void context_t::Release (void)
 	{
 		// switch to windowed before destroying the device; this is for conformance with DXGI requirements on Vista+
 		this->Device->Reset (this->SetupPresentParams (this->DisplayMode.Width, this->DisplayMode.Height, TRUE, this->DisplayMode.VSync));
+		this->UpdateDisplayMode ();
 	}
 
 	// now destroy the device

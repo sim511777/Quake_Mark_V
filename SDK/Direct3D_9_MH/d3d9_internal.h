@@ -465,6 +465,7 @@ public:
 	D3DADAPTER_IDENTIFIER9 AdapterID;
 
 	D3DPRESENT_PARAMETERS *SetupPresentParams (int width, int height, BOOL windowed, BOOL vsync);
+	void UpdateDisplayMode (void);
 
 	HWND Window;
 

@@ -36,6 +36,12 @@ void context_t::UpdateViewport (void)
 
 	if (vp->Width > 0 && vp->Height > 0)
 	{
+		// validate because d3d will fail to draw if this is incorrectly sized
+		if (vp->X < 0) vp->X = 0;
+		if (vp->Y < 0) vp->Y = 0;
+		if (vp->Width > this->DisplayMode.Width) vp->Width = this->DisplayMode.Width;
+		if (vp->Height > this->DisplayMode.Height) vp->Height = this->DisplayMode.Height;
+
 		// this code is called whenever our viewport or render target changes
 		float texelOffset[] = {-1.0f / vp->Width, 1.0f / vp->Height, 0.0f, 0.0f};
 

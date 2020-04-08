@@ -288,6 +288,9 @@ void M_Draw (void)
 		}
 	}
 
+	if (key_dest != key_menu)
+		return;
+
 	if (sMenu.menu_state == menu_state_None_0)
 		return; // We aren't in the menu per se.
 

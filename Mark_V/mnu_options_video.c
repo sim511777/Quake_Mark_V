@@ -222,7 +222,7 @@ LOCAL_EVENT (Draw) (void)
 	Hotspots_Add (local_menu->column1, video_cursor_table[vid_idx], local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_toggle);
 	M_Print (16, video_cursor_table[vid_idx], "        Pixelation");
 	M_Print (184, video_cursor_table[vid_idx],	glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ? "Smooth (Default)" :
-						glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ? "Pixelated" : "Pixelated/Rough" /* TEXMODE_GL_NEAREST_0*/				
+						glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2 ? "Pixelated" : "Pixelated/Rough" /* TEXMODE_GL_NEAREST_0*/				
 		);
 	vid_idx++;
 	
@@ -241,7 +241,7 @@ LOCAL_EVENT (Draw) (void)
 		if (help_idx == opt_texturefilter) {
 			M_PrintWhite (16, video_cursor_table[vid_idx - 1] + 24,  
 				glmode_idx == TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5 ?  "     Filter: GL_LINEAR_MIPMAP_LINEAR" : 
-				glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1 ?  "     Filter: GL_NEAREST_MIPMAP_NEAREST" : 
+				glmode_idx == TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2 ?  "     Filter: GL_NEAREST_MIPMAP_LINEAR" : 
 				glmode_idx == TEXMODE_GL_NEAREST_0				  ? "     Filter: GL_NEAREST" : 
 																	"     Filter: (other)"
 			);
@@ -304,8 +304,8 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 			switch (glmode_idx) { // Left 0, 5, 4
 			default:										Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");
 			case_break TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST");
-			case_break TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1:	Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");
-			case_break TEXMODE_GL_NEAREST_0:				Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_NEAREST");
+			case_break TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2:	Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");
+			case_break TEXMODE_GL_NEAREST_0:				Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_LINEAR");
 			}
 #endif //WINQUAKE_RENDERER_SUPPORT
 
@@ -334,8 +334,8 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 			MENU_TOGGLE_SOFT_SOUND();
 			switch (glmode_idx) { // Left 0, 5, 1
 			default:										Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");
-			case_break TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_NEAREST");					break;
-			case_break TEXMODE_GL_NEAREST_MIPMAP_NEAREST_1:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST");
+			case_break TEXMODE_GL_LINEAR_MIPMAP_LINEAR_5:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST_MIPMAP_LINEAR");
+			case_break TEXMODE_GL_NEAREST_MIPMAP_LINEAR_2:	Cvar_SetQuick (&gl_texturemode, "GL_NEAREST");
 			case_break TEXMODE_GL_NEAREST_0:				Cvar_SetQuick (&gl_texturemode, "GL_LINEAR_MIPMAP_LINEAR");
 			} // end switch (glmode_idx)
 			/////////////////////////////////////

@@ -50,7 +50,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		SDL_ShowCursor (SDL_DISABLE /*0 FALSE*/); // Hides mouse cursor
 		SDL_CaptureMouse (SDL_ENABLE /* 1 TRUE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
 #endif // !INPUT_RELATIVE
-		Con_DPrintLinef ("Mouse Captured");
+		// Con_DPrintLinef ("Mouse Captured");
 		captured = true;
 	}
 
@@ -67,7 +67,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		SDL_CaptureMouse (SDL_DISABLE /* 0 FALSE*/); //  Use this function to capture the mouse and to track input outside an SDL window.
 		SDL_ShowCursor (SDL_ENABLE /* 1 TRUE*/); // Hides mouse cursor
 #endif // !INPUT_RELATIVE
-		Con_DPrintLinef ("Mouse Released");
+		// Con_DPrintLinef ("Mouse Released");
 		captured = false;
 	}
 

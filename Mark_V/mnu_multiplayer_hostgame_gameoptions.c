@@ -414,6 +414,7 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 										else if (com_gametype == gametype_rogue)	Cbuf_AddTextLinef ("map %s", roguelevels[rogueepisodes[m_start_episode].firstLevel + m_start_level].name );
 										else										Cbuf_AddTextLinef ("map %s", levels[episodes[m_start_episode].firstLevel + m_start_level].name );
 
+										Key_SetDest (key_game);
 										return;
 									}
 

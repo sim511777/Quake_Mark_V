@@ -30,7 +30,7 @@ Copyright (C) 2012-2014 Baker
 
 	#define TARGAHEADERSIZE_18 18 // size on disk - (not size of struct, which can include padding)
 
-	targaheader_t targa_header;
+	targaheader_t targa_header; // Try to kill or localize this
 #endif // TARGA
 
 static void *image_load_fn_for_enum (image_format_e image_format)

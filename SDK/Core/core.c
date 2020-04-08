@@ -190,7 +190,7 @@ HANDLE WINAPI CreateFile(
 #include <string.h>
 #include <ctype.h>
 
-#ifdef CORE_NEEDS_MEMICMP // Non-Microsoft compilers don't have this function.  Why does Linux have?  Strange.
+#ifdef CORE_NEEDS_MEMICMP // Non-Microsoft compilers don't have this function.
 int memicmp (const void *s1, const void *s2, size_t n)
 {
 	size_t i;

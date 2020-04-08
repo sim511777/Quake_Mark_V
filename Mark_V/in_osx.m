@@ -146,7 +146,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		
 		IN_DisableOSXMouseAccel (); // Acceleration
 
-        Con_DPrintLinef ("Mouse Captured");
+        // Con_DPrintLinef ("Mouse Captured");
         captured = true;
     }
     
@@ -159,7 +159,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
         
         
 // Baker: Windows does a release capture and unclips cursor move
-        Con_DPrintLinef ("Mouse Released");
+        // Con_DPrintLinef ("Mouse Released");
         captured = false;
     }
 

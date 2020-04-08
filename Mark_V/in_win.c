@@ -44,7 +44,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 	{
 		ShowCursor (FALSE); // Hides mouse cursor
 		SetCapture (sysplat.mainwindow);	// Captures mouse events
-		Con_DPrintLinef ("Mouse Captured");
+		// Con_DPrintLinef ("Mouse Captured");
 		captured = true;
 	}
 
@@ -53,7 +53,7 @@ int Input_Local_Capture_Mouse (cbool bDoCapture)
 		ShowCursor (TRUE); // Hides mouse cursor
 		ReleaseCapture ();
 		ClipCursor (NULL); // Can't hurt
-		Con_DPrintLinef ("Mouse Released");
+		// Con_DPrintLinef ("Mouse Released");
 		captured = false;
 	}
 

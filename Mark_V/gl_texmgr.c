@@ -66,8 +66,8 @@ typedef struct
 } glmode_t;
 static glmode_t glmodes[] = {
 	{GL_NEAREST, GL_NEAREST,				"GL_NEAREST"},					// 0
-	{GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST,	"GL_NEAREST_MIPMAP_NEAREST"},	// 1 (crunchy?)
-	{GL_NEAREST, GL_NEAREST_MIPMAP_LINEAR,	"GL_NEAREST_MIPMAP_LINEAR"},	// 2
+	{GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST,	"GL_NEAREST_MIPMAP_NEAREST"},	// 1
+	{GL_NEAREST, GL_NEAREST_MIPMAP_LINEAR,	"GL_NEAREST_MIPMAP_LINEAR"},	// 2  (crunchy - consensus)
 	{GL_LINEAR,  GL_LINEAR,					"GL_LINEAR"},					// 3
 	{GL_LINEAR,  GL_LINEAR_MIPMAP_NEAREST,	"GL_LINEAR_MIPMAP_NEAREST"},	// 4
 	{GL_LINEAR,  GL_LINEAR_MIPMAP_LINEAR,	"GL_LINEAR_MIPMAP_LINEAR"},		// 5  (default)
@@ -809,7 +809,7 @@ void TexMgr_R_SetupView_InitUnderwaterWarpTexture (void)
 		vid.maxwarpheight >>= 1;
 	}
 
-	Con_DPrintLinef ("Waterwrap texture size is %d, %d", vid.maxwarpwidth, vid.maxwarpheight);
+	//Con_DPrintLinef ("Waterwrap texture size is %d, %d", vid.maxwarpwidth, vid.maxwarpheight);
 
 	// note - OpenGL allows specifying NULL data to create an empty texture, but FitzQuake's texmgr doesn't.  So we need to do hunk
 	// shenanigans to work around it; if you  modify the texmgr to allow for this, you could just specify NULL data and get rid of

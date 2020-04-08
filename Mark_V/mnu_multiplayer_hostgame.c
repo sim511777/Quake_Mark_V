@@ -153,7 +153,7 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 			return; // !!!!!
 		}
 
-		// OPT_OK_1 is only other option so ...
+		// OPT_OK_1: is only other option so ...
 		// So we clicked ok and are heading into server options.
 		
 		// enable/disable net systems to match desired config

@@ -325,13 +325,14 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 		}
 
 	case_break K_ESCAPE:			Mnu_Main_Enter_f (NULL);
-	case_break K_DOWNARROW:			local_menu->cursor ++;
-									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 	case_break K_UPARROW:			local_menu->cursor --;
 									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 									// Make sure cursor is in view
 									//while (local_menu->cursor < m_view_first_row) local_menu->cursor ++;
 									while (local_menu->cursor > m_view_first_row + (M_ROWS_VISIBILE_COUNT_17 - 1) ) local_menu->cursor --;
+
+	case_break K_DOWNARROW:			local_menu->cursor ++;
+									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 
 	case_break K_HOME:				local_menu->cursor = 0;
 	case_break K_END:				local_menu->cursor = m_menu_line_count - 1;
@@ -353,6 +354,10 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 
 	case_break K_MOUSEWHEELDOWN:	m_view_first_row += 1;
 									m_view_first_row = CLAMP (0, m_view_first_row, m_menu_line_count < M_ROWS_VISIBILE_COUNT_17 ? 0 : m_menu_line_count - M_ROWS_VISIBILE_COUNT_17);
+
+									while (local_menu->cursor < m_view_first_row) local_menu->cursor ++;
+
+									while (local_menu->cursor > m_view_first_row + (M_ROWS_VISIBILE_COUNT_17 - 1) ) local_menu->cursor --;
 
 	case_break K_ENTER:
 		if (local_menu->cursor < m_menu_line_count && m_items_list[local_menu->cursor].mapname[0]) {

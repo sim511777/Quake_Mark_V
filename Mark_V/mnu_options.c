@@ -69,7 +69,8 @@ typedef struct
 	cvar_t		*cvar_eval;
 	float		a, b, c;
 	qboolfunc_t	btoggleFunc; // Any mdraw_check that isn't op_nonzero must have this
-	cbool	disabled;
+	cbool		disabled;
+	int			row;
 } moptions_t;
 
 static void Mnu_Options_AlwaysRun_Toggle_ (cbool is_setting_run)
@@ -146,7 +147,7 @@ static float Mnu_Options_Evaluate_ (const moptions_t *myopt)
 
 static void Mnu_Options_AdjustSliders_ (int this_cursor, int dir, cbool is_silent)
 {
-	const moptions_t* myopt = &menu_options_draw[this_cursor];
+	const moptions_t *myopt = &menu_options_draw[this_cursor];
 	
 	switch (myopt->control_type) {
 	default: // Nothing
@@ -160,6 +161,10 @@ static void Mnu_Options_AdjustSliders_ (int this_cursor, int dir, cbool is_silen
 			if (!is_silent) MENU_TOGGLE_SOFT_SOUND();
 			newcvarval = CLAMP (lowval, newcvarval, highval);
 			Cvar_SetValueQuick (myopt->cvar_eval, newcvarval);
+
+			if (local_menu->cursor != this_cursor)		// Baker: Mar 6 2018 - final attempt?
+				local_menu->cursor = this_cursor;
+
 	}
 	case_break mdraw_check: {
 			moperation_e	evaltype		= (int)myopt->a;
@@ -183,17 +188,6 @@ static void Mnu_Options_AdjustSliders_ (int this_cursor, int dir, cbool is_silen
 // Page count is 1 less than number visible, because 1 item must always be seen.
 
 
-#pragma message ("Get something like this back in")
-//#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER) // dx9 = No ... future (vid_shadergamma.value == 0)
-//	if ((menu_options_draw[opt_gamma_041].disabled = (vid_hardwaregamma.value == 0) )) {
-//		options_available = num_menu_options_draw - 1; // Disabled
-//		if (local_menu->cursor >= options_available)
-//			local_menu->cursor = options_available - 1;
-//	}
-//	else options_available = num_menu_options_draw;
-//#endif // GLQUAKE_RENDERER_SUPPORT && !DIRECT3D9_WRAPPER
-
-
 //
 // Draw
 //
@@ -204,10 +198,18 @@ LOCAL_EVENT (Draw) (void)
 	int row; // col_16 = 16, col_220 = 220, row;
 	qpic_t	*p;
 
+#if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D9_WRAPPER)
+	menu_options_draw[opt_gamma_05].disabled = (vid_hardwaregamma.value == 0);
+	if (menu_options_draw[local_menu->cursor].disabled) {
+		local_menu->cursor++; if (local_menu->cursor >= local_menu->cursor_solid_count) local_menu->cursor = 0;
+	}
+
+#endif // GLQUAKE_RENDERER_SUPPORT
 
 	if (f->focus) {
 		switch (f->focus_event) {
 		default:
+			// THUMB?
 			if (f->focus_event == focus_event_thumb_position) {
 				// Units should be 0-20 if there are 21 ticks.
 				float pct = f->focus_event_thumb_top / (f->focus_down_track_usable - 1.0);
@@ -229,6 +231,10 @@ LOCAL_EVENT (Draw) (void)
 						f->focus_event_msgtime_ext = realtime + 0.25; // Not too often.
 					}
 				}
+
+				if (local_menu->cursor != f->focus_idx)		// Baker: Mar 6 2018 - final attempt?
+					local_menu->cursor = f->focus_idx;
+
 				// Clear the message.
 				f->focus_event = focus_event_none_0;
 			}
@@ -245,8 +251,9 @@ LOCAL_EVENT (Draw) (void)
 				case_break focus_part_track2:  Mnu_Options_AdjustSliders_ (f->focus_idx,  1, is_silent); repeat_time = 0;
 				}
 				f->focus_event_msgtime_ext = repeat_time ? realtime + repeat_time : -1; // -1 = never.
-no_action:
-				(0); // Null statement :(
+
+				
+no_action:		(0); // Null statement.  A label must have a statement :(
 			}
 		} // End switch
 	} // End if
@@ -258,23 +265,26 @@ no_action:
 
 
 	{ int n; for (n = 0, row = 32; n < local_menu->cursor_solid_count; n ++) {
-		if (menu_options_draw[n].disabled) {
+		moptions_t *e = &menu_options_draw[n];
+		
+		if (e->disabled) {
 			// We need to emit insert hotspot.  Ignore crazy possibility that a server could somehow trigger it to disappear
 			// While it had mouse focus ;-)
 			Hotspots_Add (0, 0, 0, 0, 1, hotspottype_inert);
+			e->row = 0;
 			continue;
 		}
 
 //#define COL_16 16
-		M_Print (local_menu->column1, row, menu_options_draw[n].label);
-		switch (menu_options_draw[n].control_type) {
+		M_Print (local_menu->column1, row, e->label);
+		switch (e->control_type) {
 		default: // Nothing
 		case_break mdraw_none_0:		// Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_button);
 		case_break mdraw_textbutton:	Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_button);
 		case_break mdraw_check:			Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_toggle);
 										Mnu_Part_DrawCheckbox (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]) );
 
-		case_break mdraw_slide:			Mnu_Part_DrawSlider (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]), menu_options_draw[n].a);
+		case_break mdraw_slide:			Mnu_Part_DrawSlider (local_menu->column2, row, Mnu_Options_Evaluate_(&menu_options_draw[n]), e->a);
 		case_break mdraw_vmode:			Hotspots_Add (local_menu->column1, row, local_menu->colwidth, M_HOTHEIGHT_8, 1, hotspottype_button);
 
 #ifdef WINQUAKE_RENDERER_SUPPORT
@@ -284,6 +294,7 @@ no_action:
 #endif
 									M_Print (local_menu->column2, row, va("%dx%d", vid.screen.width, vid.screen.height) );
 		} // End switch
+		e->row = row;
 		row += M_CHAR_HEIGHT_8;
 	}} // End for
 
@@ -294,7 +305,7 @@ no_action:
 	}
 
 // cursor
-	M_DrawCharacter (200, 32 + local_menu->cursor * M_CHAR_HEIGHT_8, 12+((int)(realtime*4)&1));
+	M_DrawCharacter (200, menu_options_draw[local_menu->cursor].row, 12+((int)(realtime*4)&1));
 }
 
 static void Mnu_Options_Do_ResetConfig_ (void)
@@ -312,8 +323,8 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 {
 	int key_action_cursor = local_menu->cursor;
 
-	if (menu_options_draw[opt_gamma_05].disabled && key_action_cursor >= opt_gamma_05)
-		key_action_cursor ++;
+//	if (menu_options_draw[opt_gamma_05].disabled && key_action_cursor >= opt_gamma_05)
+//		key_action_cursor ++;
 
 	if (isin2 (key, K_MOUSEWHEELDOWN, K_MOUSEWHEELUP)) {
 		int desc_idx = menux[menu_state_PlayerSetup].hover ? menux[menu_state_PlayerSetup].hover->idx : local_menu->cursor;
@@ -323,9 +334,17 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 	default:					// Nothing?
 	case_break K_ESCAPE:		Host_WriteConfiguration (); Mnu_Main_Enter_f (NULL); // Baker: Save config here to guarantee time and effort setting up is not lost.
 	case_break K_UPARROW:		MENU_ROW_CHANGE_HARD_SOUND(); local_menu->cursor--; if (local_menu->cursor < 0) local_menu->cursor = local_menu->cursor_solid_count - 1;
-								#pragma message ("Advance past a disabled item")
+								// Advance past a disabled item
+								if (menu_options_draw[local_menu->cursor].disabled) {
+									local_menu->cursor--; if (local_menu->cursor < 0) local_menu->cursor = local_menu->cursor_solid_count - 1;
+								}
+								
 	case_break K_DOWNARROW:		MENU_ROW_CHANGE_HARD_SOUND(); local_menu->cursor++; if (local_menu->cursor >= local_menu->cursor_solid_count) local_menu->cursor = 0;
-								#pragma message ("Advance past a disabled item")
+								// Advance past a disabled item
+								if (menu_options_draw[local_menu->cursor].disabled) {
+									local_menu->cursor++; if (local_menu->cursor >= local_menu->cursor_solid_count) local_menu->cursor = 0;
+								}
+								
 	case_break K_LEFTARROW:		Mnu_Options_AdjustSliders_ (key_action_cursor, -1, false /* not silent*/);
 	case_break K_RIGHTARROW:	Mnu_Options_AdjustSliders_ (key_action_cursor, 1, false /* not silent*/);
 	

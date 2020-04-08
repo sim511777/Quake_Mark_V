@@ -97,23 +97,6 @@ void Key_Release_Mouse_Buttons (void);
 //#define K_CTRL_MASK_2		2
 //#define K_ALT_MASK_4		4
 //#define K_COMMAND_MASK_8	8
-//typedef enum { ENUM_FORCE_INT_GCC_(shiftbits)
-//	shiftbits_shift_1	= 1,
-//	shiftbits_control_2	= 2,
-//	shiftbits_alt_4		= 4,
-//	shiftbits_command_8	= 8,
-////	SHIFTHIGH			= 65536,
-////	SHIFTHIGH_SHIFT		= 65536 * 1,
-////	SHIFTHIGH_CONTROL	= 65536 * 2,
-//} shiftbits_e;
-//
-////typedef enum { ENUM_FORCE_INT_GCC_(mousebuttonbits)
-////	mousebuttonbits_mouse1_bit_1	= 1,
-////	mousebuttonbits_mouse2_bit_2	= 2,
-////	mousebuttonbits_mouse3_bit_4	= 4,
-////	mousebuttonbits_mouse4_bit_8	= 8,
-////	mousebuttonbits_mouse5_bit_16	= 16,
-////} mousebuttonbits_e;
 
 // Not fond of the name.
 typedef enum { ENUM_FORCE_INT_GCC_(dir)

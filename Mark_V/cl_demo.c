@@ -82,12 +82,12 @@ void CL_StopPlayback (void)
 	Cvar_Clear_Untrusted ();
 #endif // SUPPORTS_CUTSCENE_PROTECTION
 
-	// If a dz temp file demo is playing (a .dem extracted from a .dz), delete it 
-	if (cls.dz_temp_url[0])
-	{
-		File_Delete (cls.dz_temp_url);
-		cls.dz_temp_url[0] = 0;
-	}
+	// If a dz temp file demo is playing (a .dem extracted from a .dz), delete it  
+	//if (cls.dz_temp_url[0])  Mar 6 2018 - Bye dzip
+	//{
+	//	File_Delete (cls.dz_temp_url);
+	//	cls.dz_temp_url[0] = 0;
+	//}
 
 	if (cls.timedemo)
 		CL_FinishTimeDemo ();

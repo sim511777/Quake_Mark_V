@@ -721,7 +721,7 @@ clist_t * File_List_Relative_Alloc (const char *folder_url, const char *wild_pat
 }
 
 
-static void sFile_List_Recursive_Alloc (clist_t **list, const char *folder_url, int skipchars, const cbool wants_relative_url, cbool wants_dirs, const char *wild_patterns)
+static void File_List_Recursive_Alloc_ (clist_t **list, const char *folder_url, int skipchars, const cbool wants_relative_url, cbool wants_dirs, const char *wild_patterns)
 {
 	char full_url[MAX_OSPATH];
 
@@ -742,7 +742,7 @@ static void sFile_List_Recursive_Alloc (clist_t **list, const char *folder_url, 
 			c_snprintf2 (full_url, "%s/%s", folder_url, dir_t->d_name);
 
 			if (File_Is_Folder (full_url)) {
-				sFile_List_Recursive_Alloc (list, full_url, skipchars, wants_relative_url, wants_dirs /* we don't want folders */, wild_patterns);
+				File_List_Recursive_Alloc_ (list, full_url, skipchars, wants_relative_url, wants_dirs /* we don't want folders */, wild_patterns);
 				if (!wants_dirs)
 					continue; // Advance .. do not pass go
 				
@@ -769,7 +769,7 @@ clist_t *File_List_Recursive_Alloc (const char *folder_url, const char *wild_pat
 	clist_t *list = NULL;
 	int skipchars = 0;//strlen (folder_url) + 1;
 
-	sFile_List_Recursive_Alloc (&list, folder_url, skipchars, false /*absolute urls*/, false /* we don't want folders */, wild_patterns);
+	File_List_Recursive_Alloc_ (&list, folder_url, skipchars, false /*absolute urls*/, false /* we don't want folders */, wild_patterns);
 
 	return list;
 }
@@ -783,7 +783,7 @@ clist_t *File_List_Dirs_Recursive_Alloc (const char *folder_url, const char *wil
 	clist_t *list = NULL;
 	int skipchars = 0;//strlen (folder_url) + 1;
 
-	sFile_List_Recursive_Alloc (&list, folder_url, skipchars, false /*absolute urls*/, true /* we don't want folders */, wild_patterns);
+	File_List_Recursive_Alloc_ (&list, folder_url, skipchars, false /*absolute urls*/, true /* we don't want folders */, wild_patterns);
 
 	return list;
 }
@@ -798,7 +798,7 @@ clist_t *File_List_Recursive_Relative_Alloc (const char *folder_url, const char 
 	clist_t *list = NULL;
 	int skipchars = strlen (folder_url) + 1;
 
-	sFile_List_Recursive_Alloc (&list, folder_url, skipchars, true /*absolute urls*/, false /* we don't want folders */, wild_patterns);
+	File_List_Recursive_Alloc_ (&list, folder_url, skipchars, true /*absolute urls*/, false /* we don't want folders */, wild_patterns);
 
 	return list;
 }

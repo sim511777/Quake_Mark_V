@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 static unsigned int sNextPowerOfTwo (unsigned int v) // compute the next highest power of 2 of 32-bit v
 {
-#pragma message ("What does this do to zero?  What does this do to 16?  Does it round up 16 to 32 or does it stay at 16?  What about zero?")
+	// On a rainy day ... What does this do to zero?  What does this do to 16?  Does it round up 16 to 32 or does it stay at 16?  What about zero?
 	v--;
 	v |= v >> 1;
 	v |= v >> 2;
@@ -43,9 +43,9 @@ cbool is_pow2 (unsigned int x)
 }
 
 
-int random_int (int low, int high)
+int random_int_low_high (int low, int high)
 {
-	int range = high - low + 1;
+	int range = range_length(low, high); // Which = high - low + 1;
 	int rando = rand() % range + low;
 	return rando;
 	//float f = RANDOM_FLOAT; // 0 to 1.
@@ -63,7 +63,7 @@ unsigned int roundup_batch (unsigned int n, unsigned int batchsize_pow2)
 	return out;
 }
 
-
+// Results as follows: 0 = 0, 1=1, 2=2, 4=4, 5=8,	8=8.  This expects positive non-zero integers.
 unsigned int roundup_pow2_or_next_pow2 (unsigned int x)
 {
 	if (is_pow2(x))

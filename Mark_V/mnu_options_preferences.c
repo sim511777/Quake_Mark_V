@@ -91,16 +91,16 @@ static mnu_ent_t mnu_ent_table[] = { //                                         
 	{ opt_invisibility_2,	QCTRL(labeltoggle), "Invisibility", "Default: invisible = no weapon draw",      0,  3,  0,  1, "Quake Default,Draw Weapon"											},
 	{ opt_view_blends_3,	QCTRL(labeltoggle), " View Blends", "Screen blend underwater, powerup, ..",     0,  4,  0,  1, "Quake Default,Lite,None"											},
 	{ opt_bobbing_4,		QCTRL(labeltoggle), "     Bobbing", "Bobbing: cl_bob, cl_rollangle, ..",        0,  5,  0,  0, "Quake Default,DarkPlaces,None"										},
-	{ opt_flashblend_5,		QCTRL(labeltoggle), "  Flashblend", "Moving dynamic light drawing",             0,  6,  1,  0, "Quake Default,GLQuake style", "GLQuake Only"						},
+	{ opt_flashblend_5,		QCTRL(labeltoggle), "  Flashblend", "Moving dynamic light drawing",             0,  6,  1,  0, "Quake Default,GLQuake style", "(GL Only)"							},
 	{ opt_stain_maps_6,		QCTRL(labeltoggle), "  Stain Maps", "Darkened stains that gradually fade",      1,  7,  0,  1, "Off,Subtle"															},
 
 	{ opt_start_demos_7,	QCTRL(labeltoggle), "  Startdemos", "Play startup demos on Quake startup",      0,  8,  1,  1, "Do Not Start,Quake Default"							    			},
 	{ opt_server_aim_8,		QCTRL(labeltoggle), "  Server Aim", "Lite aim help mostly for keyboarders",     0,  9,  0,  0, "Quake Default,Aim Help Off" 										},
 	{ opt_draw_clock_9,		QCTRL(labeltoggle), "  Draw Clock", "Show amount of time into level",           1, 10,  1,  0, "Deathmatch Only,Never,Always" 										},
 	
-	{ opt_autoscale_10,		QCTRL(labeltoggle), "   Autoscale", "Adjust status bar for resolution",         0, 11,  2,  2, "Forced Off,User Cvar Control,Auto Small,Auto Medium,Auto Large"   	},
+	{ opt_autoscale_10,		QCTRL(labeltoggle), "   Autoscale", "Adjust status bar for resolution",         0, 11,  2,  2, "Forced Off,User Cvar Control,Auto Small,Auto Medium,Auto Large", "(GL Only)"   	},
 	{ opt_status_bar_11,	QCTRL(labeltoggle), "  Status Bar", "Only default is uncentered in deathmatch", 0, 12,  0,  3, "Quake Default,Minimal (QW-ish),Translucent (GL),Centered" 			},
-	{ opt_effects_12,		QCTRL(labeltoggle), "     Effects", "Original had jerky stairs/monsters",       1, 13,  0,  0, "Normal,JoeQuake (QMB),Normal + Jerky" 								},
+	{ opt_effects_12,		QCTRL(labeltoggle), "     Effects", "Original had jerky stairs/monsters",       1, 13,  0,  0, "Normal,JoeQuake (QMB),Normal + Jerky", "Normal,Normal + Jerky"		},
 
 	{ opt_set_fitz_13,		QCTRL(labelbutton), "Set To FitzQuake", "Set FitzQuake 0.85 default settings",	0,  0, 112, -1, ""																	},
 	{ opt_set_mark_v_14,	QCTRL(labelbutton), "Set To Mark V", "Set Mark V revised settings",				0,  0, 124, -1, ""																	},
@@ -117,14 +117,24 @@ static int Mnu_Preferences_Get_Basket_Value_ (const opt_e option_idx)
     case_break opt_invisibility_2:  return CONVBOOL r_viewmodel_ring.value;                                                                                // Invisibility
     case_break opt_view_blends_3:   return Choose12 (v_polyblend_lite.value /*lite*/, !v_polyblend.value /*off*/);                                          // View Blends
     case_break opt_bobbing_4:		return Choose12 (cl_sidebobbing.value, !cl_bob.value);                                                                  // Bobbing
-    case_break opt_flashblend_5:	return CONVBOOL gl_flashblend.value;                                                                                    // Flash Blends
+    
     case_break opt_stain_maps_6:	return CONVBOOL r_stains.value;                                                                                         // Stains
     case_break opt_start_demos_7:   return CONVBOOL host_startdemos.value;																					// Start Demos
     case_break opt_server_aim_8:	return iif (sv_aim.value >= 1,     1, 0);                                                                               // Server Aim
     case_break opt_draw_clock_9:	return Choose12(!scr_clock.value /*never*/, scr_clock.value >= 1 /*always*/);                                           // Draw Clock
-    case_break opt_autoscale_10:	return CLAMP(0, (int)scr_scaleauto.value + 1, 5);                                                                       // Autoscale
-    case_break opt_status_bar_11:	return Choose123(scr_viewsize.value == 110, scr_sbaralpha.value < 1, scr_sbarcentered.value);                           // Status bar
+
+#ifdef WINQUAKE_RENDERER_SUPPORT
+	case_break opt_flashblend_5:	return 0;                                                                       // Flash Blends
+    case_break opt_autoscale_10:	return 0;                                                                       // Autoscale
+	case_break opt_effects_12:		return !r_lerpmodels.value;
+#else
+	case_break opt_flashblend_5:	return CONVBOOL gl_flashblend.value;                                                                                    // Flash Blends
+	case_break opt_autoscale_10:	return CLAMP(0, (int)scr_scaleauto.value + 1, 5);                                                                       // Autoscale
 	case_break opt_effects_12:		return Choose12 (qmb_active.value, !r_lerpmodels.value);
+#endif
+
+    case_break opt_status_bar_11:	return Choose123(scr_viewsize.value == 110, scr_sbaralpha.value < 1, scr_sbarcentered.value);                           // Status bar
+	
     }
 	//Quake Default,Minimal (QW-ish),Translucent (GL),Centered
     
@@ -166,12 +176,18 @@ static cbool Mnu_Preferences_Set_Basket_Value_ (const opt_e option_idx, const in
 									Cvar_SetValueQuick (&scr_viewsize,	   iif (newval == 1, 110, 100)		);
 
 									//Quake Default,Minimal (QW-ish),Translucent (GL),Centered
+#ifdef WINQUAKE_RENDERER_SUPPORT
+    case_break opt_effects_12:		Cvar_SetValueQuick (&v_smoothstairs, iif (newval == 1, 0, 1) /* jerky */);						// Effects
+									Cvar_SetValueQuick (&r_lerpmodels,   iif (newval == 1, 0, 1) );
+									Cvar_SetValueQuick (&r_lerpmove,     iif (newval == 1, 0, 1) );
 
+#else
     case_break opt_effects_12:		Cvar_SetValueQuick (&v_smoothstairs, iif (newval == 2, 0, 1) /* jerky */);						// Effects
 									Cvar_SetValueQuick (&r_lerpmodels,   iif (newval == 2, 0, 1) );
 									Cvar_SetValueQuick (&r_lerpmove,     iif (newval == 2, 0, 1) );
 									Cvar_SetValueQuick (&qmb_active,     iif (newval == 1, 1, 0) );
-    }
+#endif 
+    } // end switch
 	return true;
 }
 
@@ -198,10 +214,18 @@ LOCAL_EVENT (Draw) (void)
 		default:							// Shouldn't happen
 		case_break q_control_labeltoggle:{	const char *s = NULL;
 											size_t s_len;
+											const char *our_commadic_text = e->comma_text;
+		
+#ifdef WINQUAKE_RENDERER_SUPPORT // Override text if winquake only string exists
+											if (e->winquake_comma_text)  our_commadic_text = e->winquake_comma_text;
+#endif // WINQUAKE_RENDERER_SUPPORT
+
 											e->basket_value = Mnu_Preferences_Get_Basket_Value_(e->opt_idx);
 											// if (e->basket_value == IDX_NOT_FOUND_NEG1) alert ("Invalid value"); debug
-											s = String_Instance (e->comma_text, ',', e->basket_value + 1, &s_len);
+
+											s = String_Instance (our_commadic_text, ',', e->basket_value + 1, &s_len);
 											memcpy (e->basket_text, s, s_len);
+
 											e->basket_text[s_len] = 0;
 
 											M_Print		(e->col2_px, e->row_px, e->basket_text);
@@ -301,7 +325,12 @@ LOCAL_EVENT (InitOnce) (menux_t *self)
 
 	{ int row_px = 32; int n; for (n = 0; n < self->cursor_solid_count; n ++) {
 		mnu_ent_t *e = &mnu_ent_table[n];
-		e->basket_count = String_Count_Char (e->comma_text, ',') + 1; // Num of commas in the string + 1
+		const char *our_commadic_text = e->comma_text;
+		
+#ifdef WINQUAKE_RENDERER_SUPPORT // Override text if winquake only string exists
+		if (e->winquake_comma_text)  our_commadic_text = e->winquake_comma_text;
+#endif // WINQUAKE_RENDERER_SUPPORT
+		e->basket_count = String_Count_Char (our_commadic_text, ',') + 1; // Num of commas in the string + 1
 		
 		e->row_px	= row_px;
 		e->col1_px	= self->column1;

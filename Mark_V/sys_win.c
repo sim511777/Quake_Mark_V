@@ -308,7 +308,7 @@ void System_Init (void)
 	{
 		System_Error ("WinQuake requires at least Win95 or NT 4.0");
 	}
-#pragma message ("Baker: I'm not sure we can run on Windows 98 any more or even Windows 2000")
+	// Baker: It is unlikely Mark V runs on Windows 98 or Windows 2000 any longer.
 
 #if defined(GLQUAKE_RENDERER_SUPPORT) && !defined (DIRECT3D_WRAPPER)
 	// This is the "starting Quake" dialog which we abuse for multisample
@@ -669,7 +669,8 @@ LRESULT CALLBACK Session_Windows_Dispatch (
 		fActive = LOWORD(wParam);
 		fMinimized = (BOOL) HIWORD(wParam);
 		VID_AppActivate(!(fActive == WA_INACTIVE), fMinimized, false);
-#pragma message ("Baker: If we lost the context due a Windows firewall warming we might be able to rebuild it here")
+		// Baker note from 2014-2017 era: If we lost the context due a Windows firewall warning we might be able to rebuild it here")
+		// Baker Mar 6 2018 - All dx9, winquake, GL survive the windows firewall warning and still render fine.
 
 		return 0;
 

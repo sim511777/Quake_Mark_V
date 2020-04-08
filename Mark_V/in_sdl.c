@@ -186,7 +186,7 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 			int buttons, shift, x, y;
 
 			getmousebits (e, &buttons, &shift, &x, &y);
-			Input_Mouse_Button_Event (buttons, x, y);
+			Input_Mouse_Button_Event (buttons, /*Is mouse move = Mar 5 2018*/ false, x, y);
 		}
 		return true; // handled
 
@@ -194,6 +194,13 @@ cbool SDLQ_IN_ReadInputMessages (void *_sdl_event)
 	case SDL_MOUSEMOTION:
 		input_accum_x += e->motion.xrel;
 		input_accum_y += e->motion.yrel;
+		{
+			// https://wiki.libsdl.org/SDL_GetMouseState
+			// March 5 2018
+			int x, y, buttons, shift;
+			getmousebits (e, &buttons, &shift, &x, &y); // getmousebits #defined as Platform_SDL_Input_GetMouseBits
+			Input_Mouse_Button_Event (buttons, /*Is mouse move = Mar 5 2018*/ true, x, y);
+		}
 		return true;
 #endif // INPUT_RELATIVE
 	

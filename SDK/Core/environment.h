@@ -203,7 +203,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define ENUM_FORCE_INT_GCC_(_shortname) __ ## _shortname ## _invalid = -1, // look like __borderstyle_invalid = -1,
 #else
 	#define ENUM_FORCE_INT_GCC_(_shortname) // Nada
-#endif __GNUC__
+#endif // __GNUC__
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,7 +221,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#include <stdint.h>
 #endif // ! _MSC_VER
 
-#define SPRINTSFUNC_ "%s: " // TODO: should be in assertions.h
 
 #ifdef _MSC_VER
 	typedef __int64 int64_t;
@@ -392,6 +391,8 @@ typedef enum { ENUM_FORCE_INT_GCC_ (cbool)
 } cbool;
 #define CBOOL_DEFINED
 
+#define IDX_NOT_FOUND_NEG1 -1
+
 typedef unsigned char byte;
 
 #ifndef PLATFORM_IOS
@@ -438,9 +439,6 @@ typedef unsigned char byte;
 #define	c_max(a, b)	(((a) > (b)) ? (a) : (b))
 #define c_rint(x)	((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5))
 #define c_sgn(x)	((x > 0) - (x < 0))
-
-// DANGEROUS AS FUCK OCT 2016 ... no parens around the args ....
-//#define INBOUNDS(_low, _test, _high) (_low <= _test && _test <= _high )
 
 typedef void  (*voidfunc_t)			(void);
 typedef cbool (*progress_fn_t )		(void *id, int oldamt, int newamt); // Allows boundary checks easier
@@ -526,19 +524,6 @@ typedef void  (*MShutdown)			(void *);
 		_x->Shutdown	= (MShutdown *)Shutdown; \
 	}
 
-///////////////////////////////////////////////////////////////////////////////
-//  Compile Time Assert
-///////////////////////////////////////////////////////////////////////////////
-
-#define	COMPILE_TIME_ASSERT(name, x)	\
-	typedef int dummy_ ## name[(x) * 2 - 1]
-
-#ifdef _DEBUG // This is debug only ...
-	#define	DEBUG_COMPILE_TIME_ASSERT(HINT_ERROR_WORD, CONDITION_THAT_MUST_BE_TRUE)	\
-		typedef int dummy_ ## HINT_ERROR_WORD[(CONDITION_THAT_MUST_BE_TRUE) * 2 - 1]
-#else
-	#define DEBUG_COMPILE_TIME_ASSERT(HINT_ERROR_WORD, CONDITION_THAT_MUST_BE_TRUE)	// Nothing!
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Vile Hacks
@@ -548,8 +533,6 @@ typedef void  (*MShutdown)			(void *);
 
 #define SWITCH_CASE(_val, _cond) (_cond) ? (_val) :    // EVIL!  And so awesome.
 #define SWITCH_DEFAULT(_val) (_val)
-
-#define IDX_NOT_FOUND_NEG1 -1
 
 #define block_start__ {
 #define __block_end }
@@ -571,34 +554,14 @@ typedef void *sys_handle_t;
 
 #define NOT_MISSING_ASSIGN(pvar,val) if (pvar) (*(pvar)) = val
 #define REQUIRED_ASSIGN(pvar,val) (*(pvar)) = val
+#define REQUIRED_INCREMENT(PVAR,AMOUNT) (*(PVAR))+= AMOUNT
+#define REQUIRED_DECREMENT(PVAR,AMOUNT) (*(PVAR))-= AMOUNT
 
-#ifdef _DEBUG
-	#define DEBUG_ONLY(x) x
-#else
-	#define DEBUG_ONLY(x)
-#endif
-
-#define DEBUG_ASSERT(condition, message) DEBUG_ONLY (if (!(condition)) log_fatal ("Assertion failure: %s",  message));
 
 #define BYTE_POSITION(_dest, _n) (((byte *)(_dest))[_n])
 
 // Lets see who complains ...
 
-#if 0 // For now ...  these *MUST* be renamed and redeployed
-
-// See limits.h ... groan
-#define UINT8_MIN	      0			// UCHAR_MIN, UCHAR_MAX
-#define UINT8_MAX		256
-
-#define INT16_MIN    (-32768)        /* minimum (signed) short value */
-#define INT16_MAX      32767         /* maximum (signed) short value */
-
-#define INT32_MIN (-2147483647L - 1)
-#define INT32_MAX  2147483647L
-
-#define INT64_MAX     9223372036854775807i64       /* maximum signed long long int value */
-#define INT64_MIN   (-9223372036854775807i64 - 1)  /* minimum signed long long int value */
-#endif
 
 typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
 	VR_RT_CANT_RUN_EMPTY_BYTECODE_NEG4 = -4,		// Differs from uncompiled as we are trying to run it.  We shouldn't, would be VB6 coding mistake.
@@ -610,6 +573,7 @@ typedef enum { ENUM_FORCE_INT_GCC_ (VRESULT)
 	VR_VARTYPE_OVERFLOW = 2,							// Divide by zero?
 	_VRESULT_MAXNUM
 } VRESULT;
+
 
 #endif // ! __ENVIRONMENT_H__
 

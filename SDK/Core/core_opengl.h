@@ -32,9 +32,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //           PLATFORM_SCREEN_FLIPPED_Y 1  Mac/iPhone bottom left is 0,0
 //           PLATFORM_SCREEN_PORTRAIT     1  Mobile, height > width 
 
+#define VIEWPORT_SEND(vp) (vp)[0], (vp)[1], (vp)[2], (vp)[3]
 
 #ifdef PLATFORM_WINDOWS
 	#include "core_windows.h" // APIENTRY
+
+	// Vsync - Jan 21 this isn't windows specific.  Linux?  Except does Linux have get?
+    typedef BOOL (APIENTRY * SETSWAPFUNC) (int);
+    typedef int (APIENTRY * GETSWAPFUNC) (void);
 
 	#ifdef DIRECT3DX_WRAPPER // dx8 + dx9 - Need "gl_constants.h"
 		#include "gl_constants.h"

@@ -118,8 +118,9 @@ void cursor_inc (menu_state_e menustate)
 hotspot_menu_item_t *Menu_Hotspot_Refresh_For_Mouse (int mousex, int mousey, reply int *left, reply int *top)
 {	
 	float x, y, z;
+
 	Mat4_UnProject_Smart (mousex, mousey,  /* near */ 0, &focus0.menu_modelview, &focus0.menu_projection, focus0.menu_viewport, clheight, &x, &y, &z);
-	
+
 	NOT_MISSING_ASSIGN (left, (int) x);
 	NOT_MISSING_ASSIGN (top,  (int) y);
 	

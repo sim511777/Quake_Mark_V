@@ -2076,11 +2076,12 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 
 					while ((dir_t = readdir(dir_p)) != NULL)
 					{
-						if (isdemo && String_Does_End_With_Caseless(dir_t->d_name, ".dz"))
-						{
-							// keep going
-						}
-						else if (!String_Does_End_With_Caseless(dir_t->d_name, dot_extension))
+						// Mar 6 2018 - Bye dzip //if (isdemo && String_Does_End_With_Caseless(dir_t->d_name, ".dz"))
+						//{
+						//	// keep going
+						//}
+						//else 
+						if (!String_Does_End_With_Caseless(dir_t->d_name, dot_extension))
 							continue;
 
 						if (directives & SPECIAL_GAMEDIR_PREFERENCE)
@@ -2102,7 +2103,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 						else
 						if ( (directives & SPECIAL_DONOT_STRIP_EXTENSION) == 0)
 						{
-							if (!(isdemo && String_Does_End_With_Caseless(dir_t->d_name, ".dz")))
+							//if (!(isdemo && String_Does_End_With_Caseless(dir_t->d_name, ".dz")))  Mar 6 2018 - Bye dzip
 								File_URL_Edit_Remove_Extension (filenamebuf);
 						}
 						List_Add (list, filenamebuf);
@@ -2143,11 +2144,12 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 				// This must prefix the file AND then we must skip it.
 				const char *current_filename = pak->files[i].name;
 
-				if (isdemo && String_Does_End_With_Caseless(current_filename, ".dz"))
-				{
-					// accepted
-				}
-				else if (!String_Does_End_With_Caseless(current_filename, dot_extension))
+				//if (isdemo && String_Does_End_With_Caseless(current_filename, ".dz"))  Bye dzip
+				//{
+				//	// accepted
+				//}
+				//else 
+				if (!String_Does_End_With_Caseless(current_filename, dot_extension))
 					continue;
 
 				// we are passed something like "/maps" but for pak system we
@@ -2189,7 +2191,7 @@ cbool List_Filelist_Rebuild (clist_t** list, const char *slash_subfolder, const 
 				else
 				if ( (directives & SPECIAL_DONOT_STRIP_EXTENSION) == 0)
 				{
-					if (!(isdemo && String_Does_End_With_Caseless(current_filename, ".dz")))
+					// Mar 6 bye dzip // if (!(isdemo && String_Does_End_With_Caseless(current_filename, ".dz"))) Mar 6 bye dzip
 						File_URL_Edit_Remove_Extension (filenamebuf);
 				}
 				List_Add (list, filenamebuf);
@@ -2814,7 +2816,7 @@ void ReadList_NewGame (void)
 			clist_t *new_files = NULL;
 			char tmp_path[MAX_OSPATH];
 			c_strlcpy (tmp_path, search->filename);
-			new_files = File_List_Alloc (tmp_path, ".dz");  List_Concat_Unsorted (&file_read_list_urls, new_files);
+			// Mar 6 2018 - bye dzip // new_files = File_List_Alloc (tmp_path, ".dz");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 			new_files = File_List_Alloc (tmp_path, ".dem");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 			c_snprintf1 (tmp_path, "%s", search->filename);
 			// Ok, this will return healthbox bsps and such, it's ok to touch those.

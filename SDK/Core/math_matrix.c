@@ -224,7 +224,8 @@ glmatrix *Mat4_Frustum (glmatrix *m, double left, double right, double bottom, d
     // invalid for: l=r, b=t, or n=f
 	glmatrix tmp;
 
-#if 1
+#if 0
+#define c_assert() // Get it to ignore it for now
 	c_assert (left != right); //,	"left = right");
 	c_assert (bottom != top); //,  "bottom = top");
 	c_assert (znear != zfar); //,  "znear = zfar");

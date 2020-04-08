@@ -1019,15 +1019,15 @@ char *String_Find_Char_Nth_Instance (const char *s, int ch_findchar, int nth_ins
 char *String_Instance (const char *s, int ch_delim, int nth_instance, reply int *len)
 {
 	// If we want the nth instance, we want the nth - 1 delimiter or the string itself.
-	char *found = nth_instance > 1 ? String_Find_Char_Nth_Instance (s, ch_delim, nth_instance - 1) : s;
+	char *found = nth_instance > 1 ? String_Find_Char_Nth_Instance (s, ch_delim, nth_instance - 1) : (unconstanting char*)s;
 	char *s_start = NULL;
 	int slen = 0;
 
 	// If it wasn't found, there wasn't a delimiter at all.
-	if (!found) { 
+	if (!found) {
 		if (nth_instance == 1) {
-			NOT_MISSING_ASSIGN (len, strlen(s));  
-			return (char *)s; 
+			NOT_MISSING_ASSIGN (len, strlen(s));
+			return (char *)s;
 		}
 		return NULL; // Invalid.
 	}
@@ -1040,7 +1040,7 @@ char *String_Instance (const char *s, int ch_delim, int nth_instance, reply int 
 		NOT_MISSING_ASSIGN (len, strlen(s_start));
 		return s_start;
 	}
-	
+
 	// frog,
 	// 01234   4 - 0 = 4
 	slen = found - s_start;
@@ -2446,7 +2446,7 @@ char *va_repeat (int ch, int num_chars)
 	num_chars = CLAMP (0, num_chars, SYSTEM_STRING_SIZE_1024 - 1); // -1 space for null
 	memset (buf, ch, num_chars);
 	return _vas (buf) ; // Why was this va ("%s" ..) and not vas?  Oversight?  va("%s", buf);
-	
+
 }
 
 
@@ -3458,10 +3458,10 @@ int mem_find_count (int src_len, const char *src, int find_len, const char *find
 
 	for (cursor = src, remaining_len = src_len, count = 0; /*nada*/;  count ++) {
 		const char *old_cursor	= cursor;
-		cursor					= do_caseless ? 
-										  memimem(cursor, remaining_len, find, find_len) 
+		cursor					= do_caseless ?
+										  memimem(cursor, remaining_len, find, find_len)
 										: memmem (cursor, remaining_len, find, find_len);
-		
+
 		if (!cursor) break;
 
 		// Adjust remaining length
@@ -3480,10 +3480,10 @@ int mem_find_nth (int src_len, const char *src, int find_len, const char *find, 
 
 	for (cursor = src, remaining_len = src_len, count = 0; /*nada*/;  count ++) {
 		const char *old_cursor	= cursor;
-		cursor					= do_caseless ? 
-										  memimem(cursor, remaining_len, find, find_len) 
+		cursor					= do_caseless ?
+										  memimem(cursor, remaining_len, find, find_len)
 										: memmem (cursor, remaining_len, find, find_len);
-		
+
 		if (!cursor) break;
 		if (count + 1 == nth)
 			return cursor - src; // Right
@@ -3506,7 +3506,7 @@ int slen_atoi (int length, const char *s)
 	size_t bufsize; const char *s_a = core_memdup_z (s, length, &bufsize);
 	int out_val = atoi(s_a);
 	freenull (s_a);
-	return out_val;	
+	return out_val;
 }}
 
 
@@ -3546,7 +3546,7 @@ int slen_strcasecmp (int length1, const char *s1, int length2, const char *s2)
 
 size_t str_format_int_grouped(char dst[16], int num);
 char *va00 (int num)
-{	
+{
 	char sbuf[64];
 	size_t result = str_format_int_grouped(sbuf, num);
 
@@ -3571,14 +3571,14 @@ char *String_Bit_String_Reverse_Vas (int num)
 {
 	char out[40]; // 33 = 32 + 1
 	int count = 0;
-	int n; 
-	
+	int n;
+
 	out[0] = 0;
 	for (n = 0; n < 32; n ++) {
-		int bit = 1 << n; // bit = bit << 1; 
+		int bit = 1 << n; // bit = bit << 1;
 		int hit = num & bit;
 		if (hit) count = n;
-		
+
 		c_strlcat (out, hit ? "1" : "0");
 	}
 	// Trun.  If count = 0;
@@ -3598,12 +3598,12 @@ char *String_Bit_String_Vas (int num)
 
 
 // Weaknesses?  Buf size.  Can't handle double.  Can't handle atoi64.  15 digit limit
-// 2 000 000 000 (10) 2,000,000,000 13  minus sign 14.  
+// 2 000 000 000 (10) 2,000,000,000 13  minus sign 14.
 // Strengths?  Think it can handle negative ok.
 // Returns strlen
 // Stack overflow says needs something like 1077 digits for super small fractional double.
 // http://stackoverflow.com/questions/1701055/what-is-the-maximum-length-in-chars-needed-to-represent-any-double-value
-// But we are mostly talking 
+// But we are mostly talking
 
 size_t str_format_int_grouped(char dst[16], int num)
 {

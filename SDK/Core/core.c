@@ -133,10 +133,6 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t pmainwindow )
 	}
 #endif // defined(PLATFORM_WINDOWS) && !defined(CORE_SDL)
 
-
-
-
-
 	log_fatal	= fnset->ferrorline_fn;
 	log_debug	= fnset->fdprintline_fn;
 	log_level_5	= fnset->fprintlinelevel_fn;
@@ -183,6 +179,7 @@ HANDLE WINAPI CreateFile(
   _In_      DWORD dwFlagsAndAttributes,
   _In_opt_  HANDLE hTemplateFile
 );*/
+
 	logd ("Core initialized");
 }
 

@@ -93,23 +93,25 @@
 #define	Q_MINLONG	((int)0x80000000)
 #define	Q_MINFLOAT	((int)0x7fffffff)
 
-/* Make sure the types really have the right
- * sizes: These macros are from SDL headers.
- */
-#define	COMPILE_TIME_ASSERT(name, x)	\
-	typedef int dummy_ ## name[(x) * 2 - 1]
+// Baker: Moved to assertions.h
 
-COMPILE_TIME_ASSERT(char, sizeof(char) == 1);
-COMPILE_TIME_ASSERT(float, sizeof(float) == 4);
-COMPILE_TIME_ASSERT(long, sizeof(long) >= 4);
-COMPILE_TIME_ASSERT(int, sizeof(int) == 4);
-COMPILE_TIME_ASSERT(short, sizeof(short) == 2);
-
-/* make sure enums are the size of ints for structure packing */
-typedef enum {
-	THE_DUMMY_VALUE
-} THE_DUMMY_ENUM;
-COMPILE_TIME_ASSERT(enum, sizeof(THE_DUMMY_ENUM) == sizeof(int));
+///* Make sure the types really have the right
+// * sizes: These macros are from SDL headers.
+// */
+//#define	COMPILE_TIME_ASSERT(name, x)	\
+//	typedef int dummy_ ## name[(x) * 2 - 1]
+//
+//COMPILE_TIME_ASSERT(char, sizeof(char) == 1);
+//COMPILE_TIME_ASSERT(float, sizeof(float) == 4);
+//COMPILE_TIME_ASSERT(long, sizeof(long) >= 4);
+//COMPILE_TIME_ASSERT(int, sizeof(int) == 4);
+//COMPILE_TIME_ASSERT(short, sizeof(short) == 2);
+//
+///* make sure enums are the size of ints for structure packing */
+//typedef enum {
+//	THE_DUMMY_VALUE
+//} THE_DUMMY_ENUM;
+//COMPILE_TIME_ASSERT(enum, sizeof(THE_DUMMY_ENUM) == sizeof(int));
 
 
 /* Provide a substitute for offsetof() if we don't have one.

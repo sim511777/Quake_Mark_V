@@ -642,7 +642,7 @@ void VID_Renderer_Set_OpenGL (void)
 	eSetPixelFormat         = SetPixelFormat;
 	eSwapBuffers			= SwapBuffers;
 	eChangeDisplaySettings  = ChangeDisplaySettings;
-	eEnumDisplaySettings    = EnumDisplaySettings; // The real winapi one.
+	eEnumDisplaySettings    = EnumDisplaySettings; // The real winapi one.  GCC warning here.  Mar 5 2018 Not sure why :(
 #endif // PLATFORM_GUI_WINDOWS
 }
 
@@ -675,7 +675,7 @@ void GL_ErrorPrintFn (const char *funcname, int linenum)
 	if (errcode) {
 		char errstr[SYSTEM_STRING_SIZE_1024] = {0};
 		c_snprintf2 (errstr, "GL Error: %d at linenum %d", errcode, linenum);
-		
+
 #ifndef PLATFORM_OPENGLES // Because OpenGLES doesn't have glu available.
 		c_strlcat (errstr, " ");
 		c_strlcat (errstr, "'");
@@ -685,7 +685,7 @@ void GL_ErrorPrintFn (const char *funcname, int linenum)
 
 		if (funcname) {
 			c_strlcat (errstr, " ");
-			
+
 			c_strlcat (errstr, "in");
 			c_strlcat (errstr, " ");
 			c_strlcat (errstr, String_Skip_Char_Reverse (funcname, '\\') );

@@ -349,6 +349,7 @@ void Cmd_Exec_f (lparse_t *line)
 							"bind    ,		+klook  \n"
 							"bind    MOUSE3 +zoom_key  \n"
 							"bind    MOUSE4 togglemenu  \n"
+
 							"unbind F11      // stupid zoom key  \n"
 							"unbind  \\      // +mlook  \n"
 							"unbind  /      // next weapon  \n"

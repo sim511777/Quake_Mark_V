@@ -99,8 +99,6 @@ LOCAL_EVENT (Draw) (void)
 // Since key can be upper or lower case it isn't quite a scancode
 LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 {
-	//if (hotspot != IDX_N
-
 	switch (key) {
 	default:				// Nothing
 	case_break K_ESCAPE:	Mnu_Main_Enter_f (NULL);

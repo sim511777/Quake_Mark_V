@@ -29,15 +29,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RANDOM_FLOAT_0_1 ((float)rand()/(float)RAND_MAX)
 #define RANDOM_INT
       
-int random_int (int low, int high);
+int random_int_low_high (int low, int high);
 
 cbool is_pow2 (unsigned int x); // Zero returns false.
 //unsigned int NextPowerOfTwo (unsigned int v);
 //unsigned int roundup_pow2 (unsigned int x);
-unsigned int roundup_pow2_or_next_pow2 (unsigned int x);
+unsigned int roundup_pow2_or_next_pow2 (unsigned int x); // 0 = 0, 1=1, 2=2, 4=4, 5=8,	8=8.  This expects positive non-zero integers.
 unsigned int roundup_batch (unsigned int n, unsigned int batchsize_pow2);
 
-#pragma message ("I want this roundup_next_pow2 definitively defined.. What does it do to 1, 2, 16 0 ?")
+//#pragma message ("I want this roundup_next_pow2 definitively defined.. What does it do to 1, 2, 16 0 ?")
 
 #define roundup_256(n)	(((n) + 255) & ~255)
 #define roundup_16(n) (((n) + 15) & ~15)

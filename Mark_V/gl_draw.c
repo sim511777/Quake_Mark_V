@@ -605,7 +605,7 @@ void Draw_LoadPics (void)
 		int mark = Hunk_LowMark ();
 		const char *crosshair_base = "/gfx/crosshairs/weapon_";
 		char current_filename[MAX_QPATH_64];
-		char limit_path[MAX_OSPATH];
+		//char limit_path[MAX_OSPATH];
 		int fwidth, fheight;
 		unsigned *data;
 		int n;
@@ -1062,12 +1062,11 @@ void Draw_SetCanvas (canvastype newcanvas)
 		//eglViewport (clx + (clwidth - 320*s) / 2, ybot, 320*s, 200*s);
 		eglViewport (clx + (clwidth - 320*s) / 2, ybot, 320*s, 200*s);
 
-#if 1 // MENU MOUSE
-		eglGetIntegerv	(GL_VIEWPORT, focus0.menu_viewport);
-		eglGetFloatv	(GL_MODELVIEW_MATRIX, focus0.menu_projection.m16); // Store off the model view matrix.  (r_world_matrix)
-		eglGetFloatv	(GL_PROJECTION_MATRIX, focus0.menu_modelview.m16); // Store off the model view matrix.  (r_world_matrix)
-#endif
-
+		if (newcanvas ==  CANVAS_MENU) {
+			eglGetIntegerv	(GL_VIEWPORT, focus0.menu_viewport);
+			eglGetFloatv	(GL_MODELVIEW_MATRIX, focus0.menu_projection.m16); // Store off the model view matrix.  (r_world_matrix)
+			eglGetFloatv	(GL_PROJECTION_MATRIX, focus0.menu_modelview.m16); // Store off the model view matrix.  (r_world_matrix)
+		}
 
 		break;
 	case CANVAS_MENU_INTERMISSION_TEXT: // Increased size a bit.

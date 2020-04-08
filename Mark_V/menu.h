@@ -28,16 +28,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef enum { ENUM_FORCE_INT_GCC_ (menu_state)
 	menu_state_None_0 = 0,
 	#define CMD_DEF(NAME, CURSOR_COUNT, COL1, COL2, NWIDTH) menu_state_ ## NAME, // Like: menu_state_Main,
-		#include "menu_definitions_sheet.h" 
+		#include "menu_definitions_sheet.h"
 	menu_state_COUNT, // How many.
 } menu_state_e;
 
 
-
+struct _menux_t_s; // Forward declare ... fixes gcc warning
 
 // We know menu_key_fn_t doesn't take ascii because it accept arrows.
 typedef void (*menu_initonce_fn_t)(struct _menux_t_s *self);
-typedef void (*menu_enter_fn_t) (lparse_t *unused); 
+typedef void (*menu_enter_fn_t) (lparse_t *unused);
 typedef void (*menu_draw_fn_t)(void);
 typedef void (*menu_key_fn_t)(key_scancode_e ascii, int hotspot /* or -1 */); // Because has -1 in the enum, even gcc will make an int32
 
@@ -61,7 +61,6 @@ typedef struct _menux_t_s {
 	int								hoverx;
 	int								hovery;
 	int								cursor_fluid_count;
-	
 } menux_t;
 
 extern menux_t menux[menu_state_COUNT]; // Super-global
@@ -73,12 +72,12 @@ extern menux_t menux[menu_state_COUNT]; // Super-global
 	void Mnu_ ## NAME ## _Draw (void);								/*Like: void Mnu_Main_Draw (void) */								\
 	void Mnu_ ## NAME ## _Key (key_scancode_e ascii, int hotspot);	/*Like: void Mnu_Main_Key (key_scancode_e ascii, int hotspot) */	\
 	// Ender
-	#include "menu_definitions_sheet.h" 
+	#include "menu_definitions_sheet.h"
 
 #define QUAKE_BLACK_0		0
 #define QUAKE_GRAY_6		6
 #define QUAKE_BLACKISH_16	16
-//#define QUAKE_COLOR_17		17
+//#define QUAKE_COLOR_17	17
 #define QUAKE_TAN_125		125
 #define QUAKE_YELLOW_111	111
 #define QUAKE_BROWN_169		169

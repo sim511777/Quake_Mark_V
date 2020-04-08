@@ -259,7 +259,14 @@ void M_Draw (void)
 			Draw_Fill (PRECT_SEND(r),				QUAKE_RED_251, 1);
 			Draw_Fill (PRECT_SEND_INSET(r, 1),		QUAKE_BLACK_0, 1);
 		}
-		else Draw_Fill (PRECT_SEND(r), QUAKE_TAN_125, 0.10);
+		else {
+#ifdef WINQUAKE_RENDERER_SUPPORT
+			// Nothing because it is ugly?
+			Draw_Fill (PRECT_SEND(r), QUAKE_BLACK_0, 1);
+#else // !WINQUAKE_RENDERER_SUPPORT
+			Draw_Fill (PRECT_SEND(r), QUAKE_TAN_125, 0.10); // GL
+#endif // !WINQUAKE_RENDERER_SUPPORT
+		}
 	}
 
 	Hotspots_Begin (sMenu.menu_state, 0);
@@ -292,7 +299,7 @@ void M_Keydown (key_scancode_e key, int hotspot)
 
 		if (!sMenu.keys_bind_grab && hotspot != NO_HOTSPOT_HIT_NEG1 && key == K_MOUSE1) {
 			// If mouse1 was selected, set the cursor
-			#pragma message ("Isn't the hotspot sometimes item data?")
+			// Hotspot might be item data.  I cannot recall precisely the mechanics
 			if (hotspot >=0 /*as opposed to a negative hotspot*/)
 				this_menu->cursor = hotspot;
 

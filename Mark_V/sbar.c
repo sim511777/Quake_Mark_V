@@ -1185,6 +1185,8 @@ void Sbar_Draw (void)
 	w = 320;
 	if (sb_lines && clwidth > w)
 		Draw_TileClear (0, clheight - sb_lines, clwidth, sb_lines);
+#else
+	eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); // Mar 6 2018 - mh sbar alpha fix
 #endif // WINQUAKE_RENDERER_SUPPORT
 
 	Draw_SetCanvas (CANVAS_SBAR); //johnfitz
@@ -1287,6 +1289,9 @@ void Sbar_Draw (void)
 	}
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
+	if (sbar_alpha < 1) // Mar 6 2018 - mh sbar alpha fix
+		eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
 	//johnfitz -- removed the vid.width > 320 check here
 
 	if (!scr_sbarcentered.value && cl.gametype == GAME_DEATHMATCH)

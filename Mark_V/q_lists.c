@@ -311,6 +311,7 @@ void Lists_NewGame (void)
 
 	Mnu_Levels_NewGame ();
 	Mnu_Demos_NewGame ();
+
 #ifdef CORE_PTHREADS
 	ReadList_NewGame ();	
 #endif // CORE_PTHREADS

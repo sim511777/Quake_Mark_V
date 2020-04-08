@@ -1785,6 +1785,8 @@ static void TexMgr_LoadImage8 (gltexture_t *glt, byte *data, byte *palette_data)
 
 		usepal = custom_palette;
 
+		// Baker: This 6 year old comment must be wrong ... Mar 6 2018
+
 		// Baker: This looks wrong but we are using the last index
 		// of "custom_palette" that has 257 entries.  It's ok.
 		// This is for a special case of alpha textures  where
@@ -1796,8 +1798,8 @@ static void TexMgr_LoadImage8 (gltexture_t *glt, byte *data, byte *palette_data)
 		// And even though I vaguely recall, I know this is right
 		// because I remember discovering the issue and being very
 		// disappointed before I fixed it.
-#pragma message ("Fix me!  Was I worn out or what?  This only applies to Half-Life maps, what was the issue I was trying to fix.")
-#pragma message ("I'm sure I was trying to solve a legitimate problem, but what was problem and where because this won't work right.")
+		//#pragma message ("Fix me!  Was I worn out or what?  This only applies to Half-Life maps, what was the issue I was trying to fix.")
+		//#pragma message ("I'm sure I was trying to solve a legitimate problem, but what was problem and where because this won't work right.")
 		padbyte = (byte) 256;
 	}
 	else
@@ -2012,12 +2014,12 @@ void TexMgr_ReplaceImage_RGBA (gltexture_t* texture, unsigned *data, int width, 
 			return;
 	}
 
-#pragma message ("Need to turn fullbright to none?")
+	// #pragma message ("Need to turn fullbright to none?")
 
-// Warp texture?
+	// Warp texture?
 	if (texture->flags & TEXPREF_WARPIMAGE)
 		vid.warp_stale = true;
-#pragma message ("Isn't this too much?  Only that texture changed")
+	// #pragma message ("Isn't this too much?  Only that texture changed")
 
 }
 
@@ -2496,7 +2498,7 @@ static void TexMgr_Replacement_Load_f (void)
 
 int	currenttexture = -1; // to avoid unnecessary texture sets
 
-cbool mtexenabled = false;
+cbool mtexenabled = false;  // Baker: This mtexenabled is used by GL_DrawAliasFrame and I don't think it should be.  Right?
 
 /*
 ================

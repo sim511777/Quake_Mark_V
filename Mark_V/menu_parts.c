@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int Mnu_Part_DrawVScrollbar (int left, int top, int width, int height, int buttonsize, int thumbsize, int firstrow, int pagerows, int totalrows) //, int navcount)
 {
- #pragma message ("If total rows <= 17, no scroll bar is possible.  But since we aren't doing a dynamically sized thumb ... is ok.")
+	// Baker: If total rows <= 17, a scroll bar is drawn and is active but doesn't do much.
 	crect_t					r_whole		= {left, top, width, height};
 	hotspot_menu_item_t		*hs			= Hotspots_Add (RECT_SEND(r_whole), 1, hotspottype_vscroll);
 

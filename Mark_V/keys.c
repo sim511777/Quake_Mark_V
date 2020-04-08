@@ -701,7 +701,7 @@ void Key_Console (int key)
 
 	if (key_sellength)
 		Key_Console_Delete_Selection_Move_Cursor (workline);
-#pragma message ("If we aren't inserting, this is a defacto replace operation.  Need to effectively temp force key_insert to true if sellenth !=0")
+	#pragma message ("If we aren't inserting, this is a defacto replace operation.  Need to effectively temp force key_insert to true if sel_length !=0")
 
 	if (key_linepos < CONSOLE_MAX_CMDLINE_256 - 1 )
 	{

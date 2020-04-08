@@ -272,7 +272,7 @@ void Entity_Inspector_Think (void)
 		return;
 
 	if (frame.in_shadow_volume_draw)
-		return; // Feb 23 2018 - this messes us up.
+		return; // Feb 23 2018 - bug-fix - this fixes a rendering issue.
 
 	Entity_Inspector_Draw ();
 }

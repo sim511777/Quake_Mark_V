@@ -34,7 +34,7 @@ void Hotspots_Init (void)
 	hotspot_menu_group.itemsize		= sizeof(hotspot_menu_item_t);
 }
 
-void M_Draw (void);
+// M_Draw -- Caller?
 void Hotspots_Begin (menu_state_e my_mstate, int cursor) // Function is called
 {
 	hotspot_menu_group.mstate			= my_mstate;

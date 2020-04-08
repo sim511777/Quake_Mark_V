@@ -1205,8 +1205,6 @@ VID_BeginRendering -- sets values of clx, cly, clwidth, clheight
 */
 void VID_BeginRendering (int *x, int *y, int *width, int *height)
 {
-
-
 #pragma message ("Make sure VID_Resize_Think does NOT do anything essential ever")
 #ifdef SUPPORTS_RESIZABLE_WINDOW
     if (!vid.Minimized && vid.ActiveApp && vid.screen.type == MODESTATE_WINDOWED /* <--- that */) // Fixes D3D fullscreenstart

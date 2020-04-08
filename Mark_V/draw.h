@@ -43,7 +43,7 @@ void Draw_NewGame (void);
 
 qpic_t *Draw_PicFromWad (const char *name);
 qpic_t *Draw_CachePic (const char *path);
-qpic_t *Draw_CachePic_Sfmt (const char *fmt, ...); __core_attribute__((__format__(__printf__,1,2)));
+qpic_t *Draw_CachePic_Sfmt (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
 
 void Draw_ConsoleBackground (void); //johnfitz -- removed parameter int lines
 

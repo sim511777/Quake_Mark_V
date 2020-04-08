@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Mark V"
+	Name="Mark Nova"
 	ProjectGUID="{64326BEE-C576-46E6-BF4C-E84616E75A20}"
 	TargetFrameworkVersion="0"
 	>
@@ -55,7 +55,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB;IMAGE_JPEG_SUPPORT"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -63,7 +63,6 @@
 				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Release_MSVC_2008_DX8Quake/"
 				ObjectFile=".\objj\Release_MSVC_2008_DX8Quake/"
-				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_DX8Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -166,7 +165,6 @@
 				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Release_MSVC_2008_WinQuake/"
 				ObjectFile=".\objj\Release_MSVC_2008_WinQuake/"
-				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_WinQuake/"
 				BrowseInformation="1"
 				SuppressStartupBanner="true"
 			/>
@@ -257,7 +255,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB;IMAGE_JPEG_SUPPORT"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -265,7 +263,6 @@
 				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Release_MSVC_2008_GLQuake/"
 				ObjectFile=".\objj\Release_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -284,7 +281,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v.exe"
+				OutputFile="c:\quake\mark_v_gl.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthread-static-msvc2010/lib"
@@ -362,7 +359,6 @@
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_WinQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_WinQuake/"
 				ObjectFile=".\objj\Debug_MSVC_2008_WinQuake/"
-				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_WinQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -388,7 +384,6 @@
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_WinQuake/mark_v_winquake_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -461,7 +456,6 @@
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_WinQuakeGL/"
 				ObjectFile=".\objj\Debug_MSVC_2008_WinQuakeGL/"
-				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_WinQuakeGL/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -487,7 +481,6 @@
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_WinQuakeGL/mark_v_winquake_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -554,13 +547,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D8_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;IMAGE_JPEG_SUPPORT"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_DX8Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_DX8Quake/"
 				ObjectFile=".\objj\Debug_MSVC_2008_DX8Quake/"
-				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_DX8Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -588,7 +580,6 @@
 				IgnoreDefaultLibraryNames="libci.lib"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_DX8Quake/dx8_mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -655,14 +646,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;IMAGE_JPEG_SUPPORT"
 				GeneratePreprocessedFile="0"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="false"
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_GLQuake/"
 				ObjectFile=".\objj\Debug_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -682,13 +672,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v_debug_vs2008.exe"
+				OutputFile="c:\quake\mark_v_debug_gl_vs2008.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -755,13 +744,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL;IMAGE_JPEG_SUPPORT"
 				RuntimeLibrary="2"
 				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
 				ObjectFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
-				ProgramDataBaseFileName=".\objj\SDL_Debug_MSVC_2008_GLQuake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -787,7 +775,6 @@
 				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\SDL_Debug_MSVC_2008_GLQuake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -886,7 +873,6 @@
 				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\SDL_Debug_MSVC_2008_Winquake/mark_v_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -953,13 +939,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthreads-w32-2-9-1-release/include"
-				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS"
+				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;IMAGE_JPEG_SUPPORT"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_DX9Quake/"
 				ObjectFile=".\objj\Debug_MSVC_2008_DX9Quake/"
-				ProgramDataBaseFileName=".\objj\Debug_MSVC_2008_DX9Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -979,7 +964,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v_1050_debug.exe"
+				OutputFile="c:\quake\mark_v_dx9_debug.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
@@ -987,7 +972,6 @@
 				IgnoreDefaultLibraryNames="libci.lib"
 				DelayLoadDLLs="libcurl.dll"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\objj\Debug_MSVC_2008_DX9Quake/DirectMark5_debug.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -1055,8 +1039,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/direct3d_9_mh,../sdk/dxsdk9/include,../SDK/pthread-static-msvc2010/include"
-				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB"
-				GeneratePreprocessedFile="0"
+				PreprocessorDefinitions="NDEBUG;GLQUAKE;CORE_GL;DIRECT3D9_WRAPPER;DIRECT3DX_WRAPPER;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;PTW32_STATIC_LIB;IMAGE_JPEG_SUPPORT"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -1064,7 +1047,6 @@
 				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_DX9Quake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Release_MSVC_2008_DX9Quake/"
 				ObjectFile=".\objj\Release_MSVC_2008_DX9Quake/"
-				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_DX9Quake/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -1083,7 +1065,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib "
-				OutputFile="c:\quake\mark_v_1050.exe"
+				OutputFile="c:\quake\mark_v.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="../sdk/dxsdk9/lib,../SDK/pthread-static-msvc2010/lib"
@@ -1167,7 +1149,6 @@
 				PrecompiledHeaderFile=".\objj\Release_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Release_MSVC_2008_WinQuakeGL/"
 				ObjectFile=".\objj\Release_MSVC_2008_WinQuakeGL/"
-				ProgramDataBaseFileName=".\objj\Release_MSVC_2008_WinQuakeGL/"
 				BrowseInformation="1"
 				SuppressStartupBanner="true"
 			/>
@@ -3853,14 +3834,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -12284,6 +12257,10 @@
 				Name="Core"
 				>
 				<File
+					RelativePath="..\SDK\Core\assertions.h"
+					>
+				</File>
+				<File
 					RelativePath="..\SDK\Core\base64.c"
 					>
 				</File>
@@ -13515,140 +13492,404 @@
 				<Filter
 					Name="noveau"
 					>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="DZip"
-				>
-				<File
-					RelativePath="..\SDK\Dzip\compress.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\conmain.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\crc32.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\decode.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\delete.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\dzip.h"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\dzipcon.h"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\encode.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\list.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\mainx.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\uncompress.c"
-					>
-				</File>
-				<File
-					RelativePath="..\SDK\Dzip\v1code.c"
-					>
-				</File>
-				<Filter
-					Name="zlib"
-					>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\adler32.c"
+						RelativePath="..\SDK\Core\jconfig.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\deflate.c"
+						RelativePath="..\SDK\Core\jmorecfg.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\deflate.h"
+						RelativePath="..\SDK\Core\jpeglib.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infblock.c"
+						RelativePath="..\SDK\Core\zlib.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infblock.h"
+						RelativePath="..\SDK\Core\zlib_adler32.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infcodes.c"
+						RelativePath="..\SDK\Core\zlib_compress.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infcodes.h"
+						RelativePath="..\SDK\Core\zlib_crc32.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inffast.c"
+						RelativePath="..\SDK\Core\zlib_crc32.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inffast.h"
+						RelativePath="..\SDK\Core\zlib_deflate.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inffixed.h"
+						RelativePath="..\SDK\Core\zlib_deflate.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inflate.c"
+						RelativePath="..\SDK\Core\zlib_gzclose.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inftrees.c"
+						RelativePath="..\SDK\Core\zlib_gzguts.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\inftrees.h"
+						RelativePath="..\SDK\Core\zlib_gzlib.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infutil.c"
+						RelativePath="..\SDK\Core\zlib_gzread.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\infutil.h"
+						RelativePath="..\SDK\Core\zlib_gzwrite.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\trees.c"
+						RelativePath="..\SDK\Core\zlib_infback.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\trees.h"
+						RelativePath="..\SDK\Core\zlib_inffast.c"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\zconf.h"
+						RelativePath="..\SDK\Core\zlib_inffast.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\zlib.h"
+						RelativePath="..\SDK\Core\zlib_inffixed.h"
 						>
 					</File>
 					<File
-						RelativePath="..\SDK\Dzip\zlib\zutil.h"
+						RelativePath="..\SDK\Core\zlib_inflate.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_inflate.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_inftrees.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_inftrees.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_trees.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_trees.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_uncompr.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_zconf.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_zutil.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlib_zutil.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_cderror.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_cdjpeg.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_cjpeg.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcapimin.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcapistd.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jccoefct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jccolor.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcdctmgr.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jchuff.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jchuff.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcinit.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcmainct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcmarker.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcmaster.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcomapi.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcparam.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcphuff.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcprepct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jcsample.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jctrans.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdapimin.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdapistd.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdatadst.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdatasrc.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdcoefct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdcolor.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdct.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jddctmgr.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdhuff.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdhuff.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdinput.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdmainct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdmarker.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdmaster.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdmerge.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdphuff.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdpostct.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdsample.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jdtrans.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jerror.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jerror.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jfdctflt.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jfdctfst.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jfdctint.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jidctflt.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jidctfst.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jidctint.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jidctred.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jinclude.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jmemansi.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jmemmgr.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jmemsys.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jpegint.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jquant1.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jquant2.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jutils.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_jversion.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdbmp.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdcolmap.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdgif.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdppm.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdrle.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdswitch.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_rdtarga.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_transupp.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_transupp.h"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_wrbmp.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_wrgif.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_wrppm.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_wrrle.c"
+						>
+					</File>
+					<File
+						RelativePath="..\SDK\Core\zlibjpeg_wrtarga.c"
 						>
 					</File>
 				</Filter>

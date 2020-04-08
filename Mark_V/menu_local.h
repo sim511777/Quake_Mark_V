@@ -59,6 +59,7 @@ extern int buflen;
 	void M_DrawTransPicTranslate (int x, int y, qpic_t *pic, int top, int bottom); // multiplayer_player_setup
 #else
 	void M_DrawTransPicTranslate (int x, int y, qpic_t *pic); // multiplayer_player_setup
+	void M_BuildTranslationTable(int top, int bottom);
 #endif
 
 #define M_CHAR_HEIGHT_8 8

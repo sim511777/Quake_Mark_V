@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="Win32 WinQuake Debug">
 				<Option output="c:/quake/mark_v_winquake_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_WinQuake" />
+				<Option object_output="./objj/Debug_GCC_WinQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -42,7 +42,7 @@
 			</Target>
 			<Target title="Win32 WinQuake Release">
 				<Option output="c:/quake/mark_v_winquake_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_WinQuake" />
+				<Option object_output="./objj/Release_GCC_WinQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -73,7 +73,7 @@
 			</Target>
 			<Target title="Win32 WinQuake GL Debug">
 				<Option output="c:/quake/mark_v_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_WinQuake_GL" />
+				<Option object_output="./objj/Debug_GCC_WinQuake_GL" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -110,7 +110,7 @@
 			</Target>
 			<Target title="Win32 WinQuake GL Release">
 				<Option output="c:/quake/mark_v_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_WinQuake_GL" />
+				<Option object_output="./objj/Release_GCC_WinQuake_GL" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -144,7 +144,7 @@
 			</Target>
 			<Target title="Win32 GL Debug">
 				<Option output="c:/quake/mark_v_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_GLQuake" />
+				<Option object_output="./objj/Debug_GCC_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -181,7 +181,7 @@
 			</Target>
 			<Target title="Win32 GL Release">
 				<Option output="c:/quake/mark_v_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_GLQuake" />
+				<Option object_output="./objj/Release_GCC_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -215,7 +215,7 @@
 			</Target>
 			<Target title="Win32 SDL WinQuake GL Debug">
 				<Option output="c:/quake/mark_v_sdl_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_SDL_Winquake_GLQuake" />
+				<Option object_output="./objj/Debug_GCC_SDL_Winquake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-condebug -window" />
@@ -258,7 +258,7 @@
 			</Target>
 			<Target title="Win32 SDL WinQuake GL Release">
 				<Option output="c:/quake/mark_v_sdl_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDL_WinQuake_GLQuake" />
+				<Option object_output="./objj/Release_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -304,7 +304,7 @@
 			</Target>
 			<Target title="Win32 SDL GL Debug">
 				<Option output="c:/quake/mark_v_sdl_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Debug_GCC_SDL_GLQuake" />
+				<Option object_output="./objj/Debug_GCC_SDL_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-condebug -window" />
@@ -347,7 +347,7 @@
 			</Target>
 			<Target title="Win32 SDL GL Release">
 				<Option output="c:/quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDL_GLQuake" />
+				<Option object_output="./objj/Release_GCC_SDL_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -393,7 +393,7 @@
 			<Target title="Linux SDL WinQuake GL Debug">
 				<Option output="../../Quake/mark_v_sdl_winquake_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../../Quake/" />
-				<Option object_output="./Object_Files/Debug_GCC_SDL_WinQuake_GLQuake" />
+				<Option object_output="./objj/Debug_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-window -basedir /home/charles/Desktop/Quake -developer -width 640 -height 480 -fullscreen" />
@@ -414,7 +414,7 @@
 			</Target>
 			<Target title="Linux SDL WinQuake GL Release">
 				<Option output="../../Quake/mark_v_sdl_winquake_gl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDL_WinQuake_GLQuake" />
+				<Option object_output="./objj/Release_GCC_SDL_WinQuake_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-window -basedir /home/charles/Desktop/Quake" />
@@ -437,7 +437,7 @@
 			<Target title="Linux SDL GL Debug">
 				<Option output="../../Quake/mark_v_sdl_gl_debug_gcc" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="../../Quake/" />
-				<Option object_output="./Object_Files/Debug_GCC_SDL_GLQuake" />
+				<Option object_output="./objj/Debug_GCC_SDL_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-window -basedir /home/charles/Desktop/Quake -developer" />
@@ -459,7 +459,7 @@
 			</Target>
 			<Target title="Linux SDL GL Release">
 				<Option output="../../Quake/mark_v_sdl_gl_gcc" prefix_auto="1" extension_auto="1" />
-				<Option object_output="./Object_Files/Release_GCC_SDL_GLQuake" />
+				<Option object_output="./objj/Release_GCC_SDL_GLQuake" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Option parameters="-window -basedir /home/charles/Desktop/Quake" />
@@ -499,6 +499,7 @@
 			<Add directory="../SDK" />
 			<Add directory="../SDK/Core" />
 		</Linker>
+		<Unit filename="../SDK/Core/assertions.h" />
 		<Unit filename="../SDK/Core/base64.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -568,6 +569,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../SDK/Core/interface.h" />
+		<Unit filename="../SDK/Core/jconfig.h" />
+		<Unit filename="../SDK/Core/jmorecfg.h" />
+		<Unit filename="../SDK/Core/jpeglib.h" />
 		<Unit filename="../SDK/Core/libcurl.dll" />
 		<Unit filename="../SDK/Core/links.c">
 			<Option compilerVar="CC" />
@@ -668,78 +672,254 @@
 		<Unit filename="../SDK/Core/zip.h" />
 		<Unit filename="../SDK/Core/zip_win.cpp" />
 		<Unit filename="../SDK/Core/zip_win.h" />
-		<Unit filename="../SDK/Dzip/compress.c">
+		<Unit filename="../SDK/Core/zlib.h" />
+		<Unit filename="../SDK/Core/zlib1.dll" />
+		<Unit filename="../SDK/Core/zlib_adler32.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/conmain.c">
+		<Unit filename="../SDK/Core/zlib_compress.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/crc32.c">
+		<Unit filename="../SDK/Core/zlib_crc32.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/decode.c">
+		<Unit filename="../SDK/Core/zlib_crc32.h" />
+		<Unit filename="../SDK/Core/zlib_deflate.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/delete.c">
+		<Unit filename="../SDK/Core/zlib_deflate.h" />
+		<Unit filename="../SDK/Core/zlib_gzclose.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/dzip.dsp" />
-		<Unit filename="../SDK/Dzip/dzip.dsw" />
-		<Unit filename="../SDK/Dzip/dzip.h" />
-		<Unit filename="../SDK/Dzip/dzipcon.h" />
-		<Unit filename="../SDK/Dzip/encode.c">
+		<Unit filename="../SDK/Core/zlib_gzguts.h" />
+		<Unit filename="../SDK/Core/zlib_gzlib.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/list.c">
+		<Unit filename="../SDK/Core/zlib_gzread.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/mainx.c">
+		<Unit filename="../SDK/Core/zlib_gzwrite.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/uncompress.c">
+		<Unit filename="../SDK/Core/zlib_infback.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/v1code.c">
+		<Unit filename="../SDK/Core/zlib_inffast.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/adler32.c">
+		<Unit filename="../SDK/Core/zlib_inffast.h" />
+		<Unit filename="../SDK/Core/zlib_inffixed.h" />
+		<Unit filename="../SDK/Core/zlib_inflate.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/deflate.c">
+		<Unit filename="../SDK/Core/zlib_inflate.h" />
+		<Unit filename="../SDK/Core/zlib_inftrees.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/deflate.h" />
-		<Unit filename="../SDK/Dzip/zlib/infblock.c">
+		<Unit filename="../SDK/Core/zlib_inftrees.h" />
+		<Unit filename="../SDK/Core/zlib_trees.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/infblock.h" />
-		<Unit filename="../SDK/Dzip/zlib/infcodes.c">
+		<Unit filename="../SDK/Core/zlib_trees.h" />
+		<Unit filename="../SDK/Core/zlib_uncompr.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/infcodes.h" />
-		<Unit filename="../SDK/Dzip/zlib/inffast.c">
+		<Unit filename="../SDK/Core/zlib_zconf.h" />
+		<Unit filename="../SDK/Core/zlib_zutil.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/inffast.h" />
-		<Unit filename="../SDK/Dzip/zlib/inffixed.h" />
-		<Unit filename="../SDK/Dzip/zlib/inflate.c">
+		<Unit filename="../SDK/Core/zlib_zutil.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_cderror.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_cdjpeg.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_cjpeg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/inftrees.c">
+		<Unit filename="../SDK/Core/zlibjpeg_jcapimin.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/inftrees.h" />
-		<Unit filename="../SDK/Dzip/zlib/infutil.c">
+		<Unit filename="../SDK/Core/zlibjpeg_jcapistd.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/infutil.h" />
-		<Unit filename="../SDK/Dzip/zlib/trees.c">
+		<Unit filename="../SDK/Core/zlibjpeg_jccoefct.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../SDK/Dzip/zlib/trees.h" />
-		<Unit filename="../SDK/Dzip/zlib/zconf.h" />
-		<Unit filename="../SDK/Dzip/zlib/zlib.h" />
-		<Unit filename="../SDK/Dzip/zlib/zutil.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jccolor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcdctmgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jchuff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jchuff.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jcinit.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcmainct.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcmarker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcmaster.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcomapi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcparam.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcphuff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcprepct.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jcsample.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jctrans.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdapimin.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdapistd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdatadst.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdatasrc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdcoefct.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdcolor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdct.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jddctmgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdhuff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdhuff.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jdinput.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdmainct.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdmarker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdmaster.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdmerge.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdphuff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdpostct.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdsample.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jdtrans.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jerror.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jerror.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jfdctflt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jfdctfst.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jfdctint.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jidctflt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jidctfst.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jidctint.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jidctred.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jinclude.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jmemansi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jmemmgr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jmemsys.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jpegint.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_jquant1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jquant2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jutils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_jversion.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_rdbmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdcolmap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdgif.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdppm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdrle.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdswitch.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_rdtarga.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_transupp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_transupp.h" />
+		<Unit filename="../SDK/Core/zlibjpeg_wrbmp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_wrgif.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_wrppm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_wrrle.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../SDK/Core/zlibjpeg_wrtarga.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../SDK/HTTPClient/API/HTTPClient.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -1031,6 +1211,78 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="menu.h" />
+		<Unit filename="menu_definitions_sheet.h" />
+		<Unit filename="menu_draw_obs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="menu_draw_obs.h" />
+		<Unit filename="menu_local.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="menu_local.h" />
+		<Unit filename="menu_local_2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="menu_parts.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_dialog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_help.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_demos.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_hostgame.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_hostgame_gameoptions.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_joingame.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_joingame_serverlist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_playersetup.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_multiplayer_playersetup_namemaker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_options.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_options_customizecontrols.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_options_preferences.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_options_video.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_quit.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_singleplayer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_singleplayer_levels.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mnu_singleplayer_load_and_save.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="model.c">
 			<Option compilerVar="CC" />
 		</Unit>

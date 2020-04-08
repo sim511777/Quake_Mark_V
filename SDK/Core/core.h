@@ -124,7 +124,7 @@ zlib1.dll
 #include <ctype.h> // islower, etc.
 #include <stddef.h> // offsetof
 #include <stdarg.h> // GCC wanted this
-#include <assert.h>
+#include "assertions.h" // Includes assert.h
 
 #define member_size(type, member) sizeof(((type *)0)->member)
 
@@ -217,6 +217,7 @@ zlib1.dll
 typedef int (*errorline_fn_t) (const char *error, ...) __core_attribute__((__format__(__printf__,1,2), __noreturn__));
 typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__format__(__printf__,1,2)));
 
+#include "clip.h" // Should be area.h ?  rect.h?
 
 #include "lists.h"
 #include "file.h"
@@ -491,21 +492,24 @@ typedef struct
 	fclose_fn_t		ffclose_fn;
 } fn_set_t;
 
+#if 0 // Hopefully these are not used
+	// This function should be culled by the compiler in any given source file if nothing uses it.
+	static void *__passthru (void *v, int set)
+	{
+		static void *stored;
+		if (set)
+			stored = v;
+	
+		return stored;
+	}
+	
+	#define OR_DIE(_x, _msg) __passthru( (void *)_x, 1) ? __passthru( NULL, 0) : (void *)log_fatal ("%s\n%s", _msg,  __func__)
+	
+	// Won't appear in a release build
+	#define c_assert(_x) assert (!!OR_DIE((_x), "Assertion failure"  )) // Generic_StdError_Printf_NoReturn
+#endif 
 
-// This function should be culled by the compiler in any given source file if nothing uses it.
-static void *__passthru (void *v, int set)
-{
-	static void *stored;
-	if (set)
-		stored = v;
 
-	return stored;
-}
-
-#define OR_DIE(_x, _msg) __passthru( (void *)_x, 1) ? __passthru( NULL, 0) : (void *)log_fatal ("%s\n%s", _msg,  __func__)
-
-// Won't appear in a release build
-#define c_assert(_x) assert (!!OR_DIE((_x), "Assertion failure"  )) // Generic_StdError_Printf_NoReturn
 
 // Initializer, application passes function set.  appname is important
 // and affects appdata folder names and window titles.

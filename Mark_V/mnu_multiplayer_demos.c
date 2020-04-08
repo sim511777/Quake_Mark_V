@@ -84,13 +84,14 @@ static void Mnu_Demos_Read_ (void)
 		{
 			int h;
 			char qpath[MAX_QPATH_64];
-			cbool is_dzip = false;
+			//cbool is_dzip = false;  Mar 6 2018 - Bye dzip
 
-			if (String_Does_End_With_Caseless (item->demoname, ".dz")) {
-				c_strlcpy (qpath, item->demoname);
-				is_dzip = true;
-			}
-			else c_snprintf1 (qpath, "%s.dem", item->demoname);
+			//if (String_Does_End_With_Caseless (item->demoname, ".dz")) {
+			//	c_strlcpy (qpath, item->demoname);
+			//	is_dzip = true;
+			//}
+			//else 
+				c_snprintf1 (qpath, "%s.dem", item->demoname);
 
 			if (COM_OpenFile (qpath, &h) == -1)
 				System_Error ("Can't open %s", item->demoname);
@@ -108,7 +109,7 @@ static void Mnu_Demos_Read_ (void)
 
 			c_snprintf1 (item->kilobytes, "%d", com_filesize / 1024);
 
-			if (!is_dzip) {
+			if (1) {
 				byte readbuf[300];
 				byte *look;
 				byte *lastslash;
@@ -202,10 +203,10 @@ LOCAL_EVENT (Draw) (void)
 		float repeat_time = 0;
 		switch (f->focus_part) {
 		default:	goto no_action; // Thumb or something.  Do nothing.
-		case_break focus_part_button1: LOCAL_FN (Key) (K_MOUSEWHEELUP, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
-		case_break focus_part_button2: LOCAL_FN (Key) (K_MOUSEWHEELDOWN, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
-		case_break focus_part_track1:  LOCAL_FN (Key) (K_PAGEUP, NO_HOTSPOT_HIT_NEG1);				repeat_time = 0; // Don't
-		case_break focus_part_track2:  LOCAL_FN (Key) (K_PAGEDOWN, NO_HOTSPOT_HIT_NEG1);			repeat_time = 0; // Don't
+		case_break focus_part_button1:	LOCAL_FN (Key) (K_MOUSEWHEELUP, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
+		case_break focus_part_button2:	LOCAL_FN (Key) (K_MOUSEWHEELDOWN, NO_HOTSPOT_HIT_NEG1);		repeat_time = (1/32.0); // 16 per sec
+		case_break focus_part_track1:	LOCAL_FN (Key) (K_PAGEUP, NO_HOTSPOT_HIT_NEG1);				repeat_time = 0; // Don't
+		case_break focus_part_track2:	LOCAL_FN (Key) (K_PAGEDOWN, NO_HOTSPOT_HIT_NEG1);			repeat_time = 0; // Don't
 		}
 		f->focus_event_msgtime_ext = repeat_time ? realtime + repeat_time : -1; // -1 = never.
 
@@ -341,7 +342,7 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 				char filebuf [MAX_OSPATH];
 
 				FS_FullPath_From_QPath (filebuf, m_items_list[local_menu->cursor].demoname);
-				if (!String_Does_End_With (filebuf, ".dz"))
+				// if (!String_Does_End_With (filebuf, ".dz"))  Mar 6 2018 - Bye dzip
 					c_strlcat (filebuf, ".dem");
 
 				Folder_Open_Highlight (filebuf);
@@ -349,13 +350,14 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 		}
 		
 	case_break K_ESCAPE:			Mnu_MultiPlayer_Enter_f (NULL);
-	case_break K_DOWNARROW:			local_menu->cursor ++;
-									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 	case_break K_UPARROW:			local_menu->cursor --;
 									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 									// Make sure cursor is in view
 									//while (local_menu->cursor < m_view_first_row) local_menu->cursor ++;
 									while (local_menu->cursor > m_view_first_row + (M_ROWS_VISIBILE_COUNT_17 - 1) ) local_menu->cursor --;
+
+	case_break K_DOWNARROW:			local_menu->cursor ++;
+									local_menu->cursor = CLAMP (0, local_menu->cursor, m_menu_line_count - 1);
 
 	case_break K_HOME:				local_menu->cursor = 0;
 	case_break K_END:				local_menu->cursor = m_menu_line_count - 1;
@@ -377,6 +379,10 @@ LOCAL_EVENT (Key) (key_scancode_e key, int hotspot)
 
 	case_break K_MOUSEWHEELDOWN:	m_view_first_row += 1;
 									m_view_first_row = CLAMP (0, m_view_first_row, m_menu_line_count < M_ROWS_VISIBILE_COUNT_17 ? 0 : m_menu_line_count - M_ROWS_VISIBILE_COUNT_17);
+
+									while (local_menu->cursor < m_view_first_row) local_menu->cursor ++;
+
+									while (local_menu->cursor > m_view_first_row + (M_ROWS_VISIBILE_COUNT_17 - 1) ) local_menu->cursor --;
 
 	case_break K_ENTER:
 		if (local_menu->cursor < m_menu_line_count && m_items_list[local_menu->cursor].demoname[0] && m_items_list[local_menu->cursor].kilobytes[0]) {

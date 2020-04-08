@@ -544,9 +544,10 @@ cbool SDL_SetupPixelFormat (void)
 // GLMaxSize?*/
     return true;
 }
-
+#ifdef _MSC_VER
 #define MSVC_IS_BEING_DUMB // and giving me heap corruption but GCC isn't.  And I think if I tack on "CORE_GL" to WinQuake debug it is ok too ... dumb
 							// Will we eventually discover it's something else?  Project setting or something?  Who knows!
+#endif // _MSC_VER
 
 #ifdef MSVC_IS_BEING_DUMB
 static pixel_t /*byte*/ my_static_buffero[1024][512]; // Legal?

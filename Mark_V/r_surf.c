@@ -377,8 +377,8 @@ void R_BuildLightmaps(void)
 {
 	int i;
 	msurface_t	*surf;
-
-	memset(allocated, 0, sizeof(allocated));
+	size_t allocated_sizeof = sizeof(allocated);
+	memset(allocated, 0, allocated_sizeof);
 
 	Stains_WipeStains_NewMap();
 

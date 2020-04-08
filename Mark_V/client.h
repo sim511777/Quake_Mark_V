@@ -180,7 +180,7 @@ typedef struct
 	
 	cbool		music_run;			// Tells us to run setmusic.cfg (I think)
 
-	char		dz_temp_url[MAX_OSPATH];	// To play .dz file demos
+	// Mar 6 2018 - Bye dzip char		dz_temp_url[MAX_OSPATH];	// To play .dz file demos
 
 	download_t	download;
 } client_static_t;

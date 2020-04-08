@@ -249,9 +249,10 @@ int Capture_Open (const char *filename, const char *usercodec, cbool silentish)
 	}
 
 	// initialize video data
-#pragma message ("Video resize should probably be disabled during vid capture")
+	// #pragma message ("Video resize should probably be disabled during vid capture")
+	// #pragma message ("Baker: These should be clwidth, especially with GL -resizable or after blitting is in WinQuake")
 	m_video_frame_size = clwidth * clheight * RGB_3;
-#pragma message ("Baker: These should be clwidth, especially with GL -resizable or after blitting is in WinQuake")
+
 	memset (&bitmap_info_header, 0, sizeof(bitmap_info_header));
 	bitmap_info_header.biSize = sizeof(BITMAPINFOHEADER);
 

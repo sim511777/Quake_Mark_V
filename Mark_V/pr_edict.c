@@ -501,7 +501,7 @@ void ED_Print (edict_t *ed)
 
 	if (ed->free)
 	{
-		Con_PrintLinef ("FREE");
+		Con_SafePrintLinef ("FREE"); // Free?
 		return;
 	}
 

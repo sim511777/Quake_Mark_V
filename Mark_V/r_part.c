@@ -1285,7 +1285,9 @@ void R_DrawParticles (void)
 
 void R_InitParticles (void)
 {
+#ifdef GLQUAKE_SUPPORTS_QMB
 	const char *errmsg;
+#endif // GLQUAKE_SUPPORTS_QMB
 
 	Classic_InitParticles ();
 #ifdef GLQUAKE_SUPPORTS_QMB

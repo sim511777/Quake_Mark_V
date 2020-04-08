@@ -443,7 +443,6 @@ hostcache_t hostcache[HOSTCACHESIZE];
 qsocket_t *NET_Connect (const char *host)
 {
 	qsocket_t		*ret;
-	int				n;
 	int				numdrivers = net_numdrivers;
 
 	SetNetTime(); // Baker: Sure, why not.
@@ -481,7 +480,7 @@ qsocket_t *NET_Connect (const char *host)
 #if 0 // Baker: No.  We aren't lookup servers when we do connect.  Makes no sense.
 		if (hostCacheCount)
 		{
-			for (n = 0; n < hostCacheCount; n++)
+			{ int n; for (n = 0; n < hostCacheCount; n++)
 				if (strcasecmp (host, hostcache[n].name) == 0)
 				{
 					host = hostcache[n].cname;

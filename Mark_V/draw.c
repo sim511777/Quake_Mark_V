@@ -99,11 +99,19 @@ qpic_t	*Draw_PicFromWad (const char *name)
 	return W_GetLumpName (name);
 }
 
+
+
 /*
 ================
 Draw_CachePic
 ================
 */
+qpic_t *Draw_CachePic_Sfmt (const char *fmt, ...)
+{
+	VA_EXPAND (text, SYSTEM_STRING_SIZE_1024, fmt); // Really maxqpath but whatever
+	return Draw_CachePic (text);
+}
+
 qpic_t	*Draw_CachePic (const char *path)
 {
 	cachepic_t	*pic;
@@ -788,7 +796,23 @@ void Draw_SetCanvas (canvastype newcanvas)
 		//if (scr_winquake.value) canvas.y = 8; // Just 1 char down.  Well ... we'll find out won't we?
 		canvas.width = 320, canvas.height = 200; // Will these be ignored or what?  Do we set this to vid.conwidth or what?
 		canvas.scale_x = 1, canvas.scale_y = 1;
+		
+		// WinQuake mouse menu could work here.  I just don't want to put in the work.  Especially adding stretch into mix.
+		if (newcanvas ==  CANVAS_MENU) {
+			float s = 1.0;
+			float ybot = cly + (clheight - 200 * s) / 2;
+			focus0.menu_viewport[0] = clx + (clwidth - 320*s) / 2;	// Left?
+			focus0.menu_viewport[1] = ybot;   // Bottom?
+			focus0.menu_viewport[2] = 320 * s;   // 
+			focus0.menu_viewport[3] = 200 * s;
+			//eglViewport (clx + (clwidth - 320 * s) / 2, ybot, 320 * s, 200 * s);
+			
+			Mat4_Identity_Set (&focus0.menu_modelview);
+			Mat4_Identity_Set (&focus0.menu_projection);
+			Mat4_Ortho (&focus0.menu_projection, 0, 320, 200, 0, -99999, 99999); // Different formula but better result?						
+		}
 		break;
+
 	case CANVAS_MENU_INTERMISSION_TEXT: // Increased size a bit.
 		canvas.x = (clwidth - 320) /2 /*>> 1*/ , canvas.y = (clheight - 200) / 2; // >> 1  = Divide by 2 right?
 		canvas.width = 320, canvas.height = 240;

@@ -786,7 +786,7 @@ void R_DrawAliasModel (entity_t *e)
 
 	if (e->colormap && !gl_nocolors.value && e->coloredskin)
 		tx = e->coloredskin;
-	if (!gl_fullbrights.value)
+	if (!gl_fullbrights.value || (vid.direct3d == 9 && (tx->flags & TEXPREF_ALPHA))) // May 22 2018 FENCE TREE TEST
 		fb = NULL;
 
 // Here we go

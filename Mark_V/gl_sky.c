@@ -246,7 +246,7 @@ void Sky_FrameSetup (void)
 	// Baker: Direct3D doesn't have stencil at this time, but we no longer check for
 	// vid.direct3d as I have it simple keep 0 for stencilbits in initialization now
 	//if (!renderer.gl_stencilbits || vid.direct3d == 9 /*temp disable hack*/)
-	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR)
+	if (!renderer.gl_stencilbits)
 	{
 		Sky_DrawSky (); //johnfitz
 		return;
@@ -325,7 +325,7 @@ void Sky_Stencil_Draw (void)
 		return;
 
 	//if (!renderer.gl_stencilbits || vid.direct3d = =9 /*temp disable hack*/)
-	if (!renderer.gl_stencilbits DIRECT3D9_STENCIL_DISABLE_BLOCK_OR )
+	if (!renderer.gl_stencilbits)
 	{
 		return;
 	}
@@ -359,6 +359,13 @@ void Sky_Stencil_Draw (void)
 				rs_brushpasses++;
 			}
 	}
+#if 1 // May 21 2018 - Sky entities
+	{
+		void Sky_DrawSky_ProcessEntities (void);
+		Sky_DrawSky_ProcessEntities ();
+	}
+#endif
+
 	eglEnable (GL_TEXTURE_2D);
 	eglColorMask (1,1,1,1);
 //	eglDepthMask (1);
@@ -582,7 +589,7 @@ void Sky_ProcessPoly (glpoly_t	*p)
 Sky_ProcessTextureChains -- handles sky polys in world model
 ================
 */
-void Sky_ProcessTextureChains (void)
+void Sky_DrawSky_ProcessTextureChains (void)
 {
 	int			i;
 	msurface_t	*s;
@@ -609,7 +616,7 @@ void Sky_ProcessTextureChains (void)
 Sky_ProcessEntities -- handles sky polys on brush models
 ================
 */
-void Sky_ProcessEntities (void)
+void Sky_DrawSky_ProcessEntities (void)
 {
 	entity_t	*e;
 	msurface_t	*s;
@@ -1215,8 +1222,10 @@ void Sky_DrawSky (void)
 		eglColor3fv (Fog_GetColor(NULL, NULL));
 	else
 		eglColor3fv (skyflatcolor);
-	Sky_ProcessTextureChains ();
-	Sky_ProcessEntities ();
+
+	Sky_DrawSky_ProcessTextureChains ();
+	Sky_DrawSky_ProcessEntities ();
+
 	eglColor3f (1, 1, 1);
 	eglEnable (GL_TEXTURE_2D);
 

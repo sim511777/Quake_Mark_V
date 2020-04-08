@@ -326,7 +326,7 @@ static void VID_Activate (cbool active)
     {
         if (vid.sound_suspended)
         {
-#if 0 // May 7 2018 Experiment - Attempt to sound stutter on some machines
+#ifdef PLATFORM_LINUX // May 7 2018 Experiment - Attempt to sound stutter on some machines
             S_UnblockSound ();
 #endif
             CDAudio_Resume ();
@@ -344,7 +344,7 @@ static void VID_Activate (cbool active)
     {
         if (!vid.sound_suspended)
         {
-#if 0 // May 7 2018 Experiment - Attempt to sound stutter on some machines
+#ifdef PLATFORM_LINUX // May 7 2018 Experiment - Attempt to sound stutter on some machines
             S_BlockSound ();
 #if defined(PLATFORM_OSX) || defined(CORE_SDL)
             S_StopAllSounds(true); // On a Mac, S_BlockSound alone doesn't suffice.  Same with SDL.

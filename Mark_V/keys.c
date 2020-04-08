@@ -1249,6 +1249,15 @@ void Key_Init (void)
 	consolekeys[K_PAGEUP] = true;
 	consolekeys[K_PAGEDOWN] = true;
 	consolekeys[K_SHIFT] = true;
+
+	consolekeys[K_LSHIFT] = true;
+	consolekeys[K_RSHIFT] = true;
+	consolekeys[K_LCTRL] = true;
+	consolekeys[K_RCTRL] = true;
+	consolekeys[K_LALT] = true;
+	consolekeys[K_RALT] = true;
+
+
 	consolekeys[K_MOUSEWHEELUP] = true;
 	consolekeys[K_MOUSEWHEELDOWN] = true;
 	consolekeys['`'] = false;

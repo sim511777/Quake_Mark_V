@@ -1,5 +1,7 @@
 #ifdef CORE_SDL
 
+#define NOVEAU
+
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2002-2005 John Fitzgibbons and others
@@ -57,12 +59,12 @@ int SNDDMA_Init(void)
 	desired.channels = 2;
 	desired.samples = BUF_SIZE;
 	desired.callback = paint_audio;
-
+#ifdef NOVEAU
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) { // March 21 2018 - Added this 
 		Con_SafePrintLinef ("Could not initialize SDL Audio: %s", SDL_GetError()); // Too harsh?
 		return 0;
 	}
-
+#endif
 	/* Open the audio device */
 	if ( SDL_OpenAudio(&desired, &obtained) < 0 ) {
         Con_SafePrintLinef ("Couldn't open SDL audio: %s", SDL_GetError());
@@ -131,22 +133,30 @@ void SNDDMA_Shutdown(void)
 
 void SNDDMA_LockBuffer (void)
 {
+#ifdef NOVEAU
 	SDL_LockAudio ();
+#endif
 }
 
 void SNDDMA_Submit (void)
 {
+#ifdef NOVEAU
 	SDL_UnlockAudio();
+#endif
 }
 
 void SNDDMA_BlockSound (void)
 {
+#ifdef NOVEAU
 	SDL_PauseAudio(1);
+#endif
 }
 
 void SNDDMA_UnblockSound (void)
 {
+#ifdef NOVEAU
 	SDL_PauseAudio(0);
+#endif
 }
 
 #endif // CORE_SDL

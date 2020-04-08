@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // snd_dma.c -- main control for any streaming sound output device
-
+#define NOVEAU
 #include "quakedef.h"
 
 #ifdef DIRECT_SOUND_QUAKE
@@ -627,7 +627,7 @@ void S_ClearBuffer (void)
 #ifdef CORE_SDL
 	SNDDMA_LockBuffer ();
 #endif // CORE_SDL
-	
+
 	if (! shm->buffer)
 		return;
 #endif // !DIRECT_SOUND_QUAKE
@@ -958,9 +958,10 @@ static void S_Update_(void)
 
 #ifdef CORE_SDL
 	SNDDMA_LockBuffer ();
-
+#ifdef NOVEAU
 	if (! shm->buffer)
 		return;
+#endif // NOVEAU
 #endif // CORE_SDL
 
 // Updates DMA time
@@ -1204,6 +1205,7 @@ S_UnblockSound
 void S_UnblockSound (void)
 {
 #ifdef CORE_SDL
+#ifdef NOVEAU
 	if (!sound_started || !snd_blocked)
 		return;
 	if (snd_blocked == 1)			/* --snd_blocked == 0 */
@@ -1212,6 +1214,7 @@ void S_UnblockSound (void)
 		SNDDMA_UnblockSound();
 		S_ClearBuffer ();
 	}
+#endif
 #else
 	snd_blocked = 0;
 	logd ("Sound blocked = 0");
@@ -1221,6 +1224,7 @@ void S_UnblockSound (void)
 void S_BlockSound (void)
 {
 #ifdef CORE_SDL
+#ifdef NOVEAU
 /* FIXME: do we really need the blocking at the
  * driver level?
  */
@@ -1231,6 +1235,7 @@ void S_BlockSound (void)
 		if (shm)
 			SNDDMA_BlockSound();
 	}
+#endif // NOVEAU
 #else // not SDL
 	snd_blocked = 1;
 	logd ("Sound blocked = 1");

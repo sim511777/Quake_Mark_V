@@ -43,8 +43,11 @@
 	//#include <core_windows.h> // LLWinKeyHook
 #else
 	// We are using /opt/local/include
-	#ifdef PLATFORM_ANDROID
+	#if defined(PLATFORM_ANDROID)
 		#include <SDL.h>
+	#elif defined(PLATFORM_LINUX)
+		#include <SDL2/SDL.h>
+		#include <SDL2/SDL_syswm.h> // To expose things like HWND to us.
 	#else
 		#include <SDL.h>
 		#include <SDL_syswm.h> // To expose things like HWND to us.

@@ -34,8 +34,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <core_windows.h> // LLWinKeyHook
 #else // Not _MSC_VER
 	// We are using /opt/local/include
-	#ifdef PLATFORM_ANDROID
+	#if defined(PLATFORM_ANDROID)
 		#include <SDL.h>
+	#elif defined(PLATFORM_LINUX)
+        #include <SDL2/SDL.h>
 	#else
         #include <SDL.h>
 	#endif

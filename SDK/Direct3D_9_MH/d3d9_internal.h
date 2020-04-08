@@ -215,7 +215,7 @@ public:
 
 	void Dirty (RECT *texrect);
 	void Clean (void);
-	void Mipmap (int dstlevel, int srclevel);
+	void Mipmap (void);
 
 	void Initialize (void);
 	void Create (class context_t *ctx, GLsizei width, GLsizei height, D3DFORMAT d3dformat);
@@ -421,6 +421,8 @@ public:
 #define D3DX_FILTER_SRGB_OUT         (2 << 21)
 #define D3DX_FILTER_SRGB             (3 << 21)
 
+#define D3DX_DEFAULT				((UINT) -1)
+
 typedef enum _D3DXIMAGE_FILEFORMAT
 {
 	D3DXIFF_BMP = 0,
@@ -440,11 +442,13 @@ typedef enum _D3DXIMAGE_FILEFORMAT
 typedef HRESULT (WINAPI *D3DXLoadSurfaceFromMemoryProc) (IDirect3DSurface9 *, CONST PALETTEENTRY *, CONST RECT *, LPCVOID, D3DFORMAT, UINT, CONST PALETTEENTRY *, CONST RECT *, DWORD, D3DCOLOR);
 typedef HRESULT (WINAPI *D3DXSaveSurfaceToFileProc) (LPCSTR, D3DXIMAGE_FILEFORMAT, IDirect3DSurface9 *, CONST PALETTEENTRY *, CONST RECT *);
 typedef HRESULT (WINAPI *D3DXLoadSurfaceFromSurfaceProc) (IDirect3DSurface9 *, CONST PALETTEENTRY *, CONST RECT *, IDirect3DSurface9 *, CONST PALETTEENTRY *, CONST RECT *, DWORD, D3DCOLOR);
+typedef HRESULT (WINAPI *D3DXFilterTextureProc) (LPDIRECT3DBASETEXTURE9, const PALETTEENTRY *, UINT, DWORD);
+
 
 extern D3DXLoadSurfaceFromMemoryProc QD3DXLoadSurfaceFromMemory;
 extern D3DXSaveSurfaceToFileProc QD3DXSaveSurfaceToFile;
 extern D3DXLoadSurfaceFromSurfaceProc QD3DXLoadSurfaceFromSurface;
-
+extern D3DXFilterTextureProc QD3DXFilterTexture;
 
 // extension functions
 void WINAPI Direct3D9_glMultiTexCoord2f (GLenum target, GLfloat s, GLfloat t);
@@ -541,6 +545,9 @@ public:
 
 	void FlushGeometry (void);
 
+	void SaveViewport (D3DVIEWPORT9 *saved);
+	void RestoreViewport (D3DVIEWPORT9 *saved);
+
 	void Clear (DWORD ClearFlags);
 	void ResetViewport (void);
 	void GetViewport (GLint *params);
@@ -605,6 +612,7 @@ public:
 	UINT NumModeList;
 
 	D3DDISPLAYMODE DesktopMode;
+	PIXELFORMATDESCRIPTOR pfd;
 	BOOL RequestStencil;
 	IDirect3D9 *Object;
 	D3DCAPS9 DeviceCaps;

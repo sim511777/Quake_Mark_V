@@ -1016,28 +1016,37 @@ cleanup:
 	// Shadow volumes - This excludes DX8 which does not have stencil.
 	// 
 	
-	if (frame.in_shadow_volume_draw) {
-		cbool should_shadow = (entalpha != 1 || e == &cl.viewent_gun || e->model->modelflags & MOD_NOSHADOW) ? false : true; // No shadow for gun or shadowless model like flame.
-		if (should_shadow) // SHADOW_VOLUME
-			RB_ShadowTessEnd (&lerpdata);
-	}
+	do {
+		if (!frame.in_shadow_volume_draw)			break; // We don't have shadows activated
+		if (entalpha < 1)							break; // Alpha entities don't get shadows
+		if (e == &cl.viewent_gun)					break; // Gun does not get shadow
+		if (e->model->modelflags & MOD_NOSHADOW)	break; // Model indicates that it does not shadow (flame, lightning bolt or something)
+		
+		// SHADOW_VOLUME
+		RB_ShadowTessEnd (&lerpdata); 
+	} while (0);
 
 	eglPopMatrix ();
 
-	if (did_set_texture_matrix /*tx && tx->source_format != SRC_RGBA*/)
-	{
-		if (fb)
-		{
+
+	switch (did_set_texture_matrix) {
+	case false:
+		GL_DisableMultitexture (); 
+		break;
+
+	case true:
+		if (fb) {
 			GL_EnableMultitexture ();
 			eglMatrixMode (GL_TEXTURE);
 			eglLoadIdentity ();
 		}
+		
 		GL_DisableMultitexture ();
 		eglMatrixMode (GL_TEXTURE);
 		eglLoadIdentity ();
+		
 		eglMatrixMode (GL_MODELVIEW);
 	} 
-	else GL_DisableMultitexture ();  // NOT DIRECT3D8_WRAPPER // DX8 only -- NPO2/NPOT - Now supported in DX9
 }
 
 //johnfitz -- values for shadow matrix

@@ -194,6 +194,15 @@ void context_t::FinishGammaAndContrast (void)
 	this->Device->SetPixelShader (this->GAndCPS);
 	this->Device->SetVertexDeclaration (this->GAndCVD);
 
+	// FitzQuake's GL_SetCanvas could leave the device with a viewport smaller than the RT at this stage so here
+	// we do the same as for clearing and save it off, then reset it to the full RT, then do our stuff, then restore it
+	D3DVIEWPORT9 saved;
+	this->SaveViewport (&saved);
+
+	// now reset and update it
+	this->ResetViewport ();
+	this->UpdateViewport ();
+
 	// send these ones through the wrapper API rather than calling directly so they'll filter & cache correctly
 	d3d9mh_glDisable (GL_DEPTH_TEST);
 	d3d9mh_glDisable (GL_CULL_FACE);
@@ -226,6 +235,10 @@ void context_t::FinishGammaAndContrast (void)
 	// resolves "cannot render to a render target that is also used as a texture" because the RT will still be bound at
 	// the start of the next frame
 	this->SetTexture (0, NULL);
+
+	// now restore the viewport to what was saved
+	this->RestoreViewport (&saved);
+	this->UpdateViewport ();
 }
 
 

@@ -61,12 +61,7 @@ void context_t::Clear (DWORD ClearFlags)
 		// we want to replicate OpenGL behaviour so we must save off the current viewport, then set a new viewport to the full window dimensions,
 		// then do the clear, then restore the saved off viewport.
 		D3DVIEWPORT9 saved;
-		saved.X = this->State.Viewport.X;
-		saved.Y = this->State.Viewport.Y;
-		saved.Width = this->State.Viewport.Width;
-		saved.Height = this->State.Viewport.Height;
-		saved.MinZ = this->State.Viewport.MinZ;
-		saved.MaxZ = this->State.Viewport.MaxZ;
+		this->SaveViewport (&saved);
 
 		// now reset and update it
 		this->ResetViewport ();
@@ -109,12 +104,7 @@ void context_t::Clear (DWORD ClearFlags)
 		else this->Device->Clear (0, NULL, ClearFlags, this->State.Clear.Color, this->State.Clear.Depth, this->State.Clear.Stencil);
 
 		// now restore the viewport to what was saved
-		this->State.Viewport.X = saved.X;
-		this->State.Viewport.Y = saved.Y;
-		this->State.Viewport.Width = saved.Width;
-		this->State.Viewport.Height = saved.Height;
-		this->State.Viewport.MinZ = saved.MinZ;
-		this->State.Viewport.MaxZ = saved.MaxZ;
+		this->RestoreViewport (&saved);
 		this->UpdateViewport ();
 	}
 }

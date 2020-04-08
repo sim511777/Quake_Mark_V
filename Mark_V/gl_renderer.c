@@ -42,7 +42,7 @@ void (APIENTRY *eglColor4fv) (const GLfloat *v);
 void (APIENTRY *eglColor4ub) (GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha);
 void (APIENTRY *eglColor4ubv) (const GLubyte *v);
 
-// Baker: eglCopyTexSubImage2D is not implemented in wrapper.  I suspect because r_oldwater 0 in Fitz achieves what it is doing
+// Baker: eglCopyTexSubImage2D is not implemented in DX8 wrapper.  I suspect because r_oldwater 0 in Fitz achieves what it is doing
 // in a very strange way that would require an unreasonable amount of work and this function was only used there.  I doubt
 // this function presented any kind of challenge.
 
@@ -198,6 +198,9 @@ void VID_Renderer_Set_Direct3D8 (void)
 	ewglGetProcAddress		= Direct3D8_wglGetProcAddress;
 	
 	eSwapBuffers			= Direct3D8_SwapBuffers;
+	
+	eChoosePixelFormat		= ChoosePixelFormat; // The real winapi one
+	eDescribePixelFormat	= DescribePixelFormat; // The real winapi one
 	eSetPixelFormat         = Direct3D8_SetPixelFormat;
 
 	eChangeDisplaySettings  = Direct3D8_ChangeDisplaySettings;
@@ -294,6 +297,8 @@ void VID_Renderer_Set_Direct3D9 (void)
 	ewglMakeCurrent         = Direct3D9_wglMakeCurrent;
 	ewglGetProcAddress		= Direct3D9_wglGetProcAddress;
 
+	eChoosePixelFormat		= Direct3D9_ChoosePixelFormat; // The real winapi one
+	eDescribePixelFormat	= Direct3D9_DescribePixelFormat; // The real winapi one
 	eSetPixelFormat         = Direct3D9_SetPixelFormat;
 	eSwapBuffers			= Direct3D9_SwapBuffers;
 	eChangeDisplaySettings  = Direct3D9_ChangeDisplaySettings;
@@ -428,6 +433,8 @@ void VID_Renderer_Set_OpenGL (void)
 			ewglMakeCurrent         = OPENGL_GETFUNC(wglMakeCurrent);
 			ewglGetProcAddress		= OPENGL_GETFUNC(wglGetProcAddress);
 
+			eChoosePixelFormat		= ChoosePixelFormat; // The real winapi one
+			eDescribePixelFormat	= DescribePixelFormat; // The real winapi one
 			eSetPixelFormat         = SetPixelFormat;
 			eSwapBuffers			= SwapBuffers;
 
@@ -537,6 +544,8 @@ void VID_Renderer_Set_OpenGL (void)
 	ewglMakeCurrent         = wglMakeCurrent;
 	ewglGetProcAddress		= wglGetProcAddress;
 
+	eChoosePixelFormat		= ChoosePixelFormat; // The real winapi one
+	eDescribePixelFormat	= DescribePixelFormat; // The real winapi one
 	eSetPixelFormat         = SetPixelFormat;
 	eSwapBuffers			= SwapBuffers;
 	eChangeDisplaySettings  = ChangeDisplaySettings;

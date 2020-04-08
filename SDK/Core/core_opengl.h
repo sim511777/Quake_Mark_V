@@ -57,6 +57,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 			extern HDC   (WINAPI *ewglGetCurrentDC) (VOID);
 			extern PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
 			extern BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
+			extern BOOL  (WINAPI *eChoosePixelFormat) (HDC, CONST PIXELFORMATDESCRIPTOR *);
+			extern BOOL  (WINAPI *eDescribePixelFormat) (HDC, int, UINT, LPPIXELFORMATDESCRIPTOR);
 			extern BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
 			extern BOOL  (WINAPI *eSwapBuffers) (HDC);
 		#endif // CORE_GL + PLATFORM_WINDOWS

@@ -373,49 +373,9 @@ void d3d_texture_t::Fill (int level, GLint xoffset, GLint yoffset, int width, in
 }
 
 
-void d3d_texture_t::Mipmap (int dstlevel, int srclevel)
+void d3d_texture_t::Mipmap (void)
 {
-	IDirect3DSurface9 *dst = NULL;
-	IDirect3DSurface9 *src = NULL;
-
-	// prevents "Direct3D9: (ERROR) :Invalid level number passed GetSurfaceLevel of IDirect3DTexture9"
-	if (srclevel >= this->TexImage->GetLevelCount ()) return;
-	if (dstlevel >= this->TexImage->GetLevelCount ()) return;
-
-	if (SUCCEEDED (this->TexImage->GetSurfaceLevel (dstlevel, &dst)))
-	{
-		if (SUCCEEDED (this->TexImage->GetSurfaceLevel (srclevel, &src)))
-		{
-			D3DSURFACE_DESC dstdesc;
-
-			if (SUCCEEDED (dst->GetDesc (&dstdesc)))
-			{
-				D3DSURFACE_DESC srcdesc;
-
-				if (SUCCEEDED (src->GetDesc (&srcdesc)))
-				{
-					// using gamma correction
-					DWORD filter = D3DX_FILTER_SRGB_IN | D3DX_FILTER_SRGB_OUT;
-
-					// drop back to box filtering if possible so that we'll (hopefully) get a faster load
-					// this handles NPO2 downsizing correctly via the round-down rule, whereas the in-engine mipmapping code doesn't
-					if (dstdesc.Width * 2 != srcdesc.Width || dstdesc.Height * 2 != srcdesc.Height)
-						filter |= D3DX_FILTER_LINEAR;
-					else filter |= D3DX_FILTER_BOX;
-
-					// do it this way because it will filter, resample, etc properly for us
-					QD3DXLoadSurfaceFromSurface (dst, NULL, NULL, src, NULL, NULL, filter, 0);
-
-					// call recursively; GetSurfaceLevel will fail and this will begin to drop out when we run out of miplevels
-					this->Mipmap (dstlevel + 1, dstlevel);
-				}
-			}
-
-			SAFE_RELEASE (src);
-		}
-
-		SAFE_RELEASE (dst);
-	}
+	QD3DXFilterTexture (this->TexImage, NULL, 0, D3DX_DEFAULT);
 }
 
 

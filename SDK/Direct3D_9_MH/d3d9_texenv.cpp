@@ -218,18 +218,33 @@ void context_t::CheckDirtyTextureStates (int stage)
 			// setup texture states - these ones are specific to the texture and come from glTexParameter
 			this->SetSamplerState (stage, D3DSAMP_ADDRESSU, tmu->boundtexture->TexParms.AddressU);
 			this->SetSamplerState (stage, D3DSAMP_ADDRESSV, tmu->boundtexture->TexParms.AddressV);
-			this->SetSamplerState (stage, D3DSAMP_MAXANISOTROPY, tmu->boundtexture->TexParms.Anisotropy);
 
-			// minfilter and magfilter need to switch to anisotropic
-			if (tmu->boundtexture->TexParms.Anisotropy > 1)
+			// expected behaviour - if you explicitly ask for crunchy pixels you get crunchy pixels, irrespective of whether anisotropic filtering is set
+			// THINGS YOU CANNOT DO
+			// I've tested these in the debug runtimes and they all throw errors so don't try them
+			// Setting D3DSAMP_MAGFILTER to D3DTEXF_ANISOTROPIC
+			// Setting D3DSAMP_MAGFILTER to D3DTEXF_POINT and D3DSAMP_MINFILTER to D3DTEXF_ANISOTROPIC
+			// Setting D3DSAMP_MAXANISOTROPY to > 1 without D3DSAMP_MINFILTER to D3DTEXF_ANISOTROPIC
+			if (tmu->boundtexture->TexParms.MagFilter == D3DTEXF_POINT)
 			{
-				this->SetSamplerState (stage, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
+				this->SetSamplerState (stage, D3DSAMP_MAXANISOTROPY, 1);
+				this->SetSamplerState (stage, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+				this->SetSamplerState (stage, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+			}
+			else if (tmu->boundtexture->TexParms.Anisotropy > 1)
+			{
+				if (tmu->boundtexture->TexParms.Anisotropy < d3d_Globals.DeviceCaps.MaxAnisotropy)
+			this->SetSamplerState (stage, D3DSAMP_MAXANISOTROPY, tmu->boundtexture->TexParms.Anisotropy);
+				else this->SetSamplerState (stage, D3DSAMP_MAXANISOTROPY, d3d_Globals.DeviceCaps.MaxAnisotropy);
+
+				this->SetSamplerState (stage, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 				this->SetSamplerState (stage, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
 			}
 			else
 			{
-				this->SetSamplerState (stage, D3DSAMP_MAGFILTER, tmu->boundtexture->TexParms.MagFilter);
-				this->SetSamplerState (stage, D3DSAMP_MINFILTER, tmu->boundtexture->TexParms.MinFilter);
+				this->SetSamplerState (stage, D3DSAMP_MAXANISOTROPY, 1);
+				this->SetSamplerState (stage, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+				this->SetSamplerState (stage, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 			}
 
 			this->SetSamplerState (stage, D3DSAMP_MIPFILTER, tmu->boundtexture->TexParms.MipFilter);
@@ -408,11 +423,10 @@ void context_t::SetupTexturesForDrawing (void)
 			break;
 		}
 
-		// check for dirty states (this is needed as OpenGL sets state per-texture as well as per-stage)
-		this->CheckDirtyTextureStates (i);
-
 		// check the texture for dirty rects and update them if so
 		this->TMU[i].boundtexture->CheckDirty (this);
+		// check for dirty states (this is needed as OpenGL sets state per-texture as well as per-stage)
+		this->CheckDirtyTextureStates (i);
 
 		// bind the texture (now with added filtering!)
 		this->SetTexture (i, this->TMU[i].boundtexture->TexImage);

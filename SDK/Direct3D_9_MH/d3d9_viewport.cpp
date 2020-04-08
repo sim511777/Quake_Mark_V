@@ -67,4 +67,26 @@ void context_t::GetViewport (GLint *params)
 }
 
 
+void context_t::SaveViewport (D3DVIEWPORT9 *saved)
+{
+	saved->X = this->State.Viewport.X;
+	saved->Y = this->State.Viewport.Y;
+	saved->Width = this->State.Viewport.Width;
+	saved->Height = this->State.Viewport.Height;
+	saved->MinZ = this->State.Viewport.MinZ;
+	saved->MaxZ = this->State.Viewport.MaxZ;
+}
+
+
+void context_t::RestoreViewport (D3DVIEWPORT9 *saved)
+{
+	this->State.Viewport.X = saved->X;
+	this->State.Viewport.Y = saved->Y;
+	this->State.Viewport.Width = saved->Width;
+	this->State.Viewport.Height = saved->Height;
+	this->State.Viewport.MinZ = saved->MinZ;
+	this->State.Viewport.MaxZ = saved->MaxZ;
+}
+
+
 #endif

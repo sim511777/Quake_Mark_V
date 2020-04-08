@@ -474,14 +474,14 @@ BOOL WIN_SetupPixelFormat (HDC hDC)
 
 	if (!sysplat.multisamples)
 	{
-		if ( (pixelformat = ChoosePixelFormat(hDC, &pfd)) == 0 )
+		if ( (pixelformat = eChoosePixelFormat(hDC, &pfd)) == 0 )
 		{
 			System_Error ("Video: ChoosePixelFormat failed");
 			return FALSE;
 		}
 	} else pixelformat = sysplat.forcePixelFormat; // Multisample overrride
 
-	DescribePixelFormat(hDC, pixelformat, sizeof(PIXELFORMATDESCRIPTOR), &test);
+	eDescribePixelFormat(hDC, pixelformat, sizeof(PIXELFORMATDESCRIPTOR), &test);
 
     if (eSetPixelFormat(hDC, pixelformat, &pfd) == FALSE)
     {

@@ -1483,6 +1483,8 @@ BOOL WINAPI Direct3D9_wglMakeCurrent (HDC hdc, HGLRC hglrc);
 PROC WINAPI Direct3D9_wglGetProcAddress (LPCSTR s);
 
 // override SPF
+int WINAPI Direct3D9_ChoosePixelFormat (HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd); 
+int WINAPI Direct3D9_DescribePixelFormat (HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd);
 BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR * ppfd);
 
 // our fake CDS replacement

@@ -830,6 +830,8 @@ void TexMgr_Init (void)
 	TexMgr_R_SetupView_RecalcWarpImageSize (); // This must be here.
 	TexMgr_R_SetupView_InitUnderwaterWarpTexture (); // This must be here  // UNDERWATER_WARP
 
+	GL_Bloom_Init (); 
+
 	vid.warp_stale = true; // <--- means warp needs recalculated.
 }
 
@@ -1824,7 +1826,7 @@ static void TexMgr_LoadLightmap (gltexture_t *glt, byte *data)
 TexMgr_LoadImage -- the one entry point for loading all textures
 ================
 */
-gltexture_t *TexMgr_LoadImage (qmodel_t *owner, int bsp_texnum, const char *name, int width, int height, enum srcformat format,
+gltexture_t *TexMgr_LoadImage (qmodel_t *owner, int bsp_texnum, const char *name, int width, int height, enum srcformat_e format,
 							   void *data, const char *source_file, src_offset_t source_offset, unsigned flags)
 {
 	return TexMgr_LoadImage_SetPal (owner, bsp_texnum, name, width, height, format, data, NULL, source_file, source_offset, 0, flags);
@@ -1832,7 +1834,7 @@ gltexture_t *TexMgr_LoadImage (qmodel_t *owner, int bsp_texnum, const char *name
 }
 
 
-gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const char *name, int width, int height, enum srcformat format,
+gltexture_t *TexMgr_LoadImage_SetPal (qmodel_t *owner, int bsp_texnum, const char *name, int width, int height, enum srcformat_e format,
 							   void *data, byte *palette_data, const char *source_file, src_offset_t source_offset, src_offset_t source_palette_offset, unsigned flags)
 {
 

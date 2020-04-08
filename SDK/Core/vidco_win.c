@@ -27,11 +27,16 @@ Copyright (C) 2013-2014 Baker
 		HDC   (WINAPI *ewglGetCurrentDC) (VOID);
 		PROC  (WINAPI *ewglGetProcAddress)(LPCSTR);
 		BOOL  (WINAPI *ewglMakeCurrent) (HDC, HGLRC);
+		BOOL  (WINAPI *eChoosePixelFormat) (HDC, CONST PIXELFORMATDESCRIPTOR *);
+		BOOL  (WINAPI *eDescribePixelFormat) (HDC, int, UINT, LPPIXELFORMATDESCRIPTOR);
 		BOOL  (WINAPI *eSetPixelFormat) (HDC, int, CONST PIXELFORMATDESCRIPTOR *);
 		BOOL  (WINAPI *eSwapBuffers) (HDC);
 	#endif // CORE_GL + PLATFORM_WINDOWS
 #else // ^^ CORE_GL
 	#define eEnumDisplaySettings EnumDisplaySettings
+	#define eChoosePixelFormat ChoosePixelFormat
+	#define eDescribePixelFormat DescribePixelFormat
+	#define eSetPixelFormat SetPixelFormat
 #endif // !CORE_GL
 
 static const char *WIN_STRPROP_MINW = "minw";
@@ -55,6 +60,8 @@ void Vidco_Local_InitOnce_Windows (void)
 	ewglMakeCurrent         = wglMakeCurrent;
 	ewglGetProcAddress		= wglGetProcAddress;
 
+	eChoosePixelFormat		= ChoosePixelFormat;
+	eDescribePixelFormat	= DescribePixelFormat;
 	eSetPixelFormat         = SetPixelFormat;
 
 	eChangeDisplaySettings  = ChangeDisplaySettings;
@@ -100,14 +107,14 @@ static PIXELFORMATDESCRIPTOR *WIN_PFD_Fill (int colorbits, int depthbits, int st
 void Vidco_WIN_SetupPixelFormat (HDC hDC, int colorbits, int depthbits, int stencilbits)
 {
 	PIXELFORMATDESCRIPTOR *ppfd = WIN_PFD_Fill (colorbits, depthbits, stencilbits), testpfd;
-	int pixelformat = ChoosePixelFormat(hDC, ppfd);
+	int pixelformat = eChoosePixelFormat(hDC, ppfd);
 
 	if (!pixelformat)
 		log_fatal ("ChoosePixelFormat failed");
 
-	DescribePixelFormat(hDC, pixelformat, sizeof(testpfd), &testpfd);
+	eDescribePixelFormat(hDC, pixelformat, sizeof(testpfd), &testpfd);
 
-    if (!SetPixelFormat(hDC, pixelformat, ppfd))
+    if (!eSetPixelFormat(hDC, pixelformat, ppfd))
         log_fatal ("SetPixelFormat failed");
 }
 

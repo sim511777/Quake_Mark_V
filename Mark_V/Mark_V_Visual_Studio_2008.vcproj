@@ -9322,6 +9322,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\gl_bloom.c"
+					>
+				</File>
+				<File
 					RelativePath="gl_brush.c"
 					>
 					<FileConfiguration

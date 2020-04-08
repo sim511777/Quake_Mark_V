@@ -2625,20 +2625,20 @@ void M_Preferences_Key (int k)
 
 		switch (newval)
 		{
-		case 0: // Default
+		case 0: // Quake Default
 			Cvar_ResetQuick (&v_polyblend);
 			Cvar_ResetQuick (&v_polyblend_lite);
 			Cvar_ResetQuick (&r_waterwarp);
 			break;
-		case 1: // Mark V
+		case 1: // Lite
 			Cvar_ResetQuick (&v_polyblend);
 			Cvar_SetValueQuick (&v_polyblend_lite, 1);
-			Cvar_SetValueQuick (&r_waterwarp, -1);  // Off in WinQuake because is annoying, on in GL
+			Cvar_ResetQuick (&r_waterwarp);					// r_waterwarp defaults to 1
 			break;
 		case 2: // None
 			Cvar_SetValueQuick (&v_polyblend, 0);
 			Cvar_ResetQuick (&v_polyblend_lite);
-			Cvar_SetValueQuick (&r_waterwarp, 0);   // Off in WinQuake because is annoying, on in GL
+			Cvar_SetValueQuick (&r_waterwarp, 0);			// Turn it off.
 			break;
 		}
 
@@ -2853,7 +2853,7 @@ void M_Preferences_Key (int k)
 		Cvar_SetValueQuick (&r_viewmodel_ring, 1);
 		Cvar_ResetQuick (&v_polyblend);
 		Cvar_SetValueQuick (&v_polyblend_lite, 1);
-		Cvar_ResetQuick (&r_waterwarp); // Was missing?
+		Cvar_ResetQuick (&r_waterwarp);
 
 #ifdef GLQUAKE_FLASH_BLENDS
 		Cvar_SetValueQuick (&gl_flashblend, 0);

@@ -43,7 +43,7 @@ HINSTANCE hInstD3DX = NULL;
 D3DXLoadSurfaceFromMemoryProc QD3DXLoadSurfaceFromMemory = NULL;
 D3DXSaveSurfaceToFileProc QD3DXSaveSurfaceToFile = NULL;
 D3DXLoadSurfaceFromSurfaceProc QD3DXLoadSurfaceFromSurface = NULL;
-
+D3DXFilterTextureProc QD3DXFilterTexture = NULL;
 
 void R_UnloadD3DX (void)
 {
@@ -51,6 +51,7 @@ void R_UnloadD3DX (void)
 	QD3DXLoadSurfaceFromMemory = NULL;
 	QD3DXSaveSurfaceToFile = NULL;
 	QD3DXLoadSurfaceFromSurface = NULL;
+	QD3DXFilterTexture = NULL;
 
 	// and unload the library
 	if (hInstD3DX)
@@ -70,6 +71,7 @@ BOOL R_TryLoadD3DX (char *libname)
 		if ((QD3DXLoadSurfaceFromMemory = (D3DXLoadSurfaceFromMemoryProc) GetProcAddress (hInstD3DX, "D3DXLoadSurfaceFromMemory")) == NULL) return FALSE;
 		if ((QD3DXSaveSurfaceToFile = (D3DXSaveSurfaceToFileProc) GetProcAddress (hInstD3DX, "D3DXSaveSurfaceToFileA")) == NULL) return FALSE;
 		if ((QD3DXLoadSurfaceFromSurface = (D3DXLoadSurfaceFromSurfaceProc) GetProcAddress (hInstD3DX, "D3DXLoadSurfaceFromSurface")) == NULL) return FALSE;
+		if ((QD3DXFilterTexture = (D3DXFilterTextureProc) GetProcAddress (hInstD3DX, "D3DXFilterTexture")) == NULL) return FALSE;
 
 		// loaded OK
 		return TRUE;

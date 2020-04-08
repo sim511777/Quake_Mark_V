@@ -179,8 +179,68 @@ void Direct3D9_ScreenShotBMP (const char *filename) {d3d_Context->ScreenShot (fi
 void Direct3D9_ScreenShotJPG (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_JPG);}
 void Direct3D9_ScreenShotPNG (const char *filename) {d3d_Context->ScreenShot (filename, D3DXIFF_PNG);}
 
+
+int WINAPI Direct3D9_ChoosePixelFormat (HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd)
+{
+	// copy off the pixel format so that we can answer a subsequent call to DescribePixelFormat
+	memcpy (&d3d_Globals.pfd, ppfd, sizeof (PIXELFORMATDESCRIPTOR));
+
+	// pass through the pixel format and return it as format number 1
+	// we only support one pixel format
+	return 1;
+}
+
+int WINAPI Direct3D9_DescribePixelFormat (HDC hdc, int iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd)
+{
+	// failed
+	if (!iPixelFormat) return 0;
+
+	if (iPixelFormat == 1)
+	{
+		if (d3d_Globals.pfd.dwFlags)
+		{
+			// return the pfd supplied by a prior call to ChoosePixelFormal
+			memcpy (ppfd, &d3d_Globals.pfd, sizeof (PIXELFORMATDESCRIPTOR));
+		}
+		else
+		{
+			// build a new PFD describing what we support
+			static PIXELFORMATDESCRIPTOR pfd = {
+				sizeof(PIXELFORMATDESCRIPTOR),	// size of this pfd
+				1,						// version number
+				PFD_DRAW_TO_WINDOW |	// support window
+				PFD_SUPPORT_OPENGL |	// support OpenGL
+				PFD_DOUBLEBUFFER,		// double buffered
+				PFD_TYPE_RGBA,			// RGBA type
+				24,						// 24-bit color depth
+				0, 0, 0, 0, 0, 0,		// color bits ignored
+				0,						// no alpha buffer
+				0,						// shift bit ignored
+				0,						// no accumulation buffer
+				0, 0, 0, 0, 			// accum bits ignored
+				24,						// 24-bit z-buffer
+				8,						// 8-bit stencil buffer
+				0,						// no auxiliary buffer
+				PFD_MAIN_PLANE,			// main layer
+				0,						// reserved
+				0, 0, 0					// layer masks ignored
+			};
+
+			// and copy it over
+			memcpy (ppfd, &pfd, sizeof (PIXELFORMATDESCRIPTOR));
+		}
+
+		// we only support one pixel format
+		return 1;
+	}
+
+	// failed
+	return 0;
+}
+
 BOOL WINAPI Direct3D9_SetPixelFormat (HDC hdc, int format, CONST PIXELFORMATDESCRIPTOR *ppfd)
 {
+	// just flagging if we're asking for a stencil buffer
 	if (ppfd->cStencilBits)
 		d3d_Globals.RequestStencil = TRUE;
 	else d3d_Globals.RequestStencil = FALSE;
@@ -933,7 +993,7 @@ void APIENTRY d3d9mh_glTexImage2D (GLenum target, GLint level, GLint internalfor
 		if (pixels)
 		{
 			tex->Fill (0, 0, 0, width, height, format, pixels, 0);
-			tex->Mipmap (1, 0);
+			tex->Mipmap ();
 		}
 	}
 }

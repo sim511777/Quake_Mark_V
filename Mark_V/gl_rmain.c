@@ -411,7 +411,7 @@ void R_SetupView (void)
 		int contents = cl.r_viewleaf->contents; // Baker was: Mod_PointInLeaf (r_origin, cl.worldmodel)->contents;
 		if (contents == CONTENTS_WATER || contents == CONTENTS_SLIME || contents == CONTENTS_LAVA)
 		{
-			if (r_waterwarp.value <=2 && vid.direct3d !=8 ) // dx8 has no CopyTexSubImage, therefore cannot do WinQuake R_WATERWARP
+			if (r_waterwarp.value <= 1 && vid.direct3d !=8 ) // dx8 has no CopyTexSubImage, therefore cannot do WinQuake R_WATERWARP
 				frame.do_glwarp = true;
 			else {	
 				//variance is a percentage of width, where width = 2 * tan(fov / 2) otherwise the effect is too dramatic at high FOV and too subtle at low FOV.  what a mess!
@@ -1359,6 +1359,8 @@ void R_RenderScene (void)
 	R_ShowBoundingBoxes (); //johnfitz
 
 	RB_ShadowVolumeFinish (); // MH SHADOW_VOLUMES  -- this disturbs the depth buffer bad enough it must be at the end.
+
+	GL_BloomBlend ();  // Blooms
 
 }
 

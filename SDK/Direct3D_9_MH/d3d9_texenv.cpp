@@ -83,14 +83,35 @@ void context_t::SetSamplerState (DWORD Stage, D3DSAMPLERSTATETYPE Type, DWORD Va
 #define GLD3D_ALPHA_SCALE 0x0D1C
 
 
+void tmustate_t::Initialize (void)
+{
+	// these are default GL states obtained by issuing a bunch of glGetTexEnv calls
+	this->enabled = FALSE;
+	this->TexEnv.TEXTURE_ENV_MODE = GL_MODULATE;
+	this->TexEnv.SRC0_RGB = GL_TEXTURE;
+	this->TexEnv.SRC1_RGB = GLD3D_PREVIOUS;
+	this->TexEnv.SRC2_RGB = GLD3D_CONSTANT;
+	this->TexEnv.SRC0_ALPHA = GL_TEXTURE;
+	this->TexEnv.SRC1_ALPHA = GLD3D_PREVIOUS;
+	this->TexEnv.SRC2_ALPHA = GLD3D_CONSTANT;
+	this->TexEnv.OPERAND0_RGB = GL_SRC_COLOR;
+	this->TexEnv.OPERAND1_RGB = GL_SRC_COLOR;
+	this->TexEnv.OPERAND2_RGB = GL_SRC_ALPHA;
+	this->TexEnv.OPERAND0_ALPHA = GL_SRC_ALPHA;
+	this->TexEnv.OPERAND1_ALPHA = GL_SRC_ALPHA;
+	this->TexEnv.OPERAND2_ALPHA = GL_SRC_ALPHA;
+	this->TexEnv.RGB_SCALE = 1.0f;
+	this->TexEnv.ALPHA_SCALE = 1.0f;
+}
+
+
 void context_t::InitTexEnv (void)
 {
 	for (int i = 0; i < D3D_MAX_TMUS; i++)
 	{
 		// texture object 0 is initially bound
 		this->TMU[i].boundtexture = &this->Textures[0];
-		this->TMU[i].enabled = FALSE;
-		this->TMU[i].TexEnv.TEXTURE_ENV_MODE = GL_MODULATE;
+		this->TMU[i].Initialize ();
 	}
 }
 

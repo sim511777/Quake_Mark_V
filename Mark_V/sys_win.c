@@ -368,6 +368,255 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 //
 //
 
+#if defined(_DEBUG) && defined(_MSC_VER)
+static keyvalue_t wm_msgs_text [] = {
+	KEYVALUE (WM_NULL                         ),
+	KEYVALUE (WM_CREATE                       ),
+	KEYVALUE (WM_DESTROY                      ),
+	KEYVALUE (WM_MOVE                         ),
+	KEYVALUE (WM_SIZE                         ),
+	KEYVALUE (WM_ACTIVATE                     ),
+	KEYVALUE (WM_SETFOCUS                     ),
+	KEYVALUE (WM_KILLFOCUS                    ),
+	KEYVALUE (WM_ENABLE                       ),
+	KEYVALUE (WM_SETREDRAW                    ),
+	KEYVALUE (WM_SETTEXT                      ),
+	KEYVALUE (WM_GETTEXT                      ),
+	KEYVALUE (WM_GETTEXTLENGTH                ),
+	KEYVALUE (WM_PAINT                        ),
+	KEYVALUE (WM_CLOSE                        ),
+	KEYVALUE (WM_QUERYENDSESSION              ),
+	KEYVALUE (WM_QUERYOPEN                    ),
+	KEYVALUE (WM_ENDSESSION                   ),
+	KEYVALUE (WM_QUIT                         ),
+	KEYVALUE (WM_ERASEBKGND                   ),
+	KEYVALUE (WM_SYSCOLORCHANGE               ),
+	KEYVALUE (WM_SHOWWINDOW                   ),
+	KEYVALUE (WM_WININICHANGE                 ),
+	KEYVALUE (WM_SETTINGCHANGE                ),
+	KEYVALUE (WM_DEVMODECHANGE                ),
+	KEYVALUE (WM_ACTIVATEAPP                  ),
+	KEYVALUE (WM_FONTCHANGE                   ),
+	KEYVALUE (WM_TIMECHANGE                   ),
+	KEYVALUE (WM_CANCELMODE                   ),
+	KEYVALUE (WM_SETCURSOR                    ),
+	KEYVALUE (WM_MOUSEACTIVATE                ),
+	KEYVALUE (WM_CHILDACTIVATE                ),
+	KEYVALUE (WM_QUEUESYNC                    ),
+	KEYVALUE (WM_GETMINMAXINFO                ),
+	KEYVALUE (WM_PAINTICON                    ),
+	KEYVALUE (WM_ICONERASEBKGND               ),
+	KEYVALUE (WM_NEXTDLGCTL                   ),
+	KEYVALUE (WM_SPOOLERSTATUS                ),
+	KEYVALUE (WM_DRAWITEM                     ),
+	KEYVALUE (WM_MEASUREITEM                  ),
+	KEYVALUE (WM_DELETEITEM                   ),
+	KEYVALUE (WM_VKEYTOITEM                   ),
+	KEYVALUE (WM_CHARTOITEM                   ),
+	KEYVALUE (WM_SETFONT                      ),
+	KEYVALUE (WM_GETFONT                      ),
+	KEYVALUE (WM_SETHOTKEY                    ),
+	KEYVALUE (WM_GETHOTKEY                    ),
+	KEYVALUE (WM_QUERYDRAGICON                ),
+	KEYVALUE (WM_COMPAREITEM                  ),
+	KEYVALUE (WM_GETOBJECT                    ),
+	KEYVALUE (WM_COMPACTING                   ),
+	KEYVALUE (WM_COMMNOTIFY                   ),
+	KEYVALUE (WM_WINDOWPOSCHANGING            ),
+	KEYVALUE (WM_WINDOWPOSCHANGED             ),
+	KEYVALUE (WM_POWER                        ),
+	KEYVALUE (WM_COPYDATA                     ),
+	KEYVALUE (WM_CANCELJOURNAL                ),
+	KEYVALUE (WM_NOTIFY                       ),
+	KEYVALUE (WM_INPUTLANGCHANGEREQUEST       ),
+	KEYVALUE (WM_INPUTLANGCHANGE              ),
+	KEYVALUE (WM_TCARD                        ),
+	KEYVALUE (WM_HELP                         ),
+	KEYVALUE (WM_USERCHANGED                  ),
+	KEYVALUE (WM_NOTIFYFORMAT                 ),
+	KEYVALUE (WM_CONTEXTMENU                  ),
+	KEYVALUE (WM_STYLECHANGING                ),
+	KEYVALUE (WM_STYLECHANGED                 ),
+	KEYVALUE (WM_DISPLAYCHANGE                ),
+	KEYVALUE (WM_GETICON                      ),
+	KEYVALUE (WM_SETICON                      ),
+	KEYVALUE (WM_NCCREATE                     ),
+	KEYVALUE (WM_NCDESTROY                    ),
+	KEYVALUE (WM_NCCALCSIZE                   ),
+	KEYVALUE (WM_NCHITTEST                    ),
+	KEYVALUE (WM_NCPAINT                      ),
+	KEYVALUE (WM_NCACTIVATE                   ),
+	KEYVALUE (WM_GETDLGCODE                   ),
+	KEYVALUE (WM_SYNCPAINT                    ),
+	KEYVALUE (WM_NCMOUSEMOVE                  ),
+	KEYVALUE (WM_NCLBUTTONDOWN                ),
+	KEYVALUE (WM_NCLBUTTONUP                  ),
+	KEYVALUE (WM_NCLBUTTONDBLCLK              ),
+	KEYVALUE (WM_NCRBUTTONDOWN                ),
+	KEYVALUE (WM_NCRBUTTONUP                  ),
+	KEYVALUE (WM_NCRBUTTONDBLCLK              ),
+	KEYVALUE (WM_NCMBUTTONDOWN                ),
+	KEYVALUE (WM_NCMBUTTONUP                  ),
+	KEYVALUE (WM_NCMBUTTONDBLCLK              ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_NCXBUTTONDOWN                ),//
+	KEYVALUE (WM_NCXBUTTONUP                  ),//
+	KEYVALUE (WM_NCXBUTTONDBLCLK              ),//
+	KEYVALUE (WM_INPUT_DEVICE_CHANGE          ),//
+	KEYVALUE (WM_INPUT                        ),//
+#endif // __VISUAL_STUDIO_6__
+	KEYVALUE (WM_KEYFIRST                     ),
+	KEYVALUE (WM_KEYDOWN                      ),
+	KEYVALUE (WM_KEYUP                        ),
+	KEYVALUE (WM_CHAR                         ),
+	KEYVALUE (WM_DEADCHAR                     ),
+	KEYVALUE (WM_SYSKEYDOWN                   ),
+	KEYVALUE (WM_SYSKEYUP                     ),
+	KEYVALUE (WM_SYSCHAR                      ),
+	KEYVALUE (WM_SYSDEADCHAR                  ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_UNICHAR                      ),//
+#endif // __VISUAL_STUDIO_6__
+	KEYVALUE (WM_KEYLAST                      ),
+	KEYVALUE (WM_KEYLAST                      ),
+	KEYVALUE (WM_IME_STARTCOMPOSITION         ),
+	KEYVALUE (WM_IME_ENDCOMPOSITION           ),
+	KEYVALUE (WM_IME_COMPOSITION              ),
+	KEYVALUE (WM_IME_KEYLAST                  ),
+	KEYVALUE (WM_INITDIALOG                   ),
+	KEYVALUE (WM_COMMAND                      ),
+	KEYVALUE (WM_SYSCOMMAND                   ),
+	KEYVALUE (WM_TIMER                        ),
+	KEYVALUE (WM_HSCROLL                      ),
+	KEYVALUE (WM_VSCROLL                      ),
+	KEYVALUE (WM_INITMENU                     ),
+	KEYVALUE (WM_INITMENUPOPUP                ),
+	KEYVALUE (WM_MENUSELECT                   ),
+	KEYVALUE (WM_MENUCHAR                     ),
+	KEYVALUE (WM_ENTERIDLE                    ),
+	KEYVALUE (WM_MENURBUTTONUP                ),
+	KEYVALUE (WM_MENUDRAG                     ),
+	KEYVALUE (WM_MENUGETOBJECT                ),
+	KEYVALUE (WM_UNINITMENUPOPUP              ),
+	KEYVALUE (WM_MENUCOMMAND                  ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_CHANGEUISTATE                ),//
+	KEYVALUE (WM_UPDATEUISTATE                ),//
+	KEYVALUE (WM_QUERYUISTATE                 ),//
+#endif // __VISUAL_STUDIO_6__
+	KEYVALUE (WM_CTLCOLORMSGBOX               ),
+	KEYVALUE (WM_CTLCOLOREDIT                 ),
+	KEYVALUE (WM_CTLCOLORLISTBOX              ),
+	KEYVALUE (WM_CTLCOLORBTN                  ),
+	KEYVALUE (WM_CTLCOLORDLG                  ),
+	KEYVALUE (WM_CTLCOLORSCROLLBAR            ),
+	KEYVALUE (WM_CTLCOLORSTATIC               ),
+	KEYVALUE (WM_MOUSEFIRST                   ),
+	KEYVALUE (WM_MOUSEMOVE                    ),
+	KEYVALUE (WM_LBUTTONDOWN                  ),
+	KEYVALUE (WM_LBUTTONUP                    ),
+	KEYVALUE (WM_LBUTTONDBLCLK                ),
+	KEYVALUE (WM_RBUTTONDOWN                  ),
+	KEYVALUE (WM_RBUTTONUP                    ),
+	KEYVALUE (WM_RBUTTONDBLCLK                ),
+	KEYVALUE (WM_MBUTTONDOWN                  ),
+	KEYVALUE (WM_MBUTTONUP                    ),
+	KEYVALUE (WM_MBUTTONDBLCLK                ),
+	KEYVALUE (WM_MOUSEWHEEL                   ),
+	KEYVALUE (WM_XBUTTONDOWN                  ),
+	KEYVALUE (WM_XBUTTONUP                    ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_XBUTTONDBLCLK                ),//
+	KEYVALUE (WM_MOUSEHWHEEL                  ),// Horizontal?
+#endif // __VISUAL_STUDIO_6__
+	KEYVALUE (WM_MOUSELAST                    ),
+	KEYVALUE (WM_MOUSELAST                    ),
+	KEYVALUE (WM_MOUSELAST                    ),
+	KEYVALUE (WM_MOUSELAST                    ),
+	KEYVALUE (WM_PARENTNOTIFY                 ),
+	KEYVALUE (WM_ENTERMENULOOP                ),
+	KEYVALUE (WM_EXITMENULOOP                 ),
+	KEYVALUE (WM_NEXTMENU                     ),
+	KEYVALUE (WM_SIZING                       ),
+	KEYVALUE (WM_CAPTURECHANGED               ),
+	KEYVALUE (WM_MOVING                       ),
+	KEYVALUE (WM_POWERBROADCAST               ),
+	KEYVALUE (WM_DEVICECHANGE                 ),
+	KEYVALUE (WM_MDICREATE                    ),
+	KEYVALUE (WM_MDIDESTROY                   ),
+	KEYVALUE (WM_MDIACTIVATE                  ),
+	KEYVALUE (WM_MDIRESTORE                   ),
+	KEYVALUE (WM_MDINEXT                      ),
+	KEYVALUE (WM_MDIMAXIMIZE                  ),
+	KEYVALUE (WM_MDITILE                      ),
+	KEYVALUE (WM_MDICASCADE                   ),
+	KEYVALUE (WM_MDIICONARRANGE               ),
+	KEYVALUE (WM_MDIGETACTIVE                 ),
+	KEYVALUE (WM_MDISETMENU                   ),
+	KEYVALUE (WM_ENTERSIZEMOVE                ),
+	KEYVALUE (WM_EXITSIZEMOVE                 ),
+	KEYVALUE (WM_DROPFILES                    ),
+	KEYVALUE (WM_MDIREFRESHMENU               ),
+	KEYVALUE (WM_IME_SETCONTEXT               ),
+	KEYVALUE (WM_IME_NOTIFY                   ),
+	KEYVALUE (WM_IME_CONTROL                  ),
+	KEYVALUE (WM_IME_COMPOSITIONFULL          ),
+	KEYVALUE (WM_IME_SELECT                   ),
+	KEYVALUE (WM_IME_CHAR                     ),
+	KEYVALUE (WM_IME_REQUEST                  ),
+	KEYVALUE (WM_IME_KEYDOWN                  ),
+	KEYVALUE (WM_IME_KEYUP                    ),
+	KEYVALUE (WM_MOUSEHOVER                   ),
+	KEYVALUE (WM_MOUSELEAVE                   ),
+	KEYVALUE (WM_NCMOUSEHOVER                 ),
+	KEYVALUE (WM_NCMOUSELEAVE                 ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_WTSSESSION_CHANGE            ),//
+	KEYVALUE (WM_TABLET_FIRST                 ),//
+	KEYVALUE (WM_TABLET_LAST                  ),//
+#endif // __VISUAL_STUDIO_6__
+	KEYVALUE (WM_CUT                          ),
+	KEYVALUE (WM_COPY                         ),
+	KEYVALUE (WM_PASTE                        ),
+	KEYVALUE (WM_CLEAR                        ),
+	KEYVALUE (WM_UNDO                         ),
+	KEYVALUE (WM_RENDERFORMAT                 ),
+	KEYVALUE (WM_RENDERALLFORMATS             ),
+	KEYVALUE (WM_DESTROYCLIPBOARD             ),
+	KEYVALUE (WM_DRAWCLIPBOARD                ),
+	KEYVALUE (WM_PAINTCLIPBOARD               ),
+	KEYVALUE (WM_VSCROLLCLIPBOARD             ),
+	KEYVALUE (WM_SIZECLIPBOARD                ),
+	KEYVALUE (WM_ASKCBFORMATNAME              ),
+	KEYVALUE (WM_CHANGECBCHAIN                ),
+	KEYVALUE (WM_HSCROLLCLIPBOARD             ),
+	KEYVALUE (WM_QUERYNEWPALETTE              ),
+	KEYVALUE (WM_PALETTEISCHANGING            ),
+	KEYVALUE (WM_PALETTECHANGED               ),
+	KEYVALUE (WM_HOTKEY                       ),
+	KEYVALUE (WM_PRINT                        ),
+	KEYVALUE (WM_PRINTCLIENT                  ),
+#ifndef __VISUAL_STUDIO_6__
+	KEYVALUE (WM_APPCOMMAND                   ),//
+	KEYVALUE (WM_THEMECHANGED                 ),//
+	KEYVALUE (WM_CLIPBOARDUPDATE              ),//
+	KEYVALUE (WM_DWMCOMPOSITIONCHANGED        ),//
+	KEYVALUE (WM_DWMNCRENDERINGCHANGED        ),//
+	KEYVALUE (WM_DWMCOLORIZATIONCOLORCHANGED  ),//
+	KEYVALUE (WM_DWMWINDOWMAXIMIZEDCHANGE     ),//
+	KEYVALUE (WM_GETTITLEBARINFOEX            ),//
+#endif
+	KEYVALUE (WM_HANDHELDFIRST                ),
+	KEYVALUE (WM_HANDHELDLAST                 ),
+	KEYVALUE (WM_AFXFIRST                     ),
+	KEYVALUE (WM_AFXLAST                      ),
+	KEYVALUE (WM_PENWINFIRST                  ),
+	KEYVALUE (WM_PENWINLAST                   ),
+	KEYVALUE (WM_APP                          ),
+	KEYVALUE (WM_USER                         ),
+NULL, 0}; // Null term
+#endif
+
 LRESULT CALLBACK Session_Windows_Dispatch (
 	HWND    hWnd,
 	UINT    Msg,
@@ -378,6 +627,14 @@ LRESULT CALLBACK Session_Windows_Dispatch (
 
 	// check for input messages
 	if (WIN_IN_ReadInputMessages (hWnd, Msg, wParam, lParam)) return 0;
+
+#if 0 // Baker: Message dump
+	{
+		const char *msgtext_ = KeyValue_GetKeyString (wm_msgs_text, Msg);
+		const char *msgtext  = msgtext_ ? msgtext_ : va("Unknown message: %x", Msg);
+		logd ("%s wparam: %x lparam %x", msgtext, wParam, lParam);
+	}
+#endif 
 
     switch (Msg)
     {
@@ -435,6 +692,7 @@ LRESULT CALLBACK Session_Windows_Dispatch (
 
 	case WM_SIZE:
 
+		logd ("WM_SIZE occurred");
 		if (vid.Minimized || !vid.ActiveApp)
 			return 0;
 

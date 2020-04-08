@@ -796,7 +796,7 @@ void Platform_Windows_Input_GetMouseBits (WPARAM wparam, LPARAM lparam, required
 //
 
 #if defined(_DEBUG) && defined(_MSC_VER)
-keyvalue_t wm_msgs_text [] = {
+static keyvalue_t wm_msgs_text [] = {
 	KEYVALUE (WM_NULL                         ),
 	KEYVALUE (WM_CREATE                       ),
 	KEYVALUE (WM_DESTROY                      ),

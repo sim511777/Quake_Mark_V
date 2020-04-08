@@ -57,8 +57,9 @@ typedef struct
 
 #define KEYVALUE(x) { #x , x }
 
-const char *KeyValue_GetKey (keyvalue_t table[], int val);
-keyvalue_t* KeyValue_GetEntry (keyvalue_t table[], const char *keystring);
+
+const char *KeyValue_GetKeyString (keyvalue_t table[], int val); // Returns null if not found
+keyvalue_t *KeyValue_GetEntry (keyvalue_t table[], const char *keystring); // Returns null if not found
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BITS:  Easier access and storage of bits into bytes (8 bits obviously)

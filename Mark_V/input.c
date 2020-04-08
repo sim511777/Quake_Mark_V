@@ -180,7 +180,7 @@ static inp_info_t inps;
 void Input_Info_f (void)
 {
 	Con_PrintLinef ("IN Info ...");
-	Con_PrintLinef ("%-25s :  %s", "current_state", KeyValue_GetKey (input_state_text, inps.current_state) );
+	Con_PrintLinef ("%-25s :  %s", "current_state", KeyValue_GetKeyString (input_state_text, inps.current_state) );
 	Con_PrintLinef ("%-25s :  %d", "initialized", inps.initialized);
 	Con_PrintLinef ("%-25s :  %d", "have_mouse", inps.have_mouse);
 	Con_PrintLinef ("%-25s :  %d", "have_keyboard", inps.have_keyboard);

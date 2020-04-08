@@ -113,6 +113,12 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 	windowinfo.cbSize = sizeof (WINDOWINFO);
 	GetWindowInfo (sysplat.mainwindow, &windowinfo); // Client screen
 
+	// Baker: Not if 0
+	if (windowinfo.rcClient.right - windowinfo.rcClient.left) <= 0) {
+		// Make sure the window is set as minimized here if it isn't?
+		return;
+	}
+
 	// Need to catch minimized scenario
 	// Fill in top left, bottom, right, center
 	vid.client_window.left = windowinfo.rcClient.left;

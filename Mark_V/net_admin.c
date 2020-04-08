@@ -199,7 +199,7 @@ void Q_Thread_Event_Dispatch (int event, int code, void *id, void *data)
 				listz->download_complete = true;
 
 				if (listz->download_data)
-					Con_DPrintLinef ("Data is empty!  %d %s", d->exit_code, KeyValue_GetKey (downloader_error_strings, d->exit_code));
+					Con_DPrintLinef ("Data is empty!  %d %s", d->exit_code, KeyValue_GetKeyString (downloader_error_strings, d->exit_code));
 				break;
 
 			default:

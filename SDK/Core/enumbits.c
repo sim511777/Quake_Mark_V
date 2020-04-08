@@ -38,7 +38,7 @@ typedef struct
 */
 
 
-const char* KeyValue_GetKey (keyvalue_t table[], int val)
+const char *KeyValue_GetKeyString (keyvalue_t table[], int val)
 {
 	keyvalue_t* cur;
 
@@ -51,7 +51,7 @@ const char* KeyValue_GetKey (keyvalue_t table[], int val)
 	return NULL;
 }
 
-keyvalue_t* KeyValue_GetEntry (keyvalue_t table[], const char* keystring)
+keyvalue_t *KeyValue_GetEntry (keyvalue_t table[], const char* keystring)
 {
 	int i;
 

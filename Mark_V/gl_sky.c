@@ -848,12 +848,14 @@ void Sky_GetTexCoord (vec3_t v, float speed, float *s, float *t)
 	*t = (scroll + dir[1] * length) * (1.0/128);
 }
 
+#if 0
+
 /*
 ===============
 Sky_DrawFaceQuad
 ===============
 */
-void Sky_DrawFaceQuad (glpoly_t *p)
+void Sky_FitzQuake_DrawFaceQuad (glpoly_t *p)
 {
 	float	s, t;
 	float	*v;
@@ -949,7 +951,7 @@ Sky_DrawFace
 ==============
 */
 
-void Sky_DrawFace (int axis)
+void Sky_FitzQuake_DrawFace (int axis)
 {
 	glpoly_t	*p;
 	vec3_t		verts[4];
@@ -995,10 +997,155 @@ void Sky_DrawFace (int axis)
 
 			VectorAdd (p->verts[0],temp,p->verts[3]);
 
-			Sky_DrawFaceQuad (p);
+			Sky_FitzQuake_DrawFaceQuad (p);
 		}
 	}
 	Hunk_FreeToLowMark (start);
+}
+#endif // SKY
+
+// declared this way so that we can pass glVertex3fv as a Sky_DrawFunc
+void APIENTRY Sky_MH_DrawMultitexture (float *v)
+{
+	float s, t;
+
+	Sky_GetTexCoord (v, 8, &s, &t);
+	renderer.GL_MTexCoord2fFunc (renderer.TEXTURE0, s, t);
+	Sky_GetTexCoord (v, 16, &s, &t);
+	renderer.GL_MTexCoord2fFunc (renderer.TEXTURE1, s, t);
+	eglVertex3fv (v);
+}
+
+
+void APIENTRY Sky_MH_DrawSolidLayer (float *v)
+{
+	float s, t;
+
+	Sky_GetTexCoord (v, 8, &s, &t);
+	eglTexCoord2f (s, t);
+	eglVertex3fv (v);
+}
+
+
+void APIENTRY Sky_MH_DrawAlphaLayer (float *v)
+{
+	float s, t;
+
+	Sky_GetTexCoord (v, 16, &s, &t);
+	eglTexCoord2f (s, t);
+	eglVertex3fv (v);
+}
+
+
+void Sky_MH_DrawPass (int axis, void (APIENTRY *Sky_DrawFunc) (float *))
+{
+	int i, j;
+	vec3_t temp, temp2, vec[4];
+
+	vec3_t		verts[4];
+	vec3_t		vup, vright;
+
+	float di = max ((int) gl_sky_quality.value, 1);
+	float qi = 1.0 / di;
+	float dj = (axis < 4) ? di * 2 : di; // subdivide vertically more than horizontally on skybox sides
+	float qj = 1.0 / dj;
+
+	Sky_SetBoxVert (-1.0, -1.0, axis, verts[0]);
+	Sky_SetBoxVert (-1.0,  1.0, axis, verts[1]);
+	Sky_SetBoxVert ( 1.0,  1.0, axis, verts[2]);
+	Sky_SetBoxVert ( 1.0, -1.0, axis, verts[3]);
+
+	VectorSubtract (verts[2], verts[3], vup);
+	VectorSubtract (verts[2], verts[1], vright);
+
+	eglBegin (GL_QUADS);
+
+	for (i = 0; i < di; i++)
+	{
+		for (j = 0; j < dj; j++)
+		{
+			if (i * qi < skymins[0][axis] / 2 + 0.5 - qi || i * qi > skymaxs[0][axis] / 2 + 0.5 ||
+				j * qj < skymins[1][axis] / 2 + 0.5 - qj || j * qj > skymaxs[1][axis] / 2 + 0.5)
+				continue;
+
+			//if ((i & 1) ^ (j & 1)) continue; //checkerboard test
+			VectorScale (vright, qi * i, temp);
+			VectorScale (vup, qj * j, temp2);
+			VectorAdd (temp, temp2, temp);
+
+			VectorAdd (verts[0], temp, vec[0]);
+
+			VectorScale (vup, qj, temp);
+			VectorAdd (vec[0], temp, vec[1]);
+
+			VectorScale (vright, qi, temp);
+			VectorAdd (vec[1], temp, vec[2]);
+
+			VectorAdd (vec[0], temp, vec[3]);
+
+			Sky_DrawFunc (vec[0]);
+			Sky_DrawFunc (vec[1]);
+			Sky_DrawFunc (vec[2]);
+			Sky_DrawFunc (vec[3]);
+
+			rs_skypolys++;
+		}
+	}
+
+	eglEnd ();
+	rs_skypasses++;
+}
+
+
+void Sky_MH_DrawFace (int axis)
+{
+	// now we set up and do batched drawing of the recorded quads
+	if (renderer.gl_mtexable && gl_skyalpha.value >= 1.0)
+	{
+		GL_Bind (solidskytexture);
+		GL_EnableMultitexture ();
+		GL_Bind (alphaskytexture);
+		eglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+		Sky_MH_DrawPass (axis, Sky_MH_DrawMultitexture);
+
+		GL_DisableMultitexture ();
+	}
+	else
+	{
+		GL_Bind (solidskytexture);
+
+		if (gl_skyalpha.value < 1.0)
+			eglColor3f (1, 1, 1);
+
+		Sky_MH_DrawPass (axis, Sky_MH_DrawSolidLayer);
+
+		GL_Bind (alphaskytexture);
+		eglEnable (GL_BLEND);
+
+		if (gl_skyalpha.value < 1.0)
+			eglColor4f (1, 1, 1, gl_skyalpha.value);
+
+		Sky_MH_DrawPass (axis, Sky_MH_DrawAlphaLayer);
+
+		eglDisable (GL_BLEND);
+	}
+
+	if (Fog_GetDensity() > 0 && gl_skyfog.value > 0)
+	{
+		float *c;
+
+		c = Fog_GetColor(NULL, NULL);
+		eglEnable (GL_BLEND);
+		eglDisable (GL_TEXTURE_2D);
+		eglColor4f (c[0],c[1],c[2], CLAMP(0.0, gl_skyfog.value, 1.0));
+
+		Sky_MH_DrawPass (axis, eglVertex3fv);
+
+		eglColor3f (1, 1, 1);
+		eglEnable (GL_TEXTURE_2D);
+		eglDisable (GL_BLEND);
+	}
 }
 
 /*
@@ -1017,7 +1164,7 @@ void Sky_DrawSkyLayers (void)
 
 	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++)
 		if (skymins[0][i] < skymaxs[0][i] && skymins[1][i] < skymaxs[1][i])
-			Sky_DrawFace (i);
+			Sky_MH_DrawFace (i); // Sky_FitzQuake_DrawFace
 
 	if (gl_skyalpha.value < 1.0)
 		eglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);

@@ -136,7 +136,7 @@ static void *Download_Http_ (download_x_t *download)
 	return download->mem.memory ? download->mem.memory : (void *) true;
 }
 //		download = core_free (download); // Release it.  But if download to mem, we passed the memory stream.
-//		Core_Print Linef ("Result was %d:%s", ret, KeyValue_GetKey (downloader_error_strings, *errorcode));
+//		Core_Print Linef ("Result was %d:%s", ret, KeyValue_GetKeyString (downloader_error_strings, *errorcode));
 
 
 // If you want a temp name, feed us the temp name.  This function shouldn't be deciding temp names.  Doesn't know cache.

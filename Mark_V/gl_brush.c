@@ -373,8 +373,7 @@ static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
 
 	if (gl_overbright.value)
 	{
-		cbool combine_pass_engine_issue_dx9 = ( vid.direct3d == 9 && Flag_Check (s->flags, SURF_DRAWFENCE) && !developer.value);
-		if (renderer.gl_texture_env_combine && renderer.gl_mtexable && !combine_pass_engine_issue_dx9) //case 1: texture and lightmap in one pass, overbright using texture combiners
+		if (renderer.gl_texture_env_combine && renderer.gl_mtexable) //case 1: texture and lightmap in one pass, overbright using texture combiners
 		{
 			GL_DisableMultitexture(); // selects TEXTURE0
 			GL_Bind (t->gltexture);

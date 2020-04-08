@@ -230,10 +230,12 @@ public:
 class tmustate_t
 {
 public:
+	void Initialize (void);
+
 	d3d_texture_t *boundtexture;
 	BOOL enabled;
 
-	struct
+	struct TexEnv_s
 	{
 		GLenum TEXTURE_ENV_MODE;
 		GLenum COMBINE_RGB;

@@ -291,6 +291,7 @@ void VID_Resize_Check (int resize_level) // 1 = dynamic resize, 2 = setmode
 static void VID_BeginRendering_Resize_Think (void)
 {
     if (vid.direct3d == 9 /* MH is want this every frame as a test*/ || vid.resized || vid.client_window.width == 0)
+	//if (/*vid.direct3d == 9 /* MH is want this every frame as a test ||*/ vid.resized || vid.client_window.width == 0)
     {
         VID_BeginRendering_Resize_Think_Resize_Act ();
 
@@ -346,8 +347,13 @@ static void VID_Activate (cbool active)
 
 void VID_AppActivate(cbool fActive, cbool minimize, cbool hide)
 {
+	//if (minimize != vid.Minimized) {
+	//	logd ("Minimized set to %d", minimize);
+	//}
+
     vid.ActiveApp = fActive;
     vid.Minimized = minimize;
+	
     vid.Hidden = hide;
 
 #if 0

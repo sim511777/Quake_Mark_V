@@ -56,8 +56,15 @@ vmode_t VID_Local_GetDesktopProperties (void)
         System_Error("Could not get desktop display mode");
 
 	desktop.type		=	MODESTATE_FULLSCREEN;
+#if PLATFORM_SCREEN_PORTRAIT !=0
+	//c_swapi (&vid.modelist[1].width, &vid.modelist[1].height);
+	desktop.width		=	mode.h;
+	desktop.height		=	mode.w;
+#else
 	desktop.width		=	mode.w;
 	desktop.height		=	mode.h;
+#endif
+
 	desktop.bpp			=	SDL_BITSPERPIXEL(mode.format);
 
 	return desktop;
@@ -157,6 +164,10 @@ void VID_Local_Multisample_f (cvar_t *var)
 
 void VID_Local_AddFullscreenModes (void)
 {
+#ifdef PLATFORM_ANDROID
+	vid.modelist[1] = VID_Local_GetDesktopProperties (); // Set it VID_Local_GetDesktopProperties
+	vid.nummodes = 2; // Right?
+#else // Not Android
     const int num_sdl_modes = SDL_GetNumDisplayModes(0);
 	int	i;
 
@@ -182,6 +193,7 @@ void VID_Local_AddFullscreenModes (void)
 		else System_Error ("Couldn't get display mode");
 
 	}
+#endif // !PLATFORM_ANDROID
 }
 
 
@@ -191,7 +203,25 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 	mrect_t windowinfo;
 
 	SDL_GetWindowPosition (sysplat.mainwindow, &windowinfo.left, &windowinfo.top);
-	SDL_GetWindowSize (sysplat.mainwindow, &windowinfo.width, &windowinfo.height);
+	SDL_GetWindowSize (sysplat.mainwindow, &windowinfo.width, &windowinfo.height); // For Android SDL this isn't updating.
+
+#if PLATFORM_SCREEN_PORTRAIT !=0
+	c_swapi (&windowinfo.width, &windowinfo.height);
+//	DEBUG_ASSERT (windowinfo.left == 0); // Proof isn't working or proof we never hit here?
+//	DEBUG_ASSERT (windowinfo.top == 0);
+#endif // PLATFORM_SCREEN_PORTRAIT
+
+#if 0
+	__android_log_print (ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "windowinfo %d %d vid.client_window %d %d %d %d cl %d %d %d %d screen %d %d", 
+		windowinfo.width, windowinfo.height, 
+		vid.client_window.left, vid.client_window.top, vid.client_window.width, vid.client_window.height, 
+		clx, cly, clwidth, clheight, vid.screen.width, vid.screen.height);
+	
+	
+
+	alert ("VID_BeginRendering_Resize_Think_Resize_Act Screen width/height: %d %d cl %d %d", vid.screen.width, vid.screen.height, clwidth, clheight);
+#endif // 
+	
 
 	// Need to catch minimized scenario
 	// Fill in top left, bottom, right, center
@@ -202,6 +232,7 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 	vid.client_window.width = windowinfo.width;
 	vid.client_window.height = windowinfo.height;
 
+	//VID_Set_Window_Title ("%d wdo %d %d %d %d cli %d %d %d %d", vid.ActiveApp, vid.client_window.left, vid.client_window.top, vid.client_window.width, vid.client_window.height, clx, cly, clwidth, clheight);
 
 #ifndef DIRECT3D8_WRAPPER // dx8 - Not for Direct3D 8! (-resizable)  Keep in mind we are in a windows source file! vid_wgl.c
 	if (1 /*COM_CheckParm ("-resizable")*/)
@@ -209,7 +240,9 @@ void VID_BeginRendering_Resize_Think_Resize_Act (void)
 		vid.screen.width = vid.client_window.width;
 		vid.screen.height = vid.client_window.height;
 		VID_WinQuake_AdjustBuffers (&vid.screen);
+#if !defined (PLATFORM_ANDROID) // Accumulation buffer constant only?
 		eglClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+#endif // !ANDROID
 	}
 #endif // DIRECT3D8_WRAPPER (oldwater)
 }
@@ -227,6 +260,8 @@ This is passed to SDL_SetWindowDisplayMode to specify a pixel format
 with the requested bpp. If we didn't care about bpp we could just pass NULL.
 ================
 */
+#if 0 // This doesn't seem to be used in WinQuake version, then again video mode changing in fullscreen doesn't seem to work for WinQuake SDL
+// I believe this was deliberate on my part to work around Linux issue.
 static SDL_DisplayMode *VID_SDL2_GetDisplayMode(int width, int height, int bpp)
 {
 	static SDL_DisplayMode mode;
@@ -244,7 +279,7 @@ static SDL_DisplayMode *VID_SDL2_GetDisplayMode(int width, int height, int bpp)
 	}
 	return NULL;
 }
-
+#endif //
 
 // Returns false if need to do GL setup again.
 cbool VID_Local_SetMode (int modenum)
@@ -351,12 +386,20 @@ cbool VID_Local_SetMode (int modenum)
 if (p->type == MODESTATE_WINDOWED) {
     sysplat.mainwindow = SDL_CreateWindow(ENGINE_NAME,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+	#if PLATFORM_SCREEN_PORTRAIT !=0
+			p->height, p->width,
+	#else
 			p->width, p->height,
+	#endif // !PORTRAIT
 			vid_sdl_flags);
 } else {
     sysplat.mainwindow = SDL_CreateWindow(ENGINE_NAME,
 			0, 0,
+	#if PLATFORM_SCREEN_PORTRAIT !=0
+			p->height, p->width,
+	#else
 			p->width, p->height,
+	#endif // ! PORTRAIT
 			vid_sdl_flags | SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 }
@@ -385,7 +428,9 @@ if (p->type == MODESTATE_WINDOWED) {
 	// Is this including or excluding the border?
 	// I suppose we'd have to enable resizable to find out.
 	Shell_Platform_Icon_Window_Set (sysplat.mainwindow);
+#if !defined(PLATFORM_ANDROID) // I don't think this does anything on Android anyway.
 	SDL_SetWindowMinimumSize (sysplat.mainwindow, QWIDTH_MINIMUM_320, QHEIGHT_MINIMUM_2XX);
+#endif // !ANDROID
 
 
 
@@ -411,7 +456,11 @@ if (p->type == MODESTATE_WINDOWED) {
 	}
 	else {
         SDL_SetWindowPosition (sysplat.mainwindow, 0, 0);
+#if PLATFORM_SCREEN_PORTRAIT !=0
+		SDL_SetWindowSize (sysplat.mainwindow, p->height, p->width);
+#else
         SDL_SetWindowSize (sysplat.mainwindow, p->width, p->height);
+#endif // !PLATFORM_SCREEN_PORTRAIT
 	}
 #endif
 
@@ -471,9 +520,11 @@ if (p->type == MODESTATE_WINDOWED) {
 
 
 // Are we able to re-use the context?
-#if 0 // I'm think we do not need
-	vid.ActiveApp = 1; // Crutch because we never activate.
-#endif
+#ifdef PLATFORM_ANDROID // March 23 2018
+	vid.ActiveApp = 1; // Crutch because SDL_WINDOWEVENT_FOCUS_GAINED doesn't happen.
+	vid.recalc_refdef = true;
+	vid.Hidden = false;	
+#endif // PLATFORM_ANDROID
 	//return false;  //reuseok;
 
 	vid.wingl.texslot = 0; // We killed it.
@@ -591,8 +642,10 @@ cbool VID_CreateDIB (int newwidth, int newheight, byte *palette)
 
 	vid.wingl.w				= vid.rowbytes = newwidth;															// Must set vid.rowbytes
 	vid.wingl.h				= newheight;
-    vid.wingl.width_pow2	= newwidth; // Image_Power_Of_Two_Size (newwidth);
-    vid.wingl.height_pow2	= newheight; //Image_Power_Of_Two_Size (newheight);
+    //vid.wingl.width_pow2	= newwidth; //Image_Power_Of_Two_Size (newwidth);
+    //vid.wingl.height_pow2	= newheight; //Image_Power_Of_Two_Size (newheight);
+    vid.wingl.width_pow2	= Image_Power_Of_Two_Size (newwidth);
+    vid.wingl.height_pow2	= Image_Power_Of_Two_Size (newheight);
 
 	//vid.wingl.numpels		= vid.wingl.w * vid.wingl.h;
 	vid.wingl.numpels		= vid.wingl.width_pow2 * vid.wingl.height_pow2; // 1024 x 512
@@ -615,8 +668,8 @@ cbool VID_CreateDIB (int newwidth, int newheight, byte *palette)
         static unsigned int planb = 1000;
         vid.wingl.texslot = planb ++;
         if (0) {
-		SDL_DestroyWindow (sysplat.mainwindow);
-		System_Error ("No texture slot for WinQuake GL, window is %p and context is %p", sysplat.mainwindow, sysplat.draw_gl_context);
+			SDL_DestroyWindow (sysplat.mainwindow);
+			System_Error ("No texture slot for WinQuake GL, window is %p and context is %p", sysplat.mainwindow, sysplat.draw_gl_context);
         }
         #else
 
@@ -636,14 +689,18 @@ cbool VID_CreateDIB (int newwidth, int newheight, byte *palette)
 #if 0
 	eglTexImage2D (GL_PROXY_TEXTURE_2D, /* mip level */ 0, GL_COLOR_INDEX8_EXT, vid.wingl.width_pow2, vid.wingl.height_pow2, /* border */ 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 #else
+#if !defined(PLATFORM_ANDROID) // OpenGLES no have
     eglTexImage2D (GL_PROXY_TEXTURE_2D, /* mip level */ 0, GL_RGBA, vid.wingl.width_pow2, vid.wingl.height_pow2, /* border */ 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+#endif // !ANDROID
 #endif
 
     //error = glGetError();
 	{	int actualTexWidth = -1, actualTexHeight = -1;
+#if !defined(PLATFORM_ANDROID) // OpenGLES no have
 		glGetTexLevelParameteriv (GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &actualTexWidth);
 		glGetTexLevelParameteriv (GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &actualTexHeight);
 		actualTexHeight = actualTexHeight;
+#endif // !ANDROID
 	}
 
 	// We specify a power of 2 size.  But later when we upload, we specify a different size.  Will Direct3D wrapper be ok with that?
@@ -714,7 +771,9 @@ static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 		int high_any = c_min (high_x, high_y);
 
 		//int stretch_try = vid.stretch_old_cvar_val;
-#if 1 // WINQUAKE-GL EXCEPTION since it is so fucking slow ...
+#ifdef PLATFORM_ANDROID
+		int stretch_try = CLAMP(2, vid.stretch_old_cvar_val, 2);
+#elif 1 // WINQUAKE-GL EXCEPTION since it is so fucking slow ...
 		int stretch_try = CLAMP(1, vid.stretch_old_cvar_val, 2);
 #else
 		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);
@@ -772,7 +831,69 @@ void VID_Update (vrect_t *rects)
 //			if (vid.wingl.rgbabuffer[n])
 //				n=n;
 		}
+#if 1
+		{
+			// Clear the buffer first
+			glClearColor			(1, 1, 1, 1);
+			glClear					(GL_COLOR_BUFFER_BIT);
 
+			// Set up the viewport, then the matrixes
+			//vid.is_screen_portrait=true;
+			// I'm not sure the viewport rotation is necessary for fullscreen.  Tests say no.
+			//if (vid.is_screen_portrait)		eglViewport	(0, 0, vid.screen.height, vid.screen.width);// * sysplat.content_scale, vid.screen.height * sysplat.content_scale); //eglViewport	(0, 0, vid.desktop.width, vid.desktop.height);// * sysplat.content_scale, vid.screen.height * sysplat.content_scale);
+			//else							
+
+			// X Y W H
+#if PLATFORM_SCREEN_PORTRAIT !=0
+			glViewport	(0, 0, vid.screen.height, vid.screen.width);// * sysplat.content_scale, vid.screen.height * sysplat.content_scale);
+#else // !PLATFORM_SCREEN_PORTRAIT ... normal
+			glViewport	(0, 0, vid.screen.width, vid.screen.height);// * sysplat.content_scale, vid.screen.height * sysplat.content_scale);
+#endif // !PLATFORM_SCREEN_PORTRAIT
+			
+			glMatrixMode			(GL_PROJECTION); 
+			glLoadIdentity			();
+#if PLATFORM_SCREEN_PORTRAIT !=0
+			glRotatef				(270, 0, 0, 1); // Portrait rotate it.
+#endif // PLATFORM_SCREEN_PORTRAIT
+			glOrtho					(0, 1, 1, 0, -1, 1);
+			
+
+			glMatrixMode			(GL_MODELVIEW);
+			glLoadIdentity			();
+
+			// Set capabilities
+
+			glEnable				(GL_TEXTURE_2D);
+			glDisable				(GL_CULL_FACE);
+			glDisable				(GL_DEPTH_TEST);
+			glDisable				(GL_BLEND);
+			glTexEnvf				(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			glColor4f				(1, 1, 1, 1);
+
+			// Update the texture
+
+			glBindTexture			(GL_TEXTURE_2D, vid.wingl.texslot);
+			glTexSubImage2D			(GL_TEXTURE_2D, 0 /*level*/, /*offset x, y */ 0, 0, vid.wingl.w, vid.wingl.h, GL_RGBA, GL_UNSIGNED_BYTE, vid.wingl.rgbabuffer);
+
+			{ // Render the texture
+				const GLfloat verts2d[] = {0, 0, 1, 0, 1, 1, 0, 1};
+
+				const GLfloat typical_quad_texcoords[] = {
+					/* top    */ 0,				0,
+					/* right: */ vid.wingl.s1,  0,
+					/* bottom */ vid.wingl.s1,  vid.wingl.t1,
+					/* left:  */ 0,				vid.wingl.t1,
+				};
+			
+				glEnableClientState		(GL_TEXTURE_COORD_ARRAY);
+				glEnableClientState		(GL_VERTEX_ARRAY);
+				glVertexPointer			(2, GL_FLOAT, 0, verts2d);
+				glTexCoordPointer		(2, GL_FLOAT, 0, typical_quad_texcoords);
+				glDrawArrays			(GL_TRIANGLE_FAN, 0, 4);
+				glDisableClientState	(GL_VERTEX_ARRAY);
+			} // End render the texture
+		}
+#else
 		{
 			eglBindTexture		(GL_TEXTURE_2D, vid.wingl.texslot);
 			eglTexSubImage2D	(GL_TEXTURE_2D, 0 /*level*/, /*offset x, y */ 0, 0, vid.wingl.w, vid.wingl.h, GL_RGBA, GL_UNSIGNED_BYTE, vid.wingl.rgbabuffer);
@@ -806,7 +927,9 @@ void VID_Update (vrect_t *rects)
 			eglVertex2f			(0, 1);
 			eglEnd();
 		}
+#endif
 	}
+
 	// Done.  Still need to flip
 }
 
@@ -873,7 +996,7 @@ void VID_Local_Init (void)
 	{
 #define SDL_REQUIRED_MAJOR_2 2
 #define SDL_REQUIRED_MINOR_0 0
-#define SDL_REQUIRED_PATCH_4 4
+#define SDL_REQUIRED_PATCH_4 4 // Everything but Android
 		SDL_version compiled, linked;
 
 		SDL_VERSION (&compiled);
@@ -904,6 +1027,55 @@ void VID_Local_Init (void)
 
 
 }
+
+#ifdef PLATFORM_ANDROID
+
+static SDL_Window *dlw;
+static int dl_total_bytes = 0;
+void Downloader_Start (int total_bytes);
+void Downloader_Finish (void);
+cbool Downloader_Progress (void *id, int old_total, int new_total);
+
+void Downloader_Start (int total_bytes)
+{
+
+	dlw = SDL_CreateWindow(ENGINE_NAME,0, 0, 320, 240, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
+	sys_handle_t dlgl 	 = SDL_GL_CreateContext(dlw);
+	SDL_GL_MakeCurrent(dlw, dlgl);
+	//alert ("dlw %d", (int)dlw);
+	dl_total_bytes = total_bytes;
+	
+	glClearColor		(55/256, 44/256, 33/256, 1);
+	glClear				(GL_COLOR_BUFFER_BIT);
+	SDL_GL_SwapWindow	(dlw);
+}
+
+
+
+cbool Downloader_Progress (void *id, int old_total, int new_total)
+{
+	float percent = dl_total_bytes > 0 ?  (float)new_total / dl_total_bytes : 0;
+	float newpct = CLAMP(0, percent, 1);
+	
+	if (newpct - cls.download.percent > 0.005)
+	{
+		// Every once in a while update the screen
+		cls.download.percent = newpct;
+
+		glClearColor		((55 - newpct * 55/2.0)/256, (44 - newpct * 44/2.0)/256, (33 - newpct * 33/2.0)/256, 1);
+		glClear				(GL_COLOR_BUFFER_BIT);
+		SDL_GL_SwapWindow	(dlw);
+	}
+
+	return false; // Returns true to cancel, right?
+}
+
+void Downloader_Finish (void)
+{
+	SDL_DestroyWindow (dlw);
+}
+
+#endif // PLATFORM_ANDROID
 
 #endif // CORE_SDL
 #endif // NOT GLQUAKE

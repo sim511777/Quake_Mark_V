@@ -3427,7 +3427,7 @@ int perrorlinef (const char *fmt, ...)
 	// Really?
 	perror (text); // mingw doesn't recognize this as a noreturn function.  So throws noreturn error.
 
-    exit (1);   // Trick gcc
+    System_Exit (1);   // Trick gcc
 #ifndef __GNUC__ // noreturn
 
 	return 1;
@@ -3441,7 +3441,7 @@ int perrorf (const char *fmt, ...)
 	// Really?
 	perror (text); // mingw doesn't recognize this as a noreturn function.  So throws noreturn error.
 
-    exit (1);   // Trick gcc
+    System_Exit (1);   // Trick gcc
 #ifndef __GNUC__ // noreturn
 
 	return 1;

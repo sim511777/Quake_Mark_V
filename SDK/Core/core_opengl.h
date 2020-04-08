@@ -125,6 +125,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#ifndef PLATFORM_OPENGLES // Hmmmm.  I'm not sure this will survive.  I would wire the functions to glActiveTexture and glMultiTexCoord2f or whatever its name is.
 	typedef void (APIENTRY *PFNGLMULTITEXCOORD2FARBPROC) (GLenum, GLfloat, GLfloat);
 	typedef void (APIENTRY *PFNGLACTIVETEXTUREARBPROC) (GLenum);
+	typedef void (APIENTRY *PFNGLCLIENTACTIVETEXTUREARBPROC) (GLenum texture);
 //#endif // PLATFORM_OPENGL_DESKTOP
 
 #ifndef GL_CLAMP_TO_EDGE
@@ -212,7 +213,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define GL_ErrorPrint
 #endif
 
-void GL_ErrorPrintFn (const char *funcname, int linenum);
+int GL_ErrorPrintFn (const char *funcname, int linenum);
 
 
 void _GL_CheckError (const char *funcname, int linenum);

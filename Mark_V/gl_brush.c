@@ -199,7 +199,6 @@ static void R_DrawBrushModel_DrawSequentialPoly (entity_t *ent, msurface_t *s)
 	//	if (memcmp (frame.mirror_plane, ent->model->mirror_plane, sizeof(frame.mirror_plane[0])));
 	//}
 
-
 	t = R_TextureAnimation (s->texinfo->texture, currententity->frame);
 	entalpha = ENTALPHA_DECODE(currententity->alpha);
 

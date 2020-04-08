@@ -859,8 +859,8 @@ cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cb
 	//  SHELL: PLATFORM
 	///////////////////////////////////////////////////////////////////////////////
 
-	//#include "core_sdl.h"
-	#include <SDL2/SDL_syswm.h>
+	#include "core_sdl.h"
+	//#include <SDL_syswm.h>
 	static HICON gAppIcon;
 	cbool Shell_Platform_Icon_Load (void *key /*wildcard*/)
 	{

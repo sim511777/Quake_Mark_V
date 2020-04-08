@@ -310,56 +310,25 @@ void Cmd_Exec_f (lparse_t *line)
 
 	#define DEFAULT_CFG_SIZE_1914 1914
 	if (!isDedicated && !strcasecmp (line->args[1], DEFAULT_CFG)) {
-		char *s_insert = "alias +zoom_key \"valsave fov 1;valsave sensitivity 2;valsave r_viewmodel_fov 3;r_viewmodel_fov 0;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5; fov 10\" \n"
-			"alias -zoom_key \"mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;valload fov 1;valload sensitivity 2;valload r_viewmodel_fov 3\" \n"
-			;
-		Cbuf_InsertText (s_insert);
+		char *s_insert_alloc = Bundle_File_To_String_Alloc ("default_always_insert_zoom_alias.cfg");
+		DEBUG_ASSERT(s_insert_alloc);
+		//"alias +zoom_key \"valsave fov 1;valsave sensitivity 2;valsave r_viewmodel_fov 3;r_viewmodel_fov 0;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5;wait;mul fov 0.7;mul sensitivity 0.5; fov 10\" \n"
+		//"alias -zoom_key \"mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;wait;mul sensitivity 1.43;mul fov 1.43;valload fov 1;valload sensitivity 2;valload r_viewmodel_fov 3\" \n"
+		//;
+		Cbuf_InsertText (s_insert_alloc);
+
+		Bundle_File_To_String_Free (s_insert_alloc);
 
 		if (com_filesrcpak == 2 && com_filesize == DEFAULT_CFG_SIZE_1914) {
 			// Specifically id1 pak0
-
-			// Evil additions.
-			//Cbuf_InsertText (f); // Does need newline?  Nope.  Do we add or insert?
-			// What changes are we making?
-			char *soverride =
-							"unalias zoom_in  \n"
-							"unalias zoom_out \n"
-							"alias +quickgrenade \"-attack;wait;impulse 6;wait;+attack\" \n"
-							"alias -quickgrenade \"-attack;wait;bestweapon 7 8 5 3 4 2 1\" \n"
-	//						"alias bestsafe \"bestweapon 8 5 3 4 2 1\" \n" // They can make their own.
-							"bind    ALT     +strafe \n"
-							"unbind  ,       //was +moveleft \n"
-							"unbind  .       //was +moveright \n"
-							"unbind  DEL     // +lookdown \n"
-							"bind    PGDN    +lookdown   // formerly lookup  \n"
-							"bind    PGUP    +lookup \n"
-							"unbind  z       // +lookdown \n"
-							"bind    w       +forward \n"
-							"bind    a       +moveleft \n"
-							"bind    s       +back \n"
-							"bind    d       +moveright \n"
-							"unbind  c       // +movedown \n"
-							"bind    q       +moveup \n"
-							"bind    e       +movedown \n"
-							"bind    [       \"impulse 10\"	// change weapon \n"
-							"bind    ]       \"impulse 12\" // change weapon  \n"
-							"bind    MWHEELUP       \"impulse 10\"	// change weapon \n"
-							"bind    MWHEELDOWN       \"impulse 12\" // change weapon  \n"
-							"bind    .		+mlook  \n"
-							"bind    ,		+klook  \n"
-							"bind    MOUSE3 +zoom_key  \n"
-							"bind    MOUSE4 togglemenu  \n"
-
-							"unbind F11      // stupid zoom key  \n"
-							"unbind  \\      // +mlook  \n"
-							"unbind  /      // next weapon  \n"
-							"unbind  INS     // +klook  \n"
-							;
-			Cbuf_InsertText (soverride);			
+			char *s_override_alloc = Bundle_File_To_String_Alloc ("default_id1_insert_new_defaults.cfg");
+			DEBUG_ASSERT(s_override_alloc);
+			Cbuf_InsertText (s_override_alloc); // Does need newline?  Nope.
+			Bundle_File_To_String_Free (s_override_alloc);
 		}
 	}
 
-
+#ifndef PLATFORM_ANDROID // Don't have Android strategy for this.  May not even need one.
 	if (String_Does_Match_Caseless (line->args[1], CONFIG_CFG))
 	{
 		const char *check_string = va("// %s", ENGINE_FAMILY_NAME);
@@ -391,6 +360,8 @@ void Cmd_Exec_f (lparse_t *line)
 			}
 		}
 	}
+#endif // !PLATFORM_ANDROID
+
 
 /* Baker: In theory we could perform surgery on
 default.cfg Size = 1914, CRC32 = 17245 here to default
@@ -774,7 +745,7 @@ void Cmd_AddCommand (const char *cmd_name, vxcmd_t altfunction, xcmd_t stdfuncti
 
 	if (host_initialized)	// because hunk allocation would get stomped
 		if (!nehahra_active)
-			System_Error ("Cmd_AddCommand after host_initialized");
+			System_Error ("Cmd_AddCommand after host_initialized (%s)", cmd_name);
 
 // fail if the command is a variable name
 	if (Cvar_Find(cmd_name))
@@ -880,6 +851,13 @@ cbool cmd_from_server;
 VRESULT Cmd_ExecuteString (const char *text, cmd_source_t src)
 {
 	cmd_source = src;
+
+#ifdef PLATFORM_ANDROID // For now ...
+	//Con_PrintLinef ("Cmd_ExecuteString: " QUOTED_S, text);
+	// __android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "Cmd_ExecuteString: " QUOTED_S, text);
+	//alert ("Cmd_ExecuteString: " QUOTED_S, text);
+#endif // PLATFORM_ANDROID see what is going on ...
+
 	if (strlen(text) == 0)
 		return VR_OK_0; // Baker - March 8 2018 - if it is just blank, return 0.
 
@@ -917,7 +895,13 @@ VRESULT Cmd_ExecuteString (const char *text, cmd_source_t src)
 			
 			// check functions
 			if ( (cmd = Cmd_Find (line->args[0])) /**/) {
+#ifdef PLATFORM_ANDROID
+				// /*for now*/ __android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "Pre CMD execute: " QUOTED_S, text);
+#endif // PLATFORM_ANDROID
 				if (cmd->stdfunction) cmd->stdfunction (line); else qres = cmd->altfunction (line);  // Errorable function!
+#ifdef PLATFORM_ANDROID
+				// /*for now*/ __android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "Post CMD exec: " QUOTED_S, text);
+#endif // PLATFORM_ANDROID
 				break; // DONE!
 			}
 

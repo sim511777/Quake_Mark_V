@@ -156,9 +156,9 @@ const char *File_iPhone_AppFolder_URL (void);
 	NSLog (@"Pak check location %s", pak0_docs_url);
 	if (!File_Exists(pak0_docs_url)) {
 		// Need this function to do Core_Init to enable core file write functionality.
-		void Main_Central_LT (char *cmdline, void *main_window_holder_addr, cbool do_loop);
+		void Main_Central_LT (char *cmdline, sys_handle_t *pmain_window_holder_addr, cbool do_loop);
 		Main_Central_LT (sysplat.lpCmdLine, &sysplat.CoreVidWindowObj, false /* we perform loop ourselves */);
-		//#pragma message ("&sysplat.CoreVidWindowObj ?  Why the '&'?  Are we trying to track it?")
+		//#pragma message ("&sysplat.CoreVidWindowObj ?  Why the '&'?  Are we trying to track it?") .. March 21 2018 - YES
 
 		const char *pak0_app_bundle_url = va ("%s/pak0.pak", File_iPhone_BundlePath_URL());
 		NSLog (@"Unable to locate shareware at %s", pak0_docs_url);
@@ -172,10 +172,10 @@ const char *File_iPhone_AppFolder_URL (void);
 	
  #ifdef DEBUG
 //	c_strlcpy (sysplat.lpCmdLine, "+map e1m1 -noudp6 +viewsize 120"); // Right?
-	c_strlcpy (sysplat.lpCmdLine, "+scr_showpos 1"); // Right?
+//	c_strlcpy (sysplat.lpCmdLine, "+scr_showpos 1"); // Right?
 	NSLog (@"set command line");
  #else
-	c_strlcpy (sysplat.lpCmdLine, "Quake"); // Right?
+//	c_strlcpy (sysplat.lpCmdLine, "Quake"); // Right?
 	NSLog (@"set command line");
  #endif
 	
@@ -246,6 +246,9 @@ int main(int argc, char * argv[]); // Our exclusive caller.
 	sysplat.iphone_device_type	= UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? device_type_ipad : device_type_iphone;					// Let's face it.
 	if (sysplat.iphone_device_type == device_type_iphone && strcasestr(sysplat.iphone_device_type, "pod"))
 		sysplat.iphone_device_type = device_type_ipodtouch;
+	
+	if (sysplat.iphone_device_type == device_type_ipad)
+		vid.is_mobile = 2;
 	
 	sysplat.statusbar_height			= mStatusBarHeight();
 

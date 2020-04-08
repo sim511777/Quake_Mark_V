@@ -1,4 +1,4 @@
-#ifndef CORE_SDL
+#if 0 //ndef CORE_SDL
 #include "environment.h"
 #ifdef PLATFORM_WINDOWS // Has to be here, set by a header
 
@@ -316,122 +316,122 @@ PDWORD RawValuePointer (int axis)
 void Input_Local_Joy_AdvancedUpdate_f (lparse_t *unused)
 {
 
-	// called once by IN_ReadJoystick and by user whenever an update is needed
-	// cvars are now available
-	int	i;
-	DWORD	dwTemp;
+	//// called once by IN_ReadJoystick and by user whenever an update is needed
+	//// cvars are now available
+	//int	i;
+	//DWORD	dwTemp;
 
-	// initialize all the maps
-	for (i = 0 ; i < JOY_MAX_AXES ; i++)
-	{
-		joyAxisMap[i] = eAxisNone;
-		dwControlMap[i] = JOY_ABSOLUTE_AXIS;
-		pdwRawValue[i] = RawValuePointer(i);
-	}
+	//// initialize all the maps
+	//for (i = 0 ; i < JOY_MAX_AXES ; i++)
+	//{
+	//	joyAxisMap[i] = eAxisNone;
+	//	dwControlMap[i] = JOY_ABSOLUTE_AXIS;
+	//	pdwRawValue[i] = RawValuePointer(i);
+	//}
 
-	if (!joy_advanced.value)
-	{
-		// default joystick initialization
-		// 2 axes only with joystick control
-		joyAxisMap[JOY_AXIS_X] = eAxisTurn;
-		// dwControlMap[JOY_AXIS_X] = JOY_ABSOLUTE_AXIS;
-		joyAxisMap[JOY_AXIS_Y] = eAxisForward;
-		// dwControlMap[JOY_AXIS_Y] = JOY_ABSOLUTE_AXIS;
-	}
-	else
-	{
-		if (strcmp (joy_name.string, "joystick"))
-		{
-			// notify user of advanced controller
-			Con_PrintLinef (NEWLINE "%s configured" NEWLINE, joy_name.string);
-		}
+	//if (!joy_advanced.value)
+	//{
+	//	// default joystick initialization
+	//	// 2 axes only with joystick control
+	//	joyAxisMap[JOY_AXIS_X] = eAxisTurn;
+	//	// dwControlMap[JOY_AXIS_X] = JOY_ABSOLUTE_AXIS;
+	//	joyAxisMap[JOY_AXIS_Y] = eAxisForward;
+	//	// dwControlMap[JOY_AXIS_Y] = JOY_ABSOLUTE_AXIS;
+	//}
+	//else
+	//{
+	//	if (strcmp (joy_name.string, "joystick"))
+	//	{
+	//		// notify user of advanced controller
+	//		Con_PrintLinef (NEWLINE "%s configured" NEWLINE, joy_name.string);
+	//	}
 
-		// advanced initialization here
-		// data supplied by user via joy_axisn cvars
-		dwTemp = (DWORD) joy_advaxisx.value;
-		joyAxisMap[JOY_AXIS_X] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_X] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD) joy_advaxisy.value;
-		joyAxisMap[JOY_AXIS_Y] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_Y] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD) joy_advaxisz.value;
-		joyAxisMap[JOY_AXIS_Z] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_Z] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD) joy_advaxisr.value;
-		joyAxisMap[JOY_AXIS_R] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_R] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD) joy_advaxisu.value;
-		joyAxisMap[JOY_AXIS_U] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_U] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD) joy_advaxisv.value;
-		joyAxisMap[JOY_AXIS_V] = dwTemp & 0x0000000f;
-		dwControlMap[JOY_AXIS_V] = dwTemp & JOY_RELATIVE_AXIS;
-	}
+	//	// advanced initialization here
+	//	// data supplied by user via joy_axisn cvars
+	//	dwTemp = (DWORD) joy_advaxisx.value;
+	//	joyAxisMap[JOY_AXIS_X] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_X] = dwTemp & JOY_RELATIVE_AXIS;
+	//	dwTemp = (DWORD) joy_advaxisy.value;
+	//	joyAxisMap[JOY_AXIS_Y] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_Y] = dwTemp & JOY_RELATIVE_AXIS;
+	//	dwTemp = (DWORD) joy_advaxisz.value;
+	//	joyAxisMap[JOY_AXIS_Z] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_Z] = dwTemp & JOY_RELATIVE_AXIS;
+	//	dwTemp = (DWORD) joy_advaxisr.value;
+	//	joyAxisMap[JOY_AXIS_R] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_R] = dwTemp & JOY_RELATIVE_AXIS;
+	//	dwTemp = (DWORD) joy_advaxisu.value;
+	//	joyAxisMap[JOY_AXIS_U] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_U] = dwTemp & JOY_RELATIVE_AXIS;
+	//	dwTemp = (DWORD) joy_advaxisv.value;
+	//	joyAxisMap[JOY_AXIS_V] = dwTemp & 0x0000000f;
+	//	dwControlMap[JOY_AXIS_V] = dwTemp & JOY_RELATIVE_AXIS;
+	//}
 
-	// compute the axes to collect from DirectInput
-	joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
-	for (i = 0; i < JOY_MAX_AXES; i++)
-	{
-		if (joyAxisMap[i] != eAxisNone)
-			joy_flags |= dwAxisFlags[i];
-	}
+	//// compute the axes to collect from DirectInput
+	//joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
+	//for (i = 0; i < JOY_MAX_AXES; i++)
+	//{
+	//	if (joyAxisMap[i] != eAxisNone)
+	//		joy_flags |= dwAxisFlags[i];
+	//}
 }
 
 cbool Input_Local_Joystick_Startup (void)
 {
-	int		numdevs;
-	JOYCAPS		jc;
-	MMRESULT	mmr;
-
-	// verify joystick driver is present
-	if ((numdevs = joyGetNumDevs ()) == 0)
-	{
-		Con_PrintLinef (NEWLINE "joystick not found -- driver not present" NEWLINE);
-		return false;
-	}
-
-	// cycle through the joystick ids for the first valid one
-	for (mmr = -1, joy_id = 0 ; joy_id < numdevs ; joy_id++)
-	{
-		memset (&ji, 0, sizeof(ji));
-		ji.dwSize = sizeof(ji);
-		ji.dwFlags = JOY_RETURNCENTERED;
-
-		if ((mmr = joyGetPosEx(joy_id, &ji)) == JOYERR_NOERROR)
-			break;
-	}
-
-	// abort startup if we didn't find a valid joystick
-	if (mmr != JOYERR_NOERROR)
-	{
-		Con_PrintLinef ("joystick not found -- no valid joysticks (%x)", mmr);
-		return false;
-	}
-
-	// get the capabilities of the selected joystick
-	// abort startup if command fails
-	memset (&jc, 0, sizeof(jc));
-	if ((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
-	{
-		Con_PrintLinef ("joystick not found -- invalid joystick capabilities (%x)", mmr);
-		return false;
-	}
-
-	// save the joystick's number of buttons and POV status
-	joy_numbuttons = jc.wNumButtons;
-	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
-
-	// old button and POV states default to no buttons pressed
-	joy_oldbuttonstate = joy_oldpovstate = 0;
-
-	// mark the joystick as available and advanced initialization not completed
-	// this is needed as cvars are not available during initialization
-
-	joy_advancedinit = false;
-#pragma message ("Command rogues")
-	Cmd_AddCommands ((voidfunc_t)Input_Local_Joystick_Startup); // Warning because Input_Local_Joystick_Startup is cbool return not void
-
-	Con_PrintLinef (NEWLINE "joystick detected" NEWLINE);
+//	int		numdevs;
+//	JOYCAPS		jc;
+//	MMRESULT	mmr;
+//
+//	// verify joystick driver is present
+//	if ((numdevs = joyGetNumDevs ()) == 0)
+//	{
+//		Con_PrintLinef (NEWLINE "joystick not found -- driver not present" NEWLINE);
+//		return false;
+//	}
+//
+//	// cycle through the joystick ids for the first valid one
+//	for (mmr = -1, joy_id = 0 ; joy_id < numdevs ; joy_id++)
+//	{
+//		memset (&ji, 0, sizeof(ji));
+//		ji.dwSize = sizeof(ji);
+//		ji.dwFlags = JOY_RETURNCENTERED;
+//
+//		if ((mmr = joyGetPosEx(joy_id, &ji)) == JOYERR_NOERROR)
+//			break;
+//	}
+//
+//	// abort startup if we didn't find a valid joystick
+//	if (mmr != JOYERR_NOERROR)
+//	{
+//		Con_PrintLinef ("joystick not found -- no valid joysticks (%x)", mmr);
+//		return false;
+//	}
+//
+//	// get the capabilities of the selected joystick
+//	// abort startup if command fails
+//	memset (&jc, 0, sizeof(jc));
+//	if ((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
+//	{
+//		Con_PrintLinef ("joystick not found -- invalid joystick capabilities (%x)", mmr);
+//		return false;
+//	}
+//
+//	// save the joystick's number of buttons and POV status
+//	joy_numbuttons = jc.wNumButtons;
+//	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
+//
+//	// old button and POV states default to no buttons pressed
+//	joy_oldbuttonstate = joy_oldpovstate = 0;
+//
+//	// mark the joystick as available and advanced initialization not completed
+//	// this is needed as cvars are not available during initialization
+//
+//	joy_advancedinit = false;
+//#pragma message ("Command rogues")
+//	Cmd_AddCommands ((voidfunc_t)Input_Local_Joystick_Startup); // Warning because Input_Local_Joystick_Startup is cbool return not void
+//
+//	Con_PrintLinef (NEWLINE "joystick detected" NEWLINE);
 	return true;
 }
 
@@ -439,90 +439,92 @@ cbool Input_Local_Joystick_Startup (void)
 
 void Input_Local_Joystick_Commands (void)
 {
-	int	i, key_index;
-	DWORD	buttonstate, povstate;
+	//int	i, key_index;
+	//DWORD	buttonstate, povstate;
 
-	if (!joy_avail)
-		return;
+	//if (!joy_avail)
+	//	return;
 
-	// loop through the joystick buttons
-	// key a joystick event or auxillary event for higher number buttons for each state change
-	buttonstate = ji.dwButtons;
-	for (i = 0 ; i < (int)joy_numbuttons ; i++)
-	{
-		if ((buttonstate & (1 << i)) && !(joy_oldbuttonstate & (1 << i)))
-		{
-			key_index = (i < 4) ? K_JOY1 : K_AUX1;
-			//            wdo scancode down
-			Key_Event_Ex (NO_WINDOW_NULL, key_index + i, true, ASCII_0,  UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);  // ascii, unicode, shift
-		}
+	//// loop through the joystick buttons
+	//// key a joystick event or auxillary event for higher number buttons for each state change
+	//buttonstate = ji.dwButtons;
+	//for (i = 0 ; i < (int)joy_numbuttons ; i++)
+	//{
+	//	if ((buttonstate & (1 << i)) && !(joy_oldbuttonstate & (1 << i)))
+	//	{
+	//		key_index = (i < 4) ? K_JOY1 : K_AUX1;
+	//		//            wdo scancode down
+	//		Key_Event_Ex (NO_WINDOW_NULL, key_index + i, true, ASCII_0,  UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);  // ascii, unicode, shift
+	//	}
 
-		if (!(buttonstate & (1 << i)) && (joy_oldbuttonstate & (1 << i)))
-		{
-			key_index = (i < 4) ? K_JOY1 : K_AUX1;
-			//            wdo scancode down
-			Key_Event_Ex (NO_WINDOW_NULL, key_index + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	//	if (!(buttonstate & (1 << i)) && (joy_oldbuttonstate & (1 << i)))
+	//	{
+	//		key_index = (i < 4) ? K_JOY1 : K_AUX1;
+	//		//            wdo scancode down
+	//		Key_Event_Ex (NO_WINDOW_NULL, key_index + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 
-		}
-	}
-	joy_oldbuttonstate = buttonstate;
+	//	}
+	//}
+	//joy_oldbuttonstate = buttonstate;
 
-	if (joy_haspov)
-	{
-		// convert POV information into 4 bits of state information
-		// this avoids any potential problems related to moving from one
-		// direction to another without going through the center position
-		povstate = 0;
-		if(ji.dwPOV != JOY_POVCENTERED)
-		{
-			if (ji.dwPOV == JOY_POVFORWARD)
-				povstate |= 0x01;
-			if (ji.dwPOV == JOY_POVRIGHT)
-				povstate |= 0x02;
-			if (ji.dwPOV == JOY_POVBACKWARD)
-				povstate |= 0x04;
-			if (ji.dwPOV == JOY_POVLEFT)
-				povstate |= 0x08;
-		}
-		// determine which bits have changed and key an auxillary event for each change
-		for (i=0 ; i<4 ; i++)
-		{
-			if ((povstate & (1 << i)) && !(joy_oldpovstate & (1 << i)))
-				Key_Event_Ex (NO_WINDOW_NULL, K_AUX29 + i, true, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
-			if (!(povstate & (1 << i)) && (joy_oldpovstate & (1 << i)))
-				Key_Event_Ex (NO_WINDOW_NULL, K_AUX29 + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	//if (joy_haspov)
+	//{
+	//	// convert POV information into 4 bits of state information
+	//	// this avoids any potential problems related to moving from one
+	//	// direction to another without going through the center position
+	//	povstate = 0;
+	//	if(ji.dwPOV != JOY_POVCENTERED)
+	//	{
+	//		if (ji.dwPOV == JOY_POVFORWARD)
+	//			povstate |= 0x01;
+	//		if (ji.dwPOV == JOY_POVRIGHT)
+	//			povstate |= 0x02;
+	//		if (ji.dwPOV == JOY_POVBACKWARD)
+	//			povstate |= 0x04;
+	//		if (ji.dwPOV == JOY_POVLEFT)
+	//			povstate |= 0x08;
+	//	}
+	//	// determine which bits have changed and key an auxillary event for each change
+	//	for (i=0 ; i<4 ; i++)
+	//	{
+	//		if ((povstate & (1 << i)) && !(joy_oldpovstate & (1 << i)))
+	//			Key_Event_Ex (NO_WINDOW_NULL, K_AUX29 + i, true, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	//		if (!(povstate & (1 << i)) && (joy_oldpovstate & (1 << i)))
+	//			Key_Event_Ex (NO_WINDOW_NULL, K_AUX29 + i, false, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 
-		}
-		joy_oldpovstate = povstate;
-	}
+	//	}
+	//	joy_oldpovstate = povstate;
+	//}
 }
 
 cbool Input_Local_Joystick_Read (void)
 {
-	memset (&ji, 0, sizeof(ji));
+	//memset (&ji, 0, sizeof(ji));
 
-	ji.dwSize = sizeof(ji);
-	ji.dwFlags = joy_flags;
+	//ji.dwSize = sizeof(ji);
+	//ji.dwFlags = joy_flags;
 
-	if (joyGetPosEx(joy_id, &ji) == JOYERR_NOERROR)
-	{
-		// this is a hack -- there is a bug in the Logitech WingMan Warrior DirectInput Driver
-		// rather than having 32768 be the zero point, they have the zero point at 32668
-		// go figure -- anyway, now we get the full resolution out of the device
-		if (joy_wwhack1.value != 0.0)
-			ji.dwUpos += 100;
+	//if (joyGetPosEx(joy_id, &ji) == JOYERR_NOERROR)
+	//{
+	//	// this is a hack -- there is a bug in the Logitech WingMan Warrior DirectInput Driver
+	//	// rather than having 32768 be the zero point, they have the zero point at 32668
+	//	// go figure -- anyway, now we get the full resolution out of the device
+	//	if (joy_wwhack1.value != 0.0)
+	//		ji.dwUpos += 100;
 
-		return true;
-	}
-	else
-	{
-		// read error occurred
-		// turning off the joystick seems too harsh for 1 read error,\
-		// but what should be done?
-		// Con_PrintLinef ("IN_ReadJoystick: no response");
-		// joy_avail = false;
+	//	return true;
+	//}
+	//else
+	//{
+	//	// read error occurred
+	//	// turning off the joystick seems too harsh for 1 read error,\
+	//	// but what should be done?
+	//	// Con_PrintLinef ("IN_ReadJoystick: no response");
+	//	// joy_avail = false;
+	//	return false;
+	//}
 		return false;
-	}
+
 }
 
 
@@ -538,6 +540,13 @@ void Input_Local_Init (void)
 {
 
 }
+
+void Input_Local_Joystick_Move (usercmd_t *cmd)
+{
+
+}
+
+
 
 void Input_Local_Shutdown (void)
 {
@@ -573,4 +582,4 @@ void Input_Local_Deactivate (void)
 
 #endif // PLATFORM_WINDOWS
 
-#endif // !CORE_SDL
+#endif // 0 //!CORE_SDL

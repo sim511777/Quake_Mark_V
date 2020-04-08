@@ -43,9 +43,9 @@ CMD_DEF (CL_InitInput, DEP_CLIENT  , "cl_fullpitch"              , IN_PQ_Full_Pi
 CMD_DEF (Input_Init  , DEP_CLIENT  , "force_centerview"          , Input_Force_CenterView_f	, "Center the player's screen."			)
 CMD_DEF (Input_Init  , DEP_CLIENT  , "in_info"                   , Input_Info_f				, "Internal input information."			)
 
-#ifdef _WIN32
-CMD_DEF ((voidfunc_t)Input_Local_Joystick_Startup, DEP_CLIENT  , "joyadvancedupdate"         , Input_Local_Joy_AdvancedUpdate_f, "(TODO: Unknown."		)
-#endif // _WIN32
+//#ifdef _WIN32
+//CMD_DEF ((voidfunc_t)Input_Local_Joystick_Startup, DEP_CLIENT  , "joyadvancedupdate"         , Input_Local_Joy_AdvancedUpdate_f, "(TODO: Unknown."		)
+//#endif // _WIN32
 
 #ifdef GLQUAKE_RENDERER_SUPPORT
 CMD_DEF (R_Init_Local, DEP_GL      , "envmap"				     , R_Envmap_f				, "Create an environmental map.  When this command is executed it will take environmental information in each of the 6 directions. The files will be named env0.rgb through env5.rgb and they will be stored in the id1 directory."			)

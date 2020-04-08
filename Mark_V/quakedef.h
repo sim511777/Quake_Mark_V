@@ -41,16 +41,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#define	QUAKE_GAME			// as opposed to utilities .. Baker: Moved to project level define
 
-#define	QUAKE_VERSION			1.09
-#define ENGINE_FAMILY_NAME		"Mark V"		// Config.cfg stamp
-#define ENGINE_VERSION			1.81
-#define	ENGINE_BUILD			1081			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
+#define	QUAKE_VERSION					1.09
+#define ENGINE_FAMILY_NAME				"Mark V"		// Config.cfg stamp
+#define ENGINE_VERSION					1.98
+#define	ENGINE_BUILD					1098			// null.mdl carrying and effect in Nehahra NEH2M1 fire near Ogre + Fiend.  Does not render.
 
 
 #define MOD_PROQUAKE_1					0x01
 #define PROQUAKE_SERVER_VERSION_3_30	3.30
 #define PROQUAKE_CLIENT_VERSION_5_00	5.00
 #define MAX_EFFECTIVE_WEAPON_COUNT_25	25
+#define QUAKE_NUM_PLAYER_COLORS_16		16
 
 #define	MAXPRINTMSG_4096		4096
 
@@ -59,13 +60,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	DEFAULT_PROGS_DAT_NAME	"progs.dat"				// directory to look in by default
 #define	CONFIG_CFG				"config.cfg"			// config name
 #define	DEFAULT_CFG				"default.cfg"			// config name
+#define	HISTORY_FILE_NAME		"history.txt"			// History file.
 #define	DOWNLOADS_FOLDER		"id1/_library"			// config name
 #define	AUTOEXEC_CFG			"autoexec.cfg"			// autoexec.cfg name
 #define	SETMUSIC_CFG			"setmusic.cfg"			// setmusic.cfg name, executed on any gamedir change and startup.
 #define	SETMUSIC_CFG_FULL		"music/" SETMUSIC_CFG	// setmusic.cfg name, executed on any gamedir change and startup.
 #define ENGINE_URL				"http://quakeone.com/markv/"
 
-#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_IOS)
+#define ANDRROID_SDCARD_DATA	"/sdcard/Quake"
+
+
+
+// On Android we could use SDL_AndroidGetExternalStoragePath()
+// But I think is too complicated for the user.
+
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_IOS) || defined(PLATFORM_ANDROID)
 	#define MEM_DEFAULT_MEMORY		(256 * 1024 * 1024)		//  256 MB
 	#define MEM_DEFAULT_DEDICATED	( 64 * 1024 * 1024)		//   64 MB  ... No textures, so shouldn't require a whole ton.  But better to be safe at 64 than risky at 32.
 	#define	MEM_DYNAMIC_SIZE		(  4 * 1024 * 1024)		//    4 MB
@@ -143,6 +152,7 @@ extern fn_set_t qfunction_set;
 
 #if defined(_WIN32) && !defined(CORE_SDL)
     #define DIRECT_SOUND_QUAKE
+	#define DIRECT_INPUT_QUAKE
 #endif
 
 // Baker: The following are 2 standard features that CodeBlocks + MinGW (gcc compiler) can't compile.
@@ -341,7 +351,7 @@ typedef enum { ENUM_FORCE_INT_GCC_ (MAX_MARK_V)
 	// Quakespasm increased for an upcoming map (ijed?)
 
 	MAX_MARK_V_ENT_LEAFS			= 32,	  MAX_FITZQUAKE_WINQUAKE_ENT_LEAFS = 16,
-	MAX_MARK_V_EFRAGS				= 4096,
+	MAX_MARK_V_EFRAGS				= 8192,	// Baker: 20180401 increased from 4096
 	MAX_MARK_V_VISEDICTS			= 4096, // Rubicon Rumble
 
 // End Mark V limits
@@ -489,9 +499,10 @@ typedef struct
 	char		**argv;
 	void		*membase;
 	int			memsize;
+	cbool		first_time_init;
 } host_parms_t;
 
-int Main_Central (char *cmdline, void *main_window_holder_addr, cbool do_loop);
+int Main_Central (char *cmdline, sys_handle_t *pmain_window_holder_addr, cbool do_loop);
 
 #include "arch_def.h"
 #include "buffers.h"

@@ -166,6 +166,18 @@ keyname_t keynames[] =
 	{"AUX31", K_AUX31},
 	{"AUX32", K_AUX32},
 
+	{ "LTHUMB",			K_LTHUMB            },
+	{ "RTHUMB",			K_RTHUMB            },
+	{ "LSHOULDER",		K_LSHOULDER         },
+	{ "RSHOULDER",		K_RSHOULDER         },
+	{ "ABUTTON",		K_ABUTTON           },
+	{ "BBUTTON",		K_BBUTTON           },
+	{ "XBUTTON",		K_XBUTTON           },
+	{ "YBUTTON",		K_YBUTTON           },
+	{ "LTRIGGER",		K_LTRIGGER          },
+	{ "RTRIGGER",		K_RTRIGGER          },
+
+
 	{"PAUSE", K_PAUSE},
 
 	{"MWHEELUP", K_MOUSEWHEELUP},
@@ -174,6 +186,19 @@ keyname_t keynames[] =
 	{"SEMICOLON", ';'},	// because a raw semicolon separates commands
 	{"BACKQUOTE", '`'},	// allow binding of backquote/tilde to toggleconsole after unbind all
 	{"TILDE", '`'},		// allow binding of backquote/tilde to toggleconsole after unbind all
+
+	{"TILDE", '`'},		// allow binding of backquote/tilde to toggleconsole after unbind all
+
+	{ "JOY_LTHUMB",			K_LTHUMB            },
+	{ "JOY_RTHUMB",			K_RTHUMB            },
+	{ "JOY_LSHOULDER",		K_LSHOULDER         },
+	{ "JOY_RSHOULDER",		K_RSHOULDER         },
+	{ "JOY_ABUTTON",		K_ABUTTON           },
+	{ "JOY_BBUTTON",		K_BBUTTON           },
+	{ "JOY_XBUTTON",		K_XBUTTON           },
+	{ "JOY_YBUTTON",		K_YBUTTON           },
+	{ "JOY_LTRIGGER",		K_LTRIGGER          },
+	{ "JOY_RTRIGGER",		K_RTRIGGER          },
 
 	{NULL, 0 } // Baker: Note that this list has null termination
 };
@@ -895,8 +920,8 @@ const char *Key_ListExport (void)
 	for (i = wanted, kn = &keynames[i]; kn->name ; kn ++, i++)
 	{
 		// Baker ignore single character keynames.
-		if (memcmp(kn->name, "JOY", 3)==0)
-			continue; // Baker --- Do not want
+		//if (memcmp(kn->name, "JOY", 3)==0)
+		//	continue; // Baker --- Do not want
 		if (memcmp(kn->name, "AUX", 3)==0)
 			continue; // Baker --- Do not want
 
@@ -933,6 +958,7 @@ const char *Key_GetBinding (int keynum)
 	case_break QKEY_TABLET_JUMP:				return "+jump"; // impulse 12 is the one with less support.
 	case_break QKEY_TABLET_TURNLEFT:			return "+left";
 	case_break QKEY_TABLET_TURNRIGHT:			return "+right";
+	case_break QKEY_TABLET_SHOWSCORES:			return "+showscores";
 
 	case_break KEYMAP_HARDWARE_TILDE_511:		return "toggleconsole";
 	}
@@ -997,7 +1023,7 @@ void Key_SetBinding (int keynum, const char *binding)
 #ifdef SUPPORTS_KEYBIND_FLUSH
 void Keys_Flush_ServerBinds (void)
 {
-	int j; for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; j++) {
+	int j; for (j = 0; j < KEYMAP_Q_USABLE_MAX_494 /* Mar 13 2018 touch screen*/; j++) {
 		if (!keybindings[j].server)
 			continue; // No bind
 		Z_Free (keybindings[j].server);
@@ -1050,7 +1076,7 @@ void Key_Unbindall_f (lparse_t *line)
 		Con_WarningLinef ("Server sent unbindall command.  Ignoring.");
 		return;
 	}
-	for (i = 0 ; i < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; i++)
+	for (i = 0 ; i < KEYMAP_Q_USABLE_MAX_494 /* Mar 13 2018 touch screen*/; i++)
 	{
 #if !defined(SUPPORTS_KEYBIND_FLUSH)
 		if (keybindings[i])
@@ -1070,7 +1096,7 @@ void Key_Bindlist_f (void)
 	int	k, count;
 
 	count = 0;
-	for (k = 0; k < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/ ; k ++)
+	for (k = 0; k < KEYMAP_Q_USABLE_MAX_494 /* Mar 13 2018 touch screen*/ ; k ++)
 	{
 		const char *binding = Key_GetBinding (k);
 		const char *permanent = (keybindings[k].server && keybindings[k].real) ? va ("(User: " QUOTED_S ")",  keybindings[k].real) : "";
@@ -1155,7 +1181,7 @@ void Key_WriteBindings (FILE *f)
 	// unbindall before loading stored bindings:
 	if (cfg_unbindall.value)
 		fprintlinef (f, "unbindall");
-	for (i = 0; i < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; i++)
+	for (i = 0; i < KEYMAP_Q_USABLE_MAX_494 /* Mar 13 2018 touch screen*/; i++)
 	{
 #ifdef SUPPORTS_KEYBIND_FLUSH
 		// Always use real when writing.  Never the server bind.
@@ -1351,13 +1377,36 @@ void Key_Event_Ex (void *ptr, key_scancode_e scancode, cbool down, int ascii, in
 //	Con_PrintLinef ("Scancode: %c %d  ascii %c %d", CLAMP(32, scancode, 127), scancode, CLAMP(32, ascii, 127), ascii);
 	if (scancode) {
 		// Run Key_Event but tell it to screen out menu/mm/console if in_keymap set.
+
+		if (vid.is_mobile && scancode == K_GRAVE && key_dest == key_game && vid.mobile_bluetooth_keyboard_entry == false) {
+			// Entering the console via bluetooth keyboard using tilde hides on screen controls.
+			vid.mobile_bluetooth_keyboard_entry = true;
+			Con_PrintLine ();
+			
+			Con_PrintLinef ("%s", Con_Quakebar(20));
+			Con_PrintLinef ("%cKeyboard console entry: game controls hidden.", 2);
+			Con_PrintLinef ("Using top-left triangle in-game will restore.");
+			Con_PrintLinef ("%s", Con_Quakebar(20));
+		}
+
 		desto = Key_Event (scancode, down, !(!in_keymap.value || vid.is_mobile));
 		if (!desto) return; 	// Console processed everything, so get out.
 		if (!down)  return;		// Keyups only go to game.
 
 		// We are considering passing our scancode to the menu/console.  If it's ascii, don't!
+
+#ifndef PLATFORM_ANDROID // Theory March 22 2018 - Works!
+// Android SDL isn't giving us "SDL_TEXTINPUT" which is
+// the unicode translation of what the keyboard wants the character to be.
+// Normally this function receives either a scancode or a unicode + ascii pair.
+//   If we have a scancode, that is for a KEYUP/KEYDOWN for every other
+//   operating system we just get out.
+// But for android, we need to also treat it as a character emitted.
+// (Since Quake doesn't do unicode, we take the 32-126 ascii and use that).
+
 		if (in_range (SPACE_CHAR_32, scancode, MAX_ASCII_PRINTABLE_126))
 			return;
+#endif // PLATFORM_ANDROID
 
 		// Send this to console or menu
 		sendkey = scancode;
@@ -1662,8 +1711,8 @@ int Key_Event (int key, cbool down, int special)
 			kb = keybindings[key];
 #endif // !SUPPORTS_KEYBIND_FLUSH
 			if (kb && kb[0] == '+')
-			{
-				c_snprintf2 (cmd, "-%s %d\n", kb + 1, key);
+			{	
+				c_snprintf1 (cmd, "-%s\n", kb + 1); // March 23 2018 - it was appending key scancode # to the string
 				Cbuf_AddText (cmd);
 			}
 #ifdef PLATFORM_OSX // Crusty Mac
@@ -1679,7 +1728,7 @@ int Key_Event (int key, cbool down, int special)
 #endif // !SUPPORTS_KEYBIND_FLUSH
 				if (kb && kb[0] == '+')
 				{
-					c_snprintf2 (cmd, "-%s %d\n", kb + 1, key);
+					c_snprintf1 (cmd, "-%s\n", kb + 1); // March 23 2018
 					Cbuf_AddText (cmd);
 				}
 			}
@@ -1736,7 +1785,7 @@ int Key_Event (int key, cbool down, int special)
 			{	// button commands add keynum as a parm
 				//c_snprintf2 (cmd, "%s %d" NEWLINE, kb, key);
 				//Cbuf_AddTextLinef (cmd);
-				Cbuf_AddTextLinef ("%s %d", kb, key);
+				Cbuf_AddTextLinef ("%s", kb); // March 23 2018
 			}
 			else
 			{

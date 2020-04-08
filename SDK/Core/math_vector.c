@@ -400,7 +400,7 @@ void ZAngleTest (void)
 		Mat4_Translate	(&bob, 0,1,0);			Mat4_Translate	(&bob2, 0,1,0);	
 		alert ("%s vs. %s", Mat4_String (&bob), Mat4_String (&bob2));
 		alert ("%s vs. %s", _angles (&bob.m16[12]), _angles (&bob2.m16[12]));
-		exit (0);
+		System_Exit (0);
 		Mat4_Translate	(&bob2, 1,1,1);
 		Mat4_Compare (&bob, &bob2);
 		Mat4_Compare (&bob, &bob2);
@@ -427,8 +427,7 @@ void ZAngleTest (void)
 	VectorSet (angles, 45, 0, 45); 		ZAngleVectorsFast (angles, t1.forward, t1.right, t1.up); 
 	VectorSet (angles, -75, 0, 90);		ZAngleVectorsFast (angles, t1.forward, t1.right, t1.up); 
 
-	alert("pletye");
-	exit (0);
+	System_Exit (0);
 }
 
 

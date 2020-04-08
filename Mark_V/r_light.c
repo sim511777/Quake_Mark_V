@@ -98,6 +98,7 @@ void R_Init_FlashBlend_Bubble (void)
 	}
 }
 
+// This is flashblend shell only
 void R_RenderDlight (dlight_t *light)
 {
 	int		i, j;

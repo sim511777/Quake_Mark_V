@@ -157,8 +157,10 @@ void R_DrawSpriteModel (entity_t *e)
 	}
 
 	//johnfitz: offset decals
+#ifndef DIRECT3D9_WRAPPER // Per mh as workaround for hipnotic decals rendering through walls April 25 2018
 	if (psprite->type == SPR_ORIENTED)
 		GL_PolygonOffset (OFFSET_DECAL);
+#endif // Per mh as workaround for hipnotic decals rendering through walls April 25 2018
 
 	eglColor3f (1,1,1);
 
@@ -193,8 +195,10 @@ void R_DrawSpriteModel (entity_t *e)
 	eglDisable (GL_ALPHA_TEST);
 
 	//johnfitz: offset decals
+#ifndef DIRECT3D9_WRAPPER // Per mh as workaround for hipnotic decals rendering through walls April 25 2018
 	if (psprite->type == SPR_ORIENTED)
 		GL_PolygonOffset (OFFSET_NONE);
+#endif // Per mh as workaround for hipnotic decals rendering through walls April 25 2018
 }
 
 #endif // GLQUAKE specific

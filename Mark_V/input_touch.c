@@ -30,8 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Touch stamps
 //
 
-#define ESCAPE_BOX_COLLISION(x, y)  RECT_HIT (focus0.escape_box, x, y)
-
 cbool Touch_Button_Hit_Set_Stamp (touch_stamp_t *te, int x, int y)
 {
 	DEBUG_ASSERT (te->touch_button_idx == IDX_NOT_FOUND_NEG1);
@@ -40,6 +38,7 @@ cbool Touch_Button_Hit_Set_Stamp (touch_stamp_t *te, int x, int y)
 		return false; // REJECTED.  DO NOTHING.  HIT ESCAPE.
 	}
 
+	// We hit even showscores
 	{ int n; for (n = touch_button_forward_left_1; n < touch_button_COUNT; n++) {
 		touch_button_t *btn = &focus0.touch_buttons[n];
 		if (focus0.touch_buttons[n].r.width) {

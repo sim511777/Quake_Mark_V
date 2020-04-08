@@ -159,9 +159,17 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot) // Save
 LOCAL_EVENT (Enter_f) (lparse_t *unused) // Save
 {
 	// Baker: Deny save access if sv not active, intermission, multiplayer.  Remember, you can't save a demo!
-	if (!sv.active)							return;
-	if (cl.intermission)					return;
-	if (svs.maxclients_internal != 1)		return;
+	if (!sv.active) {
+		Mnu_Dialog_Modal_Alert (NULL /*ok*/, "Not hosting a game!");
+		return;
+	}
+
+	if (cl.intermission) {
+		Mnu_Dialog_Modal_Alert (NULL /*ok*/, "Can't save during intermission!");
+		return;
+	}
+
+	//if (svs.maxclients_internal != 1)		return;
 	
 	Key_SetDest  (key_menu); Menu_SetDest (LOCAL_MENU_STATE);
 	

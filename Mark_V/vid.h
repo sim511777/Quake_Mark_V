@@ -214,10 +214,11 @@ typedef struct
 	
 	
 // Brave New World
-	cbool			is_mobile;				// Probably prevent from vid_restart?
+	int				is_mobile;							// Probably prevent from vid_restart?  2 = iPad for UI size
 	cbool			is_mobile_ios_keyboard;
 	cbool			is_screen_portrait;
-	cbool			mobile_keyup;
+	cbool			mobile_keyup;						// IOS uses
+	cbool			mobile_bluetooth_keyboard_entry;
 
 	int				touch_screen_game_controls_on;		// Recalc with every Input_Think just like "have mouse"
 	cbool			touch_screen_active;
@@ -253,21 +254,24 @@ typedef enum { ENUM_FORCE_INT_GCC_(touch_button)
 	touch_button_turnleft,
 	touch_button_turnright,
 
+	touch_button_showscores,
+
 	touch_button_COUNT					// More of a maxnum, but whatever ...
 } touch_button_e;
 
 
-#define QKEY_TABLET_FORWARD_LEFT_500	499 + touch_button_forward_left_1
-#define QKEY_TABLET_FORWARD				499 + touch_button_forward // 501 ...
-#define QKEY_TABLET_FORWARD_RIGHT		499 + touch_button_forward_right
-#define QKEY_TABLET_LEFT				499 + touch_button_left // 503
-#define QKEY_TABLET_BACK				499 + touch_button_back
-#define QKEY_TABLET_RIGHT				499 + touch_button_right // 505
-#define QKEY_TABLET_ATTACK				499 + touch_button_attack
-#define QKEY_TABLET_NEXT_WEAPON			499 + touch_button_next_weapon // 507
-#define QKEY_TABLET_JUMP				499 + touch_button_jump // 508
-#define QKEY_TABLET_TURNLEFT			499 + touch_button_turnleft // 509
-#define QKEY_TABLET_TURNRIGHT			499 + touch_button_turnright // 510
+#define QKEY_TABLET_FORWARD_LEFT_500	494 + touch_button_forward_left_1 // 495
+#define QKEY_TABLET_FORWARD				494 + touch_button_forward // 496 ...
+#define QKEY_TABLET_FORWARD_RIGHT		494 + touch_button_forward_right
+#define QKEY_TABLET_LEFT				494 + touch_button_left // 498
+#define QKEY_TABLET_BACK				494 + touch_button_back
+#define QKEY_TABLET_RIGHT				494 + touch_button_right // 500
+#define QKEY_TABLET_ATTACK				494 + touch_button_attack
+#define QKEY_TABLET_NEXT_WEAPON			494 + touch_button_next_weapon // 502
+#define QKEY_TABLET_JUMP				494 + touch_button_jump // 503
+#define QKEY_TABLET_TURNLEFT			494 + touch_button_turnleft // 504
+#define QKEY_TABLET_TURNRIGHT			494 + touch_button_turnright // 515
+#define QKEY_TABLET_SHOWSCORES			494 + touch_button_showscores // 515
 
 
 
@@ -299,6 +303,7 @@ typedef struct {
 	vec3_t			player_org, player_angles;		// We eventually want double click
 
 	int				menu_viewport[4];
+	crect_t			touch_sbar;
 	glmatrix		menu_projection;
 	glmatrix		menu_modelview;
 
@@ -310,6 +315,15 @@ typedef struct {
 
 // Tablet hotspots
 	crect_t			escape_box;								// Super hotspot.
+
+	cbool			in_left;								// Do we show "left" button for sliders.
+	crect_t			menu_up;								// Super hotspot.
+	crect_t			menu_left;								// Super hotspot.
+	crect_t			menu_enter;								// Super hotspot.
+	crect_t			menu_down;								// Super hotspot.
+
+	crect_t			menu_right;								// Super hotspot.
+	crect_t			menu_backsp;							// Super hotspot.
 
 	struct {
 		void		*touch_stamp;

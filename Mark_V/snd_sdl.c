@@ -58,9 +58,14 @@ int SNDDMA_Init(void)
 	desired.samples = BUF_SIZE;
 	desired.callback = paint_audio;
 
+	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) { // March 21 2018 - Added this 
+		Con_SafePrintLinef ("Could not initialize SDL Audio: %s", SDL_GetError()); // Too harsh?
+		return 0;
+	}
+
 	/* Open the audio device */
 	if ( SDL_OpenAudio(&desired, &obtained) < 0 ) {
-        	Con_PrintLinef ("Couldn't open SDL audio: %s", SDL_GetError());
+        Con_SafePrintLinef ("Couldn't open SDL audio: %s", SDL_GetError());
 		return 0;
 	}
 
@@ -84,8 +89,7 @@ int SNDDMA_Init(void)
 			/* Not supported -- force SDL to do our bidding */
 			SDL_CloseAudio();
 			if ( SDL_OpenAudio(&desired, NULL) < 0 ) {
-        			Con_PrintLinef ("Couldn't open SDL audio: %s",
-							SDL_GetError());
+        		Con_SafePrintLinef ("Couldn't open SDL audio: %s", SDL_GetError()); // March 21 2018 - To SafePrintf
 				return 0;
 			}
 			memcpy(&obtained, &desired, sizeof(desired));
@@ -99,7 +103,7 @@ int SNDDMA_Init(void)
 	shm->samplebits = (obtained.format & 0xFF);
 	shm->speed = obtained.freq;
 	shm->channels = obtained.channels;
-	shm->samples = obtained.samples*shm->channels;
+	shm->samples = obtained.samples * shm->channels;
 	shm->samplepos = 0;
 	shm->submission_chunk = 1;
 	shm->buffer = NULL;
@@ -125,8 +129,24 @@ void SNDDMA_Shutdown(void)
 	}
 }
 
-void    SNDDMA_Submit (void)
+void SNDDMA_LockBuffer (void)
 {
+	SDL_LockAudio ();
+}
+
+void SNDDMA_Submit (void)
+{
+	SDL_UnlockAudio();
+}
+
+void SNDDMA_BlockSound (void)
+{
+	SDL_PauseAudio(1);
+}
+
+void SNDDMA_UnblockSound (void)
+{
+	SDL_PauseAudio(0);
 }
 
 #endif // CORE_SDL

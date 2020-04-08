@@ -32,8 +32,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <SDL2/SDL.h>
 
 #include <core_windows.h> // LLWinKeyHook
-#else
-#include <SDL2/SDL.h>
+#else // Not _MSC_VER
+	// We are using /opt/local/include
+	#ifdef PLATFORM_ANDROID
+		#include <SDL.h>
+	#else
+        #include <SDL.h>
+	#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -74,5 +79,10 @@ cbool Shell_Platform_Icon_Window_Set (sys_handle_t cw);
 cbool Shell_Platform_Icon_Load (void *key /*wildcard*/);
 
 cbool SDLQ_IN_ReadInputMessages (void *_sdl_event);
+
+
+#define SDL_CONTROLLER_BUTTON_LEFTTRIGGER		15
+#define SDL_CONTROLLER_BUTTON_RIGHTTRIGGER		16
+#define SDL_CONTROLLER_BUTTON_COUNT				SDL_CONTROLLER_BUTTON_RIGHTSHOULDER2
 
 #endif // __SDLQUAKE_H__

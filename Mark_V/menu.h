@@ -83,9 +83,12 @@ void Mnu_OnScreenKeyboard_PromptText (const char *prompt, cvar_t *cvar_to_set, c
 #define QUAKE_GRAY_6		6
 #define QUAKE_BLACKISH_16	16
 //#define QUAKE_COLOR_17	17
+#define QUAKE_COLOR_19 		19
 #define QUAKE_TAN_125		125
 #define QUAKE_YELLOW_111	111
 #define QUAKE_BROWN_169		169
+#define QUAKE_COLOR_171 	171
+#define QUAKE_BROWN_172		172
 #define QUAKE_RED_251		251
 #define QUAKE_WHITE_254		254
 

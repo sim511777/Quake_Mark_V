@@ -596,14 +596,23 @@ void SCR_DrawFPS (void)
 				Draw_StringEx (x, y, st);  // y += 8;
 			}
 
-			Draw_SetCanvas (CANVAS_TOPRIGHT);
 			
+#ifdef GLQUAKE
+			Draw_SetCanvas (CANVAS_DEFAULT_CONSCALE);
+#else
+			Draw_SetCanvas (CANVAS_TOPRIGHT);
+#endif
 			if (scr_showpos.value) {
 				c_snprintf3 (st, "@ %3.0f %3.0f %3.0f", 
 					cl_entities[cl.viewentity_player].origin[0], 
 					cl_entities[cl.viewentity_player].origin[1], 
 					cl_entities[cl.viewentity_player].origin[2]);
+				
+#ifdef GLQUAKE
+				x = vid.conwidth - 8 - (strlen(st) * 8);
+#else
 				x = 320 - 8 - (strlen(st) * 8);
+#endif
 				Draw_String (x, y, st);  y += 8;
 			}
 
@@ -613,15 +622,27 @@ void SCR_DrawFPS (void)
 				float	vspeed		= cl.velocity[2];
 
 				c_snprintf1 (st, "speed: %4.0f", speed);
+				
+#ifdef GLQUAKE
+				x = vid.conwidth - 8 - (strlen(st) * 8);
+#else
 				x = 320 - 8 - (strlen(st) * 8);
+#endif
 				Draw_String (x, y, st);  y += 8;
 			}
 
 
 			if (scr_showfps.value) {
 				c_snprintf1 (st, "%4.0f", lastfps);
+				
+				
+#ifdef GLQUAKE
+				x = vid.conwidth - 8 - (strlen(st) * 8);
+#else
 				x = 320 - 8 - (strlen(st) * 8);
+#endif
 				Draw_String (x, y, st);  y += 8;
+				//Draw_String (100, 700, st);  y += 8;
 			}
 
 
@@ -1021,6 +1042,7 @@ SCR_ScreenShot_f
 */
 void SCR_ScreenShot_f (lparse_t *line)
 {
+#if PLATFORM_MOBILE == 0 // NOT
 	char basefilename[MAX_QPATH_64];
 	char *file_url;
 	int     i;
@@ -1100,6 +1122,7 @@ takeshot:
 		else Con_PrintLinef ("SCR_ScreenShot_f: Couldn't create a PNG file");
 		free (buffer);
 	}
+#endif // !PLATFORM_MOBILE
 }
 
 
@@ -1416,9 +1439,11 @@ WARNING: be very careful calling this from elsewhere, because the refresh
 needs almost the entire 256k of stack space!
 ==================
 */
+//#include "sdlquake.h"
 void SCR_UpdateScreen (void)
 {
 	static cbool zero_sized	= false;
+//	__android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "SCREEN UPDATE 1");
 	
 
 	// Baker:  Dedicated can find its way here
@@ -1448,7 +1473,6 @@ void SCR_UpdateScreen (void)
 	if (!scr_initialized || !console1.initialized)
 		return;				// not initialized yet
 
-	
 	VID_BeginRendering (&clx, &cly, &clwidth, &clheight);
 
 #ifdef GLQUAKE_SCALED_DRAWING

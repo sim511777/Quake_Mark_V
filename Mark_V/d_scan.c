@@ -124,7 +124,7 @@ int				izi, izistep;
 void D_DrawTurbulent8SpanAlpha (void)
 {
 	int		sturb, tturb;
-	unsigned char	temp, temp2;
+	unsigned char	temp, temp2, temp3;
 	do
 	{
 		if (*pz <= (izi >> 16))
@@ -134,8 +134,14 @@ void D_DrawTurbulent8SpanAlpha (void)
 			
 			temp = *(r_turb_pbase + (tturb<<6) + sturb);							
 			temp2 = ((int)r_turb_pdest & 3);
-			if (temp2 == 0 || temp2 == 2) // Baker's easy stipple method
-				*r_turb_pdest = *(r_turb_pbase + (tturb<<6) + sturb);
+			temp3 = ((int)r_turb_pdest & 256);
+			if (temp3) {
+				if (temp2 == 0 || temp2 == 2) // Baker's easy stipple method
+					*r_turb_pdest = *(r_turb_pbase + (tturb<<6) + sturb);
+			} else {
+				if (temp2 == 1 || temp2 == 3) // Baker's easy stipple method
+					*r_turb_pdest = *(r_turb_pbase + (tturb<<6) + sturb);
+			}
 		}
 		*r_turb_pdest++;
 		izi += izistep;

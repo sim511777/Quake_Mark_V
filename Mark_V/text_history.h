@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __HISTORY_H__
 #define __HISTORY_H__
 
-#define		HISTORY_FILE_NAME	"history.txt"
 #define		HISTORY_LINES_64	64
 
 extern char		history_lines[HISTORY_LINES_64][CONSOLE_MAX_CMDLINE_256];

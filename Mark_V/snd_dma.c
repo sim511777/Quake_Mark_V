@@ -67,8 +67,8 @@ static int num_sfx;
 
 static sfx_t *ambient_sfx[NUM_AMBIENTS];
 
-int desired_speed = 11025;
-int desired_bits = 16;
+// int desired_speed = 11025; UNUSED
+// int desired_bits = 16; UNUSED
 
 static cbool sound_started = false;
 
@@ -283,15 +283,16 @@ void S_Shutdown(void)
 		return;
 
 	if (shm)
-		shm->gamealive = 0;
-
-	shm = 0;
-	sound_started = 0;
+		shm->gamealive = 0; // Baker April 27 2018 - gamealive is not used
 
 	if (!fakedma)
 	{
 		SNDDMA_Shutdown();
 	}
+
+	shm = NULL;
+	snd_blocked = 0;
+	sound_started = 0;
 }
 
 
@@ -618,10 +619,18 @@ void S_ClearBuffer (void)
 
 #ifdef DIRECT_SOUND_QUAKE
 	if (!sound_started || !shm || (!shm->buffer && !pDSBuf))
-#else
-	if (!sound_started || !shm || !shm->buffer)
-#endif
 		return;
+#else
+	if (!sound_started || !shm)
+		return;
+
+#ifdef CORE_SDL
+	SNDDMA_LockBuffer ();
+#endif // CORE_SDL
+	
+	if (! shm->buffer)
+		return;
+#endif // !DIRECT_SOUND_QUAKE
 
 	if (shm->samplebits == 8)
 		clear = 0x80;
@@ -664,6 +673,9 @@ void S_ClearBuffer (void)
 #endif
 	{
 		memset(shm->buffer, clear, shm->samples * shm->samplebits/8);
+#ifdef CORE_SDL
+		SNDDMA_Submit (); // SDL Unlock
+#endif // CORE_SDL
 	}
 }
 
@@ -903,8 +915,7 @@ static void GetSoundtime(void)
 		buffers++;					// buffer wrapped
 
 		if (paintedtime > 0x40000000)
-		{
-			// time to chop things off to avoid 32 bit limits
+		{ // time to chop things off to avoid 32 bit limits
 			buffers = 0;
 			paintedtime = fullsamples;
 			S_StopAllSounds (true);
@@ -944,6 +955,13 @@ static void S_Update_(void)
 
 	if (!sound_started || (snd_blocked > 0))
 		return;
+
+#ifdef CORE_SDL
+	SNDDMA_LockBuffer ();
+
+	if (! shm->buffer)
+		return;
+#endif // CORE_SDL
 
 // Updates DMA time
 	GetSoundtime();
@@ -999,8 +1017,7 @@ static void S_Play (lparse_t *line, float att)
 	char name[256];
 	sfx_t	*sfx;
 
-	for (i = 1 ; i < line->count ; i++)
-	{
+	for (i = 1 ; i < line->count ; i++) {
 		c_strlcpy(name, line->args[i]);
 		if (!strrchr(line->args[i], '.'))
 		{
@@ -1078,10 +1095,10 @@ void S_SoundList (lparse_t *unused)
 		total += size;
 
 		if (sc->loopstart >= 0)
-			Con_SafePrintContf ("L"); //johnfitz -- was Con_Printf
+			Con_SafePrintContf ("L"); //johnfitz -- was Con_PrintLinef
 		else
-			Con_SafePrintContf (" "); //johnfitz -- was Con_Printf
-		Con_SafePrintLinef ("(%2db) %6d : %s", sc->width*8,  size, sfx->name); //johnfitz -- was Con_Printf
+			Con_SafePrintContf (" "); //johnfitz -- was Con_PrintLinef
+		Con_SafePrintLinef ("(%2db) %6d : %s", sc->width*8,  size, sfx->name); //johnfitz -- was Con_PrintLinef
 	}
 	Con_PrintLinef ("%d sounds, %d bytes", /*num_sfx*/ found, total); //johnfitz -- added count (Baker: Made count ones loaded instead of named ones.)
 }
@@ -1186,14 +1203,38 @@ S_UnblockSound
 
 void S_UnblockSound (void)
 {
+#ifdef CORE_SDL
+	if (!sound_started || !snd_blocked)
+		return;
+	if (snd_blocked == 1)			/* --snd_blocked == 0 */
+	{
+		snd_blocked  = 0;
+		SNDDMA_UnblockSound();
+		S_ClearBuffer ();
+	}
+#else
 	snd_blocked = 0;
 	logd ("Sound blocked = 0");
+#endif // !SDL
 }
 
 void S_BlockSound (void)
 {
+#ifdef CORE_SDL
+/* FIXME: do we really need the blocking at the
+ * driver level?
+ */
+	if (sound_started && snd_blocked == 0)	/* ++snd_blocked == 1 */
+	{
+	snd_blocked = 1;
+		S_ClearBuffer ();
+		if (shm)
+			SNDDMA_BlockSound();
+	}
+#else // not SDL
 	snd_blocked = 1;
 	logd ("Sound blocked = 1");
+#endif // !CORE_SDL
 }
 
 #endif // ! DIRECT_SOUND_QUAKE

@@ -233,7 +233,7 @@
 					<Add option="-DCORE_SDL" />
 					<Add option="-Did386=0" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-2.0.8/include" />
 				</Compiler>
 				<Linker>
 					<Add option="bundle_windows.o" />
@@ -254,7 +254,7 @@
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/lib" />
 				</Linker>
 				<ExtraCommands>
 					<Add before="ld -r -b binary -o bundle_windows.o bundle.pak" />
@@ -276,7 +276,7 @@
 					<Add option="-DCORE_SDL" />
 					<Add option="-DCORE_SDL_STATIC" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-2.0.8/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -304,7 +304,7 @@
 					<Add library="oleaut32" />
 					<Add library="version" />
 					<Add directory="../SDK/pthread-static-msvc2010/lib" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/lib" />
 				</Linker>
 				<ExtraCommands>
 					<Add before="ld -r -b binary -o bundle_windows.o bundle.pak" />
@@ -330,7 +330,7 @@
 					<Add option="-DCORE_GL" />
 					<Add option="-DCORE_SDL" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-2.0.8/include" />
 				</Compiler>
 				<Linker>
 					<Add option="bundle_windows.o" />
@@ -351,7 +351,7 @@
 					<Add library="libSDL2main" />
 					<Add library="libSDL2" />
 					<Add directory="../SDK/pthreads-w32-2-9-1-release/lib/x86" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/lib" />
 				</Linker>
 				<ExtraCommands>
 					<Add before="ld -r -b binary -o bundle_windows.o bundle.pak" />
@@ -373,7 +373,7 @@
 					<Add option="-DCORE_SDL" />
 					<Add option="-DCORE_SDL_STATIC" />
 					<Add directory="../SDK/pthread-static-msvc2010/include" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include" />
+					<Add directory="../SDK/SDL2-2.0.8/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -401,7 +401,7 @@
 					<Add library="oleaut32" />
 					<Add library="version" />
 					<Add directory="../SDK/pthread-static-msvc2010/lib" />
-					<Add directory="../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib" />
+					<Add directory="../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/lib" />
 				</Linker>
 				<ExtraCommands>
 					<Add before="ld -r -b binary -o bundle_windows.o bundle.pak" />
@@ -995,6 +995,9 @@
 		<Unit filename="cd_sdl.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="cd_sdl_win.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="cd_win.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -1190,7 +1193,17 @@
 		<Unit filename="in_sdl.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="in_sdl_android.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="in_win.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="in_win_directinput_overhead.h" />
+		<Unit filename="in_win_joy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="in_win_mouse.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="input.c">
@@ -1485,9 +1498,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="screen.h" />
-		<Unit filename="sdl_main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="sdlquake.h" />
 		<Unit filename="server.h" />
 		<Unit filename="snd_dma.c">

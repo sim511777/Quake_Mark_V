@@ -764,12 +764,22 @@ void Http_Command_f (lparse_t *line)
 }
 #endif
 
+
+
 #define QUAKE_INJECTOR_USER_AGENT "(^Quakeinjector|^Java|DokuWiki HTTP Client)"
 void Install_Command_f (lparse_t *line)
 {
-	char game_url[SYSTEM_STRING_SIZE_1024];
-	const char *quoth22name = "quoth2pt2full";
-	cbool game_is_quoth = false;  // We'll set this to quoth if quoth2pt2full
+	#define QUOTH_2_NAME_QUOTH2PT2FULL "quoth2pt2full"
+
+	char game_url[SYSTEM_STRING_SIZE_1024]; // http://www.quaddicted.com/filebase/travail.zip or such
+
+	char install_game_folder_url[MAX_OSPATH];	// c:/quake/warpspasm
+	char library_folder_zip_url[MAX_OSPATH];	// c:\quake\id1\_library\warpspasm.zip
+	char download_cache_url[MAX_OSPATH];		// c:/Users/Main/AppData/Roaming/Mark V/caches/__tempfiles/warpspasm.zip
+
+	cbool did_download = false;			// Used to determine if we are reading from cache or library.
+	cbool game_is_quoth = false;		// We'll set this to quoth if quoth2pt2full
+	const char *arg1 = line->args[1];
 
 #if 0 // Proposed
 	if (cmd_from_server || cmd_source == src_client) {
@@ -778,350 +788,336 @@ void Install_Command_f (lparse_t *line)
 	}
 #endif
 
-	if (line->count != 2)
-	{
+	if (line->count != 2) {
 		Con_PrintLinef ("Need the game to install or the entire URL with the http:// in it");
 		Con_PrintLinef ("Example: install travail or install [http://URL]");
 		Con_PrintLinef ("The version of libcurl used does not support https:// at this time");
 		return;
 	}
-	else
-	{
-		const char *arg1 = line->args[1];
-		if (!strstr(arg1, "/"))
-		{
-			// Be more flexible if someone types "install travail" (add .zip if necessary, fix case, etc.)
-			c_snprintf2 (game_url, "%s/%s", install_depot_source.string, arg1);
 
-			if (String_Does_Match_Caseless (arg1, quoth22name)) {
-				game_is_quoth = true;
-			}
+	// Process a URL like "install http://somewhere.com/mymod.zip"
+	if (String_Does_Contain (arg1, "/")) {
 
-			if (!String_Does_End_With_Caseless (game_url, ".zip")) {
-				c_strlcat (game_url, ".zip");
-			}
-
-			// Convert to lower case.
-			String_Edit_To_Lower_Case (game_url);
-		}
-		else 
-		{
-			if (!String_Does_End_With_Caseless (arg1, ".zip"))
-			{
-				Con_PrintLinef ("Only .zip files are supported");
-				return;
-			}
-			c_strlcpy (game_url, arg1);
+		// Make sure the url ends with a zip
+		if (!String_Does_End_With_Caseless (arg1, ".zip")) {
+			Con_PrintLinef ("Only .zip files are supported");
+			return; // REJECTED
 		}
 		
+		// SUCCESS
+		c_strlcpy (game_url, arg1);
+		goto download_it;
 	}
 
+	// Process a mod name "install travail"
+	// http://www.quaddicted.com/filebase/ + travail --> http://www.quaddicted.com/filebase/travail
+	c_snprintf2 (game_url, "%s/%s", install_depot_source.string, arg1);			// a. Cat depot + name
+
+	if (String_Does_End_With_Caseless (game_url, ".zip") == false) {			// b. Cat .zip if it doesn't have it.
+		c_strlcat (game_url, ".zip");
+	}
+
+	String_Edit_To_Lower_Case (game_url);										// c. Convert to lower case.
+
+	if (String_Does_Match_Caseless (arg1, QUOTH_2_NAME_QUOTH2PT2FULL)) {
+		game_is_quoth = true;
+	}
+
+	// ACCEPTED
+
+download_it:
+
+	// Downloads folder is typically c:\quake\yourquake\id1\_library - make the dir to ensure it exists.
 	File_Mkdir_Recursive (downloads_folder_url(""));
 
 	Con_DPrintLinef ("Source: %s", game_url);
 
 	{ 
-		const char *_library_folder_zip_url = downloads_folder_url(File_URL_SkipPath(game_url));
-		const char *_install_game_folder_url = basedir_to_url (File_URL_SkipPath(game_url));
-		char install_game_folder_url[MAX_OSPATH];
-		char library_folder_zip_url[MAX_OSPATH];
-		char download_cache_url[MAX_OSPATH];
 		
-		cbool did_download = false;
-
-		c_strlcpy (library_folder_zip_url, _library_folder_zip_url); 
+		// Build the places
+		c_strlcpy (library_folder_zip_url, downloads_folder_url(File_URL_SkipPath(game_url)) /**/); 
 		c_snprintf2 (download_cache_url, "%s/%s", com_safedir, File_URL_SkipPath(game_url));
+		c_strlcpy (install_game_folder_url, basedir_to_url (File_URL_SkipPath(game_url)) /**/);  File_URL_Edit_Remove_Extension (install_game_folder_url); // If it is a game
 
-		// If folder already exists, leave it alone and do not download the file.
-		// BUT the zip could just be maps and happen to have same name as a game folder?  Well, could rarely happen.  Tough.  Could stomp stuff.
-		c_strlcpy (install_game_folder_url, _install_game_folder_url); 
-		File_URL_Edit_Remove_Extension (install_game_folder_url); // If it is a game
-
-		if (File_Exists(install_game_folder_url))
-		{
+		// If folder exists like (c:/quake/warpspasm), warn and refuse.
+		if (File_Exists(install_game_folder_url)) {
+			// REJECTION ... c:\quake\warpspasm already exists ...
 			Recent_File_Set_FullPath (install_game_folder_url);
 
-			if (File_Is_Folder(install_game_folder_url))
-			{
-				// Let the user examine the folder.
-				Con_PrintLinef ("It looks like this may already be installed.");
-				Con_PrintLinef ("Type 'folder' to explore contents.");
+			switch (File_Is_Folder(install_game_folder_url)) {
+			default:				// Let the user examine the folder.
+									Con_PrintLinef ("It	looks like this may already be installed.");
+									Con_PrintLinef ("Type 'folder' to explore contents.");
+
+			case_break false:		// Address only remotely possible extra stupid situation.  Delete file instead?
+									Con_PrintLinef ("Will not be able to make folder " QUOTED_S " because a file by that name exists", install_game_folder_url);
+									Con_PrintLinef ("Type 'showfile' to browse to that file.");  
 			}
-			else
-			{
-				// Address only remotely possible extra stupid situation.  Delete file instead?
-				Con_PrintLinef ("Will not be able to make folder " QUOTED_S " because a file by that name exists", install_game_folder_url);
-				Con_PrintLinef ("Type 'showfile' to browse to that file.");  
-			}
-			return; // Get out
+			return; // REJECTED
 		}
 
-		// If the archive exists, make sure it is valid.
-		if (File_Exists(library_folder_zip_url))
-		{		
-			clist_t *file_list = Zip_List_Alloc (library_folder_zip_url);
+		// If the archive exists, make sure it is valid -- (must be able to open it, it must contain files)
+		if (File_Exists(library_folder_zip_url)) {		
+			clist_t *file_list_alloc = Zip_List_Alloc (library_folder_zip_url);
 			
-			if (file_list == NULL)
-			{
+			if (file_list_alloc == NULL) {
 				Recent_File_Set_FullPath (library_folder_zip_url);
 				Con_PrintLinef ("There is an archive, but it contains no files or an invalid zip");
 				Con_PrintLinef ("Type 'showfile' to browse to that file.");
-				return; // If file_list is null, don't need to free anything because there is nothing to free.
+				return; // REJECTED (we also do not have anything to free
 			}
-			List_Free (&file_list);
+			List_Free (&file_list_alloc); // Cannot pass NULL to this to free.
 
 			Con_PrintLinef ("This archive exists in the library, no download required");
 		}
 
-
-		if (cls.state == ca_connected || cls.demoplayback) // Demo playback + download screen updates causes R_RenderView to run out of stack space for WinQuake.
-		{
-			//Kill the server
+		// If running something, kill the server or demo or disconnect.  Then continue with the install ...
+		if (cls.state == ca_connected || cls.demoplayback) { 
 			CL_Disconnect ();
-			Host_ShutdownServer(true);
-	//		Con_PrintLinef ("Disconnect first please");
-	//		return;
+			Host_ShutdownServer(true); // Continue the install ...
 		}
 
-		
-
-		// Don't download if the file already exists, right?
-		if (!File_Exists(library_folder_zip_url))
-		{
-			cbool is_success;
-			cbool was_cancelled = false;
-			int errorcode;
+		// ONLY download the file if c:\quake\id1\_library\warpspasm.zip doesn't exist.
+		if (File_Exists(library_folder_zip_url) == false) {
+			cbool is_success;					// Used.
+			cbool was_cancelled = false;		// Used.  To indicate fail because of CANCEL vs. fail because of ERROR.
+			int error_code;
 			Con_DPrintLinef ("Download: to %s", download_cache_url);
 	
-			// We don't need to make the folder or delete an existing file, the download proc does this.
-//			Download_Set_User_Agent ("(^Quakeinjector|^Java|DokuWiki HTTP Client)");
 			
-			// Set download params
+			// Set download params for http://www.quaddicted.com/filebase/travail.zip
 			Install_Download_Before (game_url); // set the cls.download stuff, stops sound and updates screen.
 
-			is_success = Download_To_File(QUAKE_INJECTOR_USER_AGENT, game_url, download_cache_url, Install_Command_Progress, NULL, &cls.download.total_bytes, &errorcode);
-#if 0
-			{
-				const char *mem = Download_To_Memory_Alloc (QUAKE_INJECTOR_USER_AGENT, game_url, Install_Command_Progress, NULL, &cls.download.total_bytes, &errorcode);
-				if (mem)
-				{
-					File_Memory_To_File (download_cache_url, mem, cls.download.total_bytes);
-					mem = core_free (mem);
-				}
-			}
-#endif			
-			
+			is_success = Download_To_File(QUAKE_INJECTOR_USER_AGENT, 
+				game_url,					// http://www.quaddicted.com/filebase/travail.zip
+				download_cache_url,			// c:/Users/Main/AppData/Roaming/Mark V/caches/__tempfiles/warpspasm.zip
+				Install_Command_Progress,	// The bar draw
+				NULL,						// Print function, we don't want one
+				&cls.download.total_bytes, 
+				&error_code
+			);
+
+
+//			{ const char *mem = Download_To_Memory_Alloc (QUAKE_INJECTOR_USER_AGENT, game_url, Install_Command_Progress, NULL, &cls.download.total_bytes, &errorcode);
+//				if (mem) { File_Memory_To_File (download_cache_url, mem, cls.download.total_bytes); mem = core_free (mem); }
+//			} // Memory way ^^ that we aren't using.
+
+			// Install_Command_Progress sets cls.download.user_cancelled if ESC was pressed
 			was_cancelled = cls.download.user_cancelled;
 
 			Install_Download_After ();  // clears cls.download stuff
 			
-			// Download to file will set is_success to false if the entire zip didn't download.
-			if (!is_success)
-			{
+			// FAILURE - Remove the file and get out.  (Download to file will set is_success to false if the entire zip didn't download.)
+			if (!is_success) {
 				Con_PrintLinef ("download %s", was_cancelled ? "cancelled by user" : "failed or incomplete");
 				File_Delete (download_cache_url); // If it is a partial, delete it.
+				// FAILURE
 				return; // Get out
-			} else Con_PrintLinef ("Download complete");
+			}
+			
+			Con_PrintLinef ("Download complete");
 			did_download = true;
 		}
 
 		// If we are here, we have a zip to decompress
+	}
+
+	// EXAMINE THE ZIP
+	{ 
+		typedef enum {
+			ENUM_FORCE_INT_GCC_ (found_)
+			found_none_0 = 0, 
+			found_map,
+			found_progs,
+			found_pak,
+			found_other,
+		} found_e;
+
+		// The zip we are checking might be in /Users ... caches or quake\id1\_library
+		const char		*zip_check_url			= did_download ? download_cache_url : library_folder_zip_url;
+
+		clist_t			*file_list_alloc		= Zip_List_Alloc (zip_check_url);
+		found_e			found_what				= found_none_0;
+		const char 		*basis_fp				= NULL;
+		const char		*basis_filename			= NULL;
+		int				count; 
+		int				skipcount				= -1;
+		cbool			is_maps_only_extract	= false;
+
+		if (!file_list_alloc) {
+			// FAILURE
+			Con_PrintLinef ("No files in the archive");
+			return; // Get out.  file_list_alloc does not need freed because is null
+		}
+
+		{ clist_t *cur; for (cur = file_list_alloc, count = 0; cur; cur = cur->next, count ++) {
+			const char *filename_only = File_URL_SkipPath(cur->name);
+
+			// Ignore if no length.  Can this be a folder or not?
+			if (filename_only[0] == 0) 
+				continue; // No name.
+
+			Con_DPrintLinef ("File %d: %s", count, cur->name);
+
+			if (String_Does_Match_Caseless (filename_only, DEFAULT_PROGS_DAT_NAME)) { found_what = found_progs; basis_fp = cur->name; basis_filename = filename_only; break; }
+			if (String_Does_End_With_Caseless (filename_only, ".pak"))				{ found_what = found_pak;   basis_fp = cur->name; basis_filename = filename_only; break; }
+			if (String_Does_End_With_Caseless (filename_only, ".bsp")) /*continue*/ { found_what = found_map;   basis_fp = cur->name; basis_filename = filename_only; continue; }
+
+			// Keep going if found something miscellaneous ...
+			if (found_what == found_none_0)  found_what = found_other;
+		}} // End for
+
+		if (!basis_fp) {
+			Con_PrintLinef ("This archive has no maps, no paks and no progs.dat so appears to have no playable content.");
+			switch (did_download) {
+			default /*true*/:	Con_PrintLinef ("As we just downloaded this archive, removing the file from the library to prevent any confusion in the future.");
+								File_Delete (download_cache_url);
+
+			case_break false:	Recent_File_Set_FullPath (library_folder_zip_url);
+								Con_PrintLinef ("File " QUOTED_S " should not be in the library because of this and may cause interference.", File_URL_SkipPath(library_folder_zip_url));
+								Con_PrintLinef ("Type 'showfile' to browse to that file.");  
+			}
+
+			goto cleanup;
+		}
+
+		skipcount = basis_filename - basis_fp;
+		is_maps_only_extract = false;
+
+		// See if it is a maps directory extract.
+		if (found_what == found_map) {
+			// something/maps/mybsp.bsp ---------------- normal
+			// maps/mybsp.bsp -------------------------- normal
+			// something/mymaps/mybsp.bsp <--- fail.  slashcount > 1 and preceded by something other than maps/
+			// something/mybsp.bsp <-------------------- to maps/
+
+			// ARE WE PREFIXED WITH (START OF STRING)maps/ or /maps/
+			const char *maps_slash = "maps/";			int maps_slash_slen_5 = strlen(maps_slash);
+			const char *maps_slash2 = "/maps/";			int maps_slash2_slen_6 = strlen(maps_slash2);
+			
+			if (skipcount == maps_slash_slen_5 && String_Does_Start_With_Caseless (basis_fp, maps_slash)) {
+				// This is maps/mybsp.bsp so bare basepath and normal install.
+				is_maps_only_extract = false;
+				goto maps_done; // Just use skipcount
+			}
+
+			if (skipcount > maps_slash_slen_5 && String_Does_Start_With_Caseless (&basis_filename[-maps_slash2_slen_6], maps_slash2)) {
+				is_maps_only_extract = false;
+				skipcount = skipcount - maps_slash_slen_5;
+				goto maps_done; // Just use this new skip count
+			}
+
+			is_maps_only_extract = true; // Use current skipcount, but dest write is mygame/maps
+			
+		}
+maps_done:
+
+		// If downloaded move it to the libary now.
+		if (did_download)
+			File_Rename (download_cache_url, library_folder_zip_url);
+
+		if (found_what > found_map && game_is_quoth) { 
+			Con_WarningLinef ("Assuming Quoth installation.");
+			String_Edit_Replace (install_game_folder_url, sizeof(install_game_folder_url), QUOTH_2_NAME_QUOTH2PT2FULL, "quoth");
+		}
+
+		DEBUG_ASSERT (skipcount >= 0);
+
+		// UNPAK TIME
 		{
-			int zip_skipchars = -1; // It better not be that long.  Needs to contain either a map or a pak.
-			cbool match_maps = false;
-			enum found_what_e { found_none, found_game, found_map};
-			enum found_what_e what_found = found_none; // Until we know otherwise.
-			cbool contains_bsp = false, contains_pak = false, found_playable_content = false;
-			const char *zip_check_url = did_download ? download_cache_url : library_folder_zip_url;
+			char dest_base[MAX_OSPATH];
+			char strip_prefix[MAX_OSPATH] = {0};
+			switch (found_what) {
+			default:				c_strlcpy   (dest_base, install_game_folder_url);
+			case_break found_map:	c_snprintf1 (dest_base, "%s/" GAMENAME_ID1, com_basedir);
+			}
+
+			if (skipcount > 0) {
+				c_strlcpy (strip_prefix, basis_fp);
+				strip_prefix [skipcount] = 0;
+				skipcount = skipcount;
+			}
+
+			if (is_maps_only_extract) {
+				c_strlcat (dest_base, "/maps");
+			}
+		
+			// Unpak time
+			// 
+			{ clist_t *cur; int count; for (cur = file_list_alloc, count = 0; cur; cur = cur->next, count ++) {
+				int curname_slen = strlen(cur->name);
+				const char *filename_only = File_URL_SkipPath(cur->name);
+
+				#pragma message ("Does this happen YES OR NO?")
+				if (String_Does_End_With (cur->name, "/") ) { 
+					continue; }	//Happens like "nehahra/"
+
+				if (cur->name[0] == 0) {
+					continue; }
+
+				if (filename_only[0] == 0) {
+					continue; }
+
+				// Skip section
+				if (String_Does_End_With_Caseless(cur->name, ".exe"))		{ Con_PrintLinef ("Note: Skip " QUOTED_S " (executable)", filename_only);  continue;  /* No thanks */ }
+				if (String_Does_Match_Caseless(cur->name, "config.cfg"))	{ Con_PrintLinef ("Note: Skip " QUOTED_S " (config.cfg, inappropriate)", filename_only); continue;  /* No thanks */ }
+				if (String_Does_End_With_Caseless(cur->name, ".dll"))		{ Con_PrintLinef ("Note: Skip " QUOTED_S " (.dll)", filename_only);  continue;  /* No thanks */ }
+
+				if (curname_slen <= skipcount) {
+					Con_PrintLinef ("Note: Skip unpack of " QUOTED_S " (dest above gamedir)", filename_only);  continue;  /* No thanks */
+					continue; // Happens
+				}
+
+				if (curname_slen > skipcount && skipcount > 0 && String_Does_Start_With_Caseless(cur->name, strip_prefix) == false ) {
+					Con_PrintLinef ("Note: Skip unpack of " QUOTED_S " (dest above gamedir)", filename_only);  continue;  /* No thanks */
+					continue; 
+				} // This happens especially for things intended for the Quake folder.
+
+				// Make sure is right basedir and is caseless match on the path
+				//if (found_map && match_maps) {
+				//	if (!String_Does_Start_With_Caseless (cur->name, "maps/"))
+				//		continue; // We only found a map.  And it is subdir.
+				//}
 
 
-			// travail/pak0.pak vs pak0.pak  
-			// travail/maps/mymap.bsp vs. maps/mymap.bsp
-			// If we find a progs.dat or a pak0.pak we've got a mod.
-
-			// Find basedir.
-			clist_t *file_list = Zip_List_Alloc (zip_check_url);
-			clist_t *cur;
-			int count;
-
-			for (cur = file_list, count = 0; cur; cur = cur->next, count ++)
-			{
-				const char *filename = File_URL_SkipPath(cur->name);
-				cbool is_bsp = false, is_progs = false, is_pak = false, is_cruft = false;
-
-				// If the zip is telling us about a folder, it has no length after the trailing forward slash, ignore + continue
-				if (filename[0] == 0)
-					continue;
-
-
-				     if (String_Does_End_With_Caseless(filename, ".bsp"))		contains_bsp = is_bsp = true;
-				else if (String_Does_Match_Caseless(filename, DEFAULT_PROGS_DAT_NAME))		is_progs = true;
-				else if (String_Does_End_With_Caseless(filename, ".pak"))		contains_pak = is_pak = true;
-				else															is_cruft = true; // Something else.
-
-				if (found_playable_content == false && (is_bsp || is_progs || is_pak))
 				{
-					// Ok.  We have enough information to determine basedir.
-			// travail/pak0.pak vs pak0.pak  
-			// travail/maps/mymap.bsp vs. maps/mymap.bsp
-					const char *thisname = cur->name;
-					int slashlevel = is_bsp ? 1 : 0;
-					int numslashes = String_Count_Char (thisname, '/');
-					int nested_path_level = numslashes - slashlevel;
-// Source and dest.
-					found_playable_content = true;
-
-					if ( is_bsp && numslashes == 0)
-					{
-						what_found = found_map;
-						zip_skipchars = -1;
-						break;
-					}
-
-					if ( is_bsp && numslashes == 1 && String_Does_Start_With_Caseless (thisname, "maps/"))
-					{
-						what_found = found_map;
-						zip_skipchars = -1; // strlen ("maps/");
-						match_maps = true;  // Reevaluate later?
-						//break;  // Don't break .. doesn't have to be just maps.
-					}
-
-
-					if (nested_path_level)
-					{
-						const char *begin_text;
-						int i;
-						for (i = 0, begin_text = cur->name; i < nested_path_level;  i ++)
-							begin_text = strchr(begin_text, '/');
+					const char *filename_only = NULL;
+					char lower_cur_name[MAX_OSPATH];
+					char *dest_name;
 					
-						zip_skipchars = begin_text - cur->name + 1;
-						begin_text = &cur->name[zip_skipchars];
-						Con_PrintLinef ("%s ---> %s", cur->name, begin_text);
-					}
-				}
-
-				if ( what_found != found_game && (is_progs || is_pak )  )
-				{
-					what_found = found_game;
-					match_maps = false;
-					break;
-				}
-
-				if ( what_found == found_none && is_bsp) {
-					what_found = found_map;
-
-				}
-
-				// If just a .bsp it will keep going.
-
-			}
-
-			if (found_game && game_is_quoth) { 
-				Con_WarningLinef ("Assuming Quoth installation.");
-				String_Edit_Replace (install_game_folder_url, sizeof(install_game_folder_url), quoth22name, "quoth");
-			}
-
-			if (what_found == found_none)
-			{
-				Con_PrintLinef ("This archive has no maps, no paks and no progs.dat so appears to have no playable content.");
-				if (did_download)
-				{
-					Con_PrintLinef ("As we just downloaded this archive, removing the file from the library to prevent any confusion in the future.");
-					File_Delete (download_cache_url); 
-				}
-				else  
-				{
-					Recent_File_Set_FullPath (library_folder_zip_url);
-					Con_PrintLinef ("File " QUOTED_S " should not be in the library because of this and may cause interference.", File_URL_SkipPath(library_folder_zip_url));
-					Con_PrintLinef ("Type 'showfile' to browse to that file.");  
-				}
-			}
-			else
-			{
-				const char *_dest_base[] = {
-					install_game_folder_url, 
-					va("%s/" GAMENAME_ID1, com_basedir), 
-					va("%s/" GAMENAME_ID1 "/maps", com_basedir)
-				};
-				char dest_base[MAX_OSPATH];
-				int dnum = what_found == found_game ? 0 : 
-							what_found == found_map && zip_skipchars == -1 && !match_maps ? 2 : 
-										1;
-
-				c_strlcpy (dest_base, _dest_base[dnum]);
-
-				if (did_download)
-					File_Rename (download_cache_url, library_folder_zip_url);
-
-				// Unpak time
-				// 
-				for (cur = file_list, count = 0; cur; cur = cur->next, count ++)
-				{
-					const char *dest_name;
-					char lower_name[MAX_OSPATH];
+					c_strlcpy (lower_cur_name, cur->name); String_Edit_To_Lower_Case (lower_cur_name);
 					
-					if (String_Does_End_With_Caseless(cur->name, ".exe"))
-					{
-						Con_PrintLinef ("Note: Skipping an .exe file contained in the archive.");
-						continue;  // No thanks!
-					}
-
-					if (String_Does_Match_Caseless(cur->name, "config.cfg"))
-					{
-						Con_PrintLinef ("Warning:  Archive contained a config.cfg, but we are skipping that.");
-						continue;  // No thanks!
-					}
-
-					if (String_Does_Match_Caseless(cur->name, "autoexec.cfg"))
-					{
-						// Allow but warn. :(
-						Con_PrintLinef ("Warning:  This mod has an autoexec.cfg!");
-					}
-
-					if (String_Does_End_With (cur->name, "/") )
-						continue; // Don't need bare folder
-
-					if (cur->name[0] == 0)
-						continue;
-
+					filename_only = File_URL_SkipPath(lower_cur_name);
+					
 					// Let's have all extractions be lower case out of courtesy
-					c_strlcpy (lower_name, cur->name);
-					String_Edit_To_Lower_Case (lower_name);
 
-					if (found_map && match_maps) {
-						if (!String_Does_Start_With_Caseless (cur->name, "maps/"))
-							continue; // We only found a map.  And it is subdir.
-					}
-
-					if (found_map && zip_skipchars == -1)
-						dest_name = va("%s/%s", dest_base, lower_name); // Maps only
-					else dest_name = va("%s/%s", dest_base, &lower_name[zip_skipchars]); // Other
+					if (found_map && skipcount == 0)
+						dest_name = va("%s/%s", dest_base, lower_cur_name); // Maps only
+					else dest_name = va("%s/%s", dest_base, &lower_cur_name[skipcount]); // Other
 
 					if (!Zip_Extract_File (library_folder_zip_url, cur->name, dest_name)) {
 						Con_DPrintLinef ("Warning: Couldn't extract %s", cur->name);
-						Con_PrintLinef ("Extracted %03d: %s (EXTRACTION FAILED)", count + 1, zip_skipchars == -1 ? lower_name : &lower_name[zip_skipchars]);
+						Con_PrintLinef ("Extracted %03d: %s (EXTRACTION FAILED)", count + 1, skipcount == 0 ? lower_cur_name : &lower_cur_name[skipcount]);
 						continue;
 					}	
 					
 					// Success!
 					Con_DPrintLinef ("Extracted: %s to %s", cur->name, dest_name);
-					Con_PrintLinef  ("Extracted %03d: %s", count + 1, zip_skipchars == -1 ? lower_name : &lower_name[zip_skipchars]);	
-					#pragma message ("We have a name borkage problem with some zips where first n characters are not a match, example is Nehahra")
+					Con_PrintLinef  ("Extracted %03d: %s", count + 1, skipcount == 0 ? lower_cur_name : &lower_cur_name[skipcount]);	
+		//			#pragma message ("We have a name borkage problem with some zips where first n characters are not a match, example is Nehahra")
 				}
-				// We either found a game, a map
-				if (what_found == found_game)
-					Lists_Update_ModList ();
-				else Lists_Update_Maps ();
-			}
-			List_Free (&file_list);
-		}
+			}} // End for
 
-//		dest = basedir_to_url (va("id1/maps/%s", filename);
+		} // END UNPAK TIME
 
+		// Update the lists
+		if (found_what == found_map)	Lists_Update_Maps ();
+		else							Lists_Update_ModList ();
 
-		// We don't know if it needs -quoth or something.  
-		// We have no way of really knowing if it is an id1 map.
-	} 
+cleanup:
+		if (file_list_alloc) List_Free (&file_list_alloc);
+	} // EXAMINE THE ZIP DONE
+
 }
 
 #if 0

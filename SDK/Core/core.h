@@ -162,6 +162,7 @@ int memicmp (const void *s1, const void *s2, size_t n);
 
 #ifdef PLATFORM_ANDROID
 	#include <android/log.h>
+	#define CORE_ANDROID_LOG_TAG "CoreMain"
 #endif // PLATFORM_ANDROID
 
 // DON'T DEFINE THIS UNTIL AFTER SYSTEM LIBRARIES!!!
@@ -252,10 +253,12 @@ typedef int (*printline_fn_t) (const char *fmt, ...) __core_attribute__((__forma
 
 #define KEYMAP_COUNT_512			512
 #define KEYMAP_HARDWARE_TILDE_511	(KEYMAP_COUNT_512 - 1)
+#define KEYMAP_KEYNAMES_118			118						// String translation table
 
 #define NUM_MOUSE_BUTTONS_5 5
 extern int keymap [KEYMAP_COUNT_512][5]; // Decimal representation, Platform constant, Our constant, Special instruction, Special instruction value
-extern keyvalue_t key_scancodes_table [108]; // Why 108?  Yes this is a thing.  Feb 16 2018
+
+extern keyvalue_t key_scancodes_table [KEYMAP_KEYNAMES_118]; // Why 108?  Yes this is a thing.  Feb 16 2018
 
 #define CORE_KEYMAP_EMISSION_2 2 		// The key event came from local interpretation (character emission), not scancode.
 #define CORE_SHIFTBITS_UNREAD_NEG1 -1 	// We did not read the shiftbits, this value must be ignored by receiver.
@@ -428,6 +431,18 @@ typedef enum { ENUM_FORCE_INT_GCC_ (mouseaction)
 		K_AUX30             = 301,
 		K_AUX31             = 302,
 		K_AUX32				= 303,
+
+		// SDL2 game controller keys
+		K_LTHUMB			= 310,
+		K_RTHUMB			= 311,
+		K_LSHOULDER			= 312,
+		K_RSHOULDER			= 313,
+		K_ABUTTON			= 314,
+		K_BBUTTON			= 315,
+		K_XBUTTON			= 316,
+		K_YBUTTON			= 317,
+		K_LTRIGGER			= 318,
+		K_RTRIGGER			= 319,
 	// Reserve a block starting at 384 for custom stuff?
 	} key_scancode_e;
 #endif  // ! Crusty Mac
@@ -539,7 +554,7 @@ typedef struct
 #endif
 
 
-void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t handle );
+void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t *pmain_window_holder_addr);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -561,6 +576,8 @@ char *prompt_alloc (const char *prompt, const char *default_text, const char *qu
 ///////////////////////////////////////////////////////////////////////////////
 //  SYSTEM OS: PROCESSES
 ///////////////////////////////////////////////////////////////////////////////
+
+void System_Exit (int status);
 
 // Implementation is not completed on all platforms.  May not be possible on all of them either, like iOS.
 sys_handle_t System_Process_Create (const char *path_to_file, const char *args, const char *working_directory_url);

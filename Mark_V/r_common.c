@@ -456,7 +456,7 @@ void Sky_NewMap (void)
 	Sky_LoadSkyBox ("");
 
 #ifdef WINQUAKE_SOFTWARE_SKYBOX
-#ifdef PLATFORM_LINUX
+#if defined(PLATFORM_LINUX) // ANDROID IT WORKED OK FOR ME.
 	return; // Linux isn't liking fast gamma.  Is it the pointer size?
 #endif // PLATFORM_LINUX
 	if (!sw_sky_load_skyboxes.value)

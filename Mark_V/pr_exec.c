@@ -27,7 +27,7 @@ typedef struct
 	dfunction_t		*f;
 } prstack_t;
 
-#define	MAX_STACK_DEPTH		32
+#define	MAX_STACK_DEPTH		64 // 20180401 Baker:  Was 32 ... increased to mirror Quakespasm.
 static prstack_t	pr_stack[MAX_STACK_DEPTH];
 static int			pr_depth;
 

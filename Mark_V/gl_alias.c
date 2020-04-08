@@ -189,11 +189,12 @@ typedef struct lerpedvert_s
 	float texcoord[2];	// clampf s, t
 } lerpedvert_t;
 
-#define MAX_LERPED_VERTS_3984		MAXALIASVERTS_3984	// Baker: Right?
-#define MAX_LERPED_INDEXES_12000	12000
+#define MAX_LERPED_VERTS		MAXALIASTRIS_4096 * 3	// Baker: I don't know the "right" number, not messing with it right now.
+#define MAX_LERPED_INDEXES		MAXALIASTRIS_4096 * 18	// Baker: Anyway, should alieviate the NightFright/Chillo
 
-lerpedvert_t r_lerped_verts[MAX_LERPED_VERTS_3984];
-unsigned int r_lerped_indexes[MAX_LERPED_INDEXES_12000];
+lerpedvert_t r_lerped_verts[MAX_LERPED_VERTS];
+unsigned int r_lerped_indexes[MAX_LERPED_INDEXES];
+
 
 int r_num_lerped_verts;
 int r_num_lerped_indexes;
@@ -371,9 +372,9 @@ typedef struct edgeDef_s
 
 #define	MAX_EDGE_DEFS_32	32
 
-static	edgeDef_t	edgeDefs[MAX_LERPED_VERTS_3984][MAX_EDGE_DEFS_32];
-static	int			numEdgeDefs[MAX_LERPED_VERTS_3984];
-static	int			facing[MAX_LERPED_INDEXES_12000 / 3];
+static	edgeDef_t	edgeDefs[MAX_LERPED_VERTS][MAX_EDGE_DEFS_32];
+static	int			numEdgeDefs[MAX_LERPED_VERTS];
+static	int			facing[MAX_LERPED_INDEXES / 3];
 
 void R_AddEdgeDef (int i1, int i2, int facing)
 {
@@ -1135,6 +1136,9 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 {
 	aliashdr_t	*paliashdr;
 	lerpdata_t	lerpdata;
+	vec3_t					mdl_scale;
+	vec3_t					mdl_scale_origin;
+
 
 	if (R_CullModelForEntity(e))
 		return;
@@ -1145,8 +1149,25 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 
     eglPushMatrix ();
 	R_RotateForEntity (lerpdata.origin,lerpdata.angles);
-	eglTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
-	eglScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
+
+	if (e == &cl.viewent_gun && r_viewmodel_fov.value)
+	{
+		float scale = 1.0f / tan (Degrees_To_Radians (scr_fov.value / 2.0f) ) * r_viewmodel_fov.value / 90.0f; // Reverse out fov and do fov we want
+
+		if (r_viewmodel_size.value)
+			scale *= CLAMP (0.5, r_viewmodel_size.value, 2);
+
+		VectorSet (mdl_scale_origin,	paliashdr->scale_origin[0] * scale, paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
+		VectorSet (mdl_scale,			paliashdr->scale[0] * scale, paliashdr->scale[1], paliashdr->scale[2]);
+	}
+	else
+	{
+		VectorSet (mdl_scale_origin,	paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
+		VectorSet (mdl_scale,			paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
+	}
+
+	eglTranslatef (mdl_scale_origin[0], mdl_scale_origin[1], mdl_scale_origin[2]);
+	eglScalef	  (mdl_scale[0], mdl_scale[1], mdl_scale[2]);
 
 	shading = false;
 	eglColor3f(1,1,1);

@@ -315,14 +315,16 @@ void Host_WriteConfiguration (void)
 {
 // dedicated servers initialize the host but don't parse and set the
 // config.cfg cvars
-	if (host_initialized && !isDedicated)
-	{
+	if (host_initialized && !isDedicated) {
 		const char *writelist[3] = {game_startup_dir, va("%s/%s", Folder_Caches_URL(), File_URL_SkipPath (game_startup_dir)), NULL};
-		int i;
+		
 
-		for (i = 0; writelist[i]; i ++)
-		{
-			const char *cursor = writelist[i];
+#if defined(PLATFORM_ANDROID) || defined (PLATFORM_IOS)
+		{ int n; for (n = 0; n < 1; n ++) {
+#else
+		{ int n; for (n = 0; writelist[n]; n ++) {
+#endif // !ANDROID + !IOS
+			const char *cursor = writelist[n];
 			char outconfig_name[MAX_OSPATH];
 			FILE	*f = NULL;
 
@@ -330,6 +332,7 @@ void Host_WriteConfiguration (void)
 
 			f = FS_fopen_write_create_path (outconfig_name, "w");
 
+			// alert ("Writing " QUOTED_S, outconfig_name);
 			if (f)
 			{
 				VID_Cvars_Sync_To_Mode (&vid.modelist[vid.modenum_user_selected]); //johnfitz -- write actual current mode to config file, in case cvars were messed with
@@ -340,8 +343,8 @@ void Host_WriteConfiguration (void)
 				FS_fclose (f);
 
 			} else Con_PrintLinef ("Couldn't write %s.", CONFIG_CFG);
-		}
-	}
+		}} // End for
+	} // End host initialized and not dedicated
 }
 
 
@@ -959,7 +962,14 @@ void Host_Shutdown(void)
 		CDAudio_Shutdown ();
 		S_Shutdown();
 		Input_Shutdown ();
+		
+#ifndef PLATFORM_ANDROID // April 15 2018
+// With SDL 2.0.8 -- if we destroy the window on quit.
+// We get a stupid assertion error
+// Instead, don't.  And let SDL_Quit shut it down how it likes.
 		VID_Shutdown();
+#endif // PLATFORM_ANDROID
+
 #ifdef CORE_PTHREADS
 		ReadList_Ensure_Shutdown ();
 #endif // CORE_PTHREADS

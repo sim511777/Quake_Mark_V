@@ -29,6 +29,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h> // fopen, etc.
 #include <stdlib.h> // malloc, etc.
 
+#ifdef CORE_SDL
+	#include "core_sdl.h"
+
+	void System_Exit (int status)
+	{	
+		//alert ("SDL Quit");
+		SDL_Quit ();
+		exit (status);
+	}
+#else
+	void System_Exit (int status)
+	{
+		exit (status);
+	}
+#endif // ! CORE_SDL
 
 int msgbox (const char *_title, const char *fmt, ...)
 {

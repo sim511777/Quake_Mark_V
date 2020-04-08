@@ -666,8 +666,8 @@ void VID_Renderer_Setup (void)
 }
 
 
-
-void GL_ErrorPrintFn (const char *funcname, int linenum)
+#ifdef _DEBUG
+int GL_ErrorPrintFn (const char *funcname, int linenum)
 {
 #if defined(CORE_GL) && !defined(DIRECT3DX_WRAPPER)
 	int errcode = glGetError ();
@@ -692,10 +692,12 @@ void GL_ErrorPrintFn (const char *funcname, int linenum)
 		}
 
 		logd ("%s", errstr);
+		return 1;
 	}
+	return 0;
 #endif // Not pure software, not Direct3D
 }
-
+#endif // DEBUG
 
 
 #endif // CORE_GL

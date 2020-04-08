@@ -61,7 +61,7 @@ clist_t *File_To_Lines_Alloc (const char *path_to_file);
 cbool File_String_To_File (const char *path_to_file, const char *s);
 cbool File_Memory_To_File (const char *path_to_file, const void *data, size_t numbytes);
 void *File_To_Memory_Alloc (const char *path_to_file, reply size_t *numbytes); // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1 means can be treated as NULL terminated string, extra null is not part of returned length
-#define File_To_String(FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) File_To_Memory_Alloc (FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) // Reply is a blob.
+#define File_To_String_Alloc(FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) File_To_Memory_Alloc (FILENAME, REPLY_BYTES_OPTIONAL_SIZE_T) // Reply is a blob.
 // File_To_Memory_Alloc may as well be File to String 
 
 
@@ -190,12 +190,16 @@ void Bundle_Alert_Items (void); // Debug mostly
 clist_t *Bundle_List_Alloc (const char *wild_patterns, reply int *num_matches);
 void *dBundle_Find_File_Caseless (const char *path_to_file);
 void *Bundle_File_To_Memory_Alloc (const char *path_to_file, reply size_t *mem_length); // // EXTRA_BYTE_NULL_ASSURANCE_ALLOC_+_1
+#define Bundle_File_To_Memory_Free(x) freenull(x)
+#define Bundle_File_To_String_Alloc(PATH) Bundle_File_To_Memory_Alloc(PATH, /*don't care about length reply*/ NULL)
+#define Bundle_File_To_String_Free(x) freenull(x)
+
 const void *Bundle_File_Memory_Pointer (const char *path_to_file, reply size_t *mem_length); // Relys on bundle being in memory.  Not string friendly!
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS) || defined (PLATFORM_ANDROID) // Android?  Go figure ....
 	// http://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface (#include <stdio.h>)
 	size_t getline(char **lineptr, size_t *n, FILE *stream);
-#endif // PLATFORM_WINDOWS
+#endif // PLATFORM_WINDOWS + PLATFORM_ANDROID
 
 // Misc.  What about write versions?
 // Write version looks like this: 	header[12] = width & 255;  header[13] = width>>8;  header[13] = width>>16;  >> 24

@@ -217,7 +217,7 @@ int System_Error (const char *fmt, ...)
 		DeinitConProc ();
 	}
 
-	exit (1);
+	System_Exit (1);
 #ifndef __GNUC__ // Return silence
 	return 1; // No return as an attribute isn't universally available.
 #endif // __GNUC__	// Make GCC not complain about return
@@ -280,7 +280,7 @@ void System_Quit (void)
 // shut down QHOST hooks if necessary
 	DeinitConProc ();
 
-	exit (0);
+	System_Exit (0);
 }
 
 

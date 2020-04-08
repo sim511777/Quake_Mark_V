@@ -89,6 +89,11 @@ LOCAL_EVENT (Draw) (void)
 	if (!ipv4Available && !ipv6Available) {
 		M_PrintWhite ((320/2) - ((27 * M_CHAR_WIDTH_8) / 2), 148, "No Communications Available");
 	}
+
+	if (!static_registered)
+		M_Print (M_CANVAS_HALF_WIDTH_160 - (28 * M_CHAR_WIDTH_8)/2, 160, "\220 shareware maps available \221"); // The \220 is Octal of 144 which is a Quake "["
+
+
 }
 
 

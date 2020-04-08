@@ -243,7 +243,9 @@ static void VID_WinQuake_AdjustBuffers (vmode_t *p)
 		int high_any = c_min (high_x, high_y);
 
 		//int stretch_try = vid.stretch_old_cvar_val;
-#if 1 // WINQUAKE-GL EXCEPTION since it is so fucking slow ...
+#if defined(PLATFORM_IOS) // Remember this is an IOS specific file right now ...
+		int stretch_try = CLAMP(2, vid.stretch_old_cvar_val, 2);
+#elif 1 // WINQUAKE-GL EXCEPTION since it is so fucking slow ...
 		int stretch_try = CLAMP(1, vid.stretch_old_cvar_val, 2);
 #else
 		int stretch_try = CLAMP(0, vid.stretch_old_cvar_val, 2);

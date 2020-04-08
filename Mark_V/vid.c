@@ -49,6 +49,10 @@ int VID_SetMode (int modenum)
     int temp = scr_disabled_for_loading;
     cbool re_setupgl;
 
+#ifdef PLATFORM_ANDROID // Quick hack - Keep
+	modenum = 1; // March 22 2018
+#endif // PLATFORM_ANDROID
+
     scr_disabled_for_loading = true;  // temped
     vid.canalttab = false;
 
@@ -575,8 +579,20 @@ cbool VID_Mode_Exists (vmode_t* test, int *outmodenum)
 void VID_MakeMode (MODESTATE_e mode_type, vmode_t *new_mode)
 {
     new_mode->type	= mode_type;
+
+//#if defined(PLATFORM_IOS)
+   // new_mode->width	= 320;
+  //  new_mode->height= 240;
+
+//#el
+#if PLATFORM_SCREEN_PORTRAIT !=0
+    new_mode->width	= vid.desktop.height;
+    new_mode->height= vid.desktop.width;
+#else
     new_mode->width	= 640;
     new_mode->height= 480;
+#endif // !PLATFORM_SCREEN_PORTRAIT
+
     new_mode->bpp	= vid.desktop.bpp;
 
     // !!(int)vid_fullscreen.value --> turn into an int and "NOT" it twice

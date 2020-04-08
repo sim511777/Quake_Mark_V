@@ -306,6 +306,8 @@ no_action:		(0); // Null statement.  A label must have a statement :(
 
 // cursor
 	M_DrawCharacter (200, menu_options_draw[local_menu->cursor].row, 12+((int)(realtime*4)&1));
+
+	focus0.in_left = in_range (opt_screensize_03, local_menu->cursor, opt_soundvolume_08);
 }
 
 static void Mnu_Options_Do_ResetConfig_ (void)

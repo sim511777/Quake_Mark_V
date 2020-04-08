@@ -33,7 +33,7 @@ int perrorlinef (const char *fmt, ...) __core_attribute__((__format__(__printf__
 int fprintlinef (FILE *stream, const char *fmt, ...) __core_attribute__((__format__(__printf__,2,3)));
 
 	#define DQUOTE				"\""	// Used in table
-	#define	 NEWLINE "\n"
+	#define	NEWLINE				"\n"
 	#define SQUOTE				"'"		// Used in table
 	#define	TABBER				"\t"
 	#define	TILDE_CHAR_CODE_126	'`'		

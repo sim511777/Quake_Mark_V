@@ -5,6 +5,24 @@
 
 // Remember, we cannot ifdef away any of these to ensure they preserve.
 //            																																					Try for keywords, begin capital.  End with period.
+	#define LOOKSPRING_DEFAULT "0"	// NO, not now. Vertically orients view to level after a few steps forward.  Preferable for typical mobile controls.
+	#define POLYLITE_DEFAULT "1"	// Quake has too intense hues especially for ring
+	#define RING_DEFAULT "1"		// Translucent weapon when invisible.
+
+#if defined(PLATFORM_ANDROID) || defined(PLATFORM_IOS)
+	// Mobile has different defaults for certain settings to be more pleasing by default.
+	// SCR_CLOCK defaults -1 deathmatch only just like we want.
+	#define CONTRAST_DEFAULT "1.5"	// Brighter.  Better than too dark.
+	#define PQLOCS_DEFAULT "0"		// So few deathmatch players remain ...
+	#define SCALEAUTO_DEFAULT "3"	// Big for small screens.  Large screens can shrink it.
+	#define HWGAMMA_DEFAULT "0"		// Doesn't have hardware gamma.
+#else
+	#define CONTRAST_DEFAULT "2"	// Contrasty
+	#define PQLOCS_DEFAULT "0"		// So few deathmatch players remain ...
+	#define SCALEAUTO_DEFAULT "1"	// So few deathmatch players remain ...
+	#define HWGAMMA_DEFAULT "1"	// So few deathmatch players remain ...
+#endif
+
 CVAR_DEF( Movie_Init  , AVI       ,  DEP_AVI  , capture_codec             , "capturevideo_codec"      , "auto"    , CVAR_ARCHIVE      , CaptureCodec_Validate,  "4 character video capture compression codec (XVID, DIVX, H264, VP80, etc).  Codec must already be installed on operating system.  XVID is fast.")
 CVAR_DEF( Movie_Init  , AVI       ,  DEP_AVI  , capture_console           , "capturevideo_console"    , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Prevents video capture from capturing frames while console is on-screen by skipping those frames."            )
 CVAR_DEF( Movie_Init  , AVI       ,  DEP_AVI  , capture_fps               , "capturevideo_fps"        , "30.0"    , CVAR_ARCHIVE      , NULL                 ,  "Frames per second for video capture."            )
@@ -38,7 +56,7 @@ CVAR_DEF( Host_Init   , HOST      ,  DEP_NONE , host_sleep                , "hos
 CVAR_DEF( Host_Init   , HOST      ,  DEP_NONE , host_speeds               , "host_speeds"             , "0"       , CVAR_NONE         , NULL                 ,  "Toggle the display of the game engine's performance statistics."            ) // set for running times
 CVAR_DEF( Host_Init   , HOST      ,  DEP_NONE , host_startdemos           , "host_startdemos"         , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle whether or not the starting demos automatically play when loading up the game."            ) // Baker
 CVAR_DEF( Host_Init   , HOST      ,  DEP_NONE , host_timescale            , "host_timescale"          , "0"       , CVAR_NONE         , NULL                 ,  "Set to 0 or 1 for normal speed, 2 is twice normal speed, 0.5 is half of normal speed."            ) // johnfitz
-CVAR_DEF( NET_Init    , HOST      ,  DEP_NONE , hostname                  , "hostname"                , "UNNAMED" , CVAR_NONE         , NULL                 ,  "The name of the server."            ) // Server, really, a client-only doesn't need this
+CVAR_DEF( NET_Init    , HOST      ,  DEP_NONE , hostname                  , "hostname"                , "UNNAMED" , CVAR_ARCHIVE      , NULL                 ,  "The name of the server."            ) // Server, really, a client-only doesn't need this
 CVAR_DEF( COM_InitFilesystem,HOST ,  DEP_NONE , registered                , "registered"              , "0"       , CVAR_NONE         , NULL                 ,  "Toggle if the game is considered to be the full version or the shareware."            )
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cfg_unbindall             , "cfg_unbindall"           , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Write out an unbindall command at the beginning of config.cfg when saving."            )
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cl_anglespeedkey          , "cl_anglespeedkey"        , "1.5"     , CVAR_ARCHIVE      , NULL                 ,  "The speed you turn when running."            )
@@ -48,28 +66,39 @@ CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cl_movespeedkey           , "cl_
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cl_pitchspeed             , "cl_pitchspeed"           , "150"     , CVAR_ARCHIVE      , NULL                 ,  "The speed the commands +lookup and +lookdown work."            )
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cl_upspeed                , "cl_upspeed"              , "200"     , CVAR_ARCHIVE      , NULL                 ,  "The speed the player moves up and down."            )
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , cl_yawspeed               , "cl_yawspeed"             , "140"     , CVAR_ARCHIVE      , NULL                 ,  "The speed the +left and +right commands make the player turn left and right."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , in_joystick               , "joystick"                , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle the use of joystick.  TODO: This value is not used."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_name                  , "joyname"                 , "joystick", CVAR_NONE         , NULL                 ,  "The name given to the joystick."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advanced              , "joyadvanced"             , "0"       , CVAR_NONE         , NULL                 ,  "Toggle the use of advanced joystick features."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisx              , "joyadvaxisx"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick x-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisy              , "joyadvaxisy"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick y-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisz              , "joyadvaxisz"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick z-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisr              , "joyadvaxisr"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick r-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisu              , "joyadvaxisu"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick u-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisv              , "joyadvaxisv"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick v-axis."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_forwardthreshold      , "joyforwardthreshold"     , "0.15"    , CVAR_NONE         , NULL                 ,  "Controls the dead-zone for moving forward and backward."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sidethreshold         , "joysidethreshold"        , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for fly."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_flysensitivity        , "joyflysensitivity"       , "-1.0"    , CVAR_NONE         , NULL                 ,  "Fly sensitivity"            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_flythreshold          , "joyflythreshold"         , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for fly."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_pitchthreshold        , "joypitchthreshold"       , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for looking up and down."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_yawthreshold          , "joyyawthreshold"         , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for looking left and right."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_forwardsensitivity    , "joyforwardsensitivity"   , "-1.0"    , CVAR_NONE         , NULL                 ,  "Determines the ramp-up speed for moving forward and backward."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sidesensitivity       , "joysidesensitivity"      , "-1.0"    , CVAR_NONE         , NULL                 ,  "Ramp-up speed for moving side to side."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_pitchsensitivity      , "joypitchsensitivity"     , "1.0"     , CVAR_NONE         , NULL                 ,  "Speed that you look up and down."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_yawsensitivity        , "joyyawsensitivity"       , "-1.0"    , CVAR_NONE         , NULL                 ,  "Speed that you look left to right."            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_wwhack1               , "joywwhack1"              , "0.0"     , CVAR_NONE         , NULL                 ,  "Toggles a hack for a (now very old) joystick called the Logitech WingMan Warrior driver bug.  (TODO: remove)"            )
-CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_wwhack2               , "joywwhack2"              , "0.0"     , CVAR_NONE         , NULL                 ,  "(TODO: UNUSED -- remove)"            )
-CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , lookspring                , "lookspring"              , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle centering of the screen after the -klook command."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , in_joystick               , "joystick"                , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle the use of joystick.  TODO: This value is not used."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_name                  , "joyname"                 , "joystick", CVAR_NONE         , NULL                 ,  "The name given to the joystick."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advanced              , "joyadvanced"             , "0"       , CVAR_NONE         , NULL                 ,  "Toggle the use of advanced joystick features."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisx              , "joyadvaxisx"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick x-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisy              , "joyadvaxisy"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick y-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisz              , "joyadvaxisz"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick z-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisr              , "joyadvaxisr"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick r-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisu              , "joyadvaxisu"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick u-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_advaxisv              , "joyadvaxisv"             , "0"       , CVAR_NONE         , NULL                 ,  "Mapping of joystick v-axis."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_forwardthreshold      , "joyforwardthreshold"     , "0.15"    , CVAR_NONE         , NULL                 ,  "Controls the dead-zone for moving forward and backward."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sidethreshold         , "joysidethreshold"        , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for fly."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_flysensitivity        , "joyflysensitivity"       , "-1.0"    , CVAR_NONE         , NULL                 ,  "Fly sensitivity"            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_flythreshold          , "joyflythreshold"         , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for fly."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_pitchthreshold        , "joypitchthreshold"       , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for looking up and down."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_yawthreshold          , "joyyawthreshold"         , "0.15"    , CVAR_NONE         , NULL                 ,  "Dead-zone for looking left and right."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_forwardsensitivity    , "joyforwardsensitivity"   , "-1.0"    , CVAR_NONE         , NULL                 ,  "Determines the ramp-up speed for moving forward and backward."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sidesensitivity       , "joysidesensitivity"      , "-1.0"    , CVAR_NONE         , NULL                 ,  "Ramp-up speed for moving side to side."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_pitchsensitivity      , "joypitchsensitivity"     , "1.0"     , CVAR_NONE         , NULL                 ,  "Speed that you look up and down."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_yawsensitivity        , "joyyawsensitivity"       , "-1.0"    , CVAR_NONE         , NULL                 ,  "Speed that you look left to right."            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_wwhack1               , "joywwhack1"              , "0.0"     , CVAR_NONE         , NULL                 ,  "Toggles a hack for a (now very old) joystick called the Logitech WingMan Warrior driver bug.  (TODO: remove)"            )
+//CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_wwhack2               , "joywwhack2"              , "0.0"     , CVAR_NONE         , NULL                 ,  "(TODO: UNUSED -- remove)"            )
+
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_deadzone               , "joy_deadzone"              , "0.175"  , CVAR_ARCHIVE      , NULL                 ,  "Fraction of the stick travel to be deadzone, between 0 and 1."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_deadzone_trigger       , "joy_deadzone_trigger"      , "0.2"    , CVAR_ARCHIVE      , NULL                 ,  "Fraction of the stick travel to be deadzone, between 0 and 1."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sensitivity_yaw        , "joy_sensitivity_yaw"       , "140"    , CVAR_ARCHIVE      , NULL                 ,  "Max angular speed in degrees/second."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_sensitivity_pitch      , "joy_sensitivity_pitch"     , "150"    , CVAR_ARCHIVE      , NULL                 ,  "Max angular speed in degrees/second."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_invert                 , "joy_invert"                , "0"      , CVAR_ARCHIVE      , NULL                 ,  "Invert joystick up/down."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_exponent               , "joy_exponent"              , "3"      , CVAR_ARCHIVE      , NULL                 ,  "For the look stick, the stick displacement (between 0 and 1) is raised to this power. Default is 3. So a value of 1 would give a linear relationship between stick displacement and fraction of the maximum angular speed."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_exponent_move          , "joy_exponent_move"         , "3"      , CVAR_ARCHIVE      , NULL                 ,  "For the move stick, the stick displacement (between 0 and 1) is raised to this power. Default is 3. So a value of 1 would give a linear relationship between stick displacement and fraction of the maximum angular speed."            )
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_swapmovelook           , "joy_swapmovelook"          , "0"      , CVAR_ARCHIVE      , NULL                 ,  "Swap the move/look sticks. Default is move on the left stick, look on the right stick.")
+CVAR_DEF( Input_Joystick_Init, INPUT     ,  DEP_NONE , joy_enable                 , "joy_enable"                , "1"      , CVAR_ARCHIVE      , NULL                 ,  "Toggle joy_stick"            )
+
+CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , lookspring                , "lookspring"              , LOOKSPRING_DEFAULT       , CVAR_ARCHIVE      , NULL                 ,  "Toggle centering of the screen after the -klook command."            )
 CVAR_DEF( CL_Init     , INPUT     ,  DEP_NONE , lookstrafe                , "lookstrafe"              , "0"       , CVAR_NONE         , NULL                 ,  "Toggle automatic strafing when the +klook command is used."            )
 CVAR_DEF( CL_Init     , INPUTMOUSE,  DEP_NONE , in_freelook               , "in_freelook"             , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle mouselook (mouse forward and back movement will make the player look up and down)"            )
 CVAR_DEF( VID_Init     , INPUTKEYBOARD,  DEP_NONE , in_keymap                 , "in_keymap"               , "1"       , CVAR_ARCHIVE      , Key_Release_Keys     ,  "Toggle automatic use of current system keyboard language mapping.  Off = USA keyboard layout."            )
@@ -238,7 +267,8 @@ CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_crosshair             , "cro
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_logcenterprint        , "con_logcenterprint"      , "1"       , CVAR_NONE         , NULL                 ,  "If 1, centerprint messages will be logged to the console in sp/coop. If 2, they will also be logged in deathmatch. Default 1."            ) //johnfitz
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_printspeed            , "scr_printspeed"          , "8"       , CVAR_NONE         , NULL                 ,  "Episode ending final message text printing speed (i.e. E1M7, END, ..)."            )
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_sbarcentered          , "scr_sbarcentered"        , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle centering of status bar (ammo, health, ..) in deathmatch."            )
-CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_scaleauto             , "scr_scaleauto"           , "1"       , CVAR_ARCHIVE      , SCR_Conwidth_f       ,  "Scale the menu, font and status bar autmatically (0: Off  1: medium  2: large)."            )
+
+CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_scaleauto             , "scr_scaleauto"           , SCALEAUTO_DEFAULT       , CVAR_ARCHIVE      , SCR_Conwidth_f       ,  "Scale the menu, font and status bar autmatically (0: Off  1: medium  2: large)."            )
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_scoreboard_pings      , "scr_scoreboardpings"     , "1"       , CVAR_NONE         , NULL                 ,  "Toggle drawing of scoreboard pings in multiplayer."            )
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_showfps               , "scr_showfps"             , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle drawing of a frames-per-second (fps) indicator."            )
 CVAR_DEF( CL_Init     , SCREEN    ,  DEP_NONE , scr_showpos               , "scr_showpos"             , "0"       , CVAR_NONE         , NULL                 ,  "Toggle drawing of current location coordinates.  Related: viewpos, setpos."            )
@@ -282,8 +312,8 @@ CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_teamscores             , "pq_
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_moveup		          , "pq_moveup"					 , "0"     , CVAR_ARCHIVE						, NULL                 ,  "Swim using +jump as if pressing +moveup instead."            )
 #ifdef SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http		  , "pq_download_http"		     , "1"     , CVAR_NONE						, NULL                 ,  "Attempt downloading missing maps and models when connected to a server reporting as ProQuake 3.50 or greater server."            )
-CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_url	  , "pq_download_http_url"       , "downloads.quake-1.com"  , CVAR_NONE						, NULL     ,  "Download source if attempting to download a map/model/sound when connected to a ProQuake 3.5 or greater server."            )
-CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_locs	  , "pq_download_http_locs"      , "1"     , CVAR_ARCHIVE						, NULL     ,  "Toggle download attempt of .loc files if pq_download_http is also enabled."            )
+CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_url	  , "pq_download_http_url"       , "bigfoot.servequake.com"  , CVAR_NONE						, NULL     ,  "Download source if attempting to download a map/model/sound when connected to a ProQuake 3.5 or greater server."            )
+CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_download_http_locs	  , "pq_download_http_locs"      , PQLOCS_DEFAULT    , CVAR_ARCHIVE					, NULL     ,  "Toggle download attempt of .loc files if pq_download_http is also enabled."            )
 #endif // SUPPORTS_PQ_CL_HTTP_DOWNLOAD
 CVAR_DEF( CL_Init     , CL        ,  DEP_NONE , pq_rquake				  , "pq_rquake"					 , "0"     , CVAR_NONE						, NULL                 ,  "Single player entities appear in deathmatch for RQuake.  RQuake is a co-op mod that uses the deathmatch scoreboard, certain entities like doors are sometimes marked NOT_IN_DEATHMATCH and would not normally appear."            )
 CVAR_DEF( CL_Init     , SV        ,  DEP_NONE , pq_timer				  , "pq_timer"					 , "1"     , CVAR_NONE						, NULL                 ,  "Toggle use of match time display when a ProQuake server sends team game match information."            )
@@ -375,17 +405,24 @@ CVAR_DEF( PR_Init     , SVVM      ,  DEP_NONE , sv_fix_flush_alias_exceptions   
 #ifdef PLATFORM_OSX // Mac Gamma.  No hardware gamma.  This is horrible.  Properly fix sometime.
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gamma"                   , "0.85"       , CVAR_ARCHIVE      , NULL                 ,  "Screen gamma correction level."            )
+#elif defined(DIRECT3D9_WRAPPER)
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gamma"                   , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen gamma correction level."            )
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
 #else
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_gamma                 , "gamma"                   , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen gamma correction level."            )
-CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_hardwaregamma         , "vid_hardwaregamma"       , HWGAMMA_DEFAULT       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of hardware gamma/contrast correction."            )
 #endif
 
 // FUTURE PERHAPS.  CVAR_DEF( VID_Init    , VIDEO     ,  DEP_D3D9 , vid_shadergamma           , "vid_shadergamma"         , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle use of shader gamma as primary gamma/contrast method when hardware is not being used."            )
 
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_GL   , vid_multisample           , "vid_multisample"         , "0"       , CVAR_ARCHIVE      , VID_Local_Multisample_f,  "Enables costly edge smoothing (values: 0, 2, 4, 8)"          )
-CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_contrast              , "contrast"                , "1"       , CVAR_ARCHIVE      , NULL                 ,  "Screen contrast correction level."            )
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_contrast              , "contrast"        , CONTRAST_DEFAULT  , CVAR_ARCHIVE      , NULL                 ,  "Screen contrast correction level."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_fullscreen            , "vid_fullscreen"          , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Set fullscreen preference. Requires vid_restart."            )
+#if defined(PLATFORM_IOS) || defined(PLATFORM_ANDROID) // Default 2: 320 x 240
+CVAR_DEF( VID_Init    , VIDEO     ,  DEP_SW   , vid_sw_stretch            , "vid_stretch"             , "2"       , CVAR_ARCHIVE      , NULL                 ,  "Stretch simulates lower resoluton (2: 320 x 240 1:640 x 480 0: off) as close as possible.  Requires vid_restart. Provide lower resolution appearance on displays without low resolution modes available."            )
+#else // For mobile we default "2" (320 x 240) so it is more readable/usable on a small phone screen
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_SW   , vid_sw_stretch            , "vid_stretch"             , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Stretch simulates lower resoluton (2: 320 x 240 1:640 x 480 0: off) as close as possible.  Requires vid_restart. Provide lower resolution appearance on displays without low resolution modes available."            )
+#endif
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_NONE , vid_height                , "vid_height"              , "480"     , CVAR_ARCHIVE      , NULL                 ,  "Requested video mode height."            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_FREQ , vid_refreshrate           , "vid_refreshrate"         , "60"      , CVAR_ARCHIVE      , NULL                 ,  "Requested video mode refresh rate. (TODO: This isn't used.  Remove?)"            )
 CVAR_DEF( VID_Init    , VIDEO     ,  DEP_VSYNC, vid_vsync                 , "vid_vsync"               , "0"       , CVAR_ARCHIVE      , VID_Local_Vsync_f   ,  "Toggle use of vsync to eliminate tearing."            )
@@ -410,7 +447,7 @@ CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , cl_titledemos_list        , "cl_
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_drawviewmodel           , "r_drawviewmodel"         , "1"       , CVAR_CLIENT       , NULL                 ,  "Toggle drawing of view model (gun)."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_lavacshift              , "r_lavacolor"             , "255 80 0 150", CVAR_NONE    , View_LavaCshift_f    ,  "Screen color when submerged in lava."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_slimecshift             , "r_slimecolor"            , "0 25 5 150", CVAR_NONE       , View_SlimeCshift_f   ,  "Screen color when submerged in slime."            )
-CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_viewmodel_ring          , "r_viewmodel_ring"        , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggles drawing of (transparent) weapon when holding invisibility ring."            )
+CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_viewmodel_ring          , "r_viewmodel_ring", RING_DEFAULT      , CVAR_ARCHIVE      , NULL                 ,  "Toggles drawing of (transparent) weapon when holding invisibility ring."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_viewmodel_size         , "r_viewmodel_size"         , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Increase amount of weapon shown (2 is more, 0.5 is less)")
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_viewmodel_fov           , "r_viewmodel_fov"         , "90"      , CVAR_ARCHIVE      , NULL                 ,  "Makes weapon drawing immune to field of view settings.  When set to a non-zero value, the gun will be drawn as if the screen field-of-view is this number --- no matter what fov value is actually used."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , r_viewmodel_quake         , "r_viewmodel_quake"       , "0"       , CVAR_ARCHIVE      , NULL                 ,  "Toggle drawing of weapon in same position as original Quake, instead of the FitzQuake position."            )
@@ -442,7 +479,7 @@ CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_kickpitch               , "v_k
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_kickroll                , "v_kickroll"              , "0.6"     , CVAR_ARCHIVE      , NULL                 ,  "Distance the screen should roll clockwise or counter clockwise when the player is shot."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_kicktime                , "v_kicktime"              , "0.5"     , CVAR_ARCHIVE      , NULL                 ,  "The amount of time that the screen should remain tiled after the player has been shot."            )
 CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_polyblend               , "gl_polyblend"            , "1"       , CVAR_ARCHIVE | CVAR_CLIENT , R_PolyBlendChanged_f, "Toggle the use of palette color blending and flashing effects."           )  // Baker: --> // JPG 3.30 - winquake version of r_polyblend
-CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_polyblend_lite          , "v_polyblend_lite"        , "0"       , CVAR_ARCHIVE | CVAR_CLIENT , R_PolyBlendChanged_f, "Toggle use of less intense polyblending."           )  // Baker: --> // JPG 3.30 - winquake version of r_polyblend
+CVAR_DEF( View_Init   , VIEW      ,  DEP_NONE , v_polyblend_lite          , "v_polyblend_lite", POLYLITE_DEFAULT  , CVAR_ARCHIVE | CVAR_CLIENT , R_PolyBlendChanged_f, "Toggle use of less intense polyblending."           )  // Baker: --> // JPG 3.30 - winquake version of r_polyblend
 
 // Class = Client?  Fieldn't isn't used at this time anyway.
 //	CVAR_DEF( Nehahra_Init     , CLIENT    ,  DEP_NONE , nehx00                 , "nehx00"               , "0"       , CVAR_NONE         , NULL                 ,  "Nehahra internal variable."            )

@@ -276,11 +276,11 @@ void Draw_Character (int _x, int _y, int num)
 	if (y <= -8)
 		return;			// totally off screen
 
-#if 1 // was #ifdef PARANOID -- Baker: 4.32 we need this for autoid
+#if 1 // was #ifdef PARANOID -- Baker: 4.32 we need this for autoid.  March 28 2018 - Also seems to happen download progress sometimes.
 	if (y > clheight - 8 || x < 0 || x > clwidth - 8)
 	{
 		//System_Error  ("Con_DrawCharacter: (%d, %d)", x, y);
-		Con_DPrintLinef ("Con_DrawCharacter: (%d, %d)", x, y);
+		//Con_DPrintLinef ("Off grid draw .... Con_DrawCharacter: (%d, %d)", x, y);
 		return;
 	}
 #endif
@@ -875,6 +875,9 @@ void Draw_SetCanvas (canvastype newcanvas)
 		canvas.y = clheight - 48;
 		canvas.width = 320, canvas.height = 48;
 		canvas.scale_x = 1, canvas.scale_y = 1;
+
+		if (scr_sbaralpha.value >=1)	RECT_SET (focus0.touch_sbar, 0, canvas.y, vid.screen.width, canvas.height);
+		else							RECT_SET (focus0.touch_sbar, canvas.x, canvas.y, canvas.width, canvas.height);
 		break;
 	case CANVAS_CROSSHAIR: //0,0 is center of viewport
 		// Baker: This canvas is a bit different than the others

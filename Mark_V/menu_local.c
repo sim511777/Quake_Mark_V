@@ -120,7 +120,7 @@ hotspot_menu_item_t *Menu_Hotspot_Refresh_For_Mouse (int mousex, int mousey, rep
 	float x, y, z;
 
 	Mat4_UnProject_Smart (mousex, mousey,  /* near */ 0, &focus0.menu_modelview, &focus0.menu_projection, focus0.menu_viewport, clheight, &x, &y, &z);
-
+	//__android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "menu in %d %d out %d %d", (int)mousex, (int)mousey, (int)x, (int)y);
 	NOT_MISSING_ASSIGN (left, (int) x);
 	NOT_MISSING_ASSIGN (top,  (int) y);
 	

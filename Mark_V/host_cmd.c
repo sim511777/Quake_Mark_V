@@ -1449,7 +1449,19 @@ void Host_Loadgame_f (lparse_t *line)
 							Con_PrintLinef ("3) Then load this game!");
 
 							SCR_EndLoadingPlaque ();
-							return;
+							{
+#define MULT_MSG					"Multiplayer Load Game"												\
+									NEWLINE																\
+									NEWLINE "Multi-player needs players connected!"						\
+									NEWLINE																\
+									NEWLINE "1) Disconnect then set " QUOTEDSTR ("maxplayers 16")		\
+									NEWLINE "2) Then start a map                   "					\
+									NEWLINE "3) Get players connected              "					\
+									NEWLINE "4) Then load this game!               " // Ender
+
+								Mnu_Dialog_Modal_Alert (NULL /*ok*/, MULT_MSG);
+								return;
+							}
 						}
 						multiplayer_load = true;
 					}
@@ -1973,7 +1985,7 @@ void Host_Color_f (lparse_t *line)
 	}
 #endif // SUPPORTS_COOP_ENHANCEMENTS
 
-	playercolor = top*16 + bottom;
+	playercolor = top * QUAKE_NUM_PLAYER_COLORS_16 + bottom;
 
 	if (cmd_source == src_command)
 	{
@@ -2579,25 +2591,22 @@ void Host_Give_f (lparse_t *line)
 		{
 		    sv_player->v.armortype = 0.8;
 	        sv_player->v.armorvalue = v;
-			sv_player->v.items = sv_player->v.items -
-				((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) +
-				IT_ARMOR3;
+			if (com_gametype == gametype_rogue)	sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(RIT_ARMOR1 | RIT_ARMOR2 | RIT_ARMOR3)) + IT_ARMOR3;
+			else								sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR3;
 		}
 		else if (v > 100)
 		{
 		    sv_player->v.armortype = 0.6;
 	        sv_player->v.armorvalue = v;
-			sv_player->v.items = sv_player->v.items -
-				((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) +
-					IT_ARMOR2;
+			if (com_gametype == gametype_rogue)	sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(RIT_ARMOR1 | RIT_ARMOR2 | RIT_ARMOR3)) + IT_ARMOR2;
+			else								sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR2;
 		}
 		else if (v >= 0)
 		{
 		    sv_player->v.armortype = 0.3;
 	        sv_player->v.armorvalue = v;
-			sv_player->v.items = sv_player->v.items -
-				 ((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) +
-				IT_ARMOR1;
+			if (com_gametype == gametype_rogue)	sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(RIT_ARMOR1 | RIT_ARMOR2 | RIT_ARMOR3)) + RIT_ARMOR1;
+			else								sv_player->v.items = sv_player->v.items - ((int)(sv_player->v.items) & (int)(IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR1;
 		}
 		break;
 	//johnfitz

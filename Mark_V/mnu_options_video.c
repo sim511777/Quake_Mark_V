@@ -358,8 +358,14 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 		case_break opt_hwgamma:			// Nothing?
 		case_break opt_texturefilter:	// Nothing?
 #endif //WINQUAKE_RENDERER_SUPPORT
-		case_break opt_test:			Cbuf_AddTextLine ("vid_test");
-		case_break opt_apply:			Cbuf_AddTextLine ("vid_restart");
+		case_break opt_test:			
+#ifndef PLATFORM_ANDROID // Cheap but whatever
+										Cbuf_AddTextLine ("vid_test");
+#endif // !PLATFORM_ANDROID
+		case_break opt_apply:			
+#ifndef PLATFORM_ANDROID // Cheap but whatever
+										Cbuf_AddTextLine ("vid_restart");
+#endif // !PLATFORM_ANDROID
 		case_break opt_touchscreen:		Cbuf_AddTextLine ("toggle vid_touchscreen");
 		} // end switch (local_menu->cursor)
 		//////////////////////////////////////////////////////////////////////////////////////

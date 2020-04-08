@@ -118,11 +118,12 @@ static fn_set_t default_function_set = {
 	fclose,			// ffclose_fn
 } ;
 
-void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t pmainwindow )
+void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t *pmainwindow)
 {
 	if (!fnset) fnset = &default_function_set;
 	c_strlcpy (gCore_Appname, appname);
 	gCore_Window = pmainwindow;
+
 
 #if defined(PLATFORM_WINDOWS) && !defined(CORE_SDL)
 	gCore_hInst = GetModuleHandle(NULL);
@@ -136,6 +137,7 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t pmainwindow )
 	log_fatal	= fnset->ferrorline_fn;
 	log_debug	= fnset->fdprintline_fn;
 	log_level_5	= fnset->fprintlinelevel_fn;
+
 //	Core_Warning= fnset->fwarning_fn;
 //	Core_Printf	= fnset->fprint_fn;
 //	Core_DPrintf= fnset->fdprint_fn;
@@ -159,6 +161,17 @@ void Core_Init (const char *appname, fn_set_t *fnset, sys_handle_t pmainwindow )
 	core_fopen_read	= fnset->ffopenread_fn;
 	core_fopen_write = fnset->ffopenwrite_fn;
 	core_fclose	= fnset->ffclose_fn;
+
+// March 28 2018
+	// SDL video early init
+
+#if defined (CORE_SDL) // Basically for Android only at this time - Make sure log_fatal is hooked up first.
+	{
+		void Vidco_Local_InitOnce_SDL (void);
+		Vidco_Local_InitOnce_SDL ();
+	}
+#endif // CORE_SDL
+
 
 #ifndef CORE_NO_BUNDLE
 	if (!gCore_Pack) // Protect against multiple Core_Inits since this is hardcoded file.

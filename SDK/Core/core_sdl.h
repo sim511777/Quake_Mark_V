@@ -38,6 +38,7 @@
 	#pragma comment (lib, "sdl2.lib")
 	#pragma comment (lib, "sdl2main.lib")
 	#include <SDL2/SDL.h> // Formerly #include <SDL.h>
+	#include <SDL2/SDL_syswm.h> // Formerly #include <SDL.h>
 
 	//#include <core_windows.h> // LLWinKeyHook
 #else
@@ -45,8 +46,8 @@
 	#ifdef PLATFORM_ANDROID
 		#include <SDL.h>
 	#else
-		#include <SDL2/SDL.h>
-		#include <SDL2/SDL_syswm.h> // To expose things like HWND to us.
+		#include <SDL.h>
+		#include <SDL_syswm.h> // To expose things like HWND to us.
 	#endif
 #endif
 

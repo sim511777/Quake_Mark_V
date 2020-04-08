@@ -85,15 +85,34 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 		if (!isDedicated)
 		{
 			msgbox ("Quake Not Detected", "Your Quake folder (%s) should contain a "
-							"folder named id1 with pak0.pak and pak1.pak." NEWLINE NEWLINE "Opening folder ...", host_parms.basedir );
+							"folder named id1 with pak0.pak and pak1.pak within the id1 folder." 
+#if defined(PLATFORM_ANDROID) || defined(PLATFORM_IOS)
+				, String_Skip_Char (String_Skip_Char (host_parms.basedir, '/'), '/') - 1 );
+#else
+				NEWLINE NEWLINE "Opening folder ...", host_parms.basedir );
+#endif // ! ANDROID/IOS
+							
 
 			Folder_Open_Highlight_Binary ();
 		}
+//		File_Mkdir_Recursive (va("%s/id1", com_basedir)); // Bad idea.
+#if defined(PLATFORM_ANDROID) || defined(PLATFORM_IOS)
+		
+		System_Error ( "W_LoadWadFile: couldn't load %s" NEWLINE NEWLINE
+					"Game data files are required to run; "
+					"usually this means you need Quake shareware or registered version." NEWLINE NEWLINE
+					"Is there a pak0.pak in" NEWLINE NEWLINE "%s/id1" NEWLINE NEWLINE "folder?"
+					
+					NEWLINE NEWLINE "(More help? Visiting" NEWLINE "quakeone.com/markv shows initial setup illustration.)", filename, 
+					String_Skip_Char (String_Skip_Char (host_parms.basedir, '/'), '/') - 1 
+		);
 
+#else
 		System_Error ( "W_LoadWadFile: couldn't load %s" NEWLINE NEWLINE
 					"Game data files are required to run; "
 					"usually this means you need Quake shareware or registered version." NEWLINE NEWLINE
 					"Is %s in the proper folder?" NEWLINE NEWLINE "(%s)", filename, ENGINE_FAMILY_NAME, com_basedir);
+#endif // ! ANDROID/IOS
 	}
 
 	header = (wadinfo_t *)wad_base;

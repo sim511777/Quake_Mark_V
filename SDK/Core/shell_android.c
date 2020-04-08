@@ -49,7 +49,7 @@ const char *File_Binary_URL (void)
 		length = readlink (linkname, binary_url, sizeof(binary_url)-1);
 
     	// In case of an error, leave the handling up to the caller
-    	if (length == -1 || length >= sizeof(binary_url) )
+    	if (length == -1 || length >= (int)sizeof(binary_url) )
 			log_fatal ("Couldn't determine executable directory");
 
     	binary_url[length] = 0;
@@ -60,12 +60,13 @@ const char *File_Binary_URL (void)
 
 
 
-
+// March 28 2018 - We should be using SDL_AndroidGetExternalStoragePath()
+// However, for now we aren't.
 const char *_Shell_Folder_Caches_By_AppName (const char* appname)
 {
     static char cachesfolder[MAX_OSPATH];
 	if (!cachesfolder[0])
-    	c_strlcpy (cachesfolder, "./_caches"); // I hope this works ok.
+    	c_strlcpy (cachesfolder, "/sdcard/_caches");
     return cachesfolder;
 }
 
@@ -114,6 +115,7 @@ unsigned *_Shell_Clipboard_Get_Image_RGBA_Alloc (int *outwidth, int *outheight)
     return NULL;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //  SYSTEM OS: VIDEO LIMITED
 ///////////////////////////////////////////////////////////////////////////////
@@ -143,6 +145,7 @@ int _Shell_Window_StyleEx (wdostyle_e style)
 {
 	return 0;
 }
+
 
 void Vid_Handle_Borders_Get (wdostyle_e style, cbool have_menu, reply int *left, reply int *top, reply int *width, reply int *height, reply int *right, reply int *bottom)
 {
@@ -201,11 +204,25 @@ cbool _Shell_Folder_Open_Folder_Must_Exist (const char *path_to_file)
     return false; // unimplemented
 }
 
+
 // File must exist
 cbool _Shell_Folder_Open_Highlight_URL_Must_Exist (const char *path_to_file)
 {
 	return false; // unimplemented
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  SYSTEM OS: STARTUP/ICON
+///////////////////////////////////////////////////////////////////////////////
+
+// Considerations: Windows sticky keys, Windows key (full-screen only), Mac mouse acceleration (mouse, not keyboard though)
+cbool Shell_Input_KeyBoard_Capture (cbool bDoCapture, cbool ActOnStickeyKeys, cbool bSuppressWindowskey)
+{
+// Nothing?  For now, I guess.
+	return bDoCapture;
+}
+
 
 
 #ifndef CORE_SDL // MachineTime and Clipboard - we defer to SDL if CORE_SDL build
@@ -243,6 +260,26 @@ cbool _Shell_Folder_Open_Highlight_URL_Must_Exist (const char *path_to_file)
 
 #endif // !CORE_SDL -- MachineTime and Clipboard - we defer to SDL if CORE_SDL build
 
+
+#ifdef CORE_SDL
+
+	///////////////////////////////////////////////////////////////////////////////
+	//  SHELL: PLATFORM
+	///////////////////////////////////////////////////////////////////////////////
+
+	cbool Shell_Platform_Icon_Load (void *key /*wildcard*/)
+	{
+		// TODO
+		return true;
+	}
+
+	cbool Shell_Platform_Icon_Window_Set (sys_handle_t cw)
+	{
+		// TODO
+
+		return true;
+	}
+
+#endif // CORE_SDL
+
 #endif // PLATFORM_ANDROID
-
-

@@ -181,7 +181,7 @@ int System_Error (const char *fmt, ...)
 
 	Host_Shutdown ();
 
-	exit (1);
+	System_Exit (1);
 #ifndef __GNUC__ // Return silence
 	return 1; // No return as an attribute isn't universally available.
 #endif // __GNUC__	// Make GCC not complain about return
@@ -202,6 +202,7 @@ int System_Error (const char *fmt, ...)
 // Called by Modal Message, Download, Install, NotifyBox
 void System_SendKeyEvents (void)
 {
+	Input_Local_Joystick_Commands ();		//ericw -- allow joysticks to add keys so they can be used to confirm SCR_ModalMessage
 	Input_Local_SendKeyEvents ();
 }
 
@@ -226,7 +227,7 @@ void System_Quit (void)
 // shut down QHOST hooks if necessary
 //	DeinitConProc ();
 
-	exit (0);
+	System_Exit (0);
 }
 
 
@@ -267,20 +268,44 @@ void System_Init (void)
 int main (int argc, char *argv[])
 {
 	char		cmdline[SYSTEM_STRING_SIZE_1024];
-	uintptr_t 	fakemainwindow = 0;
+	sys_handle_t 	fakemainwindow = NULL;
 	int			done = 0;
 	double 		oldtime;
 
 	String_Command_Argv_To_String (cmdline, argc - 1, &argv[1], sizeof(cmdline));
 
+#ifdef PLATFORM_ANDROID // March 24 2018 - this stupidly happens
+	if (host_initialized) {
+		Con_SafePrintLinef ("Session went to sleep, restarting ...");
+		
+//		goto resuming_crazily;  // Didn't work.  Audio and video might be trashed or worse.
+		System_Exit (0); // Let's see what happens!
+	}
+#endif // PLATFORM_ANDROID
 
 	//SDL_AudioInit ("winmm"); // ericw!  No help.  Static linked version sound is terrible for 11025 for sure.
+#ifdef PLATFORM_ANDROID
+	vid.is_mobile					= true;
+	vid.is_screen_portrait			= true;		// March 23 2018 - Wow --- this late to the party?
+	vid.is_mobile_ios_keyboard		= false;	// Works around some ridiculous limitations of Apple code for iPhone bluetooth keyboard
+
+	// We have some massive failures in the commandline parms
+	// "+startdemos +map start" TOTALLY FAILS
+	// ""+connect quake.shmack.net"" TOTALLY FAILS
+	// "+startdemos +wait +wait +wait +connect quake.shmack.net"
+	// "+startdemos +wait +wait +wait" TOTALLY FAILS
+	// "+startdemos +startdemos" totally fails.
+	//Main_Central ("+startdemos", &fakemainwindow, false /* we perform loop ourselves */);
 	Main_Central (cmdline, &fakemainwindow, false /* we perform loop ourselves */);
+#else
+	Main_Central (cmdline, &fakemainwindow, false /* we perform loop ourselves */);
+#endif // PLATFORM_ANDROID
+	
 
 	oldtime = System_DoubleTime ();
 
-	SDL_InitSubSystem (SDL_INIT_EVENTS );
-
+	SDL_InitSubSystem (SDL_INIT_EVENTS ); // March 21 2018 - Verified is here
+	
 	while (!done)
 	{
 		double time, newtime;
@@ -319,6 +344,47 @@ int main (int argc, char *argv[])
 //
 //
 
+#ifdef _DEBUG
+static keyvalue_t sdl_msgs_text [] = {
+	KEYVALUE (SDL_APP_TERMINATING           ),
+	KEYVALUE (SDL_APP_LOWMEMORY             ),
+	KEYVALUE (SDL_APP_WILLENTERBACKGROUND   ),
+	KEYVALUE (SDL_APP_DIDENTERBACKGROUND   	),
+	KEYVALUE (SDL_APP_WILLENTERFOREGROUND  	),
+	KEYVALUE (SDL_APP_DIDENTERFOREGROUND    ),
+	KEYVALUE (SDL_QUIT              		),
+	KEYVALUE (SDL_WINDOWEVENT           	),
+	KEYVALUE (SDL_SYSWMEVENT            	),
+	KEYVALUE (SDL_CLIPBOARDUPDATE       	),
+	KEYVALUE (SDL_DROPFILE              	),
+	KEYVALUE (SDL_KEYDOWN              		),
+	KEYVALUE (SDL_KEYUP              		),
+	KEYVALUE (SDL_TEXTEDITING              	),
+	KEYVALUE (SDL_TEXTINPUT              	),
+	KEYVALUE (SDL_MOUSEMOTION              	),
+	KEYVALUE (SDL_MOUSEBUTTONDOWN           ),
+	KEYVALUE (SDL_MOUSEBUTTONUP             ),
+	KEYVALUE (SDL_MOUSEWHEEL				),
+    KEYVALUE (SDL_JOYAXISMOTION), /**< Joystick axis motion */
+    KEYVALUE (SDL_JOYBALLMOTION),          /**< Joystick trackball motion */
+    KEYVALUE (SDL_JOYHATMOTION),           /**< Joystick hat position change */
+    KEYVALUE (SDL_JOYBUTTONDOWN),          /**< Joystick button pressed */
+    KEYVALUE (SDL_JOYBUTTONUP),            /**< Joystick button released */
+    KEYVALUE (SDL_JOYDEVICEADDED),         /**< A new joystick has been inserted into the system */
+    KEYVALUE (SDL_JOYDEVICEREMOVED),       /**< An opened joystick has been removed */
+
+    /* Game controller events */
+    KEYVALUE (SDL_CONTROLLERAXISMOTION), /**< Game controller axis motion */
+    KEYVALUE (SDL_CONTROLLERBUTTONDOWN),          /**< Game controller button pressed */
+    KEYVALUE (SDL_CONTROLLERBUTTONUP),            /**< Game controller button released */
+    KEYVALUE (SDL_CONTROLLERDEVICEADDED),         /**< A new Game controller has been inserted into the system */
+    KEYVALUE (SDL_CONTROLLERDEVICEREMOVED),       /**< An opened Game controller has been removed */
+    KEYVALUE (SDL_CONTROLLERDEVICEREMAPPED),      /**< The controller mapping was updated */
+
+
+//	KEYVALUE (SDL_DROPTEXT              	),	
+NULL, 0}; // Null term
+#endif // _DEBUG
 
 
 // Return 0 normally.  Return 1 if received quit.
@@ -327,9 +393,27 @@ int Session_Dispatch (void *_sdl_event)
 	cbool is_hidden = false, is_activate = false;
 	SDL_Event  *e    = _sdl_event;
 
+#if 0
+	{
+		const char *msgtext_ = KeyValue_GetKeyString (sdl_msgs_text, e->type);
+		const char *msgtext  = msgtext_ ? msgtext_ : va("Unknown message: %x", e->type);
+//		__android_log_print( ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG,  "SDL %s wparam: %x (decimal %d)", msgtext, e->type, (int)e->type);
+	}
+#endif
+
 	// check for input messages
 	if (SDLQ_IN_ReadInputMessages (e))
 		return 0; // Input message was handled
+	
+
+#if 0 // Baker: Message dump
+	{
+		const char *msgtext_ = KeyValue_GetKeyString (sdl_msgs_text, e->type);
+		const char *msgtext  = msgtext_ ? msgtext_ : va("Unknown message: %x", e->type);
+		Con_SafePrintLinef ("%s wparam: %x (decimal %d)", msgtext, e->type, (int)e->type);
+	}
+#endif
+
 
 	if (e->type == SDL_WINDOWEVENT) {
 		switch (e->window.event) {

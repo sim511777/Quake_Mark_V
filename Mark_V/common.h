@@ -176,9 +176,9 @@ byte *COM_LoadHunkFile_Limited (const char *path, const char *media_owner_path);
 // hardware acceleration.  Quakespasm does not have hardware accelerated music
 // playback and slows to a crawl if you use music.
 
-#ifdef SUPPORTS_MP3_MUSIC // Baker change
+//#ifdef SUPPORTS_MP3_MUSIC // Baker change
 char *COM_FindFile_NoPak (const char *file_to_find);
-#endif // Baker change +
+//#endif // Baker change +
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Gamedir and registered: Baker ... I think these need overhauled

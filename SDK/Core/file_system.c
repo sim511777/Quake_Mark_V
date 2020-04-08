@@ -47,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //  SYSTEM OS: FILE AND DIRECTORY MANAGEMENT
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS) || defined (PLATFORM_ANDROID) // Android too?  Go figure
 // http://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface (#include <stdio.h>)
 size_t getline(char **lineptr, size_t *n, FILE *stream)
 {
@@ -101,7 +101,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream)
 
     return p - bufptr - 1;
 }
-#endif // PLATFORM_WINDOWS
+#endif // PLATFORM_WINDOWS + PLATFORM_ANDROID
 
 
 cbool File_Chdir (const char *path_url)

@@ -1126,11 +1126,15 @@ void Draw_SetCanvas (canvastype newcanvas)
 		{
 			eglOrtho (0, clwidth / s, 48, 0, -99999, 99999);
 			eglViewport (clx, cly, clwidth, 48*s);
+			// Baker: This would actually need translated to canvas default.
+			RECT_SET (focus0.touch_sbar, clx, cly, clwidth, 48*s);
 		}
 		else
 		{
 			eglOrtho (0, 320, 48, 0, -99999, 99999);
 			eglViewport (clx + (clwidth - 320*s) / 2, cly, 320*s, 48*s);
+			// Baker: This would actually need translated to canvas default.
+			RECT_SET (focus0.touch_sbar, clx + (clwidth - 320*s) / 2, vid.screen.height - cly, 320*s, 48*s);
 		}
 		break;
 	case CANVAS_WARPIMAGE:

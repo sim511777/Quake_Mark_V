@@ -641,6 +641,12 @@ int Con_Printf (const char *fmt, ...)
 // also echo to debugging console
 	Dedicated_Printf ("%s", text); // also echo to debugging console
 
+#ifdef PLATFORM_ANDROID
+	#ifdef _DEBUG
+		__android_log_print(ANDROID_LOG_INFO, CORE_ANDROID_LOG_TAG, "%s", text);
+	#endif // _DEBUG
+#endif // PLATFORM_ANDROID
+
 // log all messages to file
 	if (con_debuglog)
 		Con_DebugLog ("%s", text);
@@ -669,6 +675,7 @@ int Con_Printf (const char *fmt, ...)
 
     return 0;
 }
+
 
 int Con_PrintLinef (const char *fmt, ...)
 {
@@ -1418,7 +1425,11 @@ void Con_DrawConsole (float pct, cbool drawinput)
 	y+=8;
 	//c_snprintf3 (ver, "%s %1.2f.%d", ENGINE_NAME, (float)ENGINE_VERSION, (int)ENGINE_BUILD);
 	//c_snprintf2 (ver, "%s %d", ENGINE_NAME, (int)ENGINE_BUILD);
+#ifdef PLATFORM_ANDROID
+	c_snprintf2 (ver, "%s %1.2f", "QuakeDroid", (float)ENGINE_VERSION);
+#else
 	c_snprintf2 (ver, "%s %1.2f", ENGINE_NAME, (float)ENGINE_VERSION);
+#endif
 	for (x=0; x < (int) strlen(ver); x++)
 		Draw_Character ((console1.buffer_columns-strlen(ver)+x+2)<<3, ytop, ver[x] /*+ 128*/);
 }

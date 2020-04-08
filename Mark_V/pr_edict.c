@@ -1418,6 +1418,9 @@ void PR_LoadProgs (const char *__progs_name)
 	pr_edict_size &= ~(sizeof(void *) - 1);
 
 	// JDHack / Requiem ...
+	// March 28 2018 - Baker: Android/Travail crashes here
+	// But it will crash in other places.  pr->global_struct
+	// Must somehow be a bad pointer.
 	sv.pr_handles_imp12 = PR_CheckRevCycle ();
 	sv.pr_imp12_override = false;
 
@@ -1435,6 +1438,8 @@ void PR_LoadProgs (const char *__progs_name)
 	}
 
 #ifdef SUPPORTS_COOP_ENHANCEMENTS
+	// Android/Travail will crash here
+	// But there are other places it will crash.
 	sv.pr_handles_killed = PR_Check_Coop_Kills ();
 	sv.pr_putclientinserver = PR_Check_Coop_Protection ();
 	sv.pr_marcher_key_touch = PR_Check_Marcher_Key_Touch ();

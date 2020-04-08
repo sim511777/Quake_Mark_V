@@ -309,6 +309,7 @@ gltexture_t *LoadATex (unsigned **punsigned, int ordinal, const char *qpath, con
 {
 	int width = 0, height = 0;  unsigned *rgba_data = NULL; size_t rgba_data_length;
 
+	// Baker: These must persist in memory for potential reload.  TEXPREF_PERSIST
 	switch (ordinal) {
 	case 0:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_particlefont.png", &width, &height); break;
 	case 1:	rgba_data = Bundle_Image_Load_Auto_Alloc ("qmb_zing.png", &width, &height); break;

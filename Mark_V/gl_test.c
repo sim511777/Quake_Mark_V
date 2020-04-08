@@ -134,7 +134,7 @@ void DrawPuff (puff_t *p)
 	glColor3f (1, 0, 0);
 
 #if 0
-	glBegin (GL_LINES);
+	glBegin (GL_LINES); // This is commented out
 	glVertex3fv (p->origin);
 	glVertex3f (p->origin[0] + p->length*p->reflect[0],
 		p->origin[1] + p->length*p->reflect[1],
@@ -152,7 +152,7 @@ void DrawPuff (puff_t *p)
 	glEnd ();
 #endif
 
-	glBegin (GL_QUADS);
+	glBegin (GL_QUADS); // Commented out
 	for (i=0 ; i<3 ; i++)
 	{
 		j = (i+1)%3;
@@ -163,7 +163,7 @@ void DrawPuff (puff_t *p)
 	}
 	glEnd ();
 
-	glBegin (GL_TRIANGLES);
+	glBegin (GL_TRIANGLES); // Commented out
 	glVertex3fv (pts[1][0]);
 	glVertex3fv (pts[1][1]);
 	glVertex3fv (pts[1][2]);

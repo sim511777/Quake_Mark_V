@@ -1,4 +1,4 @@
-#ifdef CORE_SDL
+#if defined(CORE_SDL) && !defined(_WIN32) // SDL + NOT Windows
 
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
@@ -68,4 +68,4 @@ void external_music_toggle_f (cvar_t* var)
 {
 }
 
-#endif
+#endif // SDL + NOT Windows

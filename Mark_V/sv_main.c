@@ -1869,6 +1869,7 @@ void SV_SpawnServer (const char *server)
 		pr_global_struct->coop = pr_coop.value;
 	else pr_global_struct->deathmatch = pr_deathmatch.value;
 
+	// March 28 2018 - Android+Travail crashes here ... must be the pr_global_struct->coop
 	sv.level_coop_enhanced = /*svs.listening &&*/ pr_global_struct->coop && vm_coop_enhancements.value;
 
 	pr_global_struct->mapname = PR_SetEngineString(sv.name);
@@ -1892,6 +1893,7 @@ void SV_SpawnServer (const char *server)
 
 // create a baseline for more efficient communications
 	SV_CreateBaseline ();
+
 #ifdef CORE_PTHREADS
 	Admin_Game_Files_List_Update_Server ();
 #endif // 	CORE_PTHREADS

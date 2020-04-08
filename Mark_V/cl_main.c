@@ -1141,4 +1141,22 @@ void CL_Init (void)
 	CL_InitTEnts (); // Technically should occur at game dir change time. 
 
 	Cmd_AddCommands (CL_Init);
+
+	// Detect a first time startup how?
+	if (host_parms.first_time_init) {
+		//Cvar_SetQuick (&cl_name, "");
+		int seed		= System_DoubleTime () * 100;
+		int shirt		= seed % 14; // (0 to 13)
+		int pants		= shirt; // 16 variations is fine.
+		int playercolor	= shirt * QUAKE_NUM_PLAYER_COLORS_16 + pants;
+	
+		Cvar_SetValueQuick (&cl_color, (float)playercolor);
+
+		// March 28 2018
+		// Considered autonames for Android/mobile in general, but let's not.
+		//Cvar_SetQuick (cl_name, va("player_%d", (seed % 9) + 1 )); // NAH!
+
+		
+		Cvar_SetQuick (&hostname, va("Host_%d", (seed % 256) ));
+	} // end if first time
 }

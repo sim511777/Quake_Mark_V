@@ -68,6 +68,8 @@ void Input_Local_Mouse_Cursor_GetPos (required int *px, required int *py, cbool 
 cbool Input_Local_Update_Mouse_Clip_Region_Think (mrect_t *mouseregion);
 
 void Input_Local_Deactivate (void); // Stops drag flag
+cbool Input_Local_Is_Joystick (void);
+
 
 #define INPUT_NUM_MOUSE_BUTTONS 5
 
@@ -87,6 +89,11 @@ typedef enum { ENUM_FORCE_INT_GCC_ (in_axismap)
 
 extern cbool joy_avail;
 
+#ifdef DIRECT_INPUT_QUAKE
+void Input_DirectInput_Mouse_Move (int oldstate);
+void Input_Local_Mouse_Init (void);
+#endif
+
 void Input_Joystick_Init (void);
 void Input_Commands (void); // Baker: Windows uses for joystick, Mac for fake console keyrepeats
 
@@ -98,6 +105,9 @@ cbool Input_Local_Joystick_Read (void);
 #ifdef CORE_SDL
 	#define INPUT_RELATIVE
 	//#pragma message ("INPUT_RELATIVE defined")
+#else
+	#define INPUT_RELATIVE
+
 #endif // CORE_SDL
 
 #ifdef INPUT_RELATIVE
@@ -107,6 +117,8 @@ cbool Input_Local_Joystick_Read (void);
 #define MOUSELOOK_ACTIVE (in_freelook.value || (in_mlook.state & 1))
 
 void Input_Local_SendKeyEvents (void);
+void Input_Local_Joystick_Move (usercmd_t *cmd);
+
 // Perform Key_Event () callbacks until the input que is empty
 
 #endif	// ! __INPUT_H__

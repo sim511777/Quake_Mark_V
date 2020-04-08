@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_MAP_PLANES		32767
 #define	MAX_MAP_NODES		32767 // because negative shorts are contents
 #define	MAX_MAP_CLIPNODES	32767
-#define	MAX_MAP_LEAFS		65535 //johnfitz -- was 8192. Baker 65535 for Rubicon Rumble
+#define	MAX_MAP_LEAFS		((32768*4) - 1) // johnfitz -- was 8192. Baker 65535 for Rubicon Rumble (80000 Sepulcher. Then again for DM4JAM)
 #define	MAX_MAP_VERTS		65535
 #define	MAX_MAP_FACES		65535
 #define	MAX_MAP_MARKSURFACES 65535
@@ -45,9 +45,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_WINQUAKE_MAP_CLIPNODES		32767
 #define MAX_WINQUAKE_MAP_FACES			32767
 #define MAX_WINQUAKE_MAP_MARKSURFACES	32767
-#define MAX_WINQUAKE_MAP_LEAFS			8192
+#define MAX_WINQUAKE_MAP_LEAFS			8192 // For reference only (see MAX_MAP_LEAFS above on line #38)
 
-#define MAX_FITZQUAKE_MAP_LEAFS			32767 // Not in a warning message
+#define MAX_FITZQUAKE_MAP_LEAFS			32767 // For reference only Not in a warning message (see MAX_MAP_LEAFS)
 // End warning messages
 
 #define	MAX_MAP_TEXINFO		4096

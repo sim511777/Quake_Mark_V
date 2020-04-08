@@ -325,7 +325,7 @@ void Admin_Init (void)
 	void Install_Init (void);
 //	return;
 	Install_Init ();
-//	exit (1);
+//	System_Exit (1);
 	svs.remote = COM_CheckParm ("-remote"); // Should this be a command line param?
 
 	if (svs.remote)

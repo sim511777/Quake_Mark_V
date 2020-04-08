@@ -28,36 +28,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
-	int left;
-	int right;
+	int				left;
+	int				right;
 } portable_samplepair_t;
 
 typedef struct sfx_s
 {
-	char 	name[MAX_QPATH_64];
+	char 			name[MAX_QPATH_64];
 	cache_user_t	cache;
 } sfx_t;
 
 /* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
-	int 	length;
-	int 	loopstart;
-	int 	speed;
-	int 	width;
-	int 	stereo;
-	byte	data[1];	/* variable sized	*/
+	int 			length;
+	int 			loopstart;
+	int 			speed;
+	int 			width;
+	int 			stereo;
+	byte			data[1];			// variable sized
 } sfxcache_t;
 
 typedef struct
 {
-	cbool		gamealive;
-	cbool		soundalive;
-	cbool		splitbuffer;
+	cbool			gamealive;			// April 27 2018 -- Never used.
+	cbool			soundalive;
+	cbool			splitbuffer;
 	int				channels;
-	int	samples;		/* mono samples in buffer			*/
-	int	submission_chunk;	/* don't mix less than this #			*/
-	int	samplepos;		/* in mono samples				*/
+	int				samples;			// mono samples in buffer
+	int				submission_chunk;	// don't mix less than this
+	int				samplepos;			// in mono samples
 	int				samplebits;
 	int				speed;
 	unsigned char	*buffer;
@@ -66,17 +66,17 @@ typedef struct
 /* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
-	sfx_t	*sfx;			/* sfx number					*/
-	int	leftvol;		/* 0-255 volume					*/
-	int	rightvol;		/* 0-255 volume					*/
-	int	end;			/* end time in global paintsamples		*/
-	int	pos;			/* sample position in sfx			*/
-	int	looping;		/* where to loop, -1 = no looping		*/
-	int	entnum;			/* to allow overriding a specific sound		*/
-	int	entchannel;
-	vec3_t	origin;			/* origin of sound effect			*/
-	vec_t	dist_mult;		/* distance multiplier (attenuation/clipK)	*/
-	int	master_vol;		/* 0-255 master volume				*/
+	sfx_t			*sfx;				// sfx number
+	int				leftvol;			// 0-255 volume
+	int				rightvol;			// 0-255 volume
+	int				end;				// end time in global paintsamples
+	int				pos;				// sample position in sfx
+	int				looping;			// where to loop, -1 = no looping
+	int				entnum;				// to allow overriding a specific sound
+	int				entchannel;
+	vec3_t			origin;				// origin of sound effect
+	vec_t			dist_mult;			// distance multiplier (attenuation/clipK)
+	int				master_vol;			// 0-255 master volume
 } channel_t;
 
 #define WAV_FORMAT_PCM	1
@@ -88,7 +88,7 @@ typedef struct
 	int		channels;
 	int		loopstart;
 	int		samples;
-	int		dataofs;		/* chunk starts this many bytes from file start	*/
+	int		dataofs;					// chunk starts this many bytes from file start
 } wavinfo_t;
 
 void S_Init (void);
@@ -129,6 +129,12 @@ int SNDDMA_GetDMAPos(void);
 
 /* shutdown the DMA xfer. */
 void SNDDMA_Shutdown(void);
+
+#ifdef CORE_SDL
+void SNDDMA_LockBuffer(void);		// Baker
+void SNDDMA_UnblockSound (void);	// Baker
+void SNDDMA_BlockSound (void);		// Baker
+#endif // CORE_SDL
 
 /* unlocks the dma buffer / sends sound to the device */
 void SNDDMA_Submit(void);

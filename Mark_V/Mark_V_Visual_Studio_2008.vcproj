@@ -649,7 +649,7 @@
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;IMAGE_JPEG_SUPPORT"
 				GeneratePreprocessedFile="0"
 				RuntimeLibrary="0"
-				DefaultCharIsUnsigned="false"
+				DefaultCharIsUnsigned="true"
 				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_GLQuake/Mark_V_Visual_Studio_2008.pch"
 				AssemblerListingLocation=".\objj\Debug_MSVC_2008_GLQuake/"
 				ObjectFile=".\objj\Debug_MSVC_2008_GLQuake/"
@@ -743,7 +743,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/include"
 				PreprocessorDefinitions="_DEBUG;GLQUAKE;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL;IMAGE_JPEG_SUPPORT"
 				RuntimeLibrary="2"
 				DefaultCharIsUnsigned="true"
@@ -772,7 +772,7 @@
 				OutputFile="c:\quake\mark_v_sdl_debug_vs2008.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
+				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.8-VC/SDL2-2.0.8/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -840,7 +840,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/include"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../SDK/pthreads-w32-2-9-1-release/include,../SDK/SDL2-devel-2.0.8-mingw/SDL2-2.0.8/i686-w64-mingw32/include"
 				PreprocessorDefinitions="_DEBUG;CORE_GL;DEBUGGL;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_SDL"
 				RuntimeLibrary="2"
 				DefaultCharIsUnsigned="true"
@@ -870,7 +870,7 @@
 				OutputFile="c:\quake\mark_v_sdl_winquake_debug_vs2008.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.5-mingw/SDL2-2.0.5/i686-w64-mingw32/lib/x86"
+				AdditionalLibraryDirectories="../SDK/pthreads-w32-2-9-1-release/lib/x86,../SDK/SDL2-devel-2.0.8-VC/SDL2-2.0.8/lib/x86"
 				DelayLoadDLLs="libcurl.dll;opengl32.dll"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -1190,6 +1190,103 @@
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
 				OutputFile=".\objj\Release_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Android WinQuake Fake|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="qasm"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../sdk/,../sdk/core,../sdk/dxsdk/sdk8/include,../SDK/pthreads-w32-2-9-1-release/include"
+				PreprocessorDefinitions="_DEBUG;id386=0;WIN32;_WINDOWS;QUAKE_GAME;CORE_PTHREADS;CORE_GL;__ANDROID__;CORE_SDL;__linux__"
+				RuntimeLibrary="0"
+				DefaultCharIsUnsigned="true"
+				PrecompiledHeaderFile=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.pch"
+				AssemblerListingLocation=".\objj\Debug_MSVC_2008_WinQuakeGL/"
+				ObjectFile=".\objj\Debug_MSVC_2008_WinQuakeGL/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib user32.lib "
+				OutputFile="c:\quake\mark_v_winquake_gl_debug_vs2008.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../sdk/dxsdk/sdk8/lib,../SDK/pthreads-w32-2-9-1-release/lib/x86"
+				DelayLoadDLLs="libcurl.dll"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=".\objj\Debug_MSVC_2008_WinQuakeGL/Mark_V_Visual_Studio_2008.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -5609,6 +5706,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5709,6 +5814,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -5821,6 +5934,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -5921,6 +6042,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -6033,6 +6162,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6133,6 +6270,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -6245,6 +6390,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6351,6 +6504,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6436,6 +6597,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"
@@ -6548,6 +6717,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6648,6 +6825,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -6760,6 +6945,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -6860,6 +7053,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -6972,6 +7173,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -7072,6 +7281,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -7184,6 +7401,14 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="SDL Win Debug|Win32"
 						ExcludedFromBuild="true"
 						>
@@ -7284,6 +7509,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="WinQuake GL Release|Win32"
+						>
+						<Tool
+							Name="qasm"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Android WinQuake Fake|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="qasm"
@@ -14668,6 +14901,22 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\in_win_directinput_overhead.h"
+					>
+				</File>
+				<File
+					RelativePath=".\in_win_events.c"
+					>
+				</File>
+				<File
+					RelativePath=".\in_win_joy.c"
+					>
+				</File>
+				<File
+					RelativePath=".\in_win_mouse.c"
+					>
+				</File>
+				<File
 					RelativePath="movie_win.c"
 					>
 					<FileConfiguration
@@ -14908,11 +15157,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\cd_sdl_win.c"
+					>
+				</File>
+				<File
 					RelativePath=".\in_sdl.c"
 					>
 				</File>
 				<File
-					RelativePath=".\sdl_main.c"
+					RelativePath=".\in_sdl_android.c"
 					>
 				</File>
 				<File
@@ -15294,6 +15547,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="WinQuake GL Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Android WinQuake Fake|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

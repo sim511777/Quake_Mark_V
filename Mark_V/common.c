@@ -806,7 +806,7 @@ static void COM_CheckRegistered (void)
 
 	if (h == -1)
 	{
-		Con_PrintLinef ("Playing shareware version.");
+		Con_SafePrintLinef ("Playing shareware version.");
 		if (com_modified)
 			System_Error ("You must have the registered version to use modified games");
 		return;
@@ -2765,22 +2765,24 @@ void *ReadList_Reader (void *pclist)
 	int	count;
 
 #if 0
-	Con_Queue_PrintLinef ("Thread started"); // Thread-safe, blocking.
+	Con_Queue_PrintLinef ("Maps/demos scanning thread started"); // Thread-safe, blocking.
 #endif
 
 	// We don't need to lock anything here, we have exclusive access to the list by design
 	for (cur = file_read_list_urls, count = 0; cur && !read_list_cancel; cur = cur->next, count ++)
 	{
 		File_Read_Touch (cur->name);
-		// Con_Queue_PrintLinef ("Touched %04d %s", count, cur->name); // Thread-safe, blocking.
+#if 0
+		Con_Queue_PrintLinef ("Touched %04d %s", count, cur->name); // Thread-safe, blocking.
+#endif
 	}
 
 	if (read_list_cancel)
-		Con_Queue_PrintLinef ("Thread received stop signal %d %s", count, cur->name); // Thread-safe, blocking.
+		Con_Queue_PrintLinef ("Maps/demos scanning thread received stop signal %d %s", count, cur->name); // Thread-safe, blocking.
 
 	List_Free (&file_read_list_urls);
 #if 0
-	Con_Queue_PrintLinef ("Thread ended"); // Thread-safe, blocking.
+	Con_Queue_PrintLinef ("Maps/demos scanning thread completed - %d scanned.", count); // Thread-safe, blocking.
 #endif
 	pthread_exit (NULL); // This is optional unless you want to return something for pthread_join to read.
 	return NULL;
@@ -2817,10 +2819,10 @@ void ReadList_NewGame (void)
 			char tmp_path[MAX_OSPATH];
 			c_strlcpy (tmp_path, search->filename);
 			// Mar 6 2018 - bye dzip // new_files = File_List_Alloc (tmp_path, ".dz");  List_Concat_Unsorted (&file_read_list_urls, new_files);
-			new_files = File_List_Alloc (tmp_path, ".dem");  List_Concat_Unsorted (&file_read_list_urls, new_files);
+			new_files = File_List_Alloc (tmp_path, "*.dem");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 			c_snprintf1 (tmp_path, "%s", search->filename);
 			// Ok, this will return healthbox bsps and such, it's ok to touch those.
-			new_files = File_List_Alloc (tmp_path, ".bsp");  List_Concat_Unsorted (&file_read_list_urls, new_files);
+			new_files = File_List_Alloc (tmp_path, "*.bsp");  List_Concat_Unsorted (&file_read_list_urls, new_files);
 		}
 
 	read_list_cancel = false;

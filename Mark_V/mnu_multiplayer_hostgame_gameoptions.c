@@ -326,28 +326,26 @@ void M_NetStart_Change (int dir)
 
 	switch (local_menu->cursor) {
 	default:										// 0 - begin game which shouldn't happen because Keys doesn't send us here on cursor == 0
-	case_break opt_maxplayers_1:					m_maxplayers += dir; // Maxplayers
-													//if (maxplayers > svs.maxclientslimit) maxplayers = svs.maxclientslimit; if (maxplayers < 2) maxplayers = 2;
-													cursor_wrap_set_min_max (m_maxplayers, 2, svs.maxclientslimit); // 2 to svs max players
+	case_break opt_maxplayers_1:					cursor_wrap_set_min_max (m_maxplayers, m_maxplayers + dir, 2, svs.maxclientslimit); // 2 to svs max players
 		
 	case_break opt_server_is_public_2:				Cvar_SetValueQuick (&sv_public, sv_public.value ? 0 : 1); // Public
 	case_break opt_deathmatch_coop_3:				Cvar_SetValueQuick (&pr_coop, pr_coop.value ? 0 : 1); // Coop  vs. Deathmatch
 		
 	case_break opt_teamplay_4: {					int maxval = (com_gametype == gametype_rogue) ? 6 : 2; // Teamplay
-													f = pr_teamplay.value + dir;
-													cursor_wrap_set_min_max (f, 0, maxval); // 0 to 2 teamplay or if rogue then 0 to 6
+													f = pr_teamplay.value; // March 21 2018 - Team play 2 is friendly fire on but still teamplay.
+													cursor_wrap_set_min_max (f, f + dir, 0, maxval); // 0 to 2 teamplay or if rogue then 0 to 6
 													Cvar_SetValueQuick (&pr_teamplay, f);
 	}
-	case_break opt_skill_5:							f = pr_skill.value + dir; // Skill
-													cursor_wrap_set_min_max (f, 0, 3);
+	case_break opt_skill_5:							f = pr_skill.value; // Skill
+													cursor_wrap_set_min_max (f, f + dir, 0, 3);
 													Cvar_SetValueQuick (&pr_skill, f);
 
-	case_break opt_frag_limit_6:					f = pr_fraglimit.value + dir * 10; // Frag limit
-													cursor_wrap_set_min_max (f, 0, 100); // 0 to 100 frag limit
+	case_break opt_frag_limit_6:					f = pr_fraglimit.value; // Frag limit
+													cursor_wrap_set_min_max (f, f + dir * 10, 0, 100); // 0 to 100 frag limit
 													Cvar_SetValueQuick (&pr_fraglimit, f);
 		
-	case_break opt_time_limit_7:					f = pr_timelimit.value + dir * 5; // Time limit
-													cursor_wrap_set_min_max (f, 0, 60); // 0 to 60 time limit
+	case_break opt_time_limit_7:					f = pr_timelimit.value; // Time limit
+													cursor_wrap_set_min_max (f, f + dir * 5, 0, 60); // 0 to 60 time limit
 													Cvar_SetValueQuick (&pr_timelimit, f);
 
 	case_break opt_episode_8: { // Episode like "Welcome To Quake" or "Dimension of the Doomed"
@@ -358,8 +356,7 @@ void M_NetStart_Change (int dir)
 		else if (registered.value)					episodes_count = 7;
 		else										episodes_count = 2;
 
-		m_start_episode += dir;
-		cursor_wrap_0_count (m_start_episode, episodes_count);
+		cursor_wrap_set_min_max (m_start_episode, m_start_episode + dir, 0, episodes_count - 1);
 
 		m_start_level = 0; // On change set it to the first level
 	}
@@ -370,8 +367,7 @@ void M_NetStart_Change (int dir)
 		else if (com_gametype == gametype_rogue)		levels_count = rogueepisodes[m_start_episode].levels; //PGM 01/06/97 added hipnotic episodes			
 		else											levels_count = episodes[m_start_episode].levels;
 
-		m_start_level += dir;
-		cursor_wrap_0_count (m_start_level, levels_count);
+		cursor_wrap_set_min_max (m_start_level, m_start_level + dir, 0, levels_count - 1);
 	}} // end case 9, end select
 }
 

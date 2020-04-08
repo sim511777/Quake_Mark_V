@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Platform identification: Create our own define for Mac OS X, etc.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 	#include "TargetConditionals.h"
 //	#define PLATFORM_FAMILY_APPLE // Nope.  We are going to be more explicit
 	#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
@@ -43,7 +43,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		// iOS Simulator
 //		#pragma message ("IPHONE DETECTED")
 		# define PLATFORM_IOS
+		# define PLATFORM_MOBILE			1
 		# define PLATFORM_NAME				"Apple iOS"
+
 		# define PLATFORM_SHORTNAME			"iOS"
 		# define PLATFORM_ENUM				os_enum_iphone
 		# define PLATFORM_GUI_IOS
@@ -53,7 +55,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		# define PLATFORM_IOS_BPP_32		32				// Not best place for this
 	#elif TARGET_OS_MAC
 		# define PLATFORM_OSX
+		# define PLATFORM_MOBILE			0
 		# define PLATFORM_NAME				"Mac OS X"
+
 		# define PLATFORM_SHORTNAME			"Mac"
 		# define PLATFORM_ENUM				os_enum_mac
 		# define PLATFORM_GUI_OSX
@@ -66,39 +70,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#endif
 
 //	#define CORE_TIMESHARE // May
-#endif // __APPLE__
+//#endif // __APPLE__
 
-#ifdef _WIN32
+#elif defined (__linux__) || defined (__linux)
+	#ifdef __ANDROID__
+		# define PLATFORM_ANDROID
+		# define PLATFORM_MOBILE			1
+		# define PLATFORM_NAME				"Android"
+
+		# define PLATFORM_SHORTNAME			"Android"
+		# define PLATFORM_ENUM				os_enum_android
+		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
+		# define PLATFORM_SCREEN_PORTRAIT	3				// Mobile screen, Android, IOS - Portrait is 3 (270 instead of 90)		
+	#else
+		# define PLATFORM_LINUX
+		# define PLATFORM_MOBILE				0
+		# define PLATFORM_NAME				"Linux"
+
+		# define PLATFORM_SHORTNAME			"Linux"
+		# define PLATFORM_ENUM				os_enum_linux
+		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
+		# define PLATFORM_SCREEN_PORTRAIT	0				// Not mobile screen
+	//	# pragma message ("Linux detected")
+	#endif
+
+#elif defined(_WIN32)
  	# define PLATFORM_WINDOWS
-	# define FILESYSTEM_WINDOWS
+	# define PLATFORM_MOBILE				0
 	# define PLATFORM_NAME					"Windows"
+	
 	# define PLATFORM_SHORTNAME				"Windows"
 	# define PLATFORM_ENUM					os_enum_windows
 	# define PLATFORM_GUI_WINDOWS
 	# define DISPATCH_BANDAGES_WINDOWS
 	# define PLATFORM_SCREEN_FLIPPED_Y		0				// Screen 0,0 is top left
 	# define PLATFORM_SCREEN_PORTRAIT		0				// Not mobile screen
+
+	# define FILESYSTEM_WINDOWS				// UNUSED?
+#else
+	#pragma error ("Platform unknown");
 #endif // _WIN32
-
-#if defined (__linux__) || defined (__linux)
-	#ifdef __ANDROID__
-		# define PLATFORM_ANDROID
-		# define PLATFORM_NAME				"Android"
-		# define PLATFORM_SHORTNAME			"Android"
-		# define PLATFORM_ENUM				os_enum_android
-		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
-		# define PLATFORM_SCREEN_PORTRAIT	1				// Mobile screen, Android, IOS
-	#else
-    # define PLATFORM_LINUX
-	# define PLATFORM_NAME					"Linux"
-	# define PLATFORM_SHORTNAME				"Linux"
-		# define PLATFORM_ENUM				os_enum_linux
-		# define PLATFORM_SCREEN_FLIPPED_Y	0				// Screen 0,0 is top left
-		# define PLATFORM_SCREEN_PORTRAIT	0				// Not mobile screen
-//		# pragma message ("Linux detected?")
-	#endif
-#endif
-
 
 #ifndef PLATFORM_NAME
     #error Unknown platform

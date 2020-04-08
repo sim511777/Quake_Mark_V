@@ -59,12 +59,13 @@ static menu_state_e		osk_return_dest;
 // Draw
 //
 
-#define HS_OUTLINE_1		1
+#define HS_OUTLINE_1		3
 #define HS_SHADOW			4
 #define CHAR_IS_THE_KEY_0	0
 #define PADDING_12			12
 #define M_LEFT_MARGIN		(320-267)/2 // last measure was 267 width (26 ish)
-#define M_TOP_MARGIN		((200-71)/2 + M_CHAR_HEIGHT_8 * 2) - 32 // last measure was 267 width (65ish)
+//#define M_TOP_MARGIN		((200-71)/2 + M_CHAR_HEIGHT_8 * 2) - 32 // last measure was 267 width (65ish)
+#define M_TOP_MARGIN		((200-(71+32))/2 + M_CHAR_HEIGHT_8 * 2) - 32 - 16
 #define PROMPT_X			M_LEFT_MARGIN
 #define PROMPT_Y			M_TOP_MARGIN
 
@@ -73,14 +74,21 @@ LOCAL_EVENT (Draw) (void)
 	{int n; for (n = 0; n < m_scan_count; n ++) {
 		m_scan_t *e = &m_scan[n];
 		Hotspots_Add (	/*left*/	e->rb.left   - HS_OUTLINE_1, 
-						/*top*/		e->rb.top    - HS_OUTLINE_1, 
+						/*top*/		e->rb.top    - (HS_OUTLINE_1 + 8), 
 						/*width*/	e->rb.width  + (HS_OUTLINE_1 * 2), 
-						/*height*/	e->rb.height + (HS_OUTLINE_1 * 2), 
+						/*height*/	e->rb.height + ((HS_OUTLINE_1 +8) * 2), 
 						/*count*/	1, 
 						hotspottype_button // hotspottype_button_line
 		);
 
-		if (1 ||  strlen(e->name) > 1) {
+		if (local_menu->cursor == n) {
+			Draw_Fill (PRECT_SEND_INSET(&e->rb, -3), QUAKE_RED_251, 1);
+		}
+
+		Draw_Fill (PRECT_SEND_INSET(&e->rb, -2),	QUAKE_BLACK_0, 1);
+		
+
+		if (1 /*||  strlen(e->name) > 1*/) {
 			Draw_Fill (RECT_SEND(e->rb), QUAKE_BLACK_0, 1);
 		}
 
@@ -115,9 +123,27 @@ LOCAL_EVENT (KeyPress) (key_scancode_e key, int hotspot)
 	if (key == K_ESCAPE) {
 		if (osk_return_dest == menu_state_None_0)	Key_SetDest (key_console);
 		else										Menu_SetDest (osk_return_dest);
+
+		return; // GET OUT
 	}
 
-	else if (hotspot != NO_HOTSPOT_HIT_NEG1) {
+	else if (hotspot == NO_HOTSPOT_HIT_NEG1) {
+		// The hard way.
+
+		switch (key) {
+		default:				// Nothing
+		case_break K_UPARROW:	cursor_wrap_increment_0_count (local_menu->cursor, -1, m_scan_count);
+		case_break K_DOWNARROW:	cursor_wrap_increment_0_count (local_menu->cursor, +1, m_scan_count); // 2 to svs max players
+			
+		case_break K_ENTER:		hotspot = local_menu->cursor; goto hotspot_pretend;
+		} // end switch (key)
+
+		return; // GET OUT
+	}
+
+hotspot_pretend:
+	if (hotspot != NO_HOTSPOT_HIT_NEG1) {
+
 		int slen = strlen (osk_buffer);
 		m_scan_t *e = &m_scan[hotspot];
 		switch (e->keyascii) {
@@ -186,21 +212,21 @@ static void Add_Key (const char *s, key_scancode_e _keyascii, modify int *cursor
 
 LOCAL_EVENT (InitOnce) (menux_t *self)
 {
-	int x = 0, y = M_TOP_MARGIN + 16; char sbuf[16];
+	int x = 0, y = M_TOP_MARGIN + 24; char sbuf[16];
 	self->cursor_solid_count = COUNT_FLUID_NEG1; // Name maker has 2-dimensional cursoring.  Don't even try -- ha!
 	
 	// ROW 1
 	x = M_LEFT_MARGIN;
 	Add_Key (" ESC ", K_ESCAPE, &x, &y);
 
-	{const char *s = "1234567890 ."; int n, slen = strlen(s); for (n = 0; n < slen; n ++) {
+	{const char *s = "1234567890 ._"; int n, slen = strlen(s); for (n = 0; n < slen; n ++) {
 		if (s[n] == SPACE_CHAR_32)
 			x += M_CHAR_WIDTH_8; // I guess
 		else {
 			sbuf[0] = s[n]; sbuf[1] = 0;
 			Add_Key (sbuf, CHAR_IS_THE_KEY_0, &x, &y);
 		}
-	}} y += M_CHAR_HEIGHT_8 * 2;
+	}} y += M_CHAR_HEIGHT_8 * 4;
 	
 	// ROW 2
 	x = M_LEFT_MARGIN + 28;
@@ -211,7 +237,7 @@ LOCAL_EVENT (InitOnce) (menux_t *self)
 			sbuf[0] = s[n]; sbuf[1] = 0;
 			Add_Key (sbuf, CHAR_IS_THE_KEY_0, &x, &y);
 		}
-	}} y += M_CHAR_HEIGHT_8 * 2;
+	}} y += M_CHAR_HEIGHT_8 * 4;
 
 	// ROW 3
 	x = M_LEFT_MARGIN + 36;
@@ -222,7 +248,7 @@ LOCAL_EVENT (InitOnce) (menux_t *self)
 			sbuf[0] = s[n]; sbuf[1] = 0;
 			Add_Key (sbuf, CHAR_IS_THE_KEY_0, &x, &y);
 		}
-	}} y += M_CHAR_HEIGHT_8 * 2;
+	}} y += M_CHAR_HEIGHT_8 * 4;
 
 	// ROW 4
 	x = M_LEFT_MARGIN + 36 + 8;
@@ -235,7 +261,7 @@ LOCAL_EVENT (InitOnce) (menux_t *self)
 		}
 	}} 
 	Add_Key (" BACK ", K_BACKSPACE, &x, &y);
-	y += M_CHAR_HEIGHT_8 * 2;
+	y += M_CHAR_HEIGHT_8 * 4;
 
 	// ROW 5
 	x = M_LEFT_MARGIN + 28 + 24;

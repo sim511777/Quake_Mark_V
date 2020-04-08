@@ -197,7 +197,7 @@ void M_DrawTextBox (int x, int y, int width, int lines, int hotspot_emit_border)
 //=============================================================================
 /* Menu Subsystem */
 
-#define COUNT_UNSET_NEG1 -1
+
 void M_Init (void)
 {
 	Cmd_AddCommands (M_Init);
@@ -219,8 +219,6 @@ void M_Init (void)
 }
 
 
-#define QUAKE_COLOR_19 19
-#define QUAKE_COLOR_171 171
 
 void M_Draw (void)
 {
@@ -228,8 +226,10 @@ void M_Draw (void)
 	if (vid.touch_screen_active) {
 		// DRAW EXTRA HOTSPOTS.  ESCAPE BOX IS A MINIMUM.
 		int ymax		= /*focus0.game_viewport[1] +*/ focus0.game_viewport[3]; // y + h
-		int wh			= c_max (clwidth, clheight) / 16;
-		RECT_SET (focus0.escape_box, 0, 0, wh, wh);
+		{
+			int wh			= c_max (clwidth, clheight) / 16; // This is escape box size only
+			RECT_SET (focus0.escape_box, 0, 0, wh, wh);
+		}
 		
 		Draw_SetCanvas (CANVAS_DEFAULT);
 
@@ -238,7 +238,14 @@ void M_Draw (void)
 		
 		// DRAW GAME CONTROLS WHEN APPLICABLE
 		if (vid.touch_screen_game_controls_on) {
-			int button_height	= clheight / 8; // 1/8th of total screen
+			// Enlarge icon for phone a bit even though this all wrong.
+#ifdef PLATFORM_IOS
+			float factor = vid.is_mobile == 2 ? /*ipad*/  1 : 1.5;
+			int button_height	= (clheight / 8) * factor; // 1/8th of total screen
+#else
+			
+			int button_height	= (clheight / 8) * 1.5; // 1/8th of total screen
+#endif
 			int button_width	= button_height;
 
 			int width_pad	= button_width / 8;
@@ -254,13 +261,16 @@ void M_Draw (void)
 				RECT_SET ( focus0.touch_buttons[touch_button_forward].r, focus0.touch_buttons[touch_button_back].r.left, focus0.touch_buttons[touch_button_forward_left_1].r.top, button_width, button_height);
 				RECT_SET ( focus0.touch_buttons[touch_button_forward_right].r, focus0.touch_buttons[touch_button_right].r.left, focus0.touch_buttons[touch_button_forward_left_1].r.top, button_width, button_height);
 
-				RECT_SET ( focus0.touch_buttons[touch_button_next_weapon].r, focus0.game_viewport[2] - focus0.touch_buttons[touch_button_left].r.width - width_pad, focus0.touch_buttons[touch_button_left].r.top, button_width, button_height);
-				RECT_SET ( focus0.touch_buttons[touch_button_jump].r, focus0.touch_buttons[touch_button_next_weapon].r.left, 
-					focus0.touch_buttons[touch_button_next_weapon].r.top - button_height - height_pad, button_width, button_height);
-				RECT_SET ( focus0.touch_buttons[touch_button_attack].r, focus0.touch_buttons[touch_button_next_weapon].r.left, focus0.touch_buttons[touch_button_jump].r.top - button_height - height_pad, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_attack].r, focus0.game_viewport[2] - focus0.touch_buttons[touch_button_left].r.width - width_pad, focus0.touch_buttons[touch_button_left].r.top, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_jump].r, focus0.touch_buttons[touch_button_attack].r.left, focus0.touch_buttons[touch_button_attack].r.top - button_height - height_pad, button_width, button_height);
+				RECT_SET ( focus0.touch_buttons[touch_button_next_weapon].r, focus0.touch_buttons[touch_button_jump].r.left, focus0.touch_buttons[touch_button_jump].r.top - button_height - height_pad, button_width, button_height);
 
 				RECT_SET ( focus0.touch_buttons[touch_button_turnleft].r, 0, 0, 0, 0 );
 				RECT_SET ( focus0.touch_buttons[touch_button_turnright].r, 0, 0, 0, 0 );
+
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_left_1].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_forward_right].r, 0, 0, 0, 0 );
+				RECT_SET ( focus0.touch_buttons[touch_button_showscores].r, focus0.touch_sbar.left, focus0.touch_sbar.top, focus0.touch_sbar.width, focus0.touch_sbar.height);
 
 			case_break 2:
 				RECT_SET ( focus0.touch_buttons[touch_button_attack].r, width_pad, ymax - button_height - height_pad, button_width, button_height );
@@ -277,10 +287,11 @@ void M_Draw (void)
 				RECT_SET ( focus0.touch_buttons[touch_button_forward_right].r, 0, 0, 0, 0 );
 				RECT_SET ( focus0.touch_buttons[touch_button_left].r, 0, 0, 0, 0 );
 				RECT_SET ( focus0.touch_buttons[touch_button_right].r, 0, 0, 0, 0 );
-
+				RECT_SET ( focus0.touch_buttons[touch_button_showscores].r, 0, 0, 0, 0 );
 			}
 
-			{ int n; for (n = touch_button_forward_left_1; n < touch_button_COUNT; n ++ ) {
+			// We don't draw status bar so touch_button_turnright instead of touch_button_showscores
+			{ int n; for (n = touch_button_forward_left_1; n < /*touch_button_turnright*/ touch_button_showscores; n ++ ) {
 				if (focus0.touch_buttons[n].r.width)
 					Draw_Alpha_Spot (RECT_SEND(focus0.touch_buttons[n].r), QUAKE_COLOR_19);
 			}}
@@ -341,12 +352,67 @@ void M_Draw (void)
 		}
 	}
 
+	focus0.in_left = false; // 
 	Hotspots_Begin (sMenu.menu_state, 0);
 
 	{ // Fire the draw function
 		menux_t *this_menu = &menux[sMenu.menu_state];
+		focus0.in_left = false;
 		this_menu->Draw_Function (); 
 	}
+
+	// Menu controls
+	if (vid.touch_screen_active) {
+		int button_height	= (clheight / 8); // 1/8th of total screen
+		int button_width	= button_height;
+		
+
+		int width_pad	= (button_width / 8) * 3;
+		int height_pad = (button_height / 8) * 3;
+
+
+		Draw_SetCanvas (CANVAS_DEFAULT);
+		if (sMenu.menu_state == menu_state_NameMaker) {
+			int cltop			= (clheight - (height_pad *3) - (button_height *4))  / 2;
+			int clright1		= clwidth  - button_width -  (width_pad / 2);
+			int clleft			= width_pad / 2;
+			RECT_SET ( focus0.menu_backsp, clright1 - button_width / 2, cltop, button_width * 1.5, button_height);
+			RECT_SET ( focus0.menu_up,		clright1,				RECT_BOTTOMOF(focus0.menu_backsp) + height_pad, button_width, button_height);
+			RECT_SET ( focus0.menu_enter,	focus0.menu_up.left,	RECT_BOTTOMOF(focus0.menu_up) + height_pad, button_width, button_height);
+			RECT_SET ( focus0.menu_down,	focus0.menu_up.left,	RECT_BOTTOMOF(focus0.menu_enter) + height_pad, button_width, button_height);
+			
+			RECT_SET ( focus0.menu_left, clleft,	focus0.menu_down.top, button_width, button_height);
+			RECT_SET ( focus0.menu_right, RECT_RIGHTOF(focus0.menu_left) + width_pad, focus0.menu_down.top, button_width, button_height);
+			//RECT_SET ( focus0.menu_right, 0, 0, 0, 0 );
+//			RECT_SET ( focus0.menu_backsp, 0, 0, 0, 0 );
+
+		}
+		
+		else {
+		int cltop			= (clheight - (height_pad *2) - (button_height *3))  / 2;
+		int clright1		= clwidth  - button_width -  (width_pad / 2);
+
+		RECT_SET ( focus0.menu_up,		clright1,				cltop, button_width, button_height);
+		RECT_SET ( focus0.menu_enter,	focus0.menu_up.left,	RECT_BOTTOMOF(focus0.menu_up) + height_pad, button_width, button_height);
+		RECT_SET ( focus0.menu_down,	focus0.menu_up.left,	RECT_BOTTOMOF(focus0.menu_enter) + height_pad, button_width, button_height);
+		if (focus0.in_left) 
+			RECT_SET ( focus0.menu_left, focus0.menu_up.left - button_width - width_pad,	focus0.menu_enter.top, button_width, button_height);
+		else RECT_SET ( focus0.menu_left, 0, 0, 0, 0 );
+
+			RECT_SET ( focus0.menu_right, 0, 0, 0, 0 );
+			RECT_SET ( focus0.menu_backsp, 0, 0, 0, 0 );
+		}
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_up), QUAKE_COLOR_19);
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_enter), QUAKE_COLOR_19);
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_down), QUAKE_COLOR_19);
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_left), QUAKE_COLOR_19);
+
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_right), QUAKE_COLOR_19);
+		Draw_Alpha_Spot (RECT_SEND(focus0.menu_backsp), QUAKE_COLOR_19);
+
+		Draw_SetCanvas (CANVAS_MENU); //johnfitz
+	}
+
 
 	if (sMenu.entersound) {
 		MENU_ENTER_LOUD_SOUND ();
@@ -359,8 +425,15 @@ void M_Draw (void)
 
 void M_KeyPress (key_scancode_e key, int hotspot)
 {
-	if (vid.is_mobile_ios_keyboard && key == K_GRAVE /*the tilde*/) // PLATFORM_IOS
+	if (key == K_ABUTTON) {
+		key = K_ENTER;
+	} else if (key == K_BBUTTON) {
+		key = K_ESCAPE;
+	} else if (vid.is_mobile && key == K_GRAVE /*the tilde*/) { // PLATFORM_IOS + ANDROID too.  "ESC" exits the application, so make tilde toggle.
+//		vid.mobile_bluetooth_keyboard_entry = true; // Not here
+//		alert ("Mobile entry on");
 		key = K_ESCAPE; // Hope.  Can't verify easily on Windows due to DeadkeyIssue fix by ericw that scans fixed physical position, if I recall.
+	}
 
 	{ // Fire the key function
 		menux_t *this_menu = &menux[sMenu.menu_state];

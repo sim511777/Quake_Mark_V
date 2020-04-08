@@ -16,36 +16,43 @@ Copyright (C) 2013-2014 Baker
 
 
 
-//void Vid_InitOnce (void)
-//{
-//	static cbool done;
-//
-//	if (!done && !mainus.dispatch_fn) mainus.dispatch_fn = Session_Dispatch;
-//	if (!done) {
-//		SDL_SetHint(SDL_HINT_ORIENTATIONS, "Portrait");
-//
-//#if 1 //def PLATFORM_IOS // Something about wanting to initialize Haptic for IOS?
-//	    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-//			log_fatal ("Could not initialize SDL Video: %s", SDL_GetError());
-//#else
-//		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+// TODO: Can this just go in Vid_Init for Android or does it need to be exceptionally early.
+void Vidco_Local_InitOnce_SDL (void)
+{
+#if defined (PLATFORM_IOS) || defined (PLATFORM_ANDROID)
+	static cbool done;
+	
+	if (!done) {
+		//SDL_SetHint(SDL_HINT_ORIENTATIONS, "Portrait"); // IOS ONLY: A hint that specifies a variable controlling which orientations are allowed on iOS. 
+
+	    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+			log_fatal ("Could not initialize SDL Video: %s", SDL_GetError());
+
+//		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)	// Instead of the above, right?
 //			log_fatal ("Could not initialize SDL: %s", SDL_GetError());
-//#endif
-//	  			//SDL_Log("Unable to initialize SDL");
-//
-//		// Attributes -- stencil, multisample, anything else?
-//		// SDL_GL_SetAttributes must be done BEFORE SDL_SetVideoMode
-//#ifdef PLATFORM_ANDROID
-//		SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 16);				// Hmmmm.  Just android?
-//#endif //PLATFORM_ANDROID
-//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-////
-//	    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);	  // Set depth 24 bits
-//	    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);  // Set depth 24 bits
-//		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 ); // Double buffer
-//		done = true;
-//	}
-//}
+
+		// Attributes -- stencil, multisample, anything else?
+		// SDL_GL_SetAttributes must be done BEFORE SDL_SetVideoMode
+
+#ifdef PLATFORM_ANDROID
+		// March 21 2018 - Is this needed for sure?
+		// the minimum number of bits for frame buffer size; defaults to 0
+		SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 16);				// Hmmmm.  Just android?
+#endif //PLATFORM_ANDROID
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+	    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);	  // Set depth 24 bits
+	    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);  // Set depth 24 bits
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 ); // Double buffer
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+		done = true;
+	}
+#endif // IOS or ANDROID
+}
 
 
 
@@ -662,6 +669,44 @@ void Platform_SDL_Input_GetMouseBits (SDL_Event *e, required int *button_bits, r
 	*x = e->button.x;
 	*y = e->button.y;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  PLATFORM: ANDROID JAVA TO C
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef PLATFORM_ANDROID
+
+/*******************************************************************************
+                 Functions called by JNI
+*******************************************************************************/
+#include <jni.h>
+
+///* Called before SDL_main() to initialize JNI bindings in SDL library */
+//extern void SDL_Android_Init(JNIEnv* env, jclass cls);
+//
+//	/* Start up the SDL app */
+//	void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject obj)
+//	{
+//		/* This interface could expand with ABI negotiation, calbacks, etc. */
+//		SDL_Android_Init(env, cls);
+//
+//		SDL_SetMainReady();
+//
+//		/* Run the application code! */
+//		int status;
+//		char *argv[2];
+//		argv[0] = SDL_strdup("SDL_app");
+//		argv[1] = NULL;
+//		status = SDL_main(1, argv);
+//
+//		/* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
+//		/* exit(status); */
+//	}
+//
+#endif // PLATFORM_ANDROID
+
+
 
 #endif // CORE_SDL
 

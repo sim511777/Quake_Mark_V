@@ -68,12 +68,13 @@ static void Mnu_Keys_FindKeysForCommand_ (const char *command, int *threekeys)
 	int		j;
 	int		leng;
 	const	char *b;
+	int		maxxus = Input_Local_Is_Joystick () ? KEYMAP_Q_USABLE_MAX_494 : KEYMAP_Q_JOYLESS_MAX_265;
 
 	threekeys[0] = threekeys[1] = threekeys[2] = -1;
 	leng = strlen(command);
 	count = 0;
 
-	for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/; j++) {
+	for (j = 0; j < maxxus /*KEYMAP_Q_USABLE_MAX_494* /* Mar 13 2018 touch screen*/; j++) {
 #ifdef SUPPORTS_KEYBIND_FLUSH
 		// What we want to do here is show the current
 		// effective key bindings
@@ -101,7 +102,7 @@ static void Mnu_Keys_UnbindCommand_ (const char *command)
 	int		j;
 	const char *b;
 
-	for (j = 0; j < KEYMAP_Q_USABLE_MAX_500 /* Mar 13 2018 touch screen*/ ; j ++) {
+	for (j = 0; j < KEYMAP_Q_USABLE_MAX_494 /* Mar 13 2018 touch screen*/ ; j ++) {
 #ifdef SUPPORTS_KEYBIND_FLUSH
 // We want the server and user binds unbound
 // Key_SetBinding should handle this situation properly in all cases.

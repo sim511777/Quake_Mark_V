@@ -96,12 +96,13 @@ void Key_Game_Button_Action (touch_button_e touch_button, cbool is_down)
 	case_break touch_button_back:			Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_BACK, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 	case_break touch_button_right:			Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_RIGHT, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 	case_break touch_button_attack:			Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_ATTACK, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
-	case_break touch_button_jump:			Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_FORWARD, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	case_break touch_button_jump:			//Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_FORWARD, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 											Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_JUMP, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 	case_break touch_button_next_weapon:	Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_NEXT_WEAPON, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 
 	case_break touch_button_turnleft:		Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_TURNLEFT, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 	case_break touch_button_turnright:		Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_TURNRIGHT, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
+	case_break touch_button_showscores:		Key_Event_Ex (NO_WINDOW_NULL, QKEY_TABLET_SHOWSCORES, is_down, ASCII_0, UNICODE_0, CORE_SHIFTBITS_UNREAD_NEG1);
 
 	}
 }

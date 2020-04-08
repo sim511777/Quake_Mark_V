@@ -862,14 +862,10 @@ void R_DrawLightmapChains (void)
 				eglTexCoord2f (v[5], v[6]);
 				eglVertex3fv (v);
 			}
-			if (!lightmap[i].polys)
-				i=i;
 			eglEnd ();
 			rs_brushpasses++;
 		}
-		i = i ;
 	}
-	i = i ;
 }
 
 /*

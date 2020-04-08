@@ -68,17 +68,12 @@ extern int buflen;
 #define FUHQUAKE_POSITION_1_2X (1.0 + 13.0/64.0) //  1.203125 .. should be a nice and solid binary-friendly number for floating point storage
 
 // Example
-#define cursor_wrap_0_count(_var_integer, _count) \
-	if ( (_var_integer) >= (_count)) (_var_integer) = 0; else if ( (_var_integer) < 0) (_var_integer) = ((_count) - 1); // Ender
 
 #define cursor_wrap_increment_0_count(_var_integer, _increment, _count) \
 	(_var_integer) += _increment; if ( (_var_integer) >= (_count)) (_var_integer) = 0; else if ( (_var_integer) < 0) (_var_integer) = ((_count) - 1); // Ender
 
-#define cursor_wrap_set_0_count(_var_integer, _newval, _count) \
-	(_var_integer) = _newval; if ( (_var_integer) >= (_count)) (_var_integer) = 0; else if ( (_var_integer) < 0) (_var_integer) = ((_count) - 1); // Ender
-
-#define cursor_wrap_set_min_max(_var_integer, _newval, _max) \
-	(_var_integer) = _newval; if ( (_var_integer) > (_max)) (_var_integer) = 0; else if ( (_var_integer) < 0) (_var_integer) = (_max); // Ender
+#define cursor_wrap_set_min_max(_var_integer, _newval, _min, _max) \
+	(_var_integer) = (_newval); if ( (_var_integer) > (_max)) (_var_integer) = (_min); else if ( (_var_integer) < (_min)) (_var_integer) = (_max); // Ender
 
 #define MENU_ROW_CHANGE_HARD_SOUND()	S_LocalSound ("misc/menu1.wav") // Soft changed a value sound
 #define MENU_ENTER_LOUD_SOUND()			S_LocalSound ("misc/menu2.wav") // Clicking into a menu

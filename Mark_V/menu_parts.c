@@ -48,8 +48,8 @@ int Mnu_Part_DrawVScrollbar (int left, int top, int width, int height, int butto
 	RECT_SET(hs->r_track1,  left,			hs->r_track.top,					width,					thumb_offset);
 	RECT_SET(hs->r_track2,  left,			RECT_BOTTOMOF(hs->r_thumb),			width,					hs->r_button2.top - RECT_BOTTOMOF(hs->r_thumb));
 	
-	Draw_Fill (RECT_SEND(hs->r_button1), QUAKE_BROWN_169, 0.25);
-	Draw_Fill (RECT_SEND(hs->r_button2), QUAKE_BROWN_169, 0.25);
+	Draw_Fill (RECT_SEND(hs->r_button1), QUAKE_BROWN_172, 0.25);
+	Draw_Fill (RECT_SEND(hs->r_button2), QUAKE_BROWN_172, 0.25);
 	Draw_Fill (RECT_SEND(hs->r_thumb),   QUAKE_GRAY_6,	  0.50);	// Drawing the thumb last, we can see if it overlaps when it shouldn't.
 
 	//if (RECT_BOTTOMOF(hs->r_thumb) -1 >= hs->r_button2.top) {
